@@ -11,7 +11,8 @@ import type { RouterOutputs } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
-import { LoadingPage } from "~/components/loading";
+import { LoadingPage, LoadingSpinner } from "~/components/loading";
+import { toast } from "react-hot-toast";
 dayjs.extend(relativeTime);
 
 const CreatePostWizard = () => {
@@ -25,6 +26,17 @@ const CreatePostWizard = () => {
     onSuccess: () => {
       setInput("");
       void ctx.posts.getAll.invalidate();
+    },
+    onError: (e) => {
+      const errorMessage = e.shape?.data?.zodError?.fieldErrors.content;
+
+      // console.log(e.shape?.data?.zodError?.fieldErrors.content)
+
+      if (errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Something went wrong! Please try again later");
+      }
     },
   });
 
@@ -48,8 +60,21 @@ const CreatePostWizard = () => {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         disabled={isPosting}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            mutate({ content: input });
+          }
+        }}
       />
-      <button onClick={() => mutate({ content: input })}>Post</button>
+      {input != "" && !isPosting && (
+        <button onClick={() => mutate({ content: input })}>Post</button>
+      )}
+
+      {isPosting && (
+        <div className="flex items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      )}
     </div>
   );
 };
@@ -113,7 +138,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex justify-center">
-        <div className="h-screen w-full border-x border-slate-400 md:max-w-2xl">
+        <div className="w-full border-x border-slate-400 md:max-w-2xl">
           <div className="flex border-b border-slate-300  p-4">
             {!isSignedIn && (
               <div className="flex justify-center font-bold">
