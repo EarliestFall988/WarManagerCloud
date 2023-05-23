@@ -10,6 +10,20 @@ import {
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const redis = new Redis({
+  url: "https://us1-merry-snake-32728.upstash.io",
+  token: "AX_sAdsdfsgODM5ZjExZGEtMmmVjNmE345445kGVmZTk5MzQ=",
+});
+
+// Create a new ratelimit instance with 3 requests per minute
+const ratelimit = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(3, "1 m"),
+});
+
 const filterUserForClient = (user: User) => {
   return {
     id: user.id,
@@ -58,6 +72,15 @@ export const postsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.currentUser;
+
+      const { success } = await ratelimit.limit(authorId);
+
+      if (!success)
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message:
+            "Woah! You are posting too much :) please wait a little bit!",
+        });
 
       const post = await ctx.prisma.post.create({
         data: {
