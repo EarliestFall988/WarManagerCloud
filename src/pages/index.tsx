@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { api } from "~/utils/api";
 import { SignInButton, useUser, SignOutButton } from "@clerk/nextjs";
-import { use } from "react";
+import { use, useState } from "react";
 
 import type { RouterOutputs } from "~/utils/api";
 
@@ -16,6 +16,17 @@ dayjs.extend(relativeTime);
 
 const CreatePostWizard = () => {
   const { user } = useUser();
+
+  const [input, setInput] = useState("");
+
+  const ctx = api.useContext();
+
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      void ctx.posts.getAll.invalidate();
+    },
+  });
 
   if (!user) {
     return null;
@@ -33,7 +44,12 @@ const CreatePostWizard = () => {
       <input
         placeholder="Type some emojis!"
         className="w-full bg-transparent p-2 outline-none"
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        disabled={isPosting}
       />
+      <button onClick={() => mutate({ content: input })}>Post</button>
     </div>
   );
 };
@@ -53,7 +69,7 @@ const PostView = (props: PostWithUser) => {
         height={48}
       />
       <div className="flex flex-col">
-        <div className="text-slate-300 ">
+        <div className="text-slate-200 ">
           <span className="mr-1 font-semibold">{`@${author.username!}`}</span>·
           <span className="ml-1 text-sm italic">
             {dayjs(post.createdAt).fromNow()}
