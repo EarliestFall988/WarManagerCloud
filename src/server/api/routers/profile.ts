@@ -10,9 +10,9 @@ import filterUserForClient from "~/server/helpers/filerUserForClient";
 export const profileRouter = createTRPCRouter({
   getUserByEmail: publicProcedure
     .input(z.object({ email: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const [user] = await clerkClient.users.getUserList({
-        email: [input.email],
+        emailAddress: [input.email], //fixed this issue querying a single email address by using the email address array instead of the string param
       });
 
       if (!user) {
@@ -22,6 +22,8 @@ export const profileRouter = createTRPCRouter({
         });
       }
 
-      return filterUserForClient(user);
+      const result = filterUserForClient(user);
+
+      return result;
     }),
 });

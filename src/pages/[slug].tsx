@@ -3,17 +3,36 @@ import Head from "next/head";
 import { LoadingPage } from "~/components/loading";
 import { api } from "~/utils/api";
 
+import { PageLayout } from "~/components/layout";
+
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 const ProfilePage: NextPage<{ email: string }> = ({ email }) => {
+   const router = useRouter();
+  // console.log(query)
+
+  // if(!query.slug) return <div>Something went wrong</div>;
+
+  console.log("params: ");
+  console.log(email);
+
+  const slug = "@howelltaylor195@gmail.com";
+
+  console.log(slug?.length.toString());
+  // const email = slug?.substring(1, slug?.length);
+
   const { data, isLoading } = api.profile.getUserByEmail.useQuery({
     email: email,
   });
 
-  if (isLoading) return <LoadingPage />;
+  // if (isLoading) return <LoadingPage />;
 
   if (!data) return <div>Something went wrong</div>;
-  if (!data.email) return <div>Something went wrong</div>;
+  if (!data.profilePicture) return <div>Something went wrong</div>;
+  // if (!data.email) return <div>Something went wrong</div>;
+
+  console.log(data);
 
   return (
     <>
@@ -24,21 +43,28 @@ const ProfilePage: NextPage<{ email: string }> = ({ email }) => {
       </Head>
       <PageLayout>
         <div className="p-2 text-lg font-semibold">
-          <div>{data.email}</div>
+          <div className="flex gap-2 items-end">
+            <button className="font-bold text-2xl" onClick={router.back}>&lt; </button>
+            <p>{email}</p>
+          </div>
         </div>
         <div className=" flex h-32 flex-col items-start justify-between bg-slate-800 p-2">
           <Image
-            src={data.profilePicture}
-            alt={`${data.email}'s profile picture`}
+            src={data?.profilePicture!}
+            alt={`${data?.email!}'s profile picture`}
             className="h-28 w-28 translate-y-16 rounded-full border-2 border-black"
             width={62}
             height={62}
           />
         </div>
 
-        <div className="border-b border-slate-400 p-2 pt-20 pb-4 text-2xl font-semibold">
-          <div>@{data.email}</div>
+        <div className="border-b border-slate-400 p-2 pb-4 pt-20 text-2xl font-semibold">
+          <div>@{email}</div>
         </div>
+
+        {/* {data?.map((fullPost) => (
+        <PostView {...fullPost} key={fullPost.post.id} />
+      ))} */}
       </PageLayout>
     </>
   );
@@ -48,7 +74,8 @@ import { createServerSideHelpers } from "@trpc/react-query/server";
 import { appRouter } from "~/server/api/root";
 import superjson from "superjson";
 import { prisma } from "~/server/db";
-import { PageLayout } from "~/components/layout";
+
+import { PostView } from "~/components/postview";
 
 export const getStaticProps: GetStaticProps = async (
   context: GetStaticPropsContext
@@ -66,13 +93,13 @@ export const getStaticProps: GetStaticProps = async (
   if (slug.length <= 1) throw new Error("slug too short");
 
   const resultingEmail = slug.substring(1, slug.length);
-  console.log("email: " + resultingEmail);
+  // console.log("email: " + resultingEmail);
 
   await helpers.profile.getUserByEmail.prefetch({ email: resultingEmail });
 
   const result = helpers.dehydrate();
 
-  console.log(result);
+  // console.log(result);
 
   return {
     props: {

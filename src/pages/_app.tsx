@@ -2,7 +2,7 @@ import { type AppType } from "next/app";
 import { ClerkProvider } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 
 import "~/styles/globals.css";
 import Head from "next/head";
