@@ -31,10 +31,8 @@ const ProfileFeed = (props: { userId: string }) => {
       <p className="border-b-2 border-slate-500 p-2 text-center text-lg">
         {data.length} post{data.length === 1 ? "" : "s"}
       </p>
-      {data.map((fullPost) => (
-        <PostView {...fullPost} key={fullPost.post.id}>
-          test
-        </PostView>
+      {data?.map((fullPost) => (
+        <PostView {...fullPost} key={fullPost.post.id} />
       ))}
     </div>
   );
@@ -88,11 +86,9 @@ const ProfilePage: NextPage<{ email: string }> = ({ email }) => {
   );
 };
 
-
 export const getStaticProps: GetStaticProps = async (
   context: GetStaticPropsContext
 ) => {
-  
   const ssg = generateSSGHelper();
 
   const slug = context.params?.slug;
