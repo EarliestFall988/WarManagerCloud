@@ -9,10 +9,10 @@ import filterUserForClient from "~/server/helpers/filerUserForClient";
 
 export const profileRouter = createTRPCRouter({
   getUserByEmail: publicProcedure
-    .input(z.object({ email: z.string() }))
+    .input(z.object({ postId: z.string() }))
     .query(async ({ input }) => {
       const [user] = await clerkClient.users.getUserList({
-        emailAddress: [input.email], //fixed this issue querying a single email address by using the email address array instead of the string param
+        emailAddress: [input.postId], //fixed this issue querying a single email address by using the email address array instead of the string param
       });
 
       if (!user) {
