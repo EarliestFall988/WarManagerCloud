@@ -8,31 +8,49 @@ import { PageLayout } from "~/components/layout";
 import Image from "next/image";
 import { useRouter } from "next/router";
 
+import { PostView } from "~/components/postview";
+import type { User } from "@clerk/nextjs/server";
+
+const ProfileFeed = (props: { userId: string }) => {
+  const { data, isLoading } = api.posts.getPostsByUserId.useQuery({
+    userId: props.userId,
+  });
+
+  if (isLoading) return <LoadingPage />;
+
+  if (!data || data.length === 0)
+    return (
+      <div className="p-2 text-center italic text-slate-400">
+        User has not posted
+      </div>
+    );
+
+  return (
+    <div>
+      <p className="border-b-2 border-slate-500 p-2 text-center text-lg">
+        {data.length} post{data.length === 1 ? "" : "s"}
+      </p>
+      {data.map((fullPost) => (
+        <PostView {...fullPost} key={fullPost.post.id}>
+          test
+        </PostView>
+      ))}
+    </div>
+  );
+};
+
 const ProfilePage: NextPage<{ email: string }> = ({ email }) => {
-   const router = useRouter();
-  // console.log(query)
-
-  // if(!query.slug) return <div>Something went wrong</div>;
-
-  console.log("params: ");
-  console.log(email);
-
-  const slug = "@howelltaylor195@gmail.com";
-
-  console.log(slug?.length.toString());
-  // const email = slug?.substring(1, slug?.length);
+  const router = useRouter();
 
   const { data, isLoading } = api.profile.getUserByEmail.useQuery({
     email: email,
   });
 
-  // if (isLoading) return <LoadingPage />;
+  if (isLoading) return <LoadingPage />;
 
   if (!data) return <div>Something went wrong</div>;
   if (!data.profilePicture) return <div>Something went wrong</div>;
-  // if (!data.email) return <div>Something went wrong</div>;
-
-  console.log(data);
+  if (!data.email) return <div>Something went wrong</div>;
 
   return (
     <>
@@ -43,15 +61,17 @@ const ProfilePage: NextPage<{ email: string }> = ({ email }) => {
       </Head>
       <PageLayout>
         <div className="p-2 text-lg font-semibold">
-          <div className="flex gap-2 items-end">
-            <button className="font-bold text-2xl" onClick={router.back}>&lt; </button>
+          <div className="flex items-end gap-2">
+            <button className="text-2xl font-bold" onClick={router.back}>
+              &lt;{" "}
+            </button>
             <p>{email}</p>
           </div>
         </div>
         <div className=" flex h-32 flex-col items-start justify-between bg-slate-800 p-2">
           <Image
-            src={data?.profilePicture!}
-            alt={`${data?.email!}'s profile picture`}
+            src={data?.profilePicture}
+            alt={`${data?.email}'s profile picture`}
             className="h-28 w-28 translate-y-16 rounded-full border-2 border-black"
             width={62}
             height={62}
@@ -61,10 +81,7 @@ const ProfilePage: NextPage<{ email: string }> = ({ email }) => {
         <div className="border-b border-slate-400 p-2 pb-4 pt-20 text-2xl font-semibold">
           <div>@{email}</div>
         </div>
-
-        {/* {data?.map((fullPost) => (
-        <PostView {...fullPost} key={fullPost.post.id} />
-      ))} */}
+        <ProfileFeed userId={data.id} />
       </PageLayout>
     </>
   );
@@ -74,8 +91,6 @@ import { createServerSideHelpers } from "@trpc/react-query/server";
 import { appRouter } from "~/server/api/root";
 import superjson from "superjson";
 import { prisma } from "~/server/db";
-
-import { PostView } from "~/components/postview";
 
 export const getStaticProps: GetStaticProps = async (
   context: GetStaticPropsContext
