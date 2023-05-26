@@ -1,0 +1,67 @@
+import type { NextPage } from "next";
+import { LoadingSpinner } from "~/components/loading";
+
+import { api } from "~/utils/api";
+
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import Link from "next/link";
+dayjs.extend(relativeTime);
+
+const HomePage: NextPage = () => {
+  const { data, isLoading, isError } = api.blueprints.getAll.useQuery();
+
+  if (isError) return <div>sorry...there was an error. Try again later.</div>;
+
+  return (
+    <div className="h-screen w-screen">
+      <h1 className="bg-gradient-to-br from-amber-700 to-red-700 p-2 text-center text-lg font-semibold">
+        Blueprints
+      </h1>
+
+      {isLoading ? (
+        <div className="flex h-full w-full items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <div>
+          <div className="flex justify-center">
+            <div className="flex w-full flex-col gap-2 p-2 md:w-3/4">
+              {data?.map((blueprint) => (
+                <Link
+                  href={`/blueprints/${blueprint.id}`}
+                  passHref
+                  className="flex w-full items-center justify-between rounded bg-stone-900 p-2 transition-all duration-100 hover:bg-stone-800"
+                  key={blueprint.id}
+                >
+                  <h2 className="w-3/2 truncate text-left text-lg font-bold md:w-1/4">
+                    {blueprint.name}
+                  </h2>
+                  <div className="hidden justify-center  truncate font-thin md:flex md:w-1/4">
+                    <p>{blueprint.description}</p>
+                  </div>
+                  <p className="w-1/4 truncate text-right text-sm italic">
+                    {dayjs(blueprint.createdAt).fromNow()}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="p-1 text-center text-lg font-semibold">Options</div>
+          <div className="flex justify-center">
+            <div className="flex w-full flex-col gap-2 p-2 md:w-3/4">
+              <Link
+                href="/newBlueprint"
+                className="w-full rounded-lg border-2 border-stone-700 bg-black p-1 text-center text-lg text-slate-100 transition-all duration-100 hover:bg-stone-900"
+              >
+                New Blueprint +
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default HomePage;

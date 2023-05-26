@@ -9,7 +9,6 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 
 import { PostView } from "~/components/postview";
-import type { User } from "@clerk/nextjs/server";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 
 const ProfileFeed = (props: { userId: string }) => {

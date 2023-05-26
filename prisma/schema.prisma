@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
@@ -12,12 +12,52 @@ generator client {
 }
 
 model Post {
-    id          String @id @default(cuid())
-    createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-    content     String @db.VarChar(255)
+  content String @db.VarChar(255)
 
-    authorId    String  
+  authorId String
 
-    @@index([authorId])
+  @@index([authorId])
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  name        String @db.VarChar(255)
+  description String @db.VarChar(255)
+
+  authorId String
+
+  @@index([authorId])
+}
+
+model CrewMember {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  name        String @db.VarChar(255)
+  position    String @db.VarChar(255)
+  description String @db.VarChar(255)
+
+  authorId String
+
+  @@index([authorId])
+}
+
+model Blueprint {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  name        String @db.VarChar(255)
+  description String @db.VarChar(255)
+
+  nodes Json
+  edges Json
+
+  authorId String
+
+  @@index([authorId])
 }
