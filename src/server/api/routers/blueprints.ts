@@ -15,7 +15,7 @@ const ratelimit = new Ratelimit({
 });
 
 export const blueprintsRouter = createTRPCRouter({
-  getAll: publicProcedure.query(async ({ ctx }) => {
+  getAll: privateProcedure.query(async ({ ctx }) => {
     const blueprints = await ctx.prisma.blueprint.findMany({
       take: 100,
       orderBy: {

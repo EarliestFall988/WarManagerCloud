@@ -27,7 +27,7 @@ const NewBlueprintPage: NextPage = () => {
             You must be logged in to create a blueprint
           </p>
           <div className="w-full bg-red-500 p-2 text-center md:w-1/6 md:rounded">
-            <Link href="/">Home</Link>
+            <Link href="/Home">Home</Link>
           </div>
         </div>
       </div>

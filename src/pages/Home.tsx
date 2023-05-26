@@ -7,9 +7,28 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Link from "next/link";
 import Head from "next/head";
+import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 dayjs.extend(relativeTime);
 
 const HomePage: NextPage = () => {
+  const { user } = useUser();
+
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center justify-center gap-2">
+          <p className="text-lg italic text-red-500">Woah!</p>
+          <p className="p-2 text-center text-2xl font-semibold">
+            You must be logged in to create a blueprint
+          </p>
+          <div className="w-full bg-red-500 p-2 text-center md:w-1/6 md:rounded">
+            <SignInButton />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const { data, isLoading, isError } = api.blueprints.getAll.useQuery();
 
   if (isError) return <div>sorry...there was an error. Try again later.</div>;
@@ -22,11 +41,15 @@ const HomePage: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="h-screen w-screen">
-        <h1 className="bg-gradient-to-br from-amber-700 to-red-700 p-2 text-center text-lg font-semibold">
-          Blueprints
-        </h1>
+        <div className="flex items-center justify-between bg-stone-900 p-2 px-5 text-center text-lg font-semibold">
+          <div className="hidden md:flex" />
+          <h1>Blueprints</h1>
+          <div className="rounded bg-red-800 p-2">
+            {user ? <SignOutButton /> : <SignInButton />}
+          </div>
+        </div>
         <div className="flex justify-center">
-          <div className="flex flex-col md:flex-row w-full gap-2 p-2 md:w-3/4">
+          <div className="flex w-full flex-col gap-2 p-2 md:w-3/4 md:flex-row">
             <Link
               href="/newBlueprint"
               className="w-full rounded-lg border-2 border-stone-700 bg-black p-1 text-center text-lg text-slate-100 transition-all duration-100 hover:bg-stone-900"
