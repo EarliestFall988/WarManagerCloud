@@ -7,12 +7,32 @@ import { useRouter } from "next/router";
 
 import { toast } from "react-hot-toast";
 import { LoadingSpinner } from "~/components/loading";
+import { useUser } from "@clerk/nextjs";
 
 const NewBlueprintPage: NextPage = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
   const { push } = useRouter();
+
+  const { user } = useUser();
+
+  //redirect if the user is not found
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center justify-center gap-2">
+          <p className="text-lg italic text-red-500">Hold your horses!</p>
+          <p className="p-2 text-center text-2xl font-semibold">
+            You must be logged in to create a blueprint
+          </p>
+          <div className="w-full bg-red-500 p-2 text-center md:w-1/6 md:rounded">
+            <Link href="/">Home</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const { mutate, isLoading: isCreating } = api.blueprints.create.useMutation({
     onSuccess: (data) => {

@@ -22,7 +22,6 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { LoadingPage } from "~/components/loading";
 import Link from "next/link";
-import { init } from "next/dist/compiled/@vercel/og/satori";
 
 const nodeTypes = {
   ResizableNodeSelected,

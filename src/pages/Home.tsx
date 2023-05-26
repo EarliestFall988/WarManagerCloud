@@ -25,6 +25,28 @@ const HomePage: NextPage = () => {
         <h1 className="bg-gradient-to-br from-amber-700 to-red-700 p-2 text-center text-lg font-semibold">
           Blueprints
         </h1>
+        <div className="flex justify-center">
+          <div className="flex flex-col md:flex-row w-full gap-2 p-2 md:w-3/4">
+            <Link
+              href="/newBlueprint"
+              className="w-full rounded-lg border-2 border-stone-700 bg-black p-1 text-center text-lg text-slate-100 transition-all duration-100 hover:bg-stone-900"
+            >
+              New Blueprint
+            </Link>
+            <Link
+              href="/newBlueprint"
+              className="w-full rounded-lg border-2 border-stone-700 bg-black p-1 text-center text-lg text-slate-100 transition-all duration-100 hover:bg-stone-900"
+            >
+              New Crew Member
+            </Link>
+            <Link
+              href="/newBlueprint"
+              className="w-full rounded-lg border-2 border-stone-700 bg-black p-1 text-center text-lg text-slate-100 transition-all duration-100 hover:bg-stone-900"
+            >
+              New Project
+            </Link>
+          </div>
+        </div>
 
         {isLoading ? (
           <div className="flex h-full w-full items-center justify-center">
@@ -52,17 +74,6 @@ const HomePage: NextPage = () => {
                     </p>
                   </Link>
                 ))}
-              </div>
-            </div>
-            <div className="p-1 text-center text-lg font-semibold">Options</div>
-            <div className="flex justify-center">
-              <div className="flex w-full flex-col gap-2 p-2 md:w-3/4">
-                <Link
-                  href="/newBlueprint"
-                  className="w-full rounded-lg border-2 border-stone-700 bg-black p-1 text-center text-lg text-slate-100 transition-all duration-100 hover:bg-stone-900"
-                >
-                  New Blueprint +
-                </Link>
               </div>
             </div>
           </div>
