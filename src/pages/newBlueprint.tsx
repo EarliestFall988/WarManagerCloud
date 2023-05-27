@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 
 import { toast } from "react-hot-toast";
 import { LoadingSpinner } from "~/components/loading";
-import { useUser } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@clerk/nextjs";
 
 const NewBlueprintPage: NextPage = () => {
   const [name, setName] = useState("");
@@ -27,7 +27,7 @@ const NewBlueprintPage: NextPage = () => {
             You must be logged in to create a blueprint
           </p>
           <div className="w-full bg-red-500 p-2 text-center md:w-1/6 md:rounded">
-            <Link href="/Home">Home</Link>
+            <SignInButton mode="modal" redirectUrl="/Home" />
           </div>
         </div>
       </div>
