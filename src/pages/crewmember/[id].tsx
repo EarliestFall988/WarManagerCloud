@@ -72,7 +72,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="min-h-screen bg-zinc-800">
-        <NewItemPageHeader title={`${data.name} `} context="crewmember"/>
+        <NewItemPageHeader title={`${data.name} `} context="crewmembers"/>
         <div className="flex items-center justify-center">
           <div className="flex w-full flex-col items-center justify-center gap-4 p-2 sm:w-3/5">
             <div className="w-full p-2">
