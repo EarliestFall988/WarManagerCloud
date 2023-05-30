@@ -127,7 +127,7 @@ const NewCrewMemberPage: NextPage = () => {
             className="w-full rounded p-2 text-stone-800 outline-none"
             type="number"
             placeholder="number of crew members"
-            value={crewCount }
+            value={crewCount}
             disabled={isCreating}
             onChange={(e) => setCrewCount(e.target.value)}
           />
