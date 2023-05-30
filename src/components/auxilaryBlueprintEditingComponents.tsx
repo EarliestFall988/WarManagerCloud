@@ -80,29 +80,22 @@ export const ExportBlueprint = () => {
       </h1>
 
       <div className="flex flex-col gap-1 pr-1">
+        <div className="p-4" />
+        <input
+          type="text"
+          placeholder="title"
+          className="rounded p-2 text-zinc-700 outline-none disabled:text-black"
+          disabled={true}
+        />
+        <button
+          disabled={true}
+          className="rounded bg-gradient-to-br from-amber-700 to-red-700 p-2 font-semibold text-white hover:from-amber-600 hover:to-red-600 disabled:bg-red-500"
+        >
+          Export Schedule
+        </button>
         <div className="flex h-full w-full items-center justify-center  py-5">
           <LoadingSpinner />
         </div>
-
-        {/* {isLoading && (
-            <div className="flex h-full w-full items-center justify-center  py-5">
-              <LoadingSpinner />
-            </div>
-          )}
-          {isError && <div>Something went wrong</div>}
-          {data?.map((crew) => (
-            <button
-              className="t flex items-center justify-between bg-zinc-600 px-2 text-left hover:bg-zinc-500"
-              key={crew.id}
-            >
-              <p className="truncate py-2 text-sm sm:w-1/2 sm:text-lg">
-                {crew.name}
-              </p>
-              <p className="hidden w-1/2 truncate font-normal italic tracking-tight sm:flex">
-                {crew.description}
-              </p>
-            </button>
-          ))} */}
       </div>
     </div>
   );
