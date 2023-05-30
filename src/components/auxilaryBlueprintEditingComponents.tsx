@@ -8,11 +8,7 @@ export const ProjectsList = () => {
 
   return (
     <div className="h-[80vh] w-[55vw] border-r-2 border-zinc-600 md:w-[30vw]">
-<<<<<<< HEAD
-      <h1 className="w-full text-center sm:text-lg font-bold ">Projects</h1>
-=======
-      <h1 className="w-full text-center text-lg font-bold ">Projects</h1>
->>>>>>> 8987272107189ebb831d333ad0b257848fbaf4ac
+      <h1 className="w-full text-center font-bold sm:text-lg ">Projects</h1>
       <div className="flex flex-col gap-1 pr-1">
         {isLoading && <LoadingSpinner />}
         {isError && <div>Something went wrong</div>}
@@ -41,11 +37,8 @@ export const CrewList = () => {
 
   return (
     <div className="h-[80vh] w-[55vw] border-r-2 border-zinc-600 md:w-[30vw]">
-<<<<<<< HEAD
-      <h1 className="w-full text-center sm:text-lg font-bold">Crew Members</h1>
-=======
-      <h1 className="w-full text-center text-lg font-bold ">Crew Members</h1>
->>>>>>> 8987272107189ebb831d333ad0b257848fbaf4ac
+      <h1 className="w-full text-center font-bold sm:text-lg">Crew Members</h1>
+
       <div className="flex flex-col gap-1 pr-1">
         {isLoading && <LoadingSpinner />}
         {isError && <div>Something went wrong</div>}
@@ -54,7 +47,9 @@ export const CrewList = () => {
             className="t flex items-center justify-between bg-zinc-600 px-2 text-left hover:bg-zinc-500"
             key={crew.id}
           >
-            <p className="truncate py-2 text-sm sm:text-lg sm:w-1/2">{crew.name}</p>
+            <p className="truncate py-2 text-sm sm:w-1/2 sm:text-lg">
+              {crew.name}
+            </p>
             <p className="hidden w-1/2 truncate font-normal italic tracking-tight sm:flex">
               {crew.description}
             </p>
