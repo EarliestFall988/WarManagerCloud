@@ -172,7 +172,7 @@ const Flow = function () {
                 onClick={() => onClick("Project")}
                 className="btn-add  z-20 rounded bg-zinc-500 p-2"
               >
-                Projects
+               Projects
               </button>
               <button
                 onClick={() => onClick("Employee")}

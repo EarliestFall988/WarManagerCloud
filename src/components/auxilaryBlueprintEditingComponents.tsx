@@ -8,7 +8,11 @@ export const ProjectsList = () => {
 
   return (
     <div className="h-[80vh] w-[55vw] border-r-2 border-zinc-600 md:w-[30vw]">
+<<<<<<< HEAD
       <h1 className="w-full text-center sm:text-lg font-bold ">Projects</h1>
+=======
+      <h1 className="w-full text-center text-lg font-bold ">Projects</h1>
+>>>>>>> 8987272107189ebb831d333ad0b257848fbaf4ac
       <div className="flex flex-col gap-1 pr-1">
         {isLoading && <LoadingSpinner />}
         {isError && <div>Something went wrong</div>}
@@ -37,7 +41,11 @@ export const CrewList = () => {
 
   return (
     <div className="h-[80vh] w-[55vw] border-r-2 border-zinc-600 md:w-[30vw]">
+<<<<<<< HEAD
       <h1 className="w-full text-center sm:text-lg font-bold">Crew Members</h1>
+=======
+      <h1 className="w-full text-center text-lg font-bold ">Crew Members</h1>
+>>>>>>> 8987272107189ebb831d333ad0b257848fbaf4ac
       <div className="flex flex-col gap-1 pr-1">
         {isLoading && <LoadingSpinner />}
         {isError && <div>Something went wrong</div>}
