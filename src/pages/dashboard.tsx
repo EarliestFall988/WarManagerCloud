@@ -70,6 +70,7 @@ const CreateButtons = () => {
 };
 
 const BlueprintsList = (props: { data: Blueprint[] | undefined }) => {
+  
   return (
     <>
       <div className="flex justify-center">

@@ -38,6 +38,41 @@ export const crewMembersRouter = createTRPCRouter({
       return crewMember;
     }),
 
+  update: privateProcedure
+    .input(
+      z.object({
+        crewMemberId: z.string(),
+        name: z.string().min(3).max(255),
+        position: z.string().min(3).max(255),
+        notes: z.string().min(0).max(255),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await rateLimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the rate limit, try again in a minute",
+        });
+      }
+
+      const crewMember = await ctx.prisma.crewMember.update({
+        where: {
+          id: input.crewMemberId,
+        },
+        data: {
+          name: input.name,
+          position: input.position,
+          description: input.notes,
+        },
+      });
+
+      return crewMember;
+    }),
+
   create: privateProcedure
     .input(
       z.object({

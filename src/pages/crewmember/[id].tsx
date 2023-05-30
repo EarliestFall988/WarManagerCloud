@@ -5,19 +5,64 @@ import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import Head from "next/head";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
+import { LoadingPage, LoadingSpinner } from "~/components/loading";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
-const singleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
+const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   // const router = useRouter();
+
+  const [crewName, setCrewName] = useState("");
+  const [position, setPosition] = useState("");
+  const [description, setDescription] = useState("");
+
+  const mutation = api.crewMembers.update.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.name} (${data.position}) updated successfully!`);
+    },
+    onError: (e) => {
+      const errorMessage = e.shape?.data?.zodError?.fieldErrors;
+
+      if (!errorMessage) {
+        toast.error("Something went wrong! Please try again later");
+      } else if (errorMessage?.content && errorMessage?.content[0]) {
+        toast.error(errorMessage.content[0]);
+      }
+    },
+  });
 
   const { data, isLoading } = api.crewMembers.getById.useQuery({
     crewMemberId: id,
   });
 
-  if (isLoading) return <div>Loading...</div>;
+  useEffect(() => {
+    if (data == null) return;
+
+    if (data.name) {
+      setCrewName(data.name);
+    }
+    if (data.position) {
+      setPosition(data.position);
+    }
+    if (data.description) {
+      setDescription(data.description);
+    }
+  }, [data]);
+
+  if (isLoading)
+    return (
+      <div>
+        <LoadingPage />
+      </div>
+    );
 
   if (!data) return <div>Something went wrong</div>;
   if (!data.id) return <div>Something went wrong</div>;
   if (!data.name) return <div>Something went wrong</div>;
+
+  // setCrewName(data.name)
+  // setPosition(data.position)
+  // setDescription(data.description)
 
   return (
     <>
@@ -28,33 +73,64 @@ const singleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       </Head>
       <main className="min-h-screen bg-zinc-800">
         <NewItemPageHeader title={`${data.name} (${data.position})`} />
-        <div className="flex flex-col items-center justify-center gap-4 p-2">
-          <div className="w-full p-2 sm:w-4/5 ">
-            <h1 className="text-lg font-semibold">Name</h1>
-            <input
-              className="w-full rounded p-2 text-stone-800 outline-none"
-              type="text"
-              value={data.name}
-              disabled={true}
-            />
-          </div>
-          <div className="w-full p-2 sm:w-4/5">
-            <h1 className="text-lg font-semibold">Position</h1>
-            <input
-              className="w-full rounded p-2 text-stone-800 outline-none"
-              type="text"
-              value={data.position}
-              disabled={true}
-            />
-          </div>
-          <div className="w-full p-2 sm:w-4/5">
-            <h1 className="text-lg font-semibold">Notes</h1>
-            <textarea
-              className="w-full rounded p-2 text-stone-800 outline-none"
-              disabled={true}
-            >
-              {data.description || "nothing to show..."}
-            </textarea>
+        <div className="flex items-center justify-center">
+          <div className="flex w-full flex-col items-center justify-center gap-4 p-2 sm:w-3/5">
+            <div className="w-full p-2">
+              <h1 className="text-lg font-semibold">Name</h1>
+              <input
+                className="w-full rounded p-2 text-stone-800 outline-none"
+                type="text"
+                value={crewName}
+                onChange={(e) => setCrewName(e.target.value)}
+                disabled={isLoading || mutation.isLoading}
+              />
+            </div>
+            <div className="w-full p-2">
+              <h1 className="text-lg font-semibold">Position</h1>
+              <select
+                className="w-full rounded p-2 text-stone-800 outline-none"
+                placeholder="Name"
+                value={position}
+                disabled={isLoading || mutation.isLoading}
+                onChange={(e) => setPosition(e.target.value)}
+              >
+                <option value="Crew">Laborer</option>
+                <option value="Specialist">Specialist</option>
+                <option value="Foreman">Foreman</option>
+                <option value="Specialist Foreman">Specialist Foreman</option>
+                <option value="Superintendent">Superintendent</option>
+                <option value="Project Manager">Project Manager</option>
+                <option value="Machine Operator">Machine Operator</option>
+                <option value="Subcontractor">Subcontractor</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div className="w-full p-2">
+              <h1 className="text-lg font-semibold">Notes</h1>
+              <textarea
+                className="w-full rounded p-2 text-stone-800 outline-none"
+                disabled={isLoading || mutation.isLoading}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <div className="w-full p-2">
+              <button
+                disabled={isLoading || mutation.isLoading}
+                onClick={() => {
+                  mutation.mutate({
+                    crewMemberId: data.id,
+                    name: crewName,
+                    position,
+                    notes: description,
+                  });
+                  toast.loading("Saving changes...", { duration: 1000 });
+                }}
+                className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
+              >
+                {mutation.isLoading ? <LoadingSpinner /> : <p>Save Changes</p>}
+              </button>
+            </div>
           </div>
         </div>
       </main>
@@ -92,4 +168,4 @@ export const getStaticPaths = () => {
   };
 };
 
-export default singleCrewMemberPage;
+export default SingleCrewMemberPage;
