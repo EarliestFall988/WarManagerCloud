@@ -77,6 +77,17 @@ export const projectsRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await rateLimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the rate limit, try again in a minute",
+        });
+      }
+
       const project = await ctx.prisma.project.update({
         where: {
           id: input.id,
@@ -84,6 +95,29 @@ export const projectsRouter = createTRPCRouter({
         data: {
           name: input.name,
           description: input.description,
+        },
+      });
+
+      return project;
+    }),
+
+  delete: privateProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await rateLimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the rate limit, try again in a minute",
+        });
+      }
+
+      const project = await ctx.prisma.project.delete({
+        where: {
+          id: input.id,
         },
       });
 

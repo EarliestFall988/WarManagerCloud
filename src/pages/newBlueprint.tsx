@@ -75,7 +75,7 @@ const NewBlueprintPage: NextPage = () => {
 
   return (
     <div className="min-h-[100vh] bg-zinc-800">
-      <NewItemPageHeader title="New Blueprint" />
+      <NewItemPageHeader title="New Blueprint" context="blueprints"/>
       <div
         className="m-auto flex flex-col md:w-1/2"
         // onSubmit={() => mutate({ name, description, nodes, edges })}
