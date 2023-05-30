@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
 import { LoadingSpinner } from "~/components/loading";
 import { SignInButton, useUser } from "@clerk/nextjs";
+import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 
 const NewBlueprintPage: NextPage = () => {
   const [name, setName] = useState("");
@@ -27,7 +28,7 @@ const NewBlueprintPage: NextPage = () => {
             You must be logged in to create a blueprint
           </p>
           <div className="w-full bg-red-500 p-2 text-center md:w-1/6 md:rounded">
-            <SignInButton mode="modal" redirectUrl="/Home" />
+            <SignInButton mode="modal" redirectUrl="/dashboard" />
           </div>
         </div>
       </div>
@@ -73,13 +74,8 @@ const NewBlueprintPage: NextPage = () => {
   const edges = [] as object[];
 
   return (
-    <>
-      <div className="flex items-center justify-between bg-gradient-to-br from-amber-700 to-red-700 p-2 text-center text-lg font-semibold">
-        <Link href="/Home" className="w-12 ">
-          {"Back"}
-        </Link>
-        <h1> Create New Blueprint</h1> <div className="w-12" />
-      </div>
+    <div className="bg-zinc-800 min-h-[100vh]">
+      <NewItemPageHeader title="New Blueprint" />
       <div
         className="m-auto flex flex-col md:w-1/2"
         // onSubmit={() => mutate({ name, description, nodes, edges })}
@@ -98,7 +94,7 @@ const NewBlueprintPage: NextPage = () => {
         <div className="w-full p-2">
           <p className="py-1 text-lg">Blueprint Description</p>
           <input
-            className="w-full rounded p-2 text-stone-800"
+            className="w-full rounded p-2 text-stone-800 outline-none"
             type="text"
             placeholder="Description"
             disabled={isCreating}
@@ -117,7 +113,7 @@ const NewBlueprintPage: NextPage = () => {
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

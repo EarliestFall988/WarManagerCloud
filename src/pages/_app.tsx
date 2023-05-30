@@ -2,7 +2,7 @@ import { type AppType } from "next/app";
 import { ClerkProvider } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 
-// import { shadesOfPurple } from "@clerk/themes";
+import { dark } from "@clerk/themes";
 
 import { Toaster } from "react-hot-toast";
 
@@ -18,9 +18,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <ClerkProvider
-        // appearance={{
-        //   baseTheme: shadesOfPurple,
-        // }}
+        appearance={{
+          baseTheme: dark,
+        }}
 
         {...pageProps}
       >
