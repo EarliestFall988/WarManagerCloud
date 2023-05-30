@@ -1,7 +1,7 @@
 import type { GetStaticPropsContext, GetStaticProps, NextPage } from "next";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 
-import { useRouter } from "next/router";
+// import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import Head from "next/head";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
