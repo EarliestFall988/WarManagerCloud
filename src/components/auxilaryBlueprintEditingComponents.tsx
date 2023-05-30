@@ -10,7 +10,11 @@ export const ProjectsList = () => {
     <div className="h-[80vh] w-[55vw] border-r-2 border-zinc-600 md:w-[30vw]">
       <h1 className="w-full text-center font-bold sm:text-lg ">Projects</h1>
       <div className="flex flex-col gap-1 pr-1">
-        {isLoading && <LoadingSpinner />}
+        {isLoading && (
+          <div className="flex h-full w-full items-center justify-center  py-5">
+            <LoadingSpinner />
+          </div>
+        )}
         {isError && <div>Something went wrong</div>}
         {data?.map((project) => (
           <button
@@ -20,7 +24,7 @@ export const ProjectsList = () => {
             <p className="truncate py-2 text-sm sm:w-1/2 sm:text-lg">
               {project.name}
             </p>
-            <p className="hidden w-1/2 truncate font-normal italic tracking-tight sm:flex">
+            <p className="hidden w-1/2 truncate text-ellipsis  font-normal italic tracking-tight sm:flex">
               {project.description}
             </p>
           </button>
@@ -40,7 +44,11 @@ export const CrewList = () => {
       <h1 className="w-full text-center font-bold sm:text-lg">Crew Members</h1>
 
       <div className="flex flex-col gap-1 pr-1">
-        {isLoading && <LoadingSpinner />}
+        {isLoading && (
+          <div className="flex h-full w-full items-center justify-center  py-5">
+            <LoadingSpinner />
+          </div>
+        )}
         {isError && <div>Something went wrong</div>}
         {data?.map((crew) => (
           <button
@@ -50,11 +58,51 @@ export const CrewList = () => {
             <p className="truncate py-2 text-sm sm:w-1/2 sm:text-lg">
               {crew.name}
             </p>
-            <p className="hidden w-1/2 truncate font-normal italic tracking-tight sm:flex">
+            <p className="hidden w-1/2 truncate text-ellipsis font-normal italic tracking-tight sm:flex">
               {crew.description}
             </p>
           </button>
         ))}
+      </div>
+    </div>
+  );
+};
+
+export const ExportBlueprint = () => {
+  // const { data, isLoading, isError } = api.crewMembers.getAll.useQuery();
+
+  // console.log(data);
+
+  return (
+    <div className="h-[80vh] w-[55vw] border-r-2 border-zinc-600 md:w-[30vw]">
+      <h1 className="w-full text-center font-bold sm:text-lg">
+        Export Schedule
+      </h1>
+
+      <div className="flex flex-col gap-1 pr-1">
+        <div className="flex h-full w-full items-center justify-center  py-5">
+          <LoadingSpinner />
+        </div>
+
+        {/* {isLoading && (
+            <div className="flex h-full w-full items-center justify-center  py-5">
+              <LoadingSpinner />
+            </div>
+          )}
+          {isError && <div>Something went wrong</div>}
+          {data?.map((crew) => (
+            <button
+              className="t flex items-center justify-between bg-zinc-600 px-2 text-left hover:bg-zinc-500"
+              key={crew.id}
+            >
+              <p className="truncate py-2 text-sm sm:w-1/2 sm:text-lg">
+                {crew.name}
+              </p>
+              <p className="hidden w-1/2 truncate font-normal italic tracking-tight sm:flex">
+                {crew.description}
+              </p>
+            </button>
+          ))} */}
       </div>
     </div>
   );

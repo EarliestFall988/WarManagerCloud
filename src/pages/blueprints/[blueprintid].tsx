@@ -4,6 +4,13 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
+import {
+  BeakerIcon,
+  PaperAirplaneIcon,
+  BuildingOfficeIcon,
+  IdentificationIcon,
+} from "@heroicons/react/24/solid";
+
 import React, { ComponentClass, useCallback, useEffect, useState } from "react";
 import ReactFlow, { ReactFlowProvider, useReactFlow } from "reactflow";
 import "reactflow/dist/style.css";
@@ -13,6 +20,7 @@ import "reactflow/dist/style.css";
 import ResizableNodeSelected from "~/components/ResizableNodeSelected";
 import {
   CrewList,
+  ExportBlueprint,
   ProjectsList,
 } from "~/components/auxilaryBlueprintEditingComponents";
 import { LoadingPage } from "~/components/loading";
@@ -106,6 +114,14 @@ const Flow = function () {
         }
       }
 
+      if (keyword == "GetLink") {
+        if (toggle == "GetLink") {
+          setToggle(" ");
+        } else {
+          setToggle("GetLink");
+        }
+      }
+
       console.log("keyword: " + keyword + " toggle: " + toggle);
 
       // const id = `${++nodeId}`;
@@ -157,28 +173,28 @@ const Flow = function () {
             snapToGrid={true}
             snapGrid={[10, 10]}
           />
-          <div className="absolute right-0 top-20 flex gap-4 rounded bg-zinc-700 p-1 drop-shadow-md transition-all duration-100">
-            {toggle == "Employee" && <CrewList />}
-
-            {toggle == "Project" && <ProjectsList />}
-            <div className="flex flex-col gap-2">
+          <div className="absolute right-0 top-20 flex gap-1 rounded bg-zinc-700 p-1 drop-shadow-md transition-all duration-100">
+            {toggle === "GetLink" && <ExportBlueprint />}
+            {toggle === "Project" && <ProjectsList />}
+            {toggle === "Employee" && <CrewList />}
+            <div className="flex flex-col items-end gap-2">
               <button
-                onClick={() => onClick("")}
+                onClick={() => onClick("GetLink")}
                 className="btn-add z-20 rounded bg-gradient-to-br from-amber-700 to-red-600 p-2 text-white"
               >
-                Export Link
+                <PaperAirplaneIcon className="h-6 w-6 -rotate-12" />
               </button>
               <button
                 onClick={() => onClick("Project")}
                 className="btn-add  z-20 rounded bg-zinc-500 p-2"
               >
-               Projects
+                <BuildingOfficeIcon className="h-6 w-6" />
               </button>
               <button
                 onClick={() => onClick("Employee")}
-                className="btn-add  z-20 rounded bg-zinc-500 p-2"
+                className="rounded bg-zinc-500 p-2"
               >
-                Crew Members
+                <IdentificationIcon className="h-6 w-6" />
               </button>
             </div>
           </div>
