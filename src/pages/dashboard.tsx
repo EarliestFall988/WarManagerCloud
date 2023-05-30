@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { LoadingPage, LoadingSpinner } from "~/components/loading";
+import { LoadingSpinner } from "~/components/loading";
 
 import { api } from "~/utils/api";
 
@@ -9,68 +9,14 @@ import Link from "next/link";
 import Head from "next/head";
 import {
   SignInButton,
-  SignUpButton,
   SignedIn,
   SignedOut,
-  UserButton,
-  useUser,
+  UserButton
 } from "@clerk/nextjs";
-import type { Blueprint, CrewMember } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 dayjs.extend(relativeTime);
-
-const CreateButtons = () => {
-  return (
-    <>
-      <SignedIn>
-        <div className="flex w-full flex-col gap-2 p-2 sm:w-3/4 sm:flex-row">
-          <Link
-            href="/newblueprint"
-            className="w-full rounded bg-gradient-to-br from-amber-700 to-red-700 p-1 text-center text-lg font-semibold transition-all duration-100 hover:from-amber-600 hover:to-red-600 "
-          >
-            New Blueprint
-          </Link>
-          <Link
-            href="/newCrewMember"
-            className="w-full rounded bg-gradient-to-br from-amber-700 to-red-700 p-1 text-center text-lg font-semibold transition-all duration-100 hover:from-amber-600 hover:to-red-600 "
-          >
-            New Crew Member
-          </Link>
-          <Link
-            href="/#"
-            className="w-full rounded bg-gradient-to-br from-amber-700 to-red-700 p-1 text-center text-lg font-semibold transition-all duration-100 hover:from-amber-600 hover:to-red-600 "
-          >
-            New Project
-          </Link>
-        </div>
-      </SignedIn>
-      <SignedOut>
-        <div className="flex w-full flex-col gap-2 p-2 sm:w-3/4 sm:flex-row">
-          <Link
-            href="#"
-            className="w-full rounded bg-gradient-to-br from-amber-700 to-red-700 p-1 text-center text-lg font-semibold transition-all duration-100 hover:from-amber-600 hover:to-red-600 "
-          >
-            New Blueprint
-          </Link>
-          <Link
-            href="#"
-            className="w-full rounded bg-gradient-to-br from-amber-700 to-red-700 p-1 text-center text-lg font-semibold transition-all duration-100 hover:from-amber-600 hover:to-red-600 "
-          >
-            New Crew Member
-          </Link>
-          <Link
-            href="#"
-            className="w-full rounded bg-gradient-to-br from-amber-700 to-red-700 p-1 text-center text-lg font-semibold transition-all duration-100 hover:from-amber-600 hover:to-red-600 "
-          >
-            New Project
-          </Link>
-        </div>
-      </SignedOut>
-    </>
-  );
-};
 
 const BlueprintsList = () => {
   const {
