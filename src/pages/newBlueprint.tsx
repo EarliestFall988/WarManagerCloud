@@ -74,7 +74,7 @@ const NewBlueprintPage: NextPage = () => {
   const edges = [] as object[];
 
   return (
-    <div className="bg-zinc-800 min-h-[100vh]">
+    <div className="min-h-[100vh] bg-zinc-800">
       <NewItemPageHeader title="New Blueprint" />
       <div
         className="m-auto flex flex-col md:w-1/2"

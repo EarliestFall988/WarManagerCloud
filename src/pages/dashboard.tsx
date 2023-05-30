@@ -16,7 +16,8 @@ import {
   useUser,
 } from "@clerk/nextjs";
 import type { Blueprint, CrewMember } from "@prisma/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 dayjs.extend(relativeTime);
 
@@ -72,8 +73,6 @@ const CreateButtons = () => {
 };
 
 const BlueprintsList = () => {
-  const { user } = useUser();
-
   const {
     data,
     isLoading: loadingBlueprints,
@@ -95,13 +94,6 @@ const BlueprintsList = () => {
         <p className="text-lg italic text-red-500">Could not load blueprints</p>
       </div>
     );
-
-  // if (!data || !user) {
-  //   return (
-  //     <div className="m-auto flex h-[50vh] w-[80vw] flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2">
-  //       <p className="text-lg italic text-red-500">Could not load blueprints</p>
-  //     </div>
-  //   );
 
   return (
     <>
@@ -145,8 +137,6 @@ const BlueprintsList = () => {
 };
 
 const CrewMembers = () => {
-  const { user } = useUser();
-
   const {
     data: crewData,
     isLoading,
@@ -169,7 +159,7 @@ const CrewMembers = () => {
       </div>
     );
 
-  if (!crewData || !user) {
+  if (!crewData) {
     return (
       <div className="m-auto flex h-[50vh] w-[80vw] flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2">
         <LoadingSpinner />
@@ -225,6 +215,72 @@ const CrewMembers = () => {
   );
 };
 
+const Projects = () => {
+  const { data, isLoading, isError } = api.projects.getAll.useQuery();
+
+  if (isLoading)
+    return (
+      <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-zinc-700/30 p-2 sm:w-[74vw]">
+        <LoadingSpinner />
+      </div>
+    );
+
+  if (isError || !data)
+    return (
+      <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2 sm:w-[74vw]">
+        <p className="text-lg italic text-red-500">
+          Could not load Crew Members
+        </p>
+      </div>
+    );
+
+  if (!data) {
+    return (
+      <div className="m-auto flex h-[50vh] w-[80vw] flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex justify-center">
+      <div className="flex w-full flex-col gap-1 p-2 text-gray-100 sm:w-11/12 md:w-3/4">
+        <div className="m-auto flex w-[90vw] items-center justify-between gap-2 sm:w-[74vw] ">
+          <h2 className="text-center text-2xl font-bold text-gray-100">
+            Projects
+          </h2>
+          <Link
+            href="/newproject"
+            className="rounded bg-gradient-to-br from-amber-700 to-red-700 p-2 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold "
+          >
+            New +
+          </Link>
+        </div>
+        {data?.map((project) => (
+          <Link
+            href={`/projects/${project.id}`}
+            passHref
+            className="flex w-full items-center justify-between rounded-sm bg-zinc-700 p-2 shadow-sm transition-all duration-100 hover:bg-zinc-600"
+            key={project.id}
+          >
+            <h2 className="w-3/2 truncate text-left text-lg font-bold sm:w-1/4">
+              {project.name}
+            </h2>
+            <div className="hidden font-thin sm:flex sm:w-1/2 ">
+              <p className="w-full truncate text-ellipsis text-center">
+                {project.description}
+              </p>
+            </div>
+            <p className="w-1/4 truncate text-right text-sm italic">
+              {dayjs(project.createdAt).fromNow()}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Loader = () => {
   return (
     <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-4 bg-zinc-700/20 sm:w-[80vw]">
@@ -233,52 +289,17 @@ const Loader = () => {
   );
 };
 
+
 const DashboardPage: NextPage = () => {
-  const [context, setContext] = useState("Home");
+  const [context, setContext] = useState("Blueprints");
 
-  // if (!user || !user.primaryEmailAddress) {
-  //   return <LoadingPage />;
-  // }
+  const { query } = useRouter();
 
-  // const {
-  //   data: blueprintData,
-  //   isLoading: loadingBlueprints,
-  //   isError: loadingBlueprintsError,
-  // } = api.blueprints.getAll.useQuery();
-
-  // const {
-  //   data: crewData,
-  //   isLoading: loadingCrew,
-  //   isError: loadingCrewError,
-  // } = api.crewMembers.getAll.useQuery();
-
-  // const isError = true;
-
-  // const loading = true;
-
-  // if (!user || !user.primaryEmailAddress)
-  //   return (
-  //     <div className="flex h-screen items-center  bg-zinc-800 sm:justify-center">
-  //       <div className="flex h-[25vh] w-[100vw] flex-col justify-around gap-4 sm:items-center">
-  //         <p className="px-4 text-left text-[1.25rem] italic text-red-500 sm:text-center sm:text-lg sm:font-semibold">
-  //           Hold up! :{")"}
-  //         </p>
-  //         <p className="p-4 text-2xl font-bold tracking-tight sm:text-center sm:text-[3rem]">
-  //           You must be logged in to view your dashboard
-  //         </p>
-  //         <div className="w-full bg-red-500 p-2 text-center sm:w-1/6 sm:rounded">
-  //           <SignInButton mode="modal" redirectUrl="/dashboard" />
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-
-  // if (loadingBlueprintsError)
-  //   return (
-  //     <div className="flex h-screen items-center bg-zinc-800 sm:justify-center">
-  //       There was an error loading your dashboard. Please try again later
-  //     </div>
-  //   );
+  useEffect(() => {
+    if (query.context) {
+      setContext(query.context as string);
+    }
+  }, [query]);
 
   return (
     <>
@@ -344,22 +365,7 @@ const DashboardPage: NextPage = () => {
             )}
             {context == "Blueprints" && <BlueprintsList />}
             {context == "CrewMembers" && <CrewMembers />}
-            {context == "Projects" && (
-              <>
-                <div className="m-auto flex w-[90vw] items-center justify-between gap-2 sm:w-[74vw] ">
-                  <h2 className="text-center text-2xl font-bold text-gray-100">
-                    Projects
-                  </h2>
-                  <Link
-                    href="/newblueprint"
-                    className="rounded bg-gradient-to-br from-amber-700 to-red-700 p-2 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold "
-                  >
-                    New +
-                  </Link>
-                </div>
-                <Loader />
-              </>
-            )}
+            {context == "Projects" && <Projects />}
           </SignedIn>
           <SignedOut>
             <div className="fixed flex h-screen w-screen flex-col items-center justify-center gap-4 rounded p-4 backdrop-blur backdrop-brightness-50">
