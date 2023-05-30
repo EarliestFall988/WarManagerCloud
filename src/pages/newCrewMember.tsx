@@ -1,6 +1,5 @@
 import { SignInButton, useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
-import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { toast } from "react-hot-toast";
@@ -35,7 +34,6 @@ const NewCrewMemberPage: NextPage = () => {
     },
   });
 
-  const { push } = useRouter();
   const { user } = useUser();
 
   //redirect if the user is not found
@@ -88,74 +86,76 @@ const NewCrewMemberPage: NextPage = () => {
 
   return (
     <main className="min-h-[100vh] bg-zinc-800">
-      <NewItemPageHeader title="New Crew Member" />
-      <div className="m-auto flex flex-col md:w-1/2">
-        <div className="w-full p-2">
-          <p className="py-1 text-lg">Full Name</p>
-          <input
-            className="w-full rounded p-2 text-stone-800 outline-none"
-            type="text"
-            placeholder="Name"
-            value={name}
-            disabled={isCreating}
-            onChange={(e) => setName(e.target.value)}
-          />
+      <NewItemPageHeader title="New Crew Member"/>
+      {/* <SignedIn> */}
+        <div className="m-auto flex flex-col md:w-1/2">
+          <div className="w-full p-2">
+            <p className="py-1 text-lg">Full Name</p>
+            <input
+              className="w-full rounded p-2 text-stone-800 outline-none"
+              type="text"
+              placeholder="Name"
+              value={name}
+              disabled={isCreating}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="w-full p-2">
+            <p className="py-1 text-lg">Position</p>
+            <select
+              className="w-full rounded p-2 text-stone-800 outline-none"
+              placeholder="Name"
+              value={position}
+              disabled={isCreating}
+              onChange={(e) => setPosition(e.target.value)}
+            >
+              <option value="Crew">Laborer</option>
+              <option value="Specialist">Specialist</option>
+              <option value="Foreman">Foreman</option>
+              <option value="Specialist Foreman">Specialist Foreman</option>
+              <option value="Superintendent">Superintendent</option>
+              <option value="Project Manager">Project Manager</option>
+              <option value="Machine Operator">Machine Operator</option>
+              <option value="Subcontractor">Subcontractor</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div className="w-full p-2">
+            <p className="py-1 text-lg">Crew Member Count</p>
+            <input
+              className="w-full rounded p-2 text-stone-800 outline-none"
+              type="number"
+              placeholder="number of crew members"
+              value={crewCount}
+              disabled={isCreating}
+              onChange={(e) => setCrewCount(e.target.value)}
+            />
+          </div>
+          <div className="w-full p-2">
+            <p className="py-1 text-lg">Notes</p>
+            <textarea
+              className="h-24 w-full rounded p-2 text-stone-800 outline-none"
+              placeholder="Talk about anything - can this crew member operate a specific machine? Do they have a specific skill? can they speak a specific language or travel?"
+              value={notes}
+              disabled={isCreating}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+          <div className="p-2" />
+          <div className="w-full p-2">
+            <button
+              disabled={isCreating}
+              onClick={() => {
+                toast.loading("Saving", { duration: 1000 });
+                mutate({ name, position, notes });
+              }}
+              className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
+            >
+              {isCreating ? <LoadingSpinner /> : <p> Add Crew Member</p>}
+            </button>
+          </div>
         </div>
-        <div className="w-full p-2">
-          <p className="py-1 text-lg">Position</p>
-          <select
-            className="w-full rounded p-2 text-stone-800 outline-none"
-            placeholder="Name"
-            value={position}
-            disabled={isCreating}
-            onChange={(e) => setPosition(e.target.value)}
-          >
-            <option value="Crew">Laborer</option>
-            <option value="Specialist">Specialist</option>
-            <option value="Foreman">Foreman</option>
-            <option value="Specialist Foreman">Specialist Foreman</option>
-            <option value="Superintendent">Superintendent</option>
-            <option value="Project Manager">Project Manager</option>
-            <option value="Machine Operator">Machine Operator</option>
-            <option value="Subcontractor">Subcontractor</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        <div className="w-full p-2">
-          <p className="py-1 text-lg">Crew Member Count</p>
-          <input
-            className="w-full rounded p-2 text-stone-800 outline-none"
-            type="number"
-            placeholder="number of crew members"
-            value={crewCount}
-            disabled={isCreating}
-            onChange={(e) => setCrewCount(e.target.value)}
-          />
-        </div>
-        <div className="w-full p-2">
-          <p className="py-1 text-lg">Notes</p>
-          <textarea
-            className="h-24 w-full rounded p-2 text-stone-800 outline-none"
-            placeholder="Talk about anything - can this crew member operate a specific machine? Do they have a specific skill? can they speak a specific language or travel?"
-            value={notes}
-            disabled={isCreating}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
-        <div className="p-2" />
-        <div className="w-full p-2">
-          <button
-            disabled={isCreating}
-            onClick={() => {
-              toast.loading("Saving", { duration: 1000 });
-              mutate({ name, position, notes });
-            }}
-            className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
-          >
-            {isCreating ? <LoadingSpinner /> : <p> Add Crew Member</p>}
-          </button>
-        </div>
-      </div>
+      {/* </SignedIn> */}
     </main>
   );
 };
