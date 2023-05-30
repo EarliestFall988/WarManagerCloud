@@ -23,7 +23,7 @@ const NewProjectPage: NextPage = () => {
 
   return (
     <div className="min-w-screen min-h-screen bg-zinc-800">
-      <NewItemPageHeader title="New Project" />
+      <NewItemPageHeader title="New Project" context="projects"/>
       <SignedIn>
         <div className="m-auto flex flex-col md:w-1/2">
           <div className="w-full p-2">

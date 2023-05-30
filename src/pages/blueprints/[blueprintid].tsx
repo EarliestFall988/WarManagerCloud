@@ -129,7 +129,7 @@ const Flow = function() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="absolute inset-0 top-0 z-20 flex h-14 w-full items-center justify-between rounded-b-lg border-b-2 border-zinc-600 bg-zinc-700 p-2 px-5 text-gray-100 drop-shadow-md ">
-        <Link href="/dashboard">Dashboard</Link>
+        <Link href="/dashboard?context=Blueprints">Dashboard</Link>
         <div className="text-center text-sm font-semibold md:text-lg">
           {data.name}
         </div>

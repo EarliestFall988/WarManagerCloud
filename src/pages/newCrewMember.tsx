@@ -86,7 +86,7 @@ const NewCrewMemberPage: NextPage = () => {
 
   return (
     <main className="min-h-[100vh] bg-zinc-800">
-      <NewItemPageHeader title="New Crew Member"/>
+      <NewItemPageHeader title="New Crew Member" context="crewmembers"/>
       {/* <SignedIn> */}
         <div className="m-auto flex flex-col md:w-1/2">
           <div className="w-full p-2">

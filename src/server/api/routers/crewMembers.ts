@@ -38,6 +38,17 @@ export const crewMembersRouter = createTRPCRouter({
       return crewMember;
     }),
 
+  getByName: privateProcedure
+    .input(z.object({ name: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const crewMembers = await ctx.prisma.crewMember.findMany({
+        where: {
+          name: input.name,
+        },
+      });
+      return crewMembers;
+    }),
+
   update: privateProcedure
     .input(
       z.object({
@@ -99,6 +110,29 @@ export const crewMembersRouter = createTRPCRouter({
           name: input.name,
           position: input.position,
           description: input.notes,
+        },
+      });
+
+      return crewMember;
+    }),
+
+  delete: privateProcedure
+    .input(z.object({ crewMemberId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await rateLimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the rate limit, try again in a minute",
+        });
+      }
+
+      const crewMember = await ctx.prisma.crewMember.delete({
+        where: {
+          id: input.crewMemberId,
         },
       });
 
