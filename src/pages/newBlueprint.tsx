@@ -74,7 +74,7 @@ const NewBlueprintPage: NextPage = () => {
 
   return (
     <div className="min-h-[100vh] bg-zinc-800">
-      <NewItemPageHeader title="New Blueprint" context="blueprints"/>
+      <NewItemPageHeader title="New Blueprint" context="blueprints" />
       <div
         className="m-auto flex flex-col md:w-1/2"
         // onSubmit={() => mutate({ name, description, nodes, edges })}
@@ -105,7 +105,7 @@ const NewBlueprintPage: NextPage = () => {
         <div className="w-full p-2">
           <button
             disabled={isCreating}
-            onClick={() => mutate({ name, description, nodes, edges })}
+            onClick={() => mutate({ name, description })}
             className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white"
           >
             {isCreating ? <LoadingSpinner /> : <p>Create Blueprint</p>}
