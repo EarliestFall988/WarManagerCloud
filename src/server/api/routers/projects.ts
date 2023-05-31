@@ -62,6 +62,34 @@ export const projectsRouter = createTRPCRouter({
           authorId,
           name: input.name,
           description: input.description,
+          jobNumber: "",
+          address: "",
+          notes: "",
+
+          startDate: new Date(),
+          endDate: new Date(),
+          status: "",
+          percentComplete: 0,
+          completed: false,
+
+          laborCost: 0,
+          subContractorCost: 0,
+          materialCost: 0,
+          equipmentCost: 0,
+          otherCost: 0,
+
+          safetyRating: "",
+          qualityRating: "",
+          staffingRating: "",
+          profitabilityRating: "",
+          customerRating: "",
+
+          BillDate: new Date(),
+
+          city: "",
+          state: "",
+          zip: "",
+
         },
       });
 

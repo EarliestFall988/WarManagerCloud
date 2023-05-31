@@ -43,8 +43,6 @@ export const blueprintsRouter = createTRPCRouter({
       z.object({
         name: z.string().min(3).max(255),
         description: z.string().min(0).max(255),
-        nodes: z.array(z.object({})),
-        edges: z.array(z.object({})),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -63,9 +61,8 @@ export const blueprintsRouter = createTRPCRouter({
         data: {
           name: input.name,
           authorId,
-          nodes: input.nodes,
-          edges: input.edges,
           description: input.description,
+          data: "{}",
         },
       });
 
@@ -73,7 +70,7 @@ export const blueprintsRouter = createTRPCRouter({
     }),
 
   saveNodes: privateProcedure
-    .input(z.object({ blueprintId: z.string() , nodes: z.object({}) }))
+    .input(z.object({ blueprintId: z.string(), flowInstanceData: z.string().min(0).max(100000) }))
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.currentUser;
 
@@ -91,7 +88,7 @@ export const blueprintsRouter = createTRPCRouter({
           id: input.blueprintId,
         },
         data: {
-          nodes: input.nodes,
+          data: input.flowInstanceData,
         },
       });
 

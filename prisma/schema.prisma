@@ -25,39 +25,197 @@ model Post {
 model Project {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  jobNumber   String @db.VarChar(255)
   name        String @db.VarChar(255)
   description String @db.VarChar(255)
+  notes       String @db.Text
+
+  address String @db.VarChar(255)
+  city    String @db.VarChar(255)
+  state   String @db.VarChar(255)
+  zip     String @db.VarChar(255)
+
+  startDate       DateTime
+  endDate         DateTime
+  status          String   @db.VarChar(255)
+  percentComplete Float    @default(0)
+  completed       Boolean  @default(false)
+
+  laborCost         Float @default(0)
+  subContractorCost Float @default(0)
+  materialCost      Float @default(0)
+  equipmentCost     Float @default(0)
+  otherCost         Float @default(0)
+
+  safetyRating        String @db.VarChar(255)
+  qualityRating       String @db.VarChar(255)
+  staffingRating      String @db.VarChar(255)
+  profitabilityRating String @db.VarChar(255)
+  customerRating      String @db.VarChar(255)
+
+  BillDate DateTime
+
+  scopeOfWork ScopeOfWork[]
+
+  managers CrewMember[]
+  sectors  Sector[]
 
   authorId String
 
   @@index([authorId])
+}
+
+model ScopeOfWork {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String @db.VarChar(255)
+  description String @db.VarChar(255)
+
+  scope     String         @db.Text
+  materials MaterialType[]
+
+  authorId  String
+  Project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
+
+  @@index([authorId])
+  @@index([projectId])
 }
 
 model CrewMember {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String  @db.VarChar(255)
+  position    String  @db.VarChar(255)
+  description String  @db.VarChar(255)
+  phone       String  @db.VarChar(255)
+  email       String  @db.VarChar(255)
+  travel      String  @db.VarChar(255)
+  skills      Json?
+  rating      String  @db.VarChar(255)
+  sector  Sector? @relation(fields: [sectorId], references: [id]) 
+
+  lastReviewDate DateTime?
+
+  wage   Float
+  burden Float
+  rate   Float
+  hours  Float
+  total  Float
+
+  authorId String
+  sectorId String?
+
+  Project   Project[]
+  projectId String?
+
+  @@index([authorId])
+  @@index([sectorId])
+}
+
+model Blueprint {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   name        String @db.VarChar(255)
-  position    String @db.VarChar(255)
   description String @db.VarChar(255)
+
+  data String @db.Text
+
+  sector Sector[]
+
+  notes Note[]
 
   authorId String
 
   @@index([authorId])
 }
 
-model Blueprint {
-  id        String   @id @default(cuid())
+model Sector {
+  id        String   @id @unique @default(cuid())
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
+  name           String @unique @db.VarChar(255)
+  departmentCode String @unique @db.VarChar(255)
+  description    String @db.VarChar(255)
 
-  nodes Json
-  edges Json
+  CrewMembers CrewMember[]
+  Blueprints  Blueprint[]
+  Projects    Project[]
 
   authorId String
 
   @@index([authorId])
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String @db.VarChar(255)
+  description String @db.VarChar(255)
+
+  data String @db.Text
+
+  authorId String
+
+  @@index([authorId])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String @db.VarChar(255)
+  description String @db.VarChar(255)
+
+  data String @db.Text
+
+  blueprint Blueprint? @relation(fields: [blueprintId], references: [id])
+
+  authorId    String
+  blueprintId String?
+
+  @@index([authorId])
+  @@index([blueprintId])
+}
+
+model ExportLink {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String @db.VarChar(255)
+  description String @db.VarChar(255)
+  link        String @db.VarChar(255)
+
+  authorId String
+
+  @@index([authorId])
+}
+
+model MaterialType {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String @db.VarChar(255)
+  description String @db.VarChar(255)
+
+  authorId      String
+  ScopeOfWork   ScopeOfWork? @relation(fields: [scopeOfWorkId], references: [id])
+  scopeOfWorkId String?
+
+  @@index([authorId])
+  @@index([scopeOfWorkId])
 }

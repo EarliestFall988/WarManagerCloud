@@ -110,6 +110,19 @@ export const crewMembersRouter = createTRPCRouter({
           name: input.name,
           position: input.position,
           description: input.notes,
+
+          phone: "",
+          email: "",
+          travel: "",
+          skills: "",
+          rating: "",
+          lastReviewDate: "",
+
+          wage: 0,
+          burden: 0,
+          rate: 0,
+          hours: 0,
+          total: 0,
         },
       });
 
