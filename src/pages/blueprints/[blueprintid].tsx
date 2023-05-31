@@ -19,9 +19,25 @@ import ReactFlow, {
   useReactFlow,
   Background,
   BackgroundVariant,
+  useNodesState,
+  useEdgesState,
+  addEdge,
   type ReactFlowInstance,
+  type Edge,
+  type Node,
+  type Connection,
 } from "reactflow";
 import "reactflow/dist/style.css";
+
+interface IFlowInstance {
+  nodes: Node<any>[];
+  edges: Edge[];
+  viewport: {
+    x: number;
+    y: number;
+    zoom: number;
+  };
+}
 
 // import './button.css';
 
@@ -37,7 +53,7 @@ import {
 import { LoadingPage } from "~/components/loading";
 import { api } from "~/utils/api";
 import { toast } from "react-hot-toast";
-import { JSONObject } from "superjson/dist/types";
+import type { JSONObject } from "superjson/dist/types";
 
 const nodeTypes = {
   ResizableNodeSelected,
@@ -46,53 +62,52 @@ const nodeTypes = {
 };
 
 const edgeOptions = {
-  animated: true,
   style: {
     stroke: "white",
   },
 };
 
-const initialNodes = [
-  {
-    id: "1",
-    type: "ResizableNodeSelected",
-    position: { x: 0, y: 0 },
-    data: { label: "Job 1", canResize: true },
-  },
-  {
-    id: "2",
-    type: "ResizableNodeSelected",
-    position: { x: 0, y: 30 },
-    data: { label: "Emp 1", canResize: true },
-  },
-  {
-    id: "6",
-    type: "ResizableNodeSelected",
-    position: { x: 0, y: 60 },
-    data: { label: "Emp 2", canResize: true },
-  },
-  // {
-  //   id: "3",
-  //   type: "default",
-  //   width: 500,
-  //   height: 500,
-  //   position: { x: 300, y: 100 },
-  // },
-  // {
-  //   id: "4",
-  //   type: "default",
-  //   width: 500,
-  //   height: 500,
-  //   position: { x: 500, y: 300 },
-  // },
-];
-const initialEdges = [
-  { id: "e1-2", source: "3", target: "4", type: "smoothstep" },
-];
+// const initialNodes = [
+//   {
+//     id: "1",
+//     type: "ResizableNodeSelected",
+//     position: { x: 0, y: 0 },
+//     data: { label: "Job 1", canResize: true },
+//   },
+//   {
+//     id: "2",
+//     type: "ResizableNodeSelected",
+//     position: { x: 0, y: 30 },
+//     data: { label: "Emp 1", canResize: true },
+//   },
+//   {
+//     id: "6",
+//     type: "ResizableNodeSelected",
+//     position: { x: 0, y: 60 },
+//     data: { label: "Emp 2", canResize: true },
+//   },
+//   // {
+//   //   id: "3",
+//   //   type: "default",
+//   //   width: 500,
+//   //   height: 500,
+//   //   position: { x: 300, y: 100 },
+//   // },
+//   // {
+//   //   id: "4",
+//   //   type: "default",
+//   //   width: 500,
+//   //   height: 500,
+//   //   position: { x: 500, y: 300 },
+//   // },
+// ];
+// const initialEdges = [
+//   { id: "e1-2", source: "3", target: "4", type: "smoothstep" },
+// ];
 
-let nodeId = initialNodes.length;
+let nodeId = 0;
 
-const connectionLineStyle = { stroke: "white" };
+// const connectionLineStyle = { stroke: "" };
 
 // const saveBlueprint = (id: string, nodes: Node<any>[]) => {
 //   console.log(id);
@@ -107,6 +122,16 @@ const Flow = function () {
     null as ReactFlowInstance | null
   );
 
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  const onConnect = useCallback(
+    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
+  );
+
+  const { setViewport } = useReactFlow();
+
   const { query } = useRouter();
 
   const blueprintId = query.blueprintid as string;
@@ -120,12 +145,6 @@ const Flow = function () {
   });
 
   // const savedInstance = flowInstanceData?.nodes as JSONObject;
-
-  if (flowInstanceData != null) {
-    console.log(flowInstanceData);
-
-    // setNodes(nodeData.nodes.);
-  }
 
   const reactFlowInstance = useReactFlow();
 
@@ -160,10 +179,37 @@ const Flow = function () {
 
     const instance = flowInstanceData.data;
 
-    const flowInstance = JSON.parse(instance) as JSONObject;
+    const flow = JSON.parse(instance) as IFlowInstance;
+
+    // console.log("flow:");
+    // console.log(flow);
+
+    if (flow) {
+      if (flow.viewport == null) return;
+      if (flow.nodes == null) return;
+      if (flow.edges == null) return;
+
+      const flowEdges = flow.edges;
+      const flowNodes = flow.nodes;
+
+      if (flowEdges == null) return;
+      if (flowNodes == null) return;
+
+      const { x = 0, y = 0, zoom = 1 } = flow.viewport as JSONObject;
+      setNodes(flowNodes);
+      setEdges(flowEdges);
+
+      nodeId = nodes.length;
+
+      if (typeof x != "number") return;
+      if (typeof y != "number") return;
+      if (typeof zoom != "number") return;
+
+      setViewport({ x, y, zoom });
+    }
 
     // setRFInstance(flowInstance);
-  }, [blueprintId, flowInstanceData, setRFInstance]);
+  }, [setNodes, setEdges, setViewport, blueprintId, flowInstanceData, nodes]);
 
   // console.log(reactFlowInstance.deleteElements);
 
@@ -252,9 +298,9 @@ const Flow = function () {
         data: blockResult.data,
       };
 
-      reactFlowInstance?.addNodes(newNode);
+      setNodes(nodes.concat(newNode));
     },
-    [reactFlowInstance, crewData, projectData]
+    [reactFlowInstance, crewData, projectData, setNodes, nodes]
   );
 
   if (flowInstanceData == null || isLoading || isError) return <LoadingPage />;
@@ -277,27 +323,38 @@ const Flow = function () {
         <div className="text-center text-sm font-semibold md:text-lg">
           {flowInstanceData.name}
         </div>
-        <button
-          disabled={isSaving}
-          className="btn-add rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-          onClick={() => onSave()}
-        >
-          {!isSaving && <CloudArrowUpIcon className="h-6 w-6" />}
-          {isSaving && (
-            <div className="flex flex-col-reverse items-center justify-center sm:flex-row sm:gap-2">
-              <ArrowPathIcon className="h-6 w-6 animate-spin rounded-full text-amber-500" />
-            </div>
-          )}
-        </button>
+        <div>
+          <button onClick={() => onRestore()} className="btn-add rounded p-2">
+            <ArrowPathIcon className="h-6 w-6" />
+          </button>
+
+          <button
+            disabled={isSaving}
+            className="btn-add rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
+            onClick={() => onSave()}
+          >
+            {!isSaving && <CloudArrowUpIcon className="h-6 w-6" />}
+            {isSaving && (
+              <div className="flex flex-col-reverse items-center justify-center sm:flex-row sm:gap-2">
+                <ArrowPathIcon className="h-6 w-6 animate-spin rounded-full text-amber-500" />
+              </div>
+            )}
+          </button>
+        </div>
       </div>
       <SignedIn>
         <div className="h-screen w-screen bg-zinc-800" ref={reactFlowWrapper}>
           <ReactFlow
             onInit={setRFInstance || {}}
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
             defaultEdgeOptions={edgeOptions}
             fitView
             nodeTypes={nodeTypes}
-            connectionLineStyle={connectionLineStyle}
+            // connectionLineStyle={connectionLineStyle}
             snapToGrid={true}
             snapGrid={[10, 10]}
             onDragOver={onDragOver}

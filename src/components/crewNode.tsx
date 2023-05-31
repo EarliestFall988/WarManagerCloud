@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { NodeResizer } from "reactflow";
+import { Handle, NodeResizer, Position } from "reactflow";
 
 interface crewNodeInput {
   data: {
@@ -16,6 +16,7 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
 
   return (
     <>
+     {/* <Handle type="target" position={Position.Bottom} id={"fanfan"} /> */}
       <NodeResizer
         color="#ff0000"
         isVisible={selected}
@@ -29,6 +30,8 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
           <p className="text-[0.5rem]">{data.position}</p>
         </div>
       </div>
+     
+      {/* <Handle type="source" position={Position.Top} id={"fanfan"} /> */}
     </>
   );
 };

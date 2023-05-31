@@ -19,7 +19,7 @@ export const blueprintsRouter = createTRPCRouter({
     const blueprints = await ctx.prisma.blueprint.findMany({
       take: 100,
       orderBy: {
-        createdAt: "desc",
+        updatedAt: "desc",
       },
     });
 

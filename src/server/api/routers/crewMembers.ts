@@ -116,7 +116,7 @@ export const crewMembersRouter = createTRPCRouter({
           travel: "",
           skills: "",
           rating: "",
-          lastReviewDate: "",
+          lastReviewDate: new Date(),
 
           wage: 0,
           burden: 0,

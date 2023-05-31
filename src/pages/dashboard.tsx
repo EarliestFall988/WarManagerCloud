@@ -72,7 +72,7 @@ const BlueprintsList = () => {
                 </p>
               </div>
               <p className="w-1/4 truncate text-right text-sm italic">
-                {dayjs(blueprint.createdAt).fromNow()}
+                {dayjs(blueprint.updatedAt).fromNow()}
               </p>
             </Link>
           ))}
@@ -150,7 +150,7 @@ const CrewMembers = () => {
               </div>
               <div className="hidden w-1/6 truncate text-right text-sm italic sm:flex">
                 <p className="w-full text-right">
-                  {dayjs(crewMember.createdAt).fromNow()}
+                  {dayjs(crewMember.updatedAt).fromNow()}
                 </p>
               </div>
             </Link>
