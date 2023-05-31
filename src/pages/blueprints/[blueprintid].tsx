@@ -12,7 +12,7 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/solid";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import ReactFlow, {
   ReactFlowProvider,
@@ -67,53 +67,6 @@ const edgeOptions = {
   },
 };
 
-// const initialNodes = [
-//   {
-//     id: "1",
-//     type: "ResizableNodeSelected",
-//     position: { x: 0, y: 0 },
-//     data: { label: "Job 1", canResize: true },
-//   },
-//   {
-//     id: "2",
-//     type: "ResizableNodeSelected",
-//     position: { x: 0, y: 30 },
-//     data: { label: "Emp 1", canResize: true },
-//   },
-//   {
-//     id: "6",
-//     type: "ResizableNodeSelected",
-//     position: { x: 0, y: 60 },
-//     data: { label: "Emp 2", canResize: true },
-//   },
-//   // {
-//   //   id: "3",
-//   //   type: "default",
-//   //   width: 500,
-//   //   height: 500,
-//   //   position: { x: 300, y: 100 },
-//   // },
-//   // {
-//   //   id: "4",
-//   //   type: "default",
-//   //   width: 500,
-//   //   height: 500,
-//   //   position: { x: 500, y: 300 },
-//   // },
-// ];
-// const initialEdges = [
-//   { id: "e1-2", source: "3", target: "4", type: "smoothstep" },
-// ];
-
-let nodeId = 0;
-
-// const connectionLineStyle = { stroke: "" };
-
-// const saveBlueprint = (id: string, nodes: Node<any>[]) => {
-//   console.log(id);
-//   console.log(nodes);
-
-// };
 
 const Flow = function () {
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
@@ -164,16 +117,8 @@ const Flow = function () {
 
   const isSaving = saving;
 
-  const onSave = useCallback(() => {
-    if (blueprintId == null) return;
+  const onRestore = useCallback((updateViewport: boolean) => {
 
-    const instance = rfInstance?.toObject();
-    const flowData = JSON.stringify(instance);
-
-    saveBlueprint({ blueprintId, flowInstanceData: flowData });
-  }, [saveBlueprint, blueprintId, rfInstance]);
-
-  const onRestore = useCallback(() => {
     if (blueprintId == null) return;
     if (flowInstanceData == null) return;
 
@@ -199,17 +144,34 @@ const Flow = function () {
       setNodes(flowNodes);
       setEdges(flowEdges);
 
-      nodeId = nodes.length;
-
       if (typeof x != "number") return;
       if (typeof y != "number") return;
       if (typeof zoom != "number") return;
+
+      if(!updateViewport) return;
 
       setViewport({ x, y, zoom });
     }
 
     // setRFInstance(flowInstance);
-  }, [setNodes, setEdges, setViewport, blueprintId, flowInstanceData, nodes]);
+  }, [blueprintId, flowInstanceData, setEdges, setNodes, setViewport]);
+
+  useEffect(
+    () => {
+      onRestore(false);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [flowInstanceData, onRestore]
+  );
+
+  const onSave = useCallback(() => {
+    if (blueprintId == null) return;
+
+    const instance = rfInstance?.toObject();
+    const flowData = JSON.stringify(instance);
+
+    saveBlueprint({ blueprintId, flowInstanceData: flowData });
+  }, [saveBlueprint, blueprintId, rfInstance]);
 
   // console.log(reactFlowInstance.deleteElements);
 
@@ -286,7 +248,11 @@ const Flow = function () {
         y: event.clientY - (bounds?.top ?? 0),
       });
 
-      const id = `${++nodeId}`;
+      const res = crypto.getRandomValues(new Uint32Array(1))[0];
+
+      if (res == null) return;
+
+      const id = `${res}`;
 
       const newNode = {
         id,
@@ -324,9 +290,9 @@ const Flow = function () {
           {flowInstanceData.name}
         </div>
         <div>
-          <button onClick={() => onRestore()} className="btn-add rounded p-2">
+          {/* <button onClick={() => onRestore(true)} className="btn-add rounded p-2">
             <ArrowPathIcon className="h-6 w-6" />
-          </button>
+          </button> */}
 
           <button
             disabled={isSaving}
