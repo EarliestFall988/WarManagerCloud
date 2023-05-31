@@ -69,8 +69,8 @@ const NewBlueprintPage: NextPage = () => {
     },
   });
 
-  const nodes = [] as object[];
-  const edges = [] as object[];
+  // const nodes = [] as object[];
+  // const edges = [] as object[];
 
   return (
     <div className="min-h-[100vh] bg-zinc-800">
