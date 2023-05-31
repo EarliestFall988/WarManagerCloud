@@ -1,10 +1,22 @@
+import React from "react";
 import { api } from "~/utils/api";
 import { LoadingSpinner } from "./loading";
+
+
+const onDragStart = (
+  event: React.DragEvent<HTMLDivElement>,
+  nodeData: string
+) => {
+  if (!event.dataTransfer) return;
+
+  event.dataTransfer.setData("application/reactflow", nodeData);
+  event.dataTransfer.effectAllowed = "move";
+};
 
 export const ProjectsList = () => {
   const { data, isLoading, isError } = api.projects.getAll.useQuery();
 
-  console.log(data);
+  const draggable = !isError && !isLoading && data !== undefined;
 
   return (
     <div className="h-[80vh] w-[55vw] border-r-2 border-zinc-600 md:w-[30vw]">
@@ -17,9 +29,11 @@ export const ProjectsList = () => {
         )}
         {isError && <div>Something went wrong</div>}
         {data?.map((project) => (
-          <button
+          <div
             className="t flex items-center justify-between bg-zinc-600 px-2 text-left hover:bg-zinc-500"
             key={project.id}
+            draggable={draggable}
+            onDragStart={(event) => onDragStart(event, "p-" + project.id)}
           >
             <p className="truncate py-2 text-sm sm:w-1/2 sm:text-lg">
               {project.name}
@@ -27,7 +41,7 @@ export const ProjectsList = () => {
             <p className="hidden w-1/2 truncate text-ellipsis  font-normal italic tracking-tight sm:flex">
               {project.description}
             </p>
-          </button>
+          </div>
         ))}
       </div>
     </div>
@@ -37,7 +51,7 @@ export const ProjectsList = () => {
 export const CrewList = () => {
   const { data, isLoading, isError } = api.crewMembers.getAll.useQuery();
 
-  console.log(data);
+  const draggable = !isError && !isLoading && data !== undefined;
 
   return (
     <div className="h-[80vh] w-[55vw] border-r-2 border-zinc-600 md:w-[30vw]">
@@ -51,9 +65,11 @@ export const CrewList = () => {
         )}
         {isError && <div>Something went wrong</div>}
         {data?.map((crew) => (
-          <button
+          <div
             className="t flex items-center justify-between bg-zinc-600 px-2 text-left hover:bg-zinc-500"
             key={crew.id}
+            draggable={draggable}
+            onDragStart={(event) => onDragStart(event, "c-" + crew.id)}
           >
             <p className="truncate py-2 text-sm sm:w-1/2 sm:text-lg">
               {crew.name}
@@ -61,7 +77,7 @@ export const CrewList = () => {
             <p className="hidden w-1/2 truncate text-ellipsis font-normal italic tracking-tight sm:flex">
               {crew.description}
             </p>
-          </button>
+          </div>
         ))}
       </div>
     </div>

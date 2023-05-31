@@ -11,7 +11,7 @@ const redis = new Redis({
 
 const ratelimit = new Ratelimit({
   redis: redis,
-  limiter: Ratelimit.slidingWindow(3, "1 m"),
+  limiter: Ratelimit.slidingWindow(10, "1 m"),
 });
 
 export const blueprintsRouter = createTRPCRouter({
@@ -66,6 +66,32 @@ export const blueprintsRouter = createTRPCRouter({
           nodes: input.nodes,
           edges: input.edges,
           description: input.description,
+        },
+      });
+
+      return blueprint;
+    }),
+
+  saveNodes: privateProcedure
+    .input(z.object({ blueprintId: z.string() , nodes: z.object({}) }))
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await ratelimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the rate limit, try again in a minute",
+        });
+      }
+
+      const blueprint = await ctx.prisma.blueprint.update({
+        where: {
+          id: input.blueprintId,
+        },
+        data: {
+          nodes: input.nodes,
         },
       });
 

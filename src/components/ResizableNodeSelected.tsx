@@ -23,8 +23,11 @@ const ResizableNodeSelected = ({ data, selected }: resizeNodeInput) => {
         minHeight={30}
       />
 
-      <div className="flex h-full w-full items-center justify-center border-[0.5px] border-zinc-400 bg-zinc-200 text-center text-zinc-800 ">
-        {data.label}
+      <div className="flex h-full w-full rounded-sm bg-zinc-600 px-1 text-zinc-100">
+        <div className="w-16">
+          <p className="text-[0.55rem]">{data.label}</p>
+          <p className="text-[0.5rem]">{data.label}</p>
+        </div>
       </div>
     </>
   );
