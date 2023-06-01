@@ -341,7 +341,7 @@ const Flow = function () {
       </div>
       <SignedIn>
         <div
-          className="bg-zinc-800 h-[95vh] sm:h-screen "
+          className="bg-zinc-800 h-[90vh] sm:h-screen "
           ref={reactFlowWrapper}
         >
           <ReactFlow
