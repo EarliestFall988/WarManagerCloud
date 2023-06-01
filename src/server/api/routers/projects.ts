@@ -42,18 +42,18 @@ export const projectsRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(3).max(255),
-        jobNumber: z.string().min(3).max(255),
-        notes: z.string().min(3).max(255),
+        // jobNumber: z.string().min(3).max(255),
+        // notes: z.string().min(3).max(255),
         description: z.string().min(3).max(255),
 
-        address: z.string().min(3).max(255),
-        city: z.string().min(3).max(255),
-        state: z.string().min(3).max(255),
+        // address: z.string().min(3).max(255),
+        // city: z.string().min(3).max(255),
+        // state: z.string().min(3).max(255),
         // zip: z.string().min(3).max(255),
 
-        startDate: z.date(),
-        endDate: z.date(),
-        status: z.string().min(3).max(255),
+        // startDate: z.date(),
+        // endDate: z.date(),
+        // status: z.string().min(3).max(255),
         // percentComplete: z.number(),
         // completed: z.boolean(),
 
