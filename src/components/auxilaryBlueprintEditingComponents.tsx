@@ -1,9 +1,10 @@
 import React from "react";
 import { api } from "~/utils/api";
 import { LoadingSpinner } from "./loading";
-import { Blueprint } from "@prisma/client";
-import { Edge, Node } from "reactflow";
-import { RectangleGroupIcon, RocketLaunchIcon } from "@heroicons/react/24/solid";
+import type { Blueprint } from "@prisma/client";
+import type { Edge, Node } from "reactflow";
+import { RocketLaunchIcon } from "@heroicons/react/24/solid";
+import useScript from "./dragDropTouchEventsHandling";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -16,6 +17,9 @@ const onDragStart = (
 };
 
 export const ProjectsList = () => {
+
+  useScript("https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js")
+
   const { data, isLoading, isError } = api.projects.getAll.useQuery();
 
   const draggable = !isError && !isLoading && data !== undefined;
