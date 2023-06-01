@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
+import { createTRPCRouter, privateProcedure } from "../trpc";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
@@ -26,7 +26,7 @@ export const blueprintsRouter = createTRPCRouter({
     return blueprints;
   }),
 
-  getOneById: publicProcedure
+  getOneById: privateProcedure
     .input(z.object({ blueprintId: z.string() }))
     .query(async ({ ctx, input }) => {
       const blueprint = await ctx.prisma.blueprint.findUnique({
@@ -69,8 +69,13 @@ export const blueprintsRouter = createTRPCRouter({
       return blueprint;
     }),
 
-  saveNodes: privateProcedure
-    .input(z.object({ blueprintId: z.string(), flowInstanceData: z.string().min(0).max(100000) }))
+  save: privateProcedure
+    .input(
+      z.object({
+        blueprintId: z.string(),
+        flowInstanceData: z.string().min(0).max(100000),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.currentUser;
 

@@ -43,7 +43,9 @@ export const crewMembersRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const crewMembers = await ctx.prisma.crewMember.findMany({
         where: {
-          name: input.name,
+          name: {
+            contains: input.name,
+          }
         },
       });
       return crewMembers;

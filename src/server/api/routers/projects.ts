@@ -177,6 +177,22 @@ export const projectsRouter = createTRPCRouter({
       return project;
     }),
 
+  getByNameOrJobCode: privateProcedure
+    .input(z.object({ name: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const project = await ctx.prisma.project.findMany({
+        where: {
+          name: {
+            contains: input.name,
+          },
+          jobNumber: {
+            contains: input.name,
+          },
+        },
+      });
+      return project;
+    }),
+
   delete: privateProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {

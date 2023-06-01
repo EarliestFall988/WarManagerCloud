@@ -1,54 +1,27 @@
-import { SignInButton, SignedIn, useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
+import Flow, { type flowState } from "./flow";
 import Head from "next/head";
-import Link from "next/link";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import SignInModal from "~/components/signInPage";
+import { ReactFlowProvider } from "reactflow";
 import { useRouter } from "next/router";
-
+import Link from "next/link";
 import {
-  PaperAirplaneIcon,
-  WrenchScrewdriverIcon,
-  IdentificationIcon,
-  CloudArrowUpIcon,
+  ArrowLeftIcon,
   ArrowPathIcon,
-  PresentationChartBarIcon,
+  CloudArrowUpIcon,
   EllipsisHorizontalIcon,
+  IdentificationIcon,
+  PaperAirplaneIcon,
+  PresentationChartBarIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
-
-import React, { useCallback, useEffect, useRef, useState } from "react";
-
-import ReactFlow, {
-  ReactFlowProvider,
-  useReactFlow,
-  Background,
-  BackgroundVariant,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  type ReactFlowInstance,
-  type Edge,
-  type Node,
-  type Connection,
-  MiniMap,
-  Controls,
-} from "reactflow";
-import "reactflow/dist/style.css";
-
-interface IFlowInstance {
-  nodes: Node<any>[];
-  edges: Edge[];
-  viewport: {
-    x: number;
-    y: number;
-    zoom: number;
-  };
-}
-
-// import './button.css';
-
-import ResizableNodeSelected from "~/components/ResizableNodeSelected";
-import crewNode from "~/components/crewNode";
-import projectNode from "~/components/projectNode";
-
+import {
+  LoadBlueprintData,
+  useBlueprintStore,
+  useStore as flowStore,
+} from "./state";
+import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import {
   CrewList,
   ExportBlueprint,
@@ -56,380 +29,235 @@ import {
   ProjectsList,
   Stats,
 } from "~/components/auxilaryBlueprintEditingComponents";
-import { LoadingPage } from "~/components/loading";
+import { useCallback, useState } from "react";
 import { api } from "~/utils/api";
+
+import { shallow } from "zustand/shallow";
 import { toast } from "react-hot-toast";
-import type { JSONObject } from "superjson/dist/types";
-import SignInModal from "~/components/signInPage";
 
-const nodeTypes = {
-  ResizableNodeSelected,
-  crewNode,
-  projectNode,
-};
+const selector = (state: flowState) => ({
+  nodes: state.nodes,
+  edges: state.edges,
+  onNodesChange: state.onNodesChange,
+  onEdgesChange: state.onEdgesChange,
+  onConnect: state.onConnect,
+});
 
-const edgeOptions = {
-  style: {
-    stroke: "white",
-  },
-};
+// const PreventUserFromLeaving = () => {
+//   useEffect(() => {
+//     window.addEventListener('beforeunload', alertUser)
+//     window.addEventListener('unload', handleEndConcert)
+//     return () => {
+//       window.removeEventListener('beforeunload', alertUser)
+//       window.removeEventListener('unload', handleEndConcert)
+//       handleEndConcert()
+//     }
+//   }, [])
+//   const alertUser = e => {
+//     e.preventDefault()
+//     e.returnValue = ''
+//   }
 
-const Flow = function () {
-  const user = useUser();
+//   return (
+//     <div>
+//       <div
+//         when={isPrompt()}
+//         message={() => 'Are you sure you want to leave this page?'}
+//       />
+//     </div>
+//   )
+// }
 
-  const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
+const BlueprintGUI = () => {
+  const { nodes, edges } = flowStore(selector, shallow);
+
   const [toggle, setToggle] = useState("");
-  const [rfInstance, setRFInstance] = useState(
-    null as ReactFlowInstance | null
-  );
-
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-  const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  );
-
-  const { setViewport } = useReactFlow();
 
   const { query } = useRouter();
 
-  const blueprintId = query.blueprintid as string;
+  const blueprintId = (query.blueprintid as string) || undefined || null;
 
-  const {
-    data: flowInstanceData,
-    isLoading,
-    isError,
-  } = api.blueprints.getOneById.useQuery({
-    blueprintId,
+  const { mutate, isLoading: isSaving } = api.blueprints.save.useMutation({
+    onSuccess: (data) => {
+      console.log("saved data");
+      console.log(data);
+
+      toast.success(`${data.name} saved successfully`);
+    },
   });
 
-  // const savedInstance = flowInstanceData?.nodes as JSONObject;
+  const onSave = useCallback(() => {
+    const blueprintId = useBlueprintStore.getState().blueprintId;
 
-  const reactFlowInstance = useReactFlow();
+    // if(blueprintId == null) return;
 
-  const { data: crewData } = api.crewMembers.getAll.useQuery();
-  const { data: projectData } = api.projects.getAll.useQuery();
-
-  const { mutate: saveBlueprint, isLoading: saving } =
-    api.blueprints.saveNodes.useMutation({
-      onSuccess: (data) => {
-        toast.success(`${data.name} saved successfully!`);
-        // console.log(data);
-      },
-      onError: (error) => {
-        console.error(error);
+    const flowInstance = JSON.stringify({
+      nodes: nodes,
+      edges: edges,
+      viewport: {
+        x: 0,
+        y: 0,
+        zoom: 1,
       },
     });
 
-  const isSaving = saving;
+    mutate({ blueprintId, flowInstanceData: flowInstance });
+  }, [mutate, edges, nodes]);
 
-  const onRestore = useCallback(
-    (updateViewport: boolean) => {
-      if (blueprintId == null) return;
-      if (flowInstanceData == null) return;
+  const ToggleMenu = useCallback(
+    (menu: string) => {
+      let next = menu;
 
-      const instance = flowInstanceData.data;
-
-      const flow = JSON.parse(instance) as IFlowInstance;
-
-      // console.log("flow:");
-      // console.log(flow);
-
-      if (flow) {
-        if (flow.viewport == null) return;
-        if (flow.nodes == null) return;
-        if (flow.edges == null) return;
-
-        const flowEdges = flow.edges;
-        const flowNodes = flow.nodes;
-
-        if (flowEdges == null) return;
-        if (flowNodes == null) return;
-
-        const { x = 0, y = 0, zoom = 1 } = flow.viewport as JSONObject;
-        setNodes(flowNodes);
-        setEdges(flowEdges);
-
-        if (typeof x != "number") return;
-        if (typeof y != "number") return;
-        if (typeof zoom != "number") return;
-
-        if (!updateViewport) return;
-
-        setViewport({ x, y, zoom });
+      if (menu === toggle) {
+        next = "";
       }
 
-      // setRFInstance(flowInstance);
+      setToggle(next);
     },
-    [blueprintId, flowInstanceData, setEdges, setNodes, setViewport]
+    [toggle, setToggle]
   );
 
-  useEffect(
-    () => {
-      onRestore(false);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [flowInstanceData, onRestore]
-  );
+  // useEffect(() => {
+  if (blueprintId) LoadBlueprintData(blueprintId);
+  // }, []);
 
-  const onSave = useCallback(() => {
-    if (blueprintId == null) return;
-
-    const instance = rfInstance?.toObject();
-    const flowData = JSON.stringify(instance);
-
-    saveBlueprint({ blueprintId, flowInstanceData: flowData });
-  }, [saveBlueprint, blueprintId, rfInstance]);
-
-  // console.log(reactFlowInstance.deleteElements);
-
-  const onClick = useCallback(
-    (keyword: string) => {
-      if (keyword == "Project") {
-        if (toggle == "Project") {
-          setToggle("");
-        } else {
-          setToggle("Project");
-        }
-      }
-
-      if (keyword == "Employee") {
-        if (toggle == "Employee") {
-          setToggle("");
-        } else {
-          setToggle("Employee");
-        }
-      }
-
-      if (keyword == "GetLink") {
-        if (toggle == "GetLink") {
-          setToggle("");
-        } else {
-          setToggle("GetLink");
-        }
-      }
-
-      if (keyword == "Stats") {
-        if (toggle == "Stats") {
-          setToggle("");
-        } else {
-          setToggle("Stats");
-        }
-      }
-
-      if (keyword == "More") {
-        if (toggle == "More") {
-          setToggle("");
-        } else {
-          setToggle("More");
-        }
-      }
-    },
-    [setToggle, toggle] //make sure to add the reactFlowInstance if needed
-  );
-
-  const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
-
-  const onDrop = useCallback(
-    (event: React.DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-
-      const bounds = reactFlowWrapper.current?.getBoundingClientRect();
-      const data = event.dataTransfer?.getData("application/reactflow");
-
-      if (data == null) return;
-      if (projectData == null) return;
-      if (crewData == null) return;
-
-      const type = data.split("-")[0];
-      const dataId = data.split("-")[1];
-
-      const blockResult = {
-        type: type == "p" ? "projectNode" : "crewNode",
-        data: {},
-      };
-
-      if (type == "p") {
-        const project = projectData.find((project) => project.id == dataId);
-        if (project == null) return;
-
-        blockResult.data = project;
-      }
-
-      if (type == "c") {
-        const crewMember = crewData.find(
-          (crewMember) => crewMember.id == dataId
-        );
-        if (crewMember == null) return;
-        blockResult.data = crewMember;
-      }
-
-      const position = reactFlowInstance?.project({
-        x: event.clientX - (bounds?.left ?? 0),
-        y: event.clientY - (bounds?.top ?? 0),
-      });
-
-      const res = crypto.getRandomValues(new Uint32Array(1))[0];
-
-      if (res == null) return;
-
-      const id = `${res}`;
-
-      const newNode = {
-        id,
-        type: blockResult.type,
-        position: {
-          x: position.x,
-          y: position.y,
-        },
-        data: blockResult.data,
-      };
-
-      setNodes(nodes.concat(newNode));
-    },
-    [reactFlowInstance, crewData, projectData, setNodes, nodes]
-  );
-
-  if (!user.user) {
-    return <SignInModal redirectUrl={`/blueprints/${blueprintId}`} />;
+  if (!blueprintId) {
+    return <LoadingPage />;
   }
 
-  if (flowInstanceData == null || isLoading || isError) return <LoadingPage />;
-  if (crewData == null || projectData == null) return <LoadingPage />;
+  const blueprint = useBlueprintStore.getState().blueprintInstance;
 
   return (
     <>
       <Head>
-        <title>{`${flowInstanceData.name} (Blueprint) - War Manager`}</title>
+        {blueprint.name && (
+          <title>{`${blueprint.name} (Blueprint) - War Manager`}</title>
+        )}
         <meta name="description" content="Generated by create-t3-app" />
-        <meta name="viewport" content="width=device-width,height=device-height initial-scale=1"/>
+        <meta
+          name="viewport"
+          content="width=device-width,height=device-height initial-scale=1"
+        />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="absolute inset-0 top-0 z-20 flex h-14 w-full items-center justify-between bg-zinc-700 p-2 px-5 text-gray-100 drop-shadow-md ">
-        <Link
-          className="text-md font-bold"
-          href="/dashboard?context=Blueprints"
-        >
-          Back
-        </Link>
-        <div className="text-center text-sm font-semibold md:text-lg">
-          {flowInstanceData.name}
-        </div>
-        <div>
-          {/* <button onClick={() => onRestore(true)} className="btn-add rounded p-2">
-            <ArrowPathIcon className="h-6 w-6" />
-          </button> */}
-
-          <button
-            disabled={isSaving}
-            className="btn-add rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-            onClick={() => onSave()}
+      <main>
+        <div className="absolute inset-0 top-0 z-20 flex h-12 w-full items-center justify-between bg-zinc-700 p-1 text-gray-100 drop-shadow-md ">
+          <Link
+            className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
+            href="/dashboard?context=Blueprints"
           >
-            {!isSaving && <CloudArrowUpIcon className="h-6 w-6" />}
-            {isSaving && (
-              <div className="flex flex-col-reverse items-center justify-center sm:flex-row sm:gap-2">
-                <ArrowPathIcon className="h-6 w-6 animate-spin rounded-full text-amber-500" />
-              </div>
+            <ArrowLeftIcon className="h-6 w-6" />
+          </Link>
+          <div className="max-w-1/2 truncate rounded p-1 text-center text-sm font-semibold tracking-tight text-zinc-200 md:text-lg">
+            {blueprint.name ? blueprint.name : <LoadingSpinner />}
+          </div>
+          <div className="flex items-center justify-center gap-1 sm:gap-2">
+            {blueprint.id && (
+              <>
+                <button
+                  disabled={isSaving}
+                  className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
+                  onClick={() => onSave()}
+                >
+                  {!isSaving && <CloudArrowUpIcon className="h-6 w-6" />}
+                  {isSaving && (
+                    <div className="flex flex-col-reverse items-center justify-center sm:flex-row sm:gap-2">
+                      <ArrowPathIcon className="h-6 w-6 animate-spin rounded-full text-white" />
+                    </div>
+                  )}
+                </button>
+              </>
             )}
-          </button>
-        </div>
-      </div>
-      <SignedIn>
-        <div
-          className="bg-zinc-800 h-[90vh] sm:h-screen "
-          ref={reactFlowWrapper}
-        >
-          <ReactFlow
-            onInit={setRFInstance || {}}
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            defaultEdgeOptions={edgeOptions}
-            fitView
-            nodeTypes={nodeTypes}
-            // connectionLineStyle={connectionLineStyle}
-            snapToGrid={true}
-            snapGrid={[10, 10]}
-            onDragOver={onDragOver}
-            onDrop={onDrop}
-          >
-            <Background
-              id="1"
-              gap={10}
-              color="#333333"
-              variant={BackgroundVariant.Lines}
-            />
-            <Background
-              id="2"
-              gap={100}
-              offset={1}
-              color="#444444"
-              variant={BackgroundVariant.Lines}
-            />
-            <MiniMap />
-            <Controls />
-          </ReactFlow>
-
-          <div className="absolute right-0 top-20 flex gap-1 rounded bg-zinc-700 p-1 drop-shadow-md transition-all duration-100">
-            {toggle === "GetLink" && <ExportBlueprint />}
-            {toggle === "Project" && <ProjectsList />}
-            {toggle === "Employee" && <CrewList />}
-            {toggle === "Stats" && <Stats blueprint={flowInstanceData} />}
-            {toggle == "More" && <More />}
-            <div className="flex flex-col items-end gap-2">
-              {/* bg-gradient-to-br from-amber-700 to-red-600 */}
-              <button
-                onClick={() => onClick("GetLink")}
-                className="btn-add z-20 rounded bg-zinc-600 p-2 text-white hover:scale-105 hover:bg-zinc-500"
-              >
-                <PaperAirplaneIcon className="h-6 w-6 -rotate-12" />
-              </button>
-              {/* bg-gradient-to-tl from-blue-700 to-purple-600 */}
-              <button
-                onClick={() => onClick("Stats")}
-                className="btn-add z-20 rounded  bg-zinc-600 p-2 text-white hover:scale-105 hover:bg-zinc-500"
-              >
-                <PresentationChartBarIcon className="h-6 w-6" />
-              </button>
-              <button
-                onClick={() => onClick("Project")}
-                className="btn-add  z-20 rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
-              >
-                <WrenchScrewdriverIcon className="h-6 w-6" />
-              </button>
-              <button
-                onClick={() => onClick("Employee")}
-                className="btn-add  z-20 rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
-              >
-                <IdentificationIcon className="h-6 w-6" />
-              </button>
-
-              <button
-                onClick={() => onClick("More")}
-                className="btn-add  z-20 rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
-              >
-                <EllipsisHorizontalIcon className="h-6 w-6" />
-              </button>
+            <div className="flex items-center gap-2 rounded bg-zinc-600 p-1 hover:scale-105 hover:bg-zinc-500">
+              <UserButton />
             </div>
           </div>
         </div>
-      </SignedIn>
+        <div className="min-h-[100vh] min-w-[100vw] bg-zinc-800">
+          {useBlueprintStore.getState().isLoading ? (
+            <LoadingPage />
+          ) : (
+            <>
+              <ReactFlowProvider>
+                <Flow />
+              </ReactFlowProvider>
+              <div className="absolute right-0 top-20 flex rounded bg-zinc-700 p-1 drop-shadow-md transition-all duration-100 sm:gap-1">
+                {toggle === "GetLink" && <ExportBlueprint />}
+                {toggle === "Project" && <ProjectsList />}
+                {toggle === "Employee" && <CrewList nodes={nodes} />}
+                {toggle === "Stats" && <Stats blueprint={blueprint} />}
+                {toggle == "More" && <More />}
+                <div className="flex flex-col items-end gap-1 sm:gap-1">
+                  {/* {toggle !== "" && (
+                    <button
+                      onClick={() => ToggleMenu("")}
+                      className="btn-add z-20 rounded bg-red-700 p-2 py-4 text-white hover:scale-105 hover:bg-red-600 sm:py-2"
+                    >
+                      <XMarkIcon className="h-6 w-6" />
+                    </button>
+                  )} */}
+
+                  <button
+                    onClick={() => ToggleMenu("Project")}
+                    className="btn-add  z-20 rounded bg-zinc-600 p-2 py-4 hover:scale-105 hover:bg-zinc-500 sm:py-2"
+                  >
+                    <WrenchScrewdriverIcon className="h-6 w-6" />
+                  </button>
+                  <button
+                    onClick={() => ToggleMenu("Employee")}
+                    className="btn-add  z-20 rounded bg-zinc-600 p-2 py-4 hover:scale-105 hover:bg-zinc-500 sm:py-2"
+                  >
+                    <IdentificationIcon className="h-6 w-6" />
+                  </button>
+                  <div className="w-full border-b border-zinc-600" />
+                  <button
+                    onClick={() => ToggleMenu("GetLink")}
+                    className="btn-add z-20 rounded bg-zinc-600 p-2 py-4 text-white hover:scale-105 hover:bg-zinc-500 sm:py-2"
+                  >
+                    <PaperAirplaneIcon className="h-6 w-6" />
+                  </button>
+                  <button
+                    onClick={() => ToggleMenu("Stats")}
+                    className="btn-add z-20 rounded  bg-zinc-600 p-2 py-4 text-white hover:scale-105 hover:bg-zinc-500 sm:py-2"
+                  >
+                    <PresentationChartBarIcon className="h-6 w-6" />
+                  </button>
+                  <div className="w-full border-b border-zinc-600" />
+                  <button
+                    onClick={() => ToggleMenu("More")}
+                    className="btn-add  z-20 rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
+                  >
+                    <EllipsisHorizontalIcon className="h-6 w-6" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </main>
     </>
   );
 };
 
 const BlueprintPage: NextPage = () => {
   return (
-    <ReactFlowProvider>
-      <Flow />
-    </ReactFlowProvider>
+    <>
+      <SignedIn>
+        <BlueprintGUI />
+      </SignedIn>
+      <SignedOut>
+        <Head>
+          <title>You are not signed in - War Manager</title>
+          <meta name="description" content="Generated by create-t3-app" />
+          <meta
+            name="viewport"
+            content="width=device-width,height=device-height initial-scale=1"
+          />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+        <SignInModal redirectUrl={`/dashboard`} />
+      </SignedOut>
+    </>
   );
 };
 
