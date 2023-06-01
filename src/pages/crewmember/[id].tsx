@@ -9,6 +9,9 @@ import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
+
+
+
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   // const router = useRouter();
 

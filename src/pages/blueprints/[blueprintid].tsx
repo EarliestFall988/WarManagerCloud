@@ -10,6 +10,11 @@ import {
   IdentificationIcon,
   CloudArrowUpIcon,
   ArrowPathIcon,
+  ArrowTrendingUpIcon,
+  PresentationChartBarIcon,
+  EllipsisVerticalIcon,
+  EllipsisHorizontalCircleIcon,
+  EllipsisHorizontalIcon,
 } from "@heroicons/react/24/solid";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -26,6 +31,8 @@ import ReactFlow, {
   type Edge,
   type Node,
   type Connection,
+  MiniMap,
+  Controls,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -48,7 +55,9 @@ import projectNode from "~/components/projectNode";
 import {
   CrewList,
   ExportBlueprint,
+  More,
   ProjectsList,
+  Stats,
 } from "~/components/auxilaryBlueprintEditingComponents";
 import { LoadingPage } from "~/components/loading";
 import { api } from "~/utils/api";
@@ -66,7 +75,6 @@ const edgeOptions = {
     stroke: "white",
   },
 };
-
 
 const Flow = function () {
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
@@ -117,44 +125,46 @@ const Flow = function () {
 
   const isSaving = saving;
 
-  const onRestore = useCallback((updateViewport: boolean) => {
+  const onRestore = useCallback(
+    (updateViewport: boolean) => {
+      if (blueprintId == null) return;
+      if (flowInstanceData == null) return;
 
-    if (blueprintId == null) return;
-    if (flowInstanceData == null) return;
+      const instance = flowInstanceData.data;
 
-    const instance = flowInstanceData.data;
+      const flow = JSON.parse(instance) as IFlowInstance;
 
-    const flow = JSON.parse(instance) as IFlowInstance;
+      // console.log("flow:");
+      // console.log(flow);
 
-    // console.log("flow:");
-    // console.log(flow);
+      if (flow) {
+        if (flow.viewport == null) return;
+        if (flow.nodes == null) return;
+        if (flow.edges == null) return;
 
-    if (flow) {
-      if (flow.viewport == null) return;
-      if (flow.nodes == null) return;
-      if (flow.edges == null) return;
+        const flowEdges = flow.edges;
+        const flowNodes = flow.nodes;
 
-      const flowEdges = flow.edges;
-      const flowNodes = flow.nodes;
+        if (flowEdges == null) return;
+        if (flowNodes == null) return;
 
-      if (flowEdges == null) return;
-      if (flowNodes == null) return;
+        const { x = 0, y = 0, zoom = 1 } = flow.viewport as JSONObject;
+        setNodes(flowNodes);
+        setEdges(flowEdges);
 
-      const { x = 0, y = 0, zoom = 1 } = flow.viewport as JSONObject;
-      setNodes(flowNodes);
-      setEdges(flowEdges);
+        if (typeof x != "number") return;
+        if (typeof y != "number") return;
+        if (typeof zoom != "number") return;
 
-      if (typeof x != "number") return;
-      if (typeof y != "number") return;
-      if (typeof zoom != "number") return;
+        if (!updateViewport) return;
 
-      if(!updateViewport) return;
+        setViewport({ x, y, zoom });
+      }
 
-      setViewport({ x, y, zoom });
-    }
-
-    // setRFInstance(flowInstance);
-  }, [blueprintId, flowInstanceData, setEdges, setNodes, setViewport]);
+      // setRFInstance(flowInstance);
+    },
+    [blueprintId, flowInstanceData, setEdges, setNodes, setViewport]
+  );
 
   useEffect(
     () => {
@@ -179,7 +189,7 @@ const Flow = function () {
     (keyword: string) => {
       if (keyword == "Project") {
         if (toggle == "Project") {
-          setToggle(" ");
+          setToggle("");
         } else {
           setToggle("Project");
         }
@@ -187,7 +197,7 @@ const Flow = function () {
 
       if (keyword == "Employee") {
         if (toggle == "Employee") {
-          setToggle(" ");
+          setToggle("");
         } else {
           setToggle("Employee");
         }
@@ -195,9 +205,25 @@ const Flow = function () {
 
       if (keyword == "GetLink") {
         if (toggle == "GetLink") {
-          setToggle(" ");
+          setToggle("");
         } else {
           setToggle("GetLink");
+        }
+      }
+
+      if (keyword == "Stats") {
+        if (toggle == "Stats") {
+          setToggle("");
+        } else {
+          setToggle("Stats");
+        }
+      }
+
+      if (keyword == "More") {
+        if (toggle == "More") {
+          setToggle("");
+        } else {
+          setToggle("More");
         }
       }
     },
@@ -339,30 +365,49 @@ const Flow = function () {
               color="#444444"
               variant={BackgroundVariant.Lines}
             />
+            <MiniMap />
+            <Controls />
           </ReactFlow>
 
           <div className="absolute right-0 top-20 flex gap-1 rounded bg-zinc-700 p-1 drop-shadow-md transition-all duration-100">
             {toggle === "GetLink" && <ExportBlueprint />}
             {toggle === "Project" && <ProjectsList />}
             {toggle === "Employee" && <CrewList />}
+            {toggle === "Stats" && <Stats blueprint={flowInstanceData} />}
+            {toggle == "More" && <More />}
             <div className="flex flex-col items-end gap-2">
+              {/* bg-gradient-to-br from-amber-700 to-red-600 */}
               <button
                 onClick={() => onClick("GetLink")}
-                className="btn-add z-20 rounded bg-gradient-to-br from-amber-700 to-red-600 p-2 text-white hover:scale-105"
+                className="btn-add z-20 rounded bg-zinc-600 p-2 text-white hover:scale-105 hover:bg-zinc-500"
               >
                 <PaperAirplaneIcon className="h-6 w-6 -rotate-12" />
               </button>
+              {/* bg-gradient-to-tl from-blue-700 to-purple-600 */}
+              <button
+                onClick={() => onClick("Stats")}
+                className="btn-add z-20 rounded  bg-zinc-600 p-2 text-white hover:scale-105 hover:bg-zinc-500"
+              >
+                <PresentationChartBarIcon className="h-6 w-6" />
+              </button>
               <button
                 onClick={() => onClick("Project")}
-                className="btn-add  z-20 rounded bg-zinc-500 p-2 hover:scale-105"
+                className="btn-add  z-20 rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
               >
                 <WrenchScrewdriverIcon className="h-6 w-6" />
               </button>
               <button
                 onClick={() => onClick("Employee")}
-                className="btn-add  z-20 rounded bg-zinc-500 p-2 hover:scale-105"
+                className="btn-add  z-20 rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
               >
                 <IdentificationIcon className="h-6 w-6" />
+              </button>
+
+              <button
+                onClick={() => onClick("More")}
+                className="btn-add  z-20 rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
+              >
+                <EllipsisHorizontalIcon className="h-6 w-6" />
               </button>
             </div>
           </div>

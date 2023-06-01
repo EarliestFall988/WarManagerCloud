@@ -38,7 +38,9 @@ const NewBlueprintPage: NextPage = () => {
     onSuccess: (data) => {
       setName("");
       setDescription("");
-      () => push(`/blueprints/${data.id}`);
+
+      toast.success(` ${data.name} created successfully`);
+
       // void api.blueprints.getAll.invalidate();
     },
     onError: (e) => {
