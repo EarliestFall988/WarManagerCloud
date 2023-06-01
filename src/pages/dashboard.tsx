@@ -7,12 +7,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Link from "next/link";
 import Head from "next/head";
-import {
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton
-} from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
@@ -234,7 +229,6 @@ const Loader = () => {
     </div>
   );
 };
-
 
 const DashboardPage: NextPage = () => {
   const [context, setContext] = useState("Blueprints");

@@ -1,9 +1,10 @@
-import { SignedIn } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingSpinner } from "~/components/loading";
+import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
 
 const NewProjectPage: NextPage = () => {
@@ -23,7 +24,7 @@ const NewProjectPage: NextPage = () => {
 
   return (
     <div className="min-w-screen min-h-screen bg-zinc-800">
-      <NewItemPageHeader title="New Project" context="projects"/>
+      <NewItemPageHeader title="New Project" context="projects" />
       <SignedIn>
         <div className="m-auto flex flex-col md:w-1/2">
           <div className="w-full p-2">
@@ -62,6 +63,9 @@ const NewProjectPage: NextPage = () => {
           </div>
         </div>
       </SignedIn>
+      <SignedOut>
+        <SignInModal redirectUrl="/newproject" />
+      </SignedOut>
     </div>
   );
 };
