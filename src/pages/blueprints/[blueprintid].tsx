@@ -1,9 +1,8 @@
 import type { NextPage } from "next";
-import Flow, { type flowState } from "./flow";
+import { type flowState } from "./flow";
 import Head from "next/head";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
-import { ReactFlowProvider } from "reactflow";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import {
@@ -34,7 +33,7 @@ import { api } from "~/utils/api";
 
 import { shallow } from "zustand/shallow";
 import { toast } from "react-hot-toast";
-
+import FlowWithProvider from "./flow";
 
 const selector = (state: flowState) => ({
   nodes: state.nodes,
@@ -179,9 +178,7 @@ const BlueprintGUI = () => {
             <LoadingPage />
           ) : (
             <>
-              <ReactFlowProvider>
-                <Flow />
-              </ReactFlowProvider>
+              <FlowWithProvider />
               <div className="absolute right-0 top-20 flex rounded bg-zinc-700 p-1 drop-shadow-md transition-all duration-100 sm:gap-1">
                 {toggle === "GetLink" && <ExportBlueprint />}
                 {toggle === "Project" && <ProjectsList nodes={nodes} />}

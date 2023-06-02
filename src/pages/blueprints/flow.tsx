@@ -3,6 +3,7 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
+  ReactFlowProvider,
   useReactFlow,
 } from "reactflow";
 import {
@@ -161,6 +162,14 @@ const Flow = () => {
       </ReactFlow>
     </div>
   );
-};
+}
+  
+const FlowWithProvider = () => {
+  return (
+    <ReactFlowProvider>
+      <Flow />
+    </ReactFlowProvider>
+  );
+}
 
-export default Flow;
+export default FlowWithProvider;
