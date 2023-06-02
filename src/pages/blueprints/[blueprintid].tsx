@@ -8,10 +8,14 @@ import Link from "next/link";
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
   CloudArrowUpIcon,
   EllipsisHorizontalIcon,
   IdentificationIcon,
   PaperAirplaneIcon,
+  PencilIcon,
+  PencilSquareIcon,
   PresentationChartBarIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
@@ -142,16 +146,19 @@ const BlueprintGUI = () => {
       </Head>
       <main>
         <div className="absolute inset-0 top-0 z-20 flex h-12 w-full items-center justify-between bg-zinc-700 p-1 text-gray-100 drop-shadow-md ">
-          <Link
-            className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-            href="/dashboard?context=Blueprints"
-          >
-            <ArrowLeftIcon className="h-6 w-6" />
-          </Link>
-          <div className="max-w-1/2 truncate rounded p-1 text-center text-sm font-semibold tracking-tight text-zinc-200 md:text-lg">
-            {blueprint.name ? blueprint.name : <LoadingSpinner />}
+          <div className="flex w-1/2 items-center justify-start gap-4 sm:w-1/3">
+            <Link
+              className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
+              href="/dashboard?context=Blueprints"
+            >
+              <ArrowLeftIcon className="h-6 w-6" />
+            </Link>
+            <div className="max-w-1/2 truncate rounded p-1 text-center text-sm font-semibold tracking-tight text-zinc-200 md:text-lg">
+              {blueprint.name ? blueprint.name : <LoadingSpinner />}
+            </div>
           </div>
-          <div className="flex items-center justify-center gap-1 sm:gap-2">
+
+          <div className="flex w-1/2 items-center justify-end gap-1 sm:w-1/3 sm:gap-2">
             {blueprint.id && (
               <>
                 <button
@@ -179,7 +186,11 @@ const BlueprintGUI = () => {
           ) : (
             <>
               <FlowWithProvider />
-              <div className="absolute right-0 top-20 flex rounded bg-zinc-700 p-1 drop-shadow-md transition-all duration-100 sm:gap-1">
+              <div
+                className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700 p-1 drop-shadow-lg transition-all duration-100 sm:gap-1 ${
+                  toggle == "" ? "" : "w-full md:w-[50vw] lg:w-[40vw]"
+                }`}
+              >
                 {toggle === "GetLink" && <ExportBlueprint />}
                 {toggle === "Project" && <ProjectsList nodes={nodes} />}
                 {toggle === "Employee" && <CrewList nodes={nodes} />}
@@ -253,6 +264,28 @@ const BlueprintGUI = () => {
               </div>
             </>
           )}
+        </div>
+        <div className="fixed left-0 top-16 flex flex-col justify-center gap-1 rounded bg-zinc-700 p-1 transition-all duration-100 ">
+          <button
+            className="rounded bg-zinc-600 bg-gradient-to-br p-2 py-4 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500 sm:py-2"
+            onClick={() => ToggleMenu("more")}
+          >
+            <PencilSquareIcon className="h-6 w-6" />
+          </button>
+          <div className="w-full border-b border-zinc-600" />
+          <button
+            className="rounded bg-zinc-600 bg-gradient-to-br p-2 py-4 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500 sm:py-2"
+            onClick={() => ToggleMenu("more")}
+          >
+            <ArrowUturnLeftIcon className="h-6 w-6" />
+          </button>
+
+          <button
+            className="rounded bg-zinc-600 bg-gradient-to-br p-2 py-4 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500 sm:py-2"
+            onClick={() => ToggleMenu("more")}
+          >
+            <ArrowUturnRightIcon className="h-6 w-6" />
+          </button>
         </div>
       </main>
     </>

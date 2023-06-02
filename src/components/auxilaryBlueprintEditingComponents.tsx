@@ -78,7 +78,7 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
   const projectsToView = getProjectsToView();
 
   return (
-    <div className="mr-1 h-[60vh] w-[85vw] border-r border-zinc-600 sm:m-0 lg:h-[90vh] lg:w-[30vw] ">
+    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
       <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
         <div className="flex gap-1">
           <Link
@@ -254,7 +254,7 @@ export const CrewList = (props: { nodes: Node[] }) => {
   const draggable = !isError && !isLoading && data !== undefined;
 
   return (
-    <div className="mr-1 h-[60vh] w-[85vw] border-r border-zinc-600 sm:m-0 lg:h-[90vh] lg:w-[30vw] ">
+    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
       <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
         <div className="flex gap-1">
           <Link
@@ -379,7 +379,7 @@ export const ExportBlueprint = () => {
   const [title, setTitle] = useState("");
 
   return (
-    <div className="mr-1 h-[60vh] w-[85vw] border-r border-zinc-600 sm:m-0 lg:h-[90vh] lg:w-[30vw] ">
+    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
       <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
         <h1 className="w-full text-center font-bold sm:text-lg ">
           Export Schedule
@@ -492,7 +492,7 @@ export const Stats = (props: {
   };
 
   return (
-    <div className="mr-1 h-[60vh] w-[85vw] border-r border-zinc-600 sm:m-0 lg:h-[90vh] lg:w-[30vw] ">
+    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
       <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
         <h1 className="w-full text-center font-bold sm:text-lg ">
           Blueprint Stats
@@ -547,7 +547,7 @@ export const Stats = (props: {
 
 export const More = () => {
   return (
-    <div className="h-[80vh] w-[55vw] border-r border-zinc-600 md:w-[30vw]">
+    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
       <h1 className="w-full text-center font-bold sm:text-lg">More</h1>
 
       <div className="flex justify-center gap-1 p-1">
