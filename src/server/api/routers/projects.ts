@@ -182,14 +182,36 @@ export const projectsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const project = await ctx.prisma.project.findMany({
         where: {
-          name: {
-            contains: input.name,
-          },
-          jobNumber: {
-            contains: input.name,
-          },
+          OR: [
+            {
+              jobNumber: {
+                contains: input.name,
+              },
+            },
+            {
+              name: {
+                contains: input.name,
+              },
+            },
+            // {
+            //   city: {
+            //     contains: input.name,
+            //   },
+            // },
+            // {
+            //   state: {
+            //     contains: input.name,
+            //   },
+            // },
+            // {
+            //   address: {
+            //     contains: input.name,
+            //   },
+            // },
+          ],
         },
       });
+
       return project;
     }),
 

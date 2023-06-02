@@ -14,6 +14,7 @@
     "@clerk/nextjs": "^4.18.3",
     "@clerk/themes": "^1.7.4",
     "@heroicons/react": "^2.0.18",
+    "@joebobmiles/y-react": "https://github.com/joebobmiles/y-react/archive/refs/tags/v1.2.0.tar.gz",
     "@prisma/client": "^4.15.0",
     "@t3-oss/env-nextjs": "^0.2.1",
     "@tanstack/react-query": "^4.28.0",

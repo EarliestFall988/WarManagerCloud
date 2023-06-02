@@ -35,6 +35,7 @@ import { api } from "~/utils/api";
 import { shallow } from "zustand/shallow";
 import { toast } from "react-hot-toast";
 
+
 const selector = (state: flowState) => ({
   nodes: state.nodes,
   edges: state.edges,
@@ -183,9 +184,11 @@ const BlueprintGUI = () => {
               </ReactFlowProvider>
               <div className="absolute right-0 top-20 flex rounded bg-zinc-700 p-1 drop-shadow-md transition-all duration-100 sm:gap-1">
                 {toggle === "GetLink" && <ExportBlueprint />}
-                {toggle === "Project" && <ProjectsList />}
+                {toggle === "Project" && <ProjectsList nodes={nodes} />}
                 {toggle === "Employee" && <CrewList nodes={nodes} />}
-                {toggle === "Stats" && <Stats blueprint={blueprint} />}
+                {toggle === "Stats" && (
+                  <Stats blueprint={blueprint} currentNodes={nodes} />
+                )}
                 {toggle == "More" && <More />}
                 <div className="flex flex-col items-end gap-1 sm:gap-1">
                   {/* {toggle !== "" && (
@@ -199,33 +202,53 @@ const BlueprintGUI = () => {
 
                   <button
                     onClick={() => ToggleMenu("Project")}
-                    className="btn-add  z-20 rounded bg-zinc-600 p-2 py-4 hover:scale-105 hover:bg-zinc-500 sm:py-2"
+                    className={`btn-add  z-20 rounded ${
+                      toggle == "Project"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                    }  p-2 py-4 hover:scale-105  sm:py-2`}
                   >
                     <WrenchScrewdriverIcon className="h-6 w-6" />
                   </button>
                   <button
                     onClick={() => ToggleMenu("Employee")}
-                    className="btn-add  z-20 rounded bg-zinc-600 p-2 py-4 hover:scale-105 hover:bg-zinc-500 sm:py-2"
+                    className={`btn-add  z-20 rounded ${
+                      toggle == "Employee"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                    }  p-2 py-4 hover:scale-105  sm:py-2`}
                   >
                     <IdentificationIcon className="h-6 w-6" />
                   </button>
                   <div className="w-full border-b border-zinc-600" />
                   <button
                     onClick={() => ToggleMenu("GetLink")}
-                    className="btn-add z-20 rounded bg-zinc-600 p-2 py-4 text-white hover:scale-105 hover:bg-zinc-500 sm:py-2"
+                    className={`btn-add  z-20 rounded ${
+                      toggle == "GetLink"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                    }  p-2 py-4 hover:scale-105  sm:py-2`}
                   >
                     <PaperAirplaneIcon className="h-6 w-6" />
                   </button>
                   <button
                     onClick={() => ToggleMenu("Stats")}
-                    className="btn-add z-20 rounded  bg-zinc-600 p-2 py-4 text-white hover:scale-105 hover:bg-zinc-500 sm:py-2"
+                    className={`btn-add  z-20 rounded ${
+                      toggle == "Stats"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                    }  p-2 py-4 hover:scale-105  sm:py-2`}
                   >
                     <PresentationChartBarIcon className="h-6 w-6" />
                   </button>
                   <div className="w-full border-b border-zinc-600" />
                   <button
                     onClick={() => ToggleMenu("More")}
-                    className="btn-add  z-20 rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
+                    className={`btn-add  z-20 rounded ${
+                      toggle == "More"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                    }  p-2 py-4 hover:scale-105  sm:py-2`}
                   >
                     <EllipsisHorizontalIcon className="h-6 w-6" />
                   </button>
