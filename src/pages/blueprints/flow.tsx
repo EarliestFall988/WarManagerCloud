@@ -16,7 +16,7 @@ import { shallow } from "zustand/shallow";
 
 import "reactflow/dist/style.css";
 
-import { useStore } from "./state";
+import { useStore } from "../../states/state";
 
 import crewNode from "~/components/crewNode";
 import projectNode from "~/components/projectNode";
