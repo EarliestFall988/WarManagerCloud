@@ -102,8 +102,20 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Main Menu</title>
-        <meta name="description" content="All data lives here." />
+        <title>War Manager</title>
+        <meta
+          property="og:title"
+          content="Where you can manage anything."
+        />
+        <meta
+          property="og:description"
+          content="Start managing your projects, crew members, projects and more from the dashboard"
+        />
+        <meta
+          property="og:image"
+          content="/bhall_logo.png"
+        />
+        <meta name="description" content="Where you can manage anything." />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {!!isSignedIn && (
