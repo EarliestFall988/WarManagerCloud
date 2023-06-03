@@ -187,18 +187,22 @@ const BlueprintGUI = () => {
             <>
               <FlowWithProvider />
               <div
-                className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700 p-1 drop-shadow-lg transition-all duration-100 sm:gap-1 ${
-                  toggle == "" ? "" : "w-full md:w-[50vw] lg:w-[40vw]"
+                className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700/80 backdrop-blur-md sm:p-1 drop-shadow-lg transition-all duration-75 sm:gap-1 ${
+                  toggle == ""
+                    ? "w-12"
+                    : " w-full md:w-[50vw] lg:w-[40vw]"
                 }`}
               >
-                {toggle === "GetLink" && <ExportBlueprint />}
-                {toggle === "Project" && <ProjectsList nodes={nodes} />}
-                {toggle === "Employee" && <CrewList nodes={nodes} />}
-                {toggle === "Stats" && (
-                  <Stats blueprint={blueprint} currentNodes={nodes} />
-                )}
-                {toggle == "More" && <More />}
-                <div className="flex flex-col items-end gap-1 sm:gap-1">
+                <div className="w-full overflow-y-auto overflow-x-hidden ">
+                  {toggle === "GetLink" && <ExportBlueprint />}
+                  {toggle === "Project" && <ProjectsList nodes={nodes} />}
+                  {toggle === "Employee" && <CrewList nodes={nodes} />}
+                  {toggle === "Stats" && (
+                    <Stats blueprint={blueprint} currentNodes={nodes} />
+                  )}
+                  {toggle == "More" && <More />}
+                </div>
+                <div className="flex flex-col p-1 sm:p-0 items-end gap-1 sm:gap-1">
                   {/* {toggle !== "" && (
                     <button
                       onClick={() => ToggleMenu("")}

@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { api } from "~/utils/api";
 import { LoadingSpinner } from "./loading";
 import type { Blueprint, CrewMember, Project } from "@prisma/client";
 import type { Edge, Node } from "reactflow";
 import {
+  ArrowUpLeftIcon,
+  ArrowUpOnSquareIcon,
+  ArrowUpRightIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
   PlusIcon,
@@ -12,6 +15,9 @@ import {
 } from "@heroicons/react/24/solid";
 import useScript from "./dragDropTouchEventsHandling";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
+import Image from "next/image";
+import { User } from "@clerk/nextjs/server";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -24,7 +30,6 @@ const onDragStart = (
 };
 
 const filterProjectsNotOnBlueprint = (nodes: Node[]) => {
-
   const projectNodes = nodes.find((node) => node.type === "project");
 
   return [] as Project[]; // nodes.filter((node) => node.type !== "project") as Project[];
@@ -78,7 +83,7 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
   const projectsToView = getProjectsToView();
 
   return (
-    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
+    <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
       <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
         <div className="flex gap-1">
           <Link
@@ -148,7 +153,7 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
             {projectsToView?.map((project) => (
               <Link key={project.id} href={`/projects/${project.id}`}>
                 <div
-                  className="flex items-end justify-between border-b border-zinc-600 p-1 px-2 text-left transition-all duration-100 hover:-translate-x-2 hover:scale-105 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
+                  className="flex items-end justify-between border-b border-zinc-600 p-1 px-2 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
                   draggable={draggable}
                   onDragStart={(event) => onDragStart(event, "p-" + project.id)}
                 >
@@ -254,7 +259,7 @@ export const CrewList = (props: { nodes: Node[] }) => {
   const draggable = !isError && !isLoading && data !== undefined;
 
   return (
-    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
+    <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
       <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
         <div className="flex gap-1">
           <Link
@@ -329,7 +334,7 @@ export const CrewList = (props: { nodes: Node[] }) => {
           {dataToUse?.map((crew) => (
             <Link key={crew.id} href={`/crewmember/${crew.id}`}>
               <div
-                className="flex items-end justify-between border-b border-zinc-600 p-1 px-2 text-left transition-all duration-100 hover:-translate-x-2 hover:scale-105 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
+                className="flex items-end justify-between border-b border-zinc-600 p-1 px-2 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
                 draggable={draggable}
                 onDragStart={(event) => onDragStart(event, "c-" + crew.id)}
               >
@@ -377,9 +382,48 @@ const NothingToDisplayNotice = (props: { context: string }) => {
 
 export const ExportBlueprint = () => {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const {
+    data: links,
+    isLoading,
+    isError,
+  } = api.schedules.getByName.useQuery({
+    name: searchTerm,
+  });
+
+  const { mutate, isLoading: isCreating } = api.schedules.create.useMutation({
+    onSuccess: (data) => {
+      toast.success("Schedule created");
+      Copy(data.link);
+      setTitle("");
+      setDescription("");
+    },
+    onError: (error) => {
+      toast.error("Something went wrong creating the schedule :(");
+      console.error(error);
+    },
+  });
+
+  const Copy = (url: string) => {
+    void window.navigator.clipboard.writeText(url);
+    toast.success("Link copied to clipboard");
+  };
+
+  const ExportSchedule = useCallback(() => {
+    const schedule = {
+      title: title,
+      notes: description,
+      nodes: "[]",
+    };
+
+    mutate(schedule);
+  }, [title, description, mutate]);
 
   return (
-    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
+    <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh]">
       <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
         <h1 className="w-full text-center font-bold sm:text-lg ">
           Export Schedule
@@ -387,23 +431,118 @@ export const ExportBlueprint = () => {
       </div>
 
       <div className="flex flex-col gap-1 pr-1">
-        <div className="p-4" />
+        <div className="p-2" />
+        <p className="text-lg font-semibold">Title</p>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="title"
-          className="rounded p-2 text-zinc-700 outline-none disabled:text-black"
-          disabled={true}
+          placeholder="Title"
+          className="rounded bg-zinc-100 p-2 text-zinc-700 outline-none focus:bg-white focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 active:outline-none disabled:text-black"
+          disabled={isCreating}
+        />
+        <p className="text-lg font-semibold">Notes</p>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Notes about the schedule (optional)"
+          className="rounded bg-zinc-100 p-2 text-zinc-700 outline-none focus:bg-white focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 active:outline-none disabled:text-black"
+          disabled={isCreating}
         />
         <button
-          disabled={true}
-          className="rounded bg-gradient-to-br from-amber-700 to-red-700 p-2 font-semibold text-white hover:from-amber-600 hover:to-red-600 disabled:bg-red-500"
+          onClick={ExportSchedule}
+          disabled={isCreating}
+          className="flex items-center justify-center gap-1 rounded bg-gradient-to-br from-amber-700 to-red-700 p-2 font-semibold text-white hover:from-amber-600 hover:to-red-600 disabled:bg-red-500"
         >
-          Export Schedule
+          {isCreating ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              <p>Create Link</p>
+              <RocketLaunchIcon className="h-5 w-5" />
+            </>
+          )}
         </button>
-        <div className="flex h-full w-full items-center justify-center  py-5">
-          <LoadingSpinner />
+        <div className="flex flex-col py-3 text-center text-lg font-semibold">
+          Schedule History
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search"
+            className="rounded bg-zinc-100 p-1 font-normal text-zinc-600 outline-none placeholder:font-normal placeholder:text-zinc-400 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 active:outline-none disabled:text-black"
+            disabled={isCreating}
+          />
+        </div>
+        <div className="border-t border-zinc-600">
+          {isLoading && (
+            <div className="flex items-center justify-center  py-5">
+              <LoadingSpinner />
+            </div>
+          )}
+          {isError && (
+            <div className="flex items-center justify-center  py-5">
+              <p>Something went wrong</p>
+            </div>
+          )}
+          {links?.map((data) => (
+            <button
+              onClick={() => Copy(data.link)}
+              key={data.id}
+              className="flex w-full items-center justify-between border-b border-zinc-600 transition-all duration-200 hover:rounded-sm hover:bg-zinc-600 sm:py-2  "
+            >
+              <div className="flex w-8/12 items-center">
+                {data && data.user && data.user.profilePicture && (
+                  <Image
+                    className="scale-75 rounded-full sm:scale-90"
+                    src={data.user.profilePicture}
+                    width={50}
+                    height={50}
+                    alt={`${data.user.email || "unknown"} + 's profile picture`}
+                  />
+                )}
+                <div className="flex w-5/6 flex-col items-start justify-center pl-1 sm:w-1/3">
+                  {data.user?.profilePicture === null && (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-400">
+                      <p className="font-semibold text-white">
+                        {data.user?.email?.charAt(0).toUpperCase()}
+                      </p>
+                    </div>
+                  )}
+                  <p className="font-semi-bold text-lg tracking-tight">
+                    {data.title}
+                  </p>
+                  <p className="text-sm text-zinc-400">
+                    {data.user?.email || "unknown"}
+                  </p>
+                </div>
+              </div>
+              <p className="hidden italic text-zinc-300 sm:flex sm:w-1/2">
+                {data.description}
+              </p>
+
+              <Link
+                href={data.link}
+                className="rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
+              >
+                <ArrowUpRightIcon className="h-5 w-5 text-white" />
+              </Link>
+            </button>
+          ))}
+          {links?.length === 0 && searchTerm === "" && (
+            <div className="flex flex-col items-center justify-center gap-5 py-5">
+              <p className="text-center text-zinc-400">
+                No schedules have been created yet
+              </p>
+            </div>
+          )}
+          {links?.length === 0 && searchTerm.length > 0 && (
+            <div className="flex flex-col items-center justify-center gap-5 py-5">
+              <p className="text-center text-zinc-400">
+                Nothing found for &quot;{searchTerm}&quot;
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -492,7 +631,7 @@ export const Stats = (props: {
   };
 
   return (
-    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
+    <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
       <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
         <h1 className="w-full text-center font-bold sm:text-lg ">
           Blueprint Stats
@@ -547,7 +686,7 @@ export const Stats = (props: {
 
 export const More = () => {
   return (
-    <div className="mr-1 h-[60vh] border-r border-zinc-600 sm:m-0 lg:h-[90vh] w-full ">
+    <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
       <h1 className="w-full text-center font-bold sm:text-lg">More</h1>
 
       <div className="flex justify-center gap-1 p-1">

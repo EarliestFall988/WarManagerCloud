@@ -10,7 +10,7 @@ import { TRPCError } from "@trpc/server";
 
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import filterUserForClient from "~/server/helpers/filerUserForClient";
+import filterUserForClient from "~/server/helpers/filterUserForClient";
 import type { Post } from "@prisma/client";
 
 const redis = new Redis({
