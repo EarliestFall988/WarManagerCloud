@@ -74,7 +74,6 @@ export const schedulesRouter = createTRPCRouter({
   getByName: privateProcedure
     .input(z.object({ name: z.string() }))
     .query(async ({ ctx, input }) => {
-
       const schedules = await ctx.prisma.exportLink.findMany({
         where: {
           OR: [
@@ -109,6 +108,36 @@ export const schedulesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.currentUser;
 
+      const user = await clerkClient.users.getUser(authorId);
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      if (!user.emailAddresses) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User does not have an email address",
+        });
+      }
+
+      if (!user.emailAddresses[0]) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User does not have an email address",
+        });
+      }
+
+      if (!user.emailAddresses[0].emailAddress) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User does not have an email address",
+        });
+      }
+
       const { success } = await rateLimit.limit(authorId);
 
       if (!success) {
@@ -119,8 +148,8 @@ export const schedulesRouter = createTRPCRouter({
       }
 
       const retrieveLink = await CreateSchedule(
-        input.title,
-        input.notes || "",
+        input.title || "",
+        user.emailAddresses[0].emailAddress || "n/a",
         input.nodes
       );
 

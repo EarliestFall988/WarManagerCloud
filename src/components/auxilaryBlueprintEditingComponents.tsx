@@ -18,6 +18,7 @@ import Link from "next/link";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
 import { User } from "@clerk/nextjs/server";
+import { GetListOfNodesSortedByColumn } from "~/states/state";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -413,10 +414,12 @@ export const ExportBlueprint = () => {
   };
 
   const ExportSchedule = useCallback(() => {
+    const nodes = GetListOfNodesSortedByColumn();
+
     const schedule = {
       title: title,
       notes: description,
-      nodes: "[]",
+      nodes: JSON.stringify(nodes),
     };
 
     mutate(schedule);
@@ -501,7 +504,7 @@ export const ExportBlueprint = () => {
                     alt={`${data.user.email || "unknown"} + 's profile picture`}
                   />
                 )}
-                <div className="flex w-5/6 flex-col items-start justify-center pl-1 sm:w-1/3">
+                <div className="flex w-5/6 flex-col items-start justify-center pl-1 sm:w-2/3 ">
                   {data.user?.profilePicture === null && (
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-400">
                       <p className="font-semibold text-white">
@@ -509,7 +512,7 @@ export const ExportBlueprint = () => {
                       </p>
                     </div>
                   )}
-                  <p className="font-semi-bold text-lg tracking-tight">
+                  <p className="font-semibold w-full truncate text-left text-lg tracking-tight">
                     {data.title}
                   </p>
                   <p className="text-sm text-zinc-400">
@@ -671,7 +674,7 @@ export const Stats = (props: {
             <div className="border-t border-zinc-600">
               {findDuplicateProjectNodes(data.nodes).map((node) => (
                 <p className="border-b border-zinc-600 p-1" key={node.id}>
-                  {node.name}{" "}
+                  {node.name}
                 </p>
               ))}
             </div>
@@ -685,6 +688,9 @@ export const Stats = (props: {
 };
 
 export const More = () => {
+
+  GetListOfNodesSortedByColumn();
+
   return (
     <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
       <h1 className="w-full text-center font-bold sm:text-lg">More</h1>

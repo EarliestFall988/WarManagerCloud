@@ -14,7 +14,7 @@ interface ICard {
 }
 
 interface ISchedule {
-  name: string;
+  title: string;
   description: string;
   content: ICard[];
 }
@@ -28,7 +28,7 @@ function isCrew(
 function isProject(
   nodeOfInterest: CrewMember | Project | undefined
 ): nodeOfInterest is Project {
-  return (nodeOfInterest as Project).address === undefined;
+  return (nodeOfInterest as Project).jobNumber !== undefined;
 }
 
 const CreateSchedule = async (
@@ -39,7 +39,7 @@ const CreateSchedule = async (
   const nodes = JSON.parse(nodesString) as Node[];
 
   const schedule: ISchedule = {
-    name: title,
+    title,
     description: notes,
     content: [],
   };
@@ -57,27 +57,27 @@ const CreateSchedule = async (
       descriptions: [],
     };
 
+    const projectCard: ICard = {
+      name: nodeOfInterest.name,
+      type: "header",
+      descriptions: [],
+    };
+
     if (isProject(nodeOfInterest)) {
       const address: Description = {
         name: "Address",
         value: nodeOfInterest.address,
       };
 
-      const city: Description = {
-        name: "City",
-        value: nodeOfInterest.city,
+      const cityState: Description = {
+        name: "City/State",
+        value: nodeOfInterest.city + ", " + nodeOfInterest.state,
       };
 
-      const state: Description = {
-        name: "State",
-        value: nodeOfInterest.state,
-      };
+      projectCard.descriptions.push(address);
+      projectCard.descriptions.push(cityState);
 
-      card.descriptions.push(address);
-      card.descriptions.push(city);
-      card.descriptions.push(state);
-
-      schedule.content.push(card);
+      schedule.content.push(projectCard);
     } else if (isCrew(nodeOfInterest)) {
       const position: Description = {
         name: "Position",
@@ -90,7 +90,7 @@ const CreateSchedule = async (
       };
 
       const email: Description = {
-        name: "Phone",
+        name: "Email",
         value: nodeOfInterest.email,
       };
 

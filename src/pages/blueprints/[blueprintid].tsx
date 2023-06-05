@@ -14,15 +14,15 @@ import {
   EllipsisHorizontalIcon,
   IdentificationIcon,
   PaperAirplaneIcon,
-  PencilIcon,
-  PencilSquareIcon,
   PresentationChartBarIcon,
+  TrashIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
 import {
   LoadBlueprintData,
   useBlueprintStore,
   useStore as flowStore,
+  DeleteSelected,
 } from "../../states/state";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import {
@@ -187,10 +187,8 @@ const BlueprintGUI = () => {
             <>
               <FlowWithProvider />
               <div
-                className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700/80 backdrop-blur-md sm:p-1 drop-shadow-lg transition-all duration-75 sm:gap-1 ${
-                  toggle == ""
-                    ? "w-12"
-                    : " w-full md:w-[50vw] lg:w-[40vw]"
+                className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700/80 drop-shadow-lg backdrop-blur-md transition-all duration-75 sm:gap-1 sm:p-1 ${
+                  toggle == "" ? "w-12" : " w-full md:w-[50vw] lg:w-[40vw]"
                 }`}
               >
                 <div className="w-full overflow-y-auto overflow-x-hidden ">
@@ -202,7 +200,7 @@ const BlueprintGUI = () => {
                   )}
                   {toggle == "More" && <More />}
                 </div>
-                <div className="flex flex-col p-1 sm:p-0 items-end gap-1 sm:gap-1">
+                <div className="flex flex-col items-end gap-1 p-1 sm:gap-1 sm:p-0">
                   {/* {toggle !== "" && (
                     <button
                       onClick={() => ToggleMenu("")}
@@ -272,9 +270,9 @@ const BlueprintGUI = () => {
         <div className="fixed left-0 top-16 flex flex-col justify-center gap-1 rounded bg-zinc-700 p-1 transition-all duration-100 ">
           <button
             className="rounded bg-zinc-600 bg-gradient-to-br p-2 py-4 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500 sm:py-2"
-            onClick={() => ToggleMenu("more")}
+            onClick={DeleteSelected}
           >
-            <PencilSquareIcon className="h-6 w-6" />
+            <TrashIcon className="h-6 w-6" />
           </button>
           <div className="w-full border-b border-zinc-600" />
           <button
@@ -300,7 +298,9 @@ const BlueprintPage: NextPage = () => {
   return (
     <>
       <SignedIn>
-        <BlueprintGUI />
+        {/* <DocumentProvider> */}
+          <BlueprintGUI />
+        {/* </DocumentProvider> */}
       </SignedIn>
       <SignedOut>
         <Head>

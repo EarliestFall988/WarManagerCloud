@@ -2,6 +2,8 @@ import { create } from "zustand";
 
 import { persist } from "zustand/middleware";
 
+import * as Y from "yjs";
+
 import {
   type Connection,
   type Edge,
@@ -32,9 +34,20 @@ interface IFlowInstance {
 // import initialNodes from "./nodes";
 // import initialEdges from "./edges";
 
+const ydoc = new Y.Doc();
+const yFlowInstance = ydoc.getMap("flowInstance");
+
 const nodes: Node[] = [];
 
 const edges: Edge[] = [];
+
+// const getNodes = () => {
+//   const nodes = yFlowInstance.get("nodes");
+//   if (nodes) {
+//     return JSON.parse(nodes) as Node[];
+//   }
+//   return [];
+// };
 
 type RFState = {
   nodes: Node[];
@@ -56,7 +69,7 @@ type BlueprintState = {
 const useStore = create(
   persist<RFState>(
     (set, get) => ({
-      nodes: nodes,
+      nodes: nodes, //initialNodes as
       edges: edges,
       id: "",
       onNodesChange: (changes: NodeChange[]) => {
@@ -80,7 +93,6 @@ const useStore = create(
     }
   )
 );
-
 const useBlueprintStore = create<BlueprintState>((set) => ({
   blueprintId: "",
   blueprintInstance: {
@@ -128,22 +140,102 @@ const LoadBlueprintData = (blueprintId: string) => {
       isError,
     });
 
-    // console.log("restored data");
-    // console.log(useBlueprintStore.getState().blueprintInstance);
+    const blueprint = JSON.parse(data.data) as IFlowInstance;
 
-    const flowInstance = useBlueprintStore.getState().blueprintInstance.data;
-    const flow = JSON.parse(flowInstance) as IFlowInstance;
+    if (!blueprint) return;
 
-    if (
-      useStore.getState().nodes.length === 0 &&
-      useStore.getState().edges.length === 0
-    ) {
-      useStore.setState({
-        nodes: flow.nodes,
-        edges: flow.edges,
-      });
-    }
+    // if (nodes.length > 0 || edges.length > 0) {
+    //   return;
+    // }
+
+
+    // useStore.setState({
+    //   nodes: blueprint.nodes,
+    //   edges: blueprint.edges,
+    // });
+
+    yFlowInstance.set("nodes", blueprint.nodes);
+    yFlowInstance.set("edges", blueprint.edges);
   }
 };
 
 export { useStore, useBlueprintStore, LoadBlueprintData };
+
+export const GetSelectedNodes = () => {
+  const nodes = useStore.getState().nodes;
+  const selectedNodes = nodes.filter((node) => node.selected === true);
+  return selectedNodes;
+};
+
+export const GetSelectedEdges = () => {
+  const edges = useStore.getState().edges;
+  const selectedEdges = edges.filter((edge) => edge.selected === true);
+  return selectedEdges;
+};
+
+export const DeleteSelected = () => {
+  DeleteEdgesOfSelectedNodes();
+  DeleteSelectedNodes();
+  DeleteSelectedEdges();
+};
+
+const DeleteSelectedNodes = () => {
+  const selectedNodes = GetSelectedNodes();
+
+  useStore.setState((state: RFState) => ({
+    nodes: state.nodes.filter((node) => !selectedNodes.includes(node)),
+  }));
+};
+
+export const GetListOfNodesSortedByRow = () => {
+  const nodes = useStore.getState().nodes;
+  const nodesSortedByRow = nodes.sort((a, b) => {
+    const yRow = a.position.y - b.position.y;
+
+    if (yRow !== 0) {
+      return yRow;
+    } else {
+      return a.position.x - b.position.x;
+    }
+  });
+
+  return nodesSortedByRow;
+};
+
+export const GetListOfNodesSortedByColumn = () => {
+  const nodes = useStore.getState().nodes;
+  const nodesSortedByColumn = nodes.sort((a, b) => {
+    const xCol = a.position.x - b.position.x;
+
+    if (xCol !== 0) {
+      return xCol;
+    } else {
+      return a.position.y - b.position.y;
+    }
+  });
+
+  console.log("sorted by column", nodesSortedByColumn);
+
+  return nodesSortedByColumn;
+};
+
+const DeleteEdgesOfSelectedNodes = () => {
+  const selectedNodeIds = GetSelectedNodes().map((node) => node.id);
+  const selectedEdges = useStore.getState().edges.filter((edge) => {
+    return (
+      selectedNodeIds.includes(edge.source) ||
+      selectedNodeIds.includes(edge.target)
+    );
+  });
+
+  useStore.setState((state: RFState) => ({
+    edges: state.edges.filter((edge) => !selectedEdges.includes(edge)),
+  }));
+};
+
+const DeleteSelectedEdges = () => {
+  const selectedEdges = GetSelectedEdges();
+  useStore.setState((state: RFState) => ({
+    edges: state.edges.filter((edge) => !selectedEdges.includes(edge)),
+  }));
+};
