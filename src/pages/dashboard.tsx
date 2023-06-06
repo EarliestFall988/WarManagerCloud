@@ -27,6 +27,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { toast } from "react-hot-toast";
+import TooltipComponent from "~/components/Tooltip";
 
 dayjs.extend(relativeTime);
 
@@ -212,6 +213,7 @@ const CrewMembers = () => {
                   </p>
                 </div>
               </Link>
+
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <button className="rounded-sm bg-transparent p-1 transition-all duration-100">
@@ -220,6 +222,7 @@ const CrewMembers = () => {
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content className="w-44 rounded-lg border border-zinc-600 bg-zinc-900/30 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                    <DropdownMenu.DropdownMenuArrow className="text-zinc-600 fill-current" />
                     <DropdownMenu.Item
                       className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-500/50"
                       onClick={(e) => {
@@ -419,6 +422,7 @@ const Projects = () => {
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content className="w-44 rounded-lg border border-zinc-600 bg-zinc-900/30 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                  <DropdownMenu.DropdownMenuArrow className="text-zinc-600 fill-current" />
                     <DropdownMenu.Item
                       className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-500/50"
                       onSelect={() => {
