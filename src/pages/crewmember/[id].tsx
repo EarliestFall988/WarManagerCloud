@@ -9,15 +9,19 @@ import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
-
-
-
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   // const router = useRouter();
 
   const [crewName, setCrewName] = useState("");
   const [position, setPosition] = useState("");
   const [description, setDescription] = useState("");
+
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [travel, setTravel] = useState("No");
+  const [wage, setWage] = useState("0");
+  const [burden, setBurden] = useState("0");
+  const [rating, setRating] = useState("5");
 
   const mutation = api.crewMembers.update.useMutation({
     onSuccess: (data) => {
@@ -50,6 +54,31 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     if (data.description) {
       setDescription(data.description);
     }
+
+    if (data.phone) {
+      setPhone(data.phone);
+    }
+    if (data.email) {
+      setEmail(data.email);
+    }
+
+    if (data.travel) {
+      setTravel(data.travel);
+    }
+
+    if (data.wage) {
+      setWage(data.wage.toString());
+    }
+
+    if (data.burden) {
+      setBurden(data.burden.toString());
+    }
+
+    if (data.rating) {
+      setRating(data.rating);
+    }
+
+
   }, [data]);
 
   if (isLoading)
@@ -75,9 +104,9 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="min-h-screen bg-zinc-800">
-        <NewItemPageHeader title={`${data.name} `} context="crewmembers"/>
+        <NewItemPageHeader title={`${data.name} `} context="crewmembers" />
         <div className="flex items-center justify-center">
-          <div className="flex w-full flex-col items-center justify-center gap-4 p-2 sm:w-3/5">
+          <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-3/5">
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Name</h1>
               <input
@@ -108,6 +137,87 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                 <option value="Other">Other</option>
               </select>
             </div>
+
+            <div className="w-full p-2">
+              <p className="py-1 text-lg">Phone Number</p>
+              <input
+                type="tel"
+                className="peer w-full rounded p-2 text-stone-800 outline-none invalid:[&:not(:placeholder-shown):not(:focus)]:ring invalid:[&:not(:placeholder-shown):not(:focus)]:ring-red-500"
+                placeholder="000-000-0000"
+                value={phone}
+                disabled={isLoading || mutation.isLoading}
+                onChange={(e) => setPhone(e.target.value)}
+                pattern={"[0-9]{3}-[0-9]{3}-[0-9]{4}"}
+              />
+              <p className="mt-2 hidden text-sm text-red-500 peer-[&:not(:placeholder-shown):not(:focus):invalid]:block">
+                Please enter a valid phone number (000-000-0000)
+              </p>
+            </div>
+            <div className="w-full p-2">
+              <p className="py-1 text-lg">Email</p>
+              <input
+                type="email"
+                className="peer w-full rounded p-2 text-stone-800 outline-none invalid:[&:not(:placeholder-shown):not(:focus)]:ring invalid:[&:not(:placeholder-shown):not(:focus)]:ring-red-500"
+                placeholder="someone@example.com"
+                value={email}
+                disabled={isLoading || mutation.isLoading}
+                onChange={(e) => setEmail(e.target.value)}
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+              />
+              <p className="mt-2 hidden text-sm text-red-500 peer-[&:not(:placeholder-shown):not(:focus):invalid]:block">
+                Please enter a valid email address
+              </p>
+            </div>
+            <div className="w-full p-2" />
+            <div className="w-full p-2">
+              <p className="py-1 text-lg">Travel?</p>
+              <select
+                className="w-full rounded p-2 text-stone-800 outline-none"
+                placeholder="Name"
+                value={travel}
+                disabled={isLoading || mutation.isLoading}
+                onChange={(e) => setTravel(e.target.value)}
+              >
+                <option value="No">No</option>
+                <option value="No">Yes</option>
+              </select>
+            </div>
+
+            <div className="w-full p-2">
+              <p className="py-1 text-lg">Wage</p>
+              <input
+                type="number"
+                className="w-full rounded p-2 text-stone-800 outline-none"
+                placeholder="someone@example.com"
+                value={wage}
+                disabled={isLoading || mutation.isLoading}
+                onChange={(e) => setWage(e.target.value)}
+              />
+            </div>
+
+            <div className="w-full p-2">
+              <p className="py-1 text-lg">Burden</p>
+              <input
+                type="number"
+                className="w-full rounded p-2 text-stone-800 outline-none"
+                placeholder="someone@example.com"
+                value={burden}
+                disabled={isLoading || mutation.isLoading}
+                onChange={(e) => setBurden(e.target.value)}
+              />
+            </div>
+            <div className="w-full p-2" />
+            <div className="w-full p-2">
+              <p className="py-1 text-lg">Rating</p>
+              <input
+                type="number"
+                className="w-full rounded p-2 text-stone-800 outline-none"
+                placeholder="someone@example.com"
+                value={rating}
+                disabled={isLoading || mutation.isLoading}
+                onChange={(e) => setRating(e.target.value)}
+              />
+            </div>
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Notes</h1>
               <textarea
@@ -117,6 +227,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
+
             <div className="w-full p-2">
               <button
                 disabled={isLoading || mutation.isLoading}

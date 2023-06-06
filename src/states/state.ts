@@ -21,7 +21,7 @@ import {
 import type { Blueprint } from "@prisma/client";
 import { api } from "~/utils/api";
 
-interface IFlowInstance {
+export interface IFlowInstance {
   nodes: Node[]; //<any>[]??
   edges: Edge[];
   viewport: {
@@ -33,9 +33,6 @@ interface IFlowInstance {
 
 // import initialNodes from "./nodes";
 // import initialEdges from "./edges";
-
-const ydoc = new Y.Doc();
-const yFlowInstance = ydoc.getMap("flowInstance");
 
 const nodes: Node[] = [];
 
@@ -121,45 +118,44 @@ const useBlueprintStore = create<BlueprintState>((set) => ({
   },
 }));
 
-const LoadBlueprintData = (blueprintId: string) => {
-  if (blueprintId === "" || !blueprintId) {
-    return;
-  }
+// const LoadBlueprintData = (blueprintId: string) => {
+//   if (blueprintId === "" || !blueprintId) {
+//     return;
+//   }
 
-  // if (useBlueprintStore.getState().blueprintId === blueprintId) return;
+//   // if (useBlueprintStore.getState().blueprintId === blueprintId) return;
 
-  const { data, isLoading, isError } = api.blueprints.getOneById.useQuery({
-    blueprintId,
-  });
+//   const { data, isLoading, isError } = api.blueprints.getOneById.useQuery({
+//     blueprintId,
+//   });
 
-  if (data) {
-    useBlueprintStore.setState({
-      blueprintId,
-      blueprintInstance: data,
-      isLoading,
-      isError,
-    });
+//   if (data) {
+//     useBlueprintStore.setState({
+//       blueprintId,
+//       blueprintInstance: data,
+//       isLoading,
+//       isError,
+//     });
 
-    const blueprint = JSON.parse(data.data) as IFlowInstance;
+//     const blueprint = JSON.parse(data.data) as IFlowInstance;
 
-    if (!blueprint) return;
+//     if (!blueprint) return;
 
-    // if (nodes.length > 0 || edges.length > 0) {
-    //   return;
-    // }
+//     if (nodes.length > 0 || edges.length > 0) {
+//       return;
+//     }
 
+//     useStore.setState({
+//       nodes: blueprint.nodes,
+//       edges: blueprint.edges,
+//     });
 
-    // useStore.setState({
-    //   nodes: blueprint.nodes,
-    //   edges: blueprint.edges,
-    // });
+//     yFlowInstance.set("nodes", blueprint.nodes);
+//     yFlowInstance.set("edges", blueprint.edges);
+//   }
+// };
 
-    yFlowInstance.set("nodes", blueprint.nodes);
-    yFlowInstance.set("edges", blueprint.edges);
-  }
-};
-
-export { useStore, useBlueprintStore, LoadBlueprintData };
+export { useStore, useBlueprintStore };
 
 export const GetSelectedNodes = () => {
   const nodes = useStore.getState().nodes;

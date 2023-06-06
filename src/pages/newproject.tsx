@@ -58,7 +58,7 @@ const NewProjectPage: NextPage = () => {
               }}
               className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
             >
-              {isCreating ? <LoadingSpinner /> : <p> Add Crew Member</p>}
+              {isCreating ? <LoadingSpinner /> : <p> Create Project</p>}
             </button>
           </div>
         </div>
