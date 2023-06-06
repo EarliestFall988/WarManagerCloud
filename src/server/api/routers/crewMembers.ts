@@ -92,6 +92,12 @@ export const crewMembersRouter = createTRPCRouter({
         name: z.string().min(3).max(255),
         position: z.string().min(3).max(255),
         notes: z.string().min(0).max(255),
+        phone: z.string().min(0).max(255),
+        email: z.string().min(0).max(255),
+        travel: z.boolean(),
+        wage: z.number(),
+        burden: z.number(),
+        rating: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -113,15 +119,15 @@ export const crewMembersRouter = createTRPCRouter({
           position: input.position,
           description: input.notes,
 
-          phone: "",
-          email: "",
-          travel: "",
+          phone: input.phone,
+          email: input.email,
+          travel: input.travel.toString(),
           skills: "",
           rating: "",
           lastReviewDate: new Date(),
 
-          wage: 0,
-          burden: 0,
+          wage: input.wage,
+          burden: input.burden,
           rate: 0,
           hours: 0,
           total: 0,

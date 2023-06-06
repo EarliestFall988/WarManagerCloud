@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -22,6 +22,7 @@ import { useStore } from "../../states/state";
 import crewNode from "~/components/crewNode";
 import projectNode from "~/components/projectNode";
 import { api } from "~/utils/api";
+
 
 export type flowState = {
   nodes: Node[];
@@ -56,7 +57,6 @@ const Flow = () => {
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
   const reactFlowInstance = useReactFlow();
 
-    
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -162,14 +162,14 @@ const Flow = () => {
       </ReactFlow>
     </div>
   );
-}
-  
+};
+
 const FlowWithProvider = () => {
   return (
     <ReactFlowProvider>
       <Flow />
     </ReactFlowProvider>
   );
-}
+};
 
 export default FlowWithProvider;
