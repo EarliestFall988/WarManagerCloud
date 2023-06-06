@@ -74,7 +74,11 @@ const BlueprintsList = () => {
             <Link
               href={`/blueprints/${blueprint.id}`}
               passHref
+<<<<<<< HEAD
               className="flex w-full items-center justify-between gap-1 rounded-sm bg-zinc-700 p-1 py-2 shadow-sm transition-all duration-100 hover:bg-zinc-600"
+=======
+              className="flex gap-1 w-full items-center justify-between rounded-sm bg-zinc-700 p-1 py-2 shadow-sm transition-all duration-100 hover:bg-zinc-600"
+>>>>>>> f85751f9fd1a40a6913f8994ce12e7f4f6b17adf
               key={blueprint.id}
             >
               <DocumentIcon className="h-6 w-6 text-zinc-400" />
