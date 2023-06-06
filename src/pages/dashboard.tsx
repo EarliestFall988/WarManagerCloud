@@ -28,6 +28,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 
 import { toast } from "react-hot-toast";
 import TooltipComponent from "~/components/Tooltip";
+import Image from "next/image";
 
 dayjs.extend(relativeTime);
 
@@ -222,7 +223,7 @@ const CrewMembers = () => {
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content className="w-44 rounded-lg border border-zinc-600 bg-zinc-900/30 p-3 py-2 drop-shadow-lg backdrop-blur ">
-                    <DropdownMenu.DropdownMenuArrow className="text-zinc-600 fill-current" />
+                    <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-600" />
                     <DropdownMenu.Item
                       className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-500/50"
                       onClick={(e) => {
@@ -255,11 +256,11 @@ const CrewMembers = () => {
                         <div className="flex h-screen w-screen items-center justify-center">
                           <Dialog.Content className="fixed top-[50%] m-auto rounded-lg bg-black p-3 py-2 drop-shadow-lg backdrop-blur">
                             <Dialog.Title className="text-lg font-bold text-white">
-                              Delete Project
+                              Delete Crew Member
                             </Dialog.Title>
                             <Dialog.Description className="text-white">
-                              Are you sure you want to delete this project? This
-                              action cannot be undone.
+                              Are you sure you want to delete this crew member?
+                              This action cannot be undone.
                             </Dialog.Description>
                             <div className="mt-4 flex justify-end gap-2">
                               <Dialog.Close asChild>
@@ -422,7 +423,7 @@ const Projects = () => {
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content className="w-44 rounded-lg border border-zinc-600 bg-zinc-900/30 p-3 py-2 drop-shadow-lg backdrop-blur ">
-                  <DropdownMenu.DropdownMenuArrow className="text-zinc-600 fill-current" />
+                    <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-600" />
                     <DropdownMenu.Item
                       className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-500/50"
                       onSelect={() => {
@@ -524,9 +525,61 @@ const DashboardPage: NextPage = () => {
       </Head>
 
       <div className="min-w-screen z-50 min-h-screen bg-black/90 backdrop-blur-sm">
-        <div className="flex items-center justify-between bg-zinc-700 p-2 px-5 text-center text-lg font-semibold text-gray-100 shadow-md">
-          <div className="hidden w-40 sm:flex" />
-          <h1>Dashboard</h1>
+        <div className="flex items-center justify-between p-2 px-5 text-center text-lg font-semibold text-white">
+          <div className="flex gap-1 items-center justify-start" >
+            <Image
+              src="/favicon.ico"
+              width={24}
+              height={24}
+              alt="war manager logo"
+            />
+            <h1>Dashboard</h1>
+          </div>
+          <div className=" text-md hidden w-full flex-col justify-around text-zinc-300 sm:flex sm:w-[45vw] sm:flex-row">
+            <button
+              onClick={() => setContext("Home")}
+              className={`w-full  transition-all duration-200 ${
+                context === "Home"
+                  ? "rounded bg-amber-800 hover:bg-amber-700"
+                  : "rounded hover:bg-zinc-800"
+              }`}
+            >
+              Home
+            </button>
+
+            <button
+              onClick={() => setContext("Blueprints")}
+              className={`w-full  transition-all duration-200 ${
+                context === "Blueprints"
+                  ? "rounded bg-amber-800 hover:bg-amber-700"
+                  : "rounded hover:bg-zinc-800"
+              }`}
+            >
+              Blueprints
+            </button>
+
+            <button
+              onClick={() => setContext("CrewMembers")}
+              className={`w-full  transition-all duration-200 ${
+                context === "CrewMembers"
+                  ? "rounded bg-amber-800 hover:bg-amber-700"
+                  : "rounded hover:bg-zinc-800"
+              }`}
+            >
+              Crew Members
+            </button>
+
+            <button
+              onClick={() => setContext("Projects")}
+              className={`w-full transition-all duration-200 ${
+                context === "Projects"
+                  ? "rounded bg-amber-800 hover:bg-amber-700"
+                  : "rounded hover:bg-zinc-800"
+              }`}
+            >
+              Projects
+            </button>
+          </div>
           <div className="sm:w-40">
             <SignedIn>
               <UserButton showName={true} />
@@ -537,50 +590,67 @@ const DashboardPage: NextPage = () => {
           <div className="flex justify-center">{/* <CreateButtons /> */}</div>
           <SignedIn>
             <div className="flex justify-center">
-              <div className="flex w-full flex-col justify-around bg-zinc-700 sm:w-[45vw] sm:flex-row sm:rounded">
+              <div className="flex w-full flex-col justify-around sm:hidden sm:w-[45vw] sm:flex-row">
                 <button
                   onClick={() => setContext("Home")}
-                  className="w-full  bg-zinc-700 p-2 text-lg font-bold transition-all duration-100 hover:bg-zinc-600 sm:rounded-l"
+                  className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                    context === "Home"
+                      ? "rounded bg-amber-800 hover:bg-amber-700"
+                      : "hover:bg-zinc-600"
+                  }`}
                 >
                   Home
                 </button>
 
                 <button
                   onClick={() => setContext("Blueprints")}
-                  className="w-full bg-zinc-700 p-2 text-lg font-bold transition-all duration-100 hover:bg-zinc-600"
+                  className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                    context === "Blueprints"
+                      ? "rounded bg-amber-800 hover:bg-amber-700"
+                      : "hover:bg-zinc-600"
+                  }`}
                 >
                   Blueprints
                 </button>
 
                 <button
                   onClick={() => setContext("CrewMembers")}
-                  className="w-full bg-zinc-700 p-2 text-lg font-bold transition-all duration-100 hover:bg-zinc-600"
+                  className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                    context === "CrewMembers"
+                      ? "rounded bg-amber-800 hover:bg-amber-700"
+                      : "hover:bg-zinc-600"
+                  }`}
                 >
                   Crew Members
                 </button>
 
                 <button
                   onClick={() => setContext("Projects")}
-                  className="w-full bg-zinc-700 p-2 text-lg font-bold transition-all duration-100 hover:bg-zinc-600 sm:rounded-r"
+                  className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                    context === "Projects"
+                      ? "rounded bg-amber-800 hover:bg-amber-700"
+                      : "hover:bg-zinc-600"
+                  }`}
                 >
                   Projects
                 </button>
               </div>
             </div>
-
-            {context == "Home" && (
-              <>
-                <div className="m-auto flex w-[90vw] items-center justify-between gap-2 sm:w-[74vw] ">
-                  <h2 className="p-2 text-center text-2xl font-bold text-gray-100">
-                    Home
-                  </h2>
-                </div>
-                <Loader />
-              </>
-            )}
-            {context == "Blueprints" && <BlueprintsList />}
-            {context == "CrewMembers" && <CrewMembers />}
-            {context == "Projects" && <Projects />}
+            <div className="overflow-y-auto">
+              {context == "Home" && (
+                <>
+                  <div className="m-auto flex w-[90vw] items-center justify-between gap-2 sm:w-[74vw] ">
+                    <h2 className="p-2 text-center text-2xl font-bold text-gray-100">
+                      Home
+                    </h2>
+                  </div>
+                  <Loader />
+                </>
+              )}
+              {context == "Blueprints" && <BlueprintsList />}
+              {context == "CrewMembers" && <CrewMembers />}
+              {context == "Projects" && <Projects />}
+            </div>
           </SignedIn>
           <SignedOut>
             <div className="fixed flex h-screen w-screen flex-col items-center justify-center gap-4 rounded p-4 backdrop-blur backdrop-brightness-50">
