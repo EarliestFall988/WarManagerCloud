@@ -33,66 +33,92 @@ import Image from "next/image";
 dayjs.extend(relativeTime);
 
 const BlueprintsList = () => {
+  const [blueprintSearchTerm, setBlueprintSearchTerm] = useState("");
+
   const {
     data,
     isLoading: loadingBlueprints,
     isError: loadingBlueprintsError,
-  } = api.blueprints.getAll.useQuery();
+  } = api.blueprints.search.useQuery({
+    search: blueprintSearchTerm,
+  });
 
   // const data = props.data;
 
-  if (loadingBlueprints)
-    return (
-      <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-zinc-700/30 p-2 sm:w-[74vw]">
-        <LoadingSpinner />
-      </div>
-    );
+  // if (loadingBlueprints)
+  //   return (
+  //     <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-zinc-700/30 p-2 sm:w-[74vw]">
+  //       <LoadingSpinner />
+  //     </div>
+  //   );
 
-  if (loadingBlueprintsError || !data)
-    return (
-      <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2 sm:w-[74vw]">
-        <p className="text-lg italic text-red-500">Could not load blueprints</p>
-      </div>
-    );
+  // if (loadingBlueprintsError || !data)
+  //   return (
+  //     <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2 sm:w-[74vw]">
+  //       <p className="text-lg italic text-red-500">Could not load blueprints</p>
+  //     </div>
+  //   );
 
   return (
     <>
-      <div className="m-auto flex w-[90vw] items-center justify-between gap-2 sm:w-[74vw] ">
+      <div className="m-auto flex w-[90vw] items-center justify-between gap-1 sm:w-[74vw] ">
         <h2 className="text-center text-2xl font-bold text-gray-100">
           Blueprints
         </h2>
-        <Link
-          href="/newblueprint"
-          className="rounded bg-gradient-to-br from-amber-700 to-red-700 p-2 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold "
-        >
-          New +
-        </Link>
+        <input
+          type="search"
+          value={blueprintSearchTerm}
+          onChange={(e) => setBlueprintSearchTerm(e.target.value)}
+          placeholder="search blueprints"
+          className="w-3/5 rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700"
+        />
+        <TooltipComponent content="Create a New Blueprint" side="left">
+          <Link
+            href="/newblueprint"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold"
+          >
+            <p>+</p>
+          </Link>
+        </TooltipComponent>
       </div>
-      <div className="flex justify-center">
-        <div className="flex w-full flex-col gap-1 p-2 text-gray-100 sm:w-11/12 md:w-3/4">
-          {data?.map((blueprint) => (
-            <Link
-              href={`/blueprints/${blueprint.id}`}
-              passHref
-              className="flex w-full items-center justify-between gap-1 rounded-sm bg-zinc-700 p-1 py-2 shadow-sm transition-all duration-100 hover:bg-zinc-600"
-              key={blueprint.id}
-            >
-              <DocumentIcon className="h-6 w-6 text-zinc-400" />
-              <h2 className="w-3/2 truncate text-left text-lg font-semibold tracking-tight sm:w-1/4">
-                {blueprint.name}
-              </h2>
-              <div className="hidden font-thin sm:flex sm:w-1/2 ">
-                <p className="w-full truncate text-ellipsis text-center">
-                  {blueprint.description}
-                </p>
-              </div>
-              <p className="w-1/4 truncate text-right text-sm italic">
-                {dayjs(blueprint.updatedAt).fromNow()}
-              </p>
-            </Link>
-          ))}
+
+      {loadingBlueprints ? (
+        <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-zinc-700/30 p-2 sm:w-[74vw]">
+          <LoadingSpinner />
         </div>
-      </div>
+      ) : loadingBlueprintsError || !data ? (
+        <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2 sm:w-[74vw]">
+          <p className="text-lg italic text-red-500">
+            Could not load blueprints
+          </p>
+        </div>
+      ) : (
+        <div className="flex h-[85vh] justify-center overflow-y-auto">
+          <div className="flex w-full flex-col gap-1 p-2 text-gray-100 sm:w-11/12 md:w-3/4">
+            {data?.map((blueprint) => (
+              <Link
+                href={`/blueprints/${blueprint.id}`}
+                passHref
+                className="flex w-full items-center justify-between gap-1 rounded-sm bg-zinc-700 p-1 py-2 shadow-sm transition-all duration-100 hover:bg-zinc-600"
+                key={blueprint.id}
+              >
+                <DocumentIcon className="h-6 w-6 text-zinc-300" />
+                <h2 className="w-3/2 truncate text-left text-lg font-semibold tracking-tight sm:w-1/4">
+                  {blueprint.name}
+                </h2>
+                <div className="hidden font-thin sm:flex sm:w-1/2 ">
+                  <p className="w-full truncate text-ellipsis text-center">
+                    {blueprint.description}
+                  </p>
+                </div>
+                <p className="w-1/4 truncate text-right text-sm italic">
+                  {dayjs(blueprint.updatedAt).fromNow()}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 };
@@ -160,12 +186,14 @@ const CrewMembers = () => {
         <h2 className="text-center text-2xl font-bold text-gray-100">
           Crew Members
         </h2>
-        <Link
-          href="/newCrewMember"
-          className="rounded bg-gradient-to-br from-amber-700 to-red-700 p-2 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold "
-        >
-          New +
-        </Link>
+        <TooltipComponent content="Add a New Crew Member" side="left">
+          <Link
+            href="/newCrewMember"
+            className="flex h-12 w-12 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold"
+          >
+            <p>+</p>
+          </Link>
+        </TooltipComponent>
       </div>
       <div className="flex justify-center">
         <div className="flex w-full flex-col gap-1 p-2 text-gray-100 sm:w-11/12 md:w-3/4">
@@ -350,12 +378,14 @@ const Projects = () => {
         <h2 className="text-center text-2xl font-bold text-gray-100">
           Projects
         </h2>
-        <Link
-          href="/newproject"
-          className="rounded bg-gradient-to-br from-amber-700 to-red-700 p-2 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold "
-        >
-          New +
-        </Link>
+        <TooltipComponent content="Add a New Project" side="left">
+          <Link
+            href="/newproject"
+            className="flex h-12 w-12 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold"
+          >
+            <p>+</p>
+          </Link>
+        </TooltipComponent>
       </div>
       <div className="flex justify-center">
         <div className="flex w-full flex-col gap-1 p-2 text-gray-100 sm:w-11/12 md:w-3/4">
@@ -526,7 +556,7 @@ const DashboardPage: NextPage = () => {
 
       <div className="min-w-screen z-50 min-h-screen bg-black/90 backdrop-blur-sm">
         <div className="flex items-center justify-between p-2 px-5 text-center text-lg font-semibold text-white">
-          <div className="flex gap-1 items-center justify-start" >
+          <div className="flex items-center justify-start gap-1">
             <Image
               src="/favicon.ico"
               width={24}
@@ -535,50 +565,55 @@ const DashboardPage: NextPage = () => {
             />
             <h1>Dashboard</h1>
           </div>
-          <div className=" text-md hidden w-full flex-col justify-around text-zinc-300 sm:flex sm:w-[45vw] sm:flex-row">
-            <button
-              onClick={() => setContext("Home")}
-              className={`w-full  transition-all duration-200 ${
-                context === "Home"
-                  ? "rounded bg-amber-800 hover:bg-amber-700"
-                  : "rounded hover:bg-zinc-800"
-              }`}
-            >
-              Home
-            </button>
-
-            <button
-              onClick={() => setContext("Blueprints")}
-              className={`w-full  transition-all duration-200 ${
-                context === "Blueprints"
-                  ? "rounded bg-amber-800 hover:bg-amber-700"
-                  : "rounded hover:bg-zinc-800"
-              }`}
-            >
-              Blueprints
-            </button>
-
-            <button
-              onClick={() => setContext("CrewMembers")}
-              className={`w-full  transition-all duration-200 ${
-                context === "CrewMembers"
-                  ? "rounded bg-amber-800 hover:bg-amber-700"
-                  : "rounded hover:bg-zinc-800"
-              }`}
-            >
-              Crew Members
-            </button>
-
-            <button
-              onClick={() => setContext("Projects")}
-              className={`w-full transition-all duration-200 ${
-                context === "Projects"
-                  ? "rounded bg-amber-800 hover:bg-amber-700"
-                  : "rounded hover:bg-zinc-800"
-              }`}
-            >
-              Projects
-            </button>
+          <div className="text-md hidden flex-col justify-around gap-2 text-zinc-300 sm:flex sm:w-[45vw] sm:flex-row">
+            <TooltipComponent content="View JR&CO at a Glance" side="bottom">
+              <button
+                onClick={() => setContext("Home")}
+                className={`w-full  transition-all duration-200 ${
+                  context === "Home"
+                    ? "rounded bg-amber-800 hover:bg-amber-700"
+                    : "rounded hover:bg-zinc-800"
+                }`}
+              >
+                At a Glance
+              </button>
+            </TooltipComponent>
+            <TooltipComponent content="View all Blueprints" side="bottom">
+              <button
+                onClick={() => setContext("Blueprints")}
+                className={`w-full  transition-all duration-200 ${
+                  context === "Blueprints"
+                    ? "rounded bg-amber-800 hover:bg-amber-700"
+                    : "rounded hover:bg-zinc-800"
+                }`}
+              >
+                Blueprints
+              </button>
+            </TooltipComponent>
+            <TooltipComponent content="View all Crew Members" side="bottom">
+              <button
+                onClick={() => setContext("CrewMembers")}
+                className={`w-full  transition-all duration-200 ${
+                  context === "CrewMembers"
+                    ? "rounded bg-amber-800 hover:bg-amber-700"
+                    : "rounded hover:bg-zinc-800"
+                }`}
+              >
+                Crew Members
+              </button>
+            </TooltipComponent>
+            <TooltipComponent content="View all Projects" side="bottom">
+              <button
+                onClick={() => setContext("Projects")}
+                className={`w-full transition-all duration-200 ${
+                  context === "Projects"
+                    ? "rounded bg-amber-800 hover:bg-amber-700"
+                    : "rounded hover:bg-zinc-800"
+                }`}
+              >
+                Projects
+              </button>
+            </TooltipComponent>
           </div>
           <div className="sm:w-40">
             <SignedIn>

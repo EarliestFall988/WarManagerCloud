@@ -23,7 +23,6 @@ import crewNode from "~/components/crewNode";
 import projectNode from "~/components/projectNode";
 import { api } from "~/utils/api";
 
-
 export type flowState = {
   nodes: Node[];
   edges: Edge[];
@@ -50,6 +49,8 @@ const Flow = () => {
     selector,
     shallow
   );
+
+  console.log("nodes", nodes);
 
   const { data: crewData } = api.crewMembers.getAll.useQuery();
   const { data: projectData } = api.projects.getAll.useQuery();

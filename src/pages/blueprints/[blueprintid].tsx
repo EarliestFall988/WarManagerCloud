@@ -248,7 +248,11 @@ const BlueprintGUI = () => {
               </Link>
             </TooltipComponent>
             <div className="max-w-1/2 truncate rounded p-1 text-center text-sm font-semibold tracking-tight text-zinc-200 md:text-lg">
-              {blueprint.name ? blueprint.name : <LoadingSpinner />}
+              <TooltipComponent content="Blueprint Name" side="bottom">
+                <div className="py-1">
+                  {blueprint.name ? blueprint.name : <LoadingSpinner />}
+                </div>
+              </TooltipComponent>
             </div>
           </div>
 

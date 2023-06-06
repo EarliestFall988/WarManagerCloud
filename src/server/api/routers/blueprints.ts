@@ -26,6 +26,40 @@ export const blueprintsRouter = createTRPCRouter({
     return blueprints;
   }),
 
+  search: privateProcedure
+    .input(
+      z.object({
+        search: z.string().min(0).max(255),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+
+
+      if (input.search.length < 3) {
+        const blueprints = await ctx.prisma.blueprint.findMany({
+          take: 100,
+          orderBy: {
+            updatedAt: "desc",
+          },
+        });
+        return blueprints;
+      }
+
+      const blueprints = await ctx.prisma.blueprint.findMany({
+        take: 100,
+        where: {
+          name: {
+            contains: input.search,
+          },
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+      });
+
+      return blueprints;
+    }),
+
   getOneById: privateProcedure
     .input(z.object({ blueprintId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -99,5 +133,4 @@ export const blueprintsRouter = createTRPCRouter({
 
       return blueprint;
     }),
-
 });

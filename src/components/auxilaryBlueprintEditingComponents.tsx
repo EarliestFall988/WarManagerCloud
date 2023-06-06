@@ -19,6 +19,7 @@ import { toast } from "react-hot-toast";
 import Image from "next/image";
 import { User } from "@clerk/nextjs/server";
 import { GetListOfNodesSortedByColumn } from "~/states/state";
+import TooltipComponent from "./Tooltip";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -91,7 +92,9 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
             href="/newproject"
             className="rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
           >
-            <PlusIcon className="h-5 w-5" />
+            <TooltipComponent content="Add Project" side={"top"}>
+              <PlusIcon className="h-5 w-5" />
+            </TooltipComponent>
           </Link>
         </div>
 
@@ -110,30 +113,42 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           )}
         </div>
         <div className="flex gap-1">
-          <button
-            onClick={() => setNodeMode("all")}
-            className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
-              nodeMode === "all" ? "bg-zinc-600" : ""
-            }`}
+          <TooltipComponent content="View All Projects" side={"top"}>
+            <button
+              onClick={() => setNodeMode("all")}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
+                nodeMode === "all" ? "bg-zinc-600" : ""
+              }`}
+            >
+              <MagnifyingGlassIcon className="h-5 w-5" />
+            </button>
+          </TooltipComponent>
+          <TooltipComponent
+            content="View Projects NOT on the blueprint"
+            side={"top"}
           >
-            <MagnifyingGlassIcon className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => setNodeMode("notOnBlueprint")}
-            className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
-              nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
-            }`}
+            <button
+              onClick={() => setNodeMode("notOnBlueprint")}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
+                nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
+              }`}
+            >
+              <QueueListIcon className="h-5 w-5" />
+            </button>
+          </TooltipComponent>
+          <TooltipComponent
+            content="View Projects ONLY on the blueprint"
+            side={"top"}
           >
-            <QueueListIcon className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => setNodeMode("onlyOnBlueprint")}
-            className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
-              nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
-            }`}
-          >
-            <ListBulletIcon className="h-5 w-5" />
-          </button>
+            <button
+              onClick={() => setNodeMode("onlyOnBlueprint")}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
+                nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
+              }`}
+            >
+              <ListBulletIcon className="h-5 w-5" />
+            </button>
+          </TooltipComponent>
         </div>
       </div>
       <div className="flex flex-col items-end border-b border-zinc-600 p-1 py-2">
@@ -267,7 +282,9 @@ export const CrewList = (props: { nodes: Node[] }) => {
             href="/newCrewMember"
             className="rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
           >
-            <PlusIcon className="h-5 w-5" />
+            <TooltipComponent content="Add Crew Member" side={"top"}>
+              <PlusIcon className="h-5 w-5" />
+            </TooltipComponent>
           </Link>
         </div>
 
@@ -286,30 +303,36 @@ export const CrewList = (props: { nodes: Node[] }) => {
           )}
         </div>
         <div className="flex gap-1">
-          <button
-            onClick={() => setNodeMode("all")}
-            className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
-              nodeMode === "all" ? "bg-zinc-600" : ""
-            }`}
-          >
-            <MagnifyingGlassIcon className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => setNodeMode("notOnBlueprint")}
-            className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
-              nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
-            }`}
-          >
-            <QueueListIcon className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => setNodeMode("onlyOnBlueprint")}
-            className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
-              nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
-            }`}
-          >
-            <ListBulletIcon className="h-5 w-5" />
-          </button>
+          <TooltipComponent content="View All Crew Members" side={"top"}>
+            <button
+              onClick={() => setNodeMode("all")}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
+                nodeMode === "all" ? "bg-zinc-600" : ""
+              }`}
+            >
+              <MagnifyingGlassIcon className="h-5 w-5" />
+            </button>
+          </TooltipComponent>
+          <TooltipComponent content="View Crew Members NOT on the blueprints" side={"top"}>
+            <button
+              onClick={() => setNodeMode("notOnBlueprint")}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
+                nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
+              }`}
+            >
+              <QueueListIcon className="h-5 w-5" />
+            </button>
+          </TooltipComponent>
+          <TooltipComponent content="View Crew Members ONLY on the blueprint" side={"top"}>
+            <button
+              onClick={() => setNodeMode("onlyOnBlueprint")}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
+                nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
+              }`}
+            >
+              <ListBulletIcon className="h-5 w-5" />
+            </button>
+          </TooltipComponent>
         </div>
       </div>
       <div className="flex flex-col items-end border-b border-zinc-600 p-1 py-2">
@@ -512,7 +535,7 @@ export const ExportBlueprint = () => {
                       </p>
                     </div>
                   )}
-                  <p className="font-semibold w-full truncate text-left text-lg tracking-tight">
+                  <p className="w-full truncate text-left text-lg font-semibold tracking-tight">
                     {data.title}
                   </p>
                   <p className="text-sm text-zinc-400">
@@ -688,7 +711,6 @@ export const Stats = (props: {
 };
 
 export const More = () => {
-
   GetListOfNodesSortedByColumn();
 
   return (
