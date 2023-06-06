@@ -27,6 +27,43 @@ export const crewMembersRouter = createTRPCRouter({
     return crewMembers;
   }),
 
+  search: privateProcedure
+    .input(z.object({ search: z.string().min(0).max(255) }))
+    .query(async ({ ctx, input }) => {
+      if (input.search.length < 3) {
+        const crewMembers = await ctx.prisma.crewMember.findMany({
+          take: 100,
+          orderBy: {
+            name: "asc",
+          },
+        });
+        return crewMembers;
+      }
+
+      const crewMembers = await ctx.prisma.crewMember.findMany({
+        take: 100,
+        where: {
+          OR: [
+            {
+              name: {
+                contains: input.search,
+              },
+            },
+            {
+              position: {
+                contains: input.search,
+              },
+            },
+          ],
+        },
+        orderBy: {
+          name: "asc",
+        },
+      });
+
+      return crewMembers;
+    }),
+
   getById: privateProcedure
     .input(z.object({ crewMemberId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -45,7 +82,7 @@ export const crewMembersRouter = createTRPCRouter({
         where: {
           name: {
             contains: input.name,
-          }
+          },
         },
       });
       return crewMembers;

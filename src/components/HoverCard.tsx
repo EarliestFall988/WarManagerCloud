@@ -13,12 +13,12 @@ const HoverCardComponent: FC<Props> = (props) => {
       <HoverCard.Trigger asChild>{props.trigger}</HoverCard.Trigger>
       <HoverCard.Portal>
         <HoverCard.Content
-          className="HoverCardContent rounded border border-zinc-700 bg-black/60 p-3 text-zinc-200 drop-shadow-lg backdrop-blur"
-          sideOffset={5}
+          sideOffset={-5}
+          className="HoverCardContent rounded border border-zinc-700 bg-black/60 p-3 text-zinc-200 drop-shadow-lg shadow-lg backdrop-blur"
         >
           {props.content}
           <HoverCard.Arrow
-            className="fill-current text-zinc-700"
+            className="fill-current text-zinc-700 drop-shadow-lg"
             width={20}
             height={10}
           />

@@ -26,6 +26,58 @@ export const projectsRouter = createTRPCRouter({
     return projects;
   }),
 
+  search: privateProcedure
+    .input(z.object({ search: z.string().min(0).max(255) }))
+    .query(async ({ ctx, input }) => {
+      if (input.search.length < 3) {
+        const projects = await ctx.prisma.project.findMany({
+          take: 100,
+          orderBy: {
+            name: "asc",
+          },
+        });
+        return projects;
+      }
+
+      const projects = await ctx.prisma.project.findMany({
+        take: 100,
+        where: {
+          OR: [
+            {
+              name: {
+                contains: input.search,
+              },
+            },
+            {
+              jobNumber: {
+                contains: input.search,
+              },
+            },
+            {
+              city: {
+                contains: input.search,
+              },
+            },
+            {
+              state: {
+                contains: input.search,
+              },
+            },
+            {
+              description: {
+                contains: input.search,
+              },
+            },
+          ],
+        },
+        orderBy: {
+          name: "asc",
+        },
+      });
+
+      return projects;
+    }),
+
   getById: privateProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {

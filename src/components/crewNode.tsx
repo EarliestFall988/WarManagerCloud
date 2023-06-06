@@ -53,7 +53,7 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
     <>
       <HoverCardComponent
         trigger={
-          <div>
+          <div className="w-full h-full">
             {/* <Handle type="target" position={Position.Bottom} id={"fanfan"} /> */}
             <div className={theme}>
               <div className="h-8 w-28">
