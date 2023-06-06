@@ -23,7 +23,7 @@ import {
   useBlueprintStore,
   useStore as flowStore,
   DeleteSelected,
-  IFlowInstance,
+  type IFlowInstance,
 } from "../../states/state";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import {
@@ -39,8 +39,8 @@ import { api } from "~/utils/api";
 import { shallow } from "zustand/shallow";
 import { toast } from "react-hot-toast";
 import FlowWithProvider from "./flow";
-import { Blueprint } from "@prisma/client";
-import { setTimeout } from "timers/promises";
+import type { Blueprint } from "@prisma/client";
+
 
 const selector = (state: flowState) => ({
   nodes: state.nodes,

@@ -11,12 +11,10 @@ import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
-  CheckBadgeIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
   DocumentIcon,
   EllipsisVerticalIcon,
-  MapIcon,
   MapPinIcon,
   PaperAirplaneIcon,
   PhoneIcon,
@@ -75,7 +73,6 @@ const BlueprintsList = () => {
               href={`/blueprints/${blueprint.id}`}
               passHref
               className="flex w-full items-center justify-between gap-1 rounded-sm bg-zinc-700 p-1 py-2 shadow-sm transition-all duration-100 hover:bg-zinc-600"
-
               key={blueprint.id}
             >
               <DocumentIcon className="h-6 w-6 text-zinc-400" />
