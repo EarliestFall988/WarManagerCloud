@@ -76,7 +76,7 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
         content={
           <div>
             <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-              <div className="flex items-center gap-3 ">
+              <div className="flex items-center gap-3 pb-3">
                 <UserCircleIcon className="h-12 w-12" />
                 <div>
                   <div className="text-lg font-semibold">{data.name}</div>

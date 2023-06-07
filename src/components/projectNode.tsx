@@ -57,9 +57,9 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
         content={
           <div>
             <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-              <div className="flex justify-center items-center gap-3 ">
+              <div className="flex justify-left items-center gap-3 ">
                 <WrenchScrewdriverIcon className="h-12 w-12" />
-                <div>
+                <div className="pb-5">
                   <div>{data.jobNumber}</div>
                   <div className="text-lg font-semibold">{data.name}</div>
                   <div className="flex truncate text-ellipsis text-sm italic tracking-tight text-zinc-300">

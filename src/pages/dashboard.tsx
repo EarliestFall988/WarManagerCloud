@@ -740,7 +740,7 @@ const DashboardPage: NextPage = () => {
             </h1>
           </div>
           <div className="text-md hidden flex-col justify-around gap-2 text-zinc-300 sm:flex sm:w-[45vw] sm:flex-row">
-            <TooltipComponent content="View JR&CO at a Glance" side="bottom">
+            <TooltipComponent content="View Overall JR&CO Performance" side="bottom">
               <button
                 onClick={() => setContext("Home")}
                 className={`w-full  transition-all duration-200 ${
