@@ -29,6 +29,11 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { toast } from "react-hot-toast";
 import TooltipComponent from "~/components/Tooltip";
 import Image from "next/image";
+import { ReactECharts } from "~/components/charts/React-Echarts";
+import GaugeOption from "~/components/charts/GaugeChartDataTest";
+import PieChartOption from "~/components/charts/PieChartDataTest";
+import BarChartOption from "~/components/charts/BarChartDataTest";
+import CalendarHeatMapOption from "~/components/charts/CalendarHeatMapDataTest";
 
 dayjs.extend(relativeTime);
 
@@ -577,6 +582,31 @@ const Loader = () => {
   );
 };
 
+const DashboardAtAGlance = () => {
+  const loading = false;
+
+  return (
+    <>
+      <div className="m-auto flex w-[90vw] items-center justify-between gap-2 sm:w-[74vw] ">
+        {/* <h2 className="p-2 text-center text-2xl font-bold text-gray-100">
+          At a Glance
+        </h2> */}
+      </div>
+      {loading ? (
+        <Loader />
+      ) : (
+        <div className="m-auto flex h-[90vh] flex-wrap items-center gap-3 overflow-y-scroll p-1">
+          <ReactECharts option={GaugeOption} />
+          {/* <ReactECharts option={CalendarHeatMapOption} /> */}
+          <ReactECharts option={PieChartOption} />
+          <ReactECharts option={BarChartOption} />
+          <ReactECharts option={GaugeOption} />
+        </div>
+      )}
+    </>
+  );
+};
+
 const DashboardPage: NextPage = () => {
   const [context, setContext] = useState("Blueprints");
 
@@ -720,16 +750,7 @@ const DashboardPage: NextPage = () => {
               </div>
             </div>
             <div className="overflow-y-auto">
-              {context == "Home" && (
-                <>
-                  <div className="m-auto flex w-[90vw] items-center justify-between gap-2 sm:w-[74vw] ">
-                    <h2 className="p-2 text-center text-2xl font-bold text-gray-100">
-                      Home
-                    </h2>
-                  </div>
-                  <Loader />
-                </>
-              )}
+              {context == "Home" && <DashboardAtAGlance />}
               {context == "Blueprints" && <BlueprintsList />}
               {context == "CrewMembers" && <CrewMembers />}
               {context == "Projects" && <Projects />}
