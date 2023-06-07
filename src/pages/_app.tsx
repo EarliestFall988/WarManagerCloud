@@ -21,7 +21,6 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         appearance={{
           baseTheme: dark,
         }}
-
         {...pageProps}
       >
         <Toaster position="bottom-center" />
@@ -30,5 +29,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     </>
   );
 };
+
+export { reportWebVitals } from "next-axiom";
 
 export default api.withTRPC(MyApp);
