@@ -6,7 +6,6 @@ import {
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import type { NextPage } from "next";
 import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
