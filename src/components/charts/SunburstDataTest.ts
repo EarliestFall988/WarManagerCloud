@@ -1146,13 +1146,31 @@ const SunBurstTestOption: ReactEChartsProps["option"] = {
   tooltip: {
     trigger: "item",
     triggerOn: "mousemove",
+    valueFormatter: function (value: number) {
+      return "$" + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    },
+    // formatter: function (params: any) {
+    //   if (params.data.children) {
+    //     return params.data.name;
+    //   } else {
+    //     return `${params.data.name}: $${params.data.value}`;
+    //   }
+    // }
   },
   visualMap: {
     type: "continuous",
     min: 0,
-    max: 50000000,
+    max: 55000000,
     inRange: {
-      color: ["red", "blue", "purple"],
+      color: ["red", "blue", "green"],
+    },
+    textStyle: {
+      color: "#fff",
+      precision: 100,
+    },
+    calculable: true,
+    formatter: function (value: number) {
+      return (value / 1000000).toString().substring(0, 4) + " Million";
     },
   },
   series: {
@@ -1184,6 +1202,7 @@ const SunBurstTestOption: ReactEChartsProps["option"] = {
         r: "72%",
         label: {
           align: "center",
+          rotate: "radial",
         },
         itemStyle: {
           borderWidth: 1,
@@ -1197,7 +1216,7 @@ const SunBurstTestOption: ReactEChartsProps["option"] = {
           position: "outside",
           padding: 3,
           silent: false,
-          color: "#fff",
+          color: "#aaa",
         },
         itemStyle: {
           borderWidth: 1,

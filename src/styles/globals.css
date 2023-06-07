@@ -95,7 +95,7 @@ a {
 
 .TooltipContent {
   animation-duration: 400ms;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-timing-function: cubic-bezier(4, 10, 5, 40);
   will-change: transform, opacity;
 }
 

@@ -82,7 +82,7 @@ const BlueprintsList = () => {
   return (
     <>
       <div className="m-auto flex w-[90vw] items-center justify-between gap-1 sm:w-[74vw] ">
-        <h2 className="text-center text-2xl font-bold text-gray-100">
+        <h2 className="hidden text-left text-2xl font-bold text-gray-100 sm:block sm:w-1/5">
           Blueprints
         </h2>
         <input
@@ -90,7 +90,7 @@ const BlueprintsList = () => {
           value={blueprintSearchTerm}
           onChange={(e) => setBlueprintSearchTerm(e.target.value)}
           placeholder="search blueprints"
-          className="w-3/5 rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700"
+          className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
         />
         <TooltipComponent content="Create a New Blueprint" side="left">
           <Link
@@ -192,7 +192,7 @@ const CrewMembers = () => {
   return (
     <>
       <div className="m-auto flex w-[90vw] items-center justify-between gap-2 sm:w-[74vw] ">
-        <h2 className="text-center text-2xl font-bold text-gray-100">
+        <h2 className="hidden text-left font-bold text-gray-100 sm:block sm:w-1/5 sm:text-2xl ">
           Crew Members
         </h2>
         <input
@@ -200,12 +200,12 @@ const CrewMembers = () => {
           value={crewSearchTerm}
           onChange={(e) => setCrewSearchTerm(e.target.value)}
           placeholder="search crew members by name, or position"
-          className="w-3/5 rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700"
+          className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
         />
         <TooltipComponent content="Add a New Crew Member" side="left">
           <Link
             href="/newCrewMember"
-            className="flex h-12 w-12 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold"
+            className="flex h-10 w-10 sm:h-12 sm:w-12 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold"
           >
             <p>+</p>
           </Link>
@@ -286,10 +286,10 @@ const CrewMembers = () => {
                       </button>
                     </DropdownMenu.Trigger>
                     <DropdownMenu.Portal>
-                      <DropdownMenu.Content className="w-44 rounded-lg border border-zinc-600 bg-zinc-900/30 p-3 py-2 drop-shadow-lg backdrop-blur ">
-                        <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-600" />
+                      <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-700 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                        <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-700" />
                         <DropdownMenu.Item
-                          className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-500/50"
+                          className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
                           onClick={(e) => {
                             e.preventDefault();
                             copy(crewMember.email, "Email");
@@ -299,7 +299,7 @@ const CrewMembers = () => {
                           Copy Email
                         </DropdownMenu.Item>
                         <DropdownMenu.Item
-                          className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-500/50"
+                          className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
                           onSelect={(e) => {
                             e.preventDefault();
                             copy(crewMember.phone, "Phone");
@@ -405,7 +405,7 @@ const Projects = () => {
   return (
     <>
       <div className="m-auto flex w-[90vw] items-center justify-between gap-2 sm:w-[74vw] ">
-        <h2 className="text-center text-2xl font-bold text-gray-100">
+        <h2 className="hidden text-left text-2xl font-bold text-gray-100 sm:block sm:w-1/5">
           Projects
         </h2>
         <input
@@ -413,12 +413,12 @@ const Projects = () => {
           value={projectSearchTerm}
           onChange={(e) => setProjectsSearchTerm(e.target.value)}
           placeholder="search projects by name, job code, or address"
-          className="w-3/5 rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700"
+          className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
         />
         <TooltipComponent content="Add a New Project" side="left">
           <Link
             href="/newproject"
-            className="flex h-12 w-12 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold"
+            className="flex h-10 w-10 sm:h-12 sm:w-12 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold"
           >
             <p>+</p>
           </Link>
@@ -506,10 +506,10 @@ const Projects = () => {
                       </button>
                     </DropdownMenu.Trigger>
                     <DropdownMenu.Portal>
-                      <DropdownMenu.Content className="w-44 rounded-lg border border-zinc-600 bg-zinc-900/30 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                      <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-600 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
                         <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-600" />
                         <DropdownMenu.Item
-                          className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-500/50"
+                          className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
                           onSelect={() => {
                             copyAddress(
                               project.address +
@@ -533,7 +533,7 @@ const Projects = () => {
                             </button>
                           </Dialog.Trigger>
                           <Dialog.Portal>
-                            <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/30 backdrop-blur" />
+                            <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/50 backdrop-blur" />
                             <div className="flex h-screen w-screen items-center justify-center">
                               <Dialog.Content className="fixed top-[50%] m-auto rounded-lg bg-black p-3 py-2 drop-shadow-lg backdrop-blur">
                                 <Dialog.Title className="text-lg font-bold text-white">
