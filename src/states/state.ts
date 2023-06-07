@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 import { persist } from "zustand/middleware";
 
-import * as Y from "yjs";
+// import * as Y from "yjs";
 
 import {
   type Connection,
