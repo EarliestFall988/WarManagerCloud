@@ -8,7 +8,13 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import Link from "next/link";
 import Head from "next/head";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { FC, ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  type FC,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useRouter } from "next/router";
 import {
   ArrowsUpDownIcon,
@@ -19,7 +25,6 @@ import {
   MapPinIcon,
   PaperAirplaneIcon,
   PhoneIcon,
-  SparklesIcon,
   TrashIcon,
   UserCircleIcon,
   WrenchScrewdriverIcon,
@@ -32,10 +37,10 @@ import { toast } from "react-hot-toast";
 import TooltipComponent from "~/components/Tooltip";
 import Image from "next/image";
 import { ReactECharts } from "~/components/charts/React-Echarts";
-import GaugeOption from "~/components/charts/GaugeChartDataTest";
-import PieChartOption from "~/components/charts/PieChartDataTest";
+// import GaugeOption from "~/components/charts/GaugeChartDataTest";
+// import PieChartOption from "~/components/charts/PieChartDataTest";
 import BarChartOption from "~/components/charts/BarChartDataTest";
-import CalendarHeatMapOption from "~/components/charts/CalendarHeatMapDataTest";
+// import CalendarHeatMapOption from "~/components/charts/CalendarHeatMapDataTest";
 import {
   ProjectPerformanceRatingCustomer,
   ProjectPerformanceRatingQuality,
@@ -605,7 +610,7 @@ const PieChartCard: FC<PieChartCardProps> = ({ title, chart }) => {
   };
 
   return (
-   <>
+    <>
       <div
         className={`${
           open ? "h-72 w-1/4" : "h-14 w-1/4"
@@ -693,7 +698,7 @@ const DashboardAtAGlance = () => {
               />
             </div>
           </div>
-          <div className="h-full m-5 rounded">
+          <div className="m-5 h-full rounded">
             <ReactEChartsLarge option={SunBurstTestOption} />
           </div>
         </div>

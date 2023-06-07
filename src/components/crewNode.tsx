@@ -7,7 +7,7 @@ import {
 import { memo } from "react";
 import { NodeResizer } from "reactflow";
 
-import * as HoverCard from "@radix-ui/react-hover-card";
+// import * as HoverCard from "@radix-ui/react-hover-card";
 import HoverCardComponent from "./HoverCard";
 
 interface crewNodeInput {
