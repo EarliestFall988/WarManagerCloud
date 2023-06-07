@@ -12,7 +12,7 @@ body {
 }
 
 *::-webkit-scrollbar-track {
-  @apply bg-zinc-800;
+  @apply bg-zinc-900;
   @apply rounded-md;
 }
 

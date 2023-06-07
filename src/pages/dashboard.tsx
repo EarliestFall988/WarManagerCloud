@@ -8,9 +8,10 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import Link from "next/link";
 import Head from "next/head";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { useCallback, useEffect, useState } from "react";
+import { FC, ReactNode, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
+  ArrowsUpDownIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
   DocumentIcon,
@@ -18,6 +19,7 @@ import {
   MapPinIcon,
   PaperAirplaneIcon,
   PhoneIcon,
+  SparklesIcon,
   TrashIcon,
   UserCircleIcon,
   WrenchScrewdriverIcon,
@@ -588,6 +590,40 @@ const Loader = () => {
   );
 };
 
+type PieChartCardProps = {
+  title: string;
+  chart: ReactNode;
+};
+
+const PieChartCard: FC<PieChartCardProps> = ({ title, chart }) => {
+  const [open, setOpen] = useState(true);
+
+  const toggleOpen = () => {
+    setOpen(!open);
+  };
+
+  return (
+    <div className="md:w-1/3">
+      <div
+        className={`${
+          open ? "h-72 w-full" : "h-14 w-full"
+        } rounded bg-zinc-700 transition-all duration-200 overflow-hidden `}
+      >
+        <div className="flex items-start justify-between p-2">
+          <h3 className="text-zinc-400">{title}</h3>
+          <button
+            onClick={() => toggleOpen()}
+            className="rounded bg-zinc-600 p-2 shadow hover:scale-105 transition-all duration-100 hover:bg-zinc-500"
+          >
+            <ArrowsUpDownIcon className="h-6 w-6 text-zinc-300" />
+          </button>
+        </div>
+        {open && <div>{chart}</div>}
+      </div>
+    </div>
+  );
+};
+
 const DashboardAtAGlance = () => {
   const loading = false;
 
@@ -601,60 +637,58 @@ const DashboardAtAGlance = () => {
       {loading ? (
         <Loader />
       ) : (
-        <div className="justify-left flex h-auto flex-wrap gap-5 p-5 md:h-[90vh] md:overflow-y-auto">
+        <div className="h-auto items-start overflow-x-clip p-5 md:h-[90vh] md:overflow-y-auto">
           {/* <ReactECharts option={GaugeOption} /> */}
           {/* <ReactECharts option={CalendarHeatMapOption} /> */}
           {/* <ReactECharts option={PieChartOption} /> */}
-          <div className="h-80 rounded bg-zinc-200 md:w-3/6">
+          <div className="h-80 my-1 rounded bg-zinc-200 shadow-lg md:w-3/6">
             <h3 className="py-2 text-center text-lg font-semibold text-zinc-900">
               All Jobs
             </h3>
             <ReactECharts option={BarChartOption} width="w-full" />
           </div>
           {/* <ReactECharts option={GaugeOption} /> */}
-          <div className="m-auto flex w-full flex-col gap-1 md:flex-row">
-            <div className="flex items-center justify-center rounded bg-gradient-to-br from-zinc-600 to-zinc-700 font-bold text-zinc-100 md:m-0 md:text-sm">
-              <p className="whitespace-nowrap md:-rotate-90">
-                Overall Ratings{" "}
-              </p>
+          <div className="mx-auto flex min-h-[30vh] w-full flex-col justify-start gap-1 md:flex-row">
+            <div className="mx-auto flex items-center justify-center py-5 md:py-0 rounded md:bg-zinc-700 font-bold text-zinc-100 md:m-0 md:text-sm">
+              <p className="whitespace-nowrap md:-rotate-90">Overall Ratings</p>
             </div>
-            <div className="m-auto flex w-full flex-wrap gap-1">
-              <div className="h-72 rounded bg-zinc-700 md:w-3/12">
-                <h3 className="py-2 text-center text-lg font-semibold">
-                  Project Performance Rating - Safety
-                </h3>
-                <ReactECharts
-                  option={ProjectPerformanceRatingSafety}
-                  width="full"
-                />
-              </div>
-              <div className="h-72 rounded bg-zinc-700 md:w-3/12">
-                <h3 className="py-2 text-center text-lg font-semibold">
-                  Project Performance Rating - Customer
-                </h3>
-                <ReactECharts
-                  option={ProjectPerformanceRatingCustomer}
-                  width="full"
-                />
-              </div>
-              <div className="h-72 rounded bg-zinc-700 md:w-3/12">
-                <h3 className="py-2 text-center text-lg font-semibold">
-                  Project Performance Rating - Performance
-                </h3>
-                <ReactECharts
-                  option={ProjectPerformanceRatingQuality}
-                  width="full"
-                />
-              </div>
-              <div className="h-72 rounded bg-zinc-700 md:w-3/12">
-                <h3 className="py-2 text-center text-lg font-semibold">
-                  Project Performance Rating - Staffing
-                </h3>
-                <ReactECharts
-                  option={ProjectPerformanceRatingStaffing}
-                  width="full"
-                />
-              </div>
+            <div className="mx-auto flex w-full flex-wrap gap-1">
+              <PieChartCard
+                title="Safety"
+                chart={
+                  <ReactECharts
+                    option={ProjectPerformanceRatingSafety}
+                    width="full"
+                  />
+                }
+              />
+              <PieChartCard
+                title="Customer"
+                chart={
+                  <ReactECharts
+                    option={ProjectPerformanceRatingCustomer}
+                    width="full"
+                  />
+                }
+              />
+              <PieChartCard
+                title="Performance"
+                chart={
+                  <ReactECharts
+                    option={ProjectPerformanceRatingQuality}
+                    width="full"
+                  />
+                }
+              />
+              <PieChartCard
+                title="Staffing"
+                chart={
+                  <ReactECharts
+                    option={ProjectPerformanceRatingStaffing}
+                    width="full"
+                  />
+                }
+              />
             </div>
           </div>
         </div>
@@ -677,7 +711,11 @@ const DashboardPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{`Dashboard ${context=== "Home" ? "(At a Glance)" : ""} ${context=== "Blueprints" ? "(Blueprints)" : ""} ${context=== "CrewMembers" ? "(Crew Members)" : ""} ${context=== "Projects" ? "(Projects)" : ""} - War Manager`}</title>
+        <title>{`Dashboard ${context === "Home" ? "(At a Glance)" : ""} ${
+          context === "Blueprints" ? "(Blueprints)" : ""
+        } ${context === "CrewMembers" ? "(Crew Members)" : ""} ${
+          context === "Projects" ? "(Projects)" : ""
+        } - War Manager`}</title>
         <meta property="og:title" content="Where you can manage anything." />
         <meta
           property="og:description"
@@ -688,7 +726,7 @@ const DashboardPage: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-w-screen z-50 min-h-screen bg-black/90 backdrop-blur-sm">
+      <div className="min-w-screen z-50 min-h-screen bg-zinc-800">
         <div className="flex items-center justify-between p-2 px-5 text-center text-lg font-semibold text-white">
           <div className="flex items-center justify-start gap-1">
             <Image
@@ -697,7 +735,9 @@ const DashboardPage: NextPage = () => {
               height={24}
               alt="war manager logo"
             />
-            <h1>Dashboard</h1>
+            <h1 className="text-sm sm:hidden lg:block lg:text-lg">
+              War Manager Dashboard
+            </h1>
           </div>
           <div className="text-md hidden flex-col justify-around gap-2 text-zinc-300 sm:flex sm:w-[45vw] sm:flex-row">
             <TooltipComponent content="View JR&CO at a Glance" side="bottom">
@@ -826,7 +866,7 @@ const DashboardPage: NextPage = () => {
           </SignedOut>
         </div>
       </div>
-      <div className="fixed inset-0 top-0 -z-10 min-h-screen bg-bhall bg-top" />
+      {/* <div className="fixed inset-0 top-0 -z-10 min-h-screen bg-bhall bg-top" /> */}
     </>
   );
 };
