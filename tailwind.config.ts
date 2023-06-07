@@ -10,4 +10,7 @@ export default {
     },
   },
   plugins: [],
+  safelist: [
+    'verticalText',
+  ]
 } satisfies Config;

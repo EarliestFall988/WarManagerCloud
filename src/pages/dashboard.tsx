@@ -34,6 +34,12 @@ import GaugeOption from "~/components/charts/GaugeChartDataTest";
 import PieChartOption from "~/components/charts/PieChartDataTest";
 import BarChartOption from "~/components/charts/BarChartDataTest";
 import CalendarHeatMapOption from "~/components/charts/CalendarHeatMapDataTest";
+import {
+  ProjectPerformanceRatingCustomer,
+  ProjectPerformanceRatingQuality,
+  ProjectPerformanceRatingSafety,
+  ProjectPerformanceRatingStaffing,
+} from "~/components/charts/PerformanceDataPieChart";
 
 dayjs.extend(relativeTime);
 
@@ -595,12 +601,62 @@ const DashboardAtAGlance = () => {
       {loading ? (
         <Loader />
       ) : (
-        <div className="m-auto flex h-[90vh] flex-wrap items-center gap-3 overflow-y-scroll p-1">
-          <ReactECharts option={GaugeOption} />
+        <div className="justify-left flex h-auto flex-wrap gap-5 p-5 md:h-[90vh] md:overflow-y-auto">
+          {/* <ReactECharts option={GaugeOption} /> */}
           {/* <ReactECharts option={CalendarHeatMapOption} /> */}
-          <ReactECharts option={PieChartOption} />
-          <ReactECharts option={BarChartOption} />
-          <ReactECharts option={GaugeOption} />
+          {/* <ReactECharts option={PieChartOption} /> */}
+          <div className="h-80 rounded bg-zinc-200 md:w-3/6">
+            <h3 className="py-2 text-center text-lg font-semibold text-zinc-900">
+              All Jobs
+            </h3>
+            <ReactECharts option={BarChartOption} width="w-full" />
+          </div>
+          {/* <ReactECharts option={GaugeOption} /> */}
+          <div className="m-auto flex w-full flex-col gap-1 md:flex-row">
+            <div className="flex items-center justify-center rounded bg-gradient-to-br from-zinc-600 to-zinc-700 font-bold text-zinc-100 md:m-0 md:text-sm">
+              <p className="whitespace-nowrap md:-rotate-90">
+                Overall Ratings{" "}
+              </p>
+            </div>
+            <div className="m-auto flex w-full flex-wrap gap-1">
+              <div className="h-72 rounded bg-zinc-700 md:w-3/12">
+                <h3 className="py-2 text-center text-lg font-semibold">
+                  Project Performance Rating - Safety
+                </h3>
+                <ReactECharts
+                  option={ProjectPerformanceRatingSafety}
+                  width="full"
+                />
+              </div>
+              <div className="h-72 rounded bg-zinc-700 md:w-3/12">
+                <h3 className="py-2 text-center text-lg font-semibold">
+                  Project Performance Rating - Customer
+                </h3>
+                <ReactECharts
+                  option={ProjectPerformanceRatingCustomer}
+                  width="full"
+                />
+              </div>
+              <div className="h-72 rounded bg-zinc-700 md:w-3/12">
+                <h3 className="py-2 text-center text-lg font-semibold">
+                  Project Performance Rating - Performance
+                </h3>
+                <ReactECharts
+                  option={ProjectPerformanceRatingQuality}
+                  width="full"
+                />
+              </div>
+              <div className="h-72 rounded bg-zinc-700 md:w-3/12">
+                <h3 className="py-2 text-center text-lg font-semibold">
+                  Project Performance Rating - Staffing
+                </h3>
+                <ReactECharts
+                  option={ProjectPerformanceRatingStaffing}
+                  width="full"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </>
@@ -621,7 +677,7 @@ const DashboardPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Dashboard - War Manager</title>
+        <title>{`Dashboard ${context=== "Home" ? "(At a Glance)" : ""} ${context=== "Blueprints" ? "(Blueprints)" : ""} ${context=== "CrewMembers" ? "(Crew Members)" : ""} ${context=== "Projects" ? "(Projects)" : ""} - War Manager`}</title>
         <meta property="og:title" content="Where you can manage anything." />
         <meta
           property="og:description"

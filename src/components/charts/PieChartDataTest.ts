@@ -40,6 +40,9 @@ const PieChartOption: ReactEChartsProps["option"] = {
         { value: 484, name: "Union Ads" },
         { value: 300, name: "Video Ads" },
       ],
+      animationDelay: function (idx) {
+        return idx * 100;
+      },
     },
   ],
 };

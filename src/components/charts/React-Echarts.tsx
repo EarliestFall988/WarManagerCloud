@@ -63,10 +63,14 @@ export function ReactECharts({
   }, [loading, theme]);
 
   return (
-    <div className="w-5/12 rounded-lg bg-zinc-100 p-4">
+    <div
+      className={`${
+        width ? width : "w-5/12"
+      } b flex min-w-[90vw] items-center rounded-sm p-1 lg:min-w-fit`}
+    >
       <div
         ref={chartRef}
-        style={{ width: "100%", height: "300px", ...style }}
+        style={{ width: "100%", height: "200px", ...style }}
       />
     </div>
   );
