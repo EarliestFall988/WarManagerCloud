@@ -42,6 +42,8 @@ import {
   ProjectPerformanceRatingSafety,
   ProjectPerformanceRatingStaffing,
 } from "~/components/charts/PerformanceDataPieChart";
+import SunBurstTestOption from "~/components/charts/SunburstDataTest";
+import { ReactEChartsLarge } from "~/components/charts/React-EchartsLarge";
 
 dayjs.extend(relativeTime);
 
@@ -603,24 +605,24 @@ const PieChartCard: FC<PieChartCardProps> = ({ title, chart }) => {
   };
 
   return (
-    <div className="md:w-1/3">
+   <>
       <div
         className={`${
-          open ? "h-72 w-full" : "h-14 w-full"
-        } rounded bg-zinc-700 transition-all duration-200 overflow-hidden `}
+          open ? "h-72 w-1/4" : "h-14 w-1/4"
+        } overflow-hidden rounded bg-zinc-700 transition-all duration-200 `}
       >
         <div className="flex items-start justify-between p-2">
           <h3 className="text-zinc-400">{title}</h3>
           <button
             onClick={() => toggleOpen()}
-            className="rounded bg-zinc-600 p-2 shadow hover:scale-105 transition-all duration-100 hover:bg-zinc-500"
+            className="rounded bg-zinc-600 p-2 shadow transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
           >
             <ArrowsUpDownIcon className="h-6 w-6 text-zinc-300" />
           </button>
         </div>
         {open && <div>{chart}</div>}
       </div>
-    </div>
+    </>
   );
 };
 
@@ -637,22 +639,22 @@ const DashboardAtAGlance = () => {
       {loading ? (
         <Loader />
       ) : (
-        <div className="h-auto items-start overflow-x-clip p-5 md:h-[90vh] md:overflow-y-auto">
+        <div className="h-auto items-end overflow-x-clip p-5 md:h-[90vh] md:overflow-y-auto">
           {/* <ReactECharts option={GaugeOption} /> */}
           {/* <ReactECharts option={CalendarHeatMapOption} /> */}
           {/* <ReactECharts option={PieChartOption} /> */}
-          <div className="h-80 my-1 rounded bg-zinc-200 shadow-lg md:w-3/6">
+          <div className="my-1 h-80 rounded bg-zinc-200 shadow-lg md:w-3/6">
             <h3 className="py-2 text-center text-lg font-semibold text-zinc-900">
               All Jobs
             </h3>
             <ReactECharts option={BarChartOption} width="w-full" />
           </div>
           {/* <ReactECharts option={GaugeOption} /> */}
-          <div className="mx-auto flex min-h-[30vh] w-full flex-col justify-start gap-1 md:flex-row">
-            <div className="mx-auto flex items-center justify-center py-5 md:py-0 rounded md:bg-zinc-700 font-bold text-zinc-100 md:m-0 md:text-sm">
+          <div className="mx-auto flex w-full flex-col justify-start gap-1 md:flex-row">
+            <div className="mx-auto flex items-center justify-center rounded py-5 font-bold text-zinc-100 md:m-0 md:bg-zinc-700 md:py-0 md:text-sm">
               <p className="whitespace-nowrap md:-rotate-90">Overall Ratings</p>
             </div>
-            <div className="mx-auto flex w-full flex-wrap gap-1">
+            <div className="flex h-full w-full flex-wrap items-start justify-start gap-1">
               <PieChartCard
                 title="Safety"
                 chart={
@@ -690,6 +692,9 @@ const DashboardAtAGlance = () => {
                 }
               />
             </div>
+          </div>
+          <div className="h-full m-5 rounded">
+            <ReactEChartsLarge option={SunBurstTestOption} />
           </div>
         </div>
       )}
@@ -740,7 +745,10 @@ const DashboardPage: NextPage = () => {
             </h1>
           </div>
           <div className="text-md hidden flex-col justify-around gap-2 text-zinc-300 sm:flex sm:w-[45vw] sm:flex-row">
-            <TooltipComponent content="View Overall JR&CO Performance" side="bottom">
+            <TooltipComponent
+              content="View Overall JR&CO Performance"
+              side="bottom"
+            >
               <button
                 onClick={() => setContext("Home")}
                 className={`w-full  transition-all duration-200 ${
