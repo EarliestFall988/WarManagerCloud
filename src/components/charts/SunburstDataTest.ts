@@ -1134,10 +1134,12 @@ const SunBurstTestOption: ReactEChartsProps["option"] = {
       color: "#fff",
     },
     feature: {
-      magicType: {
-        type: ["stack"],
+      // magicType: {
+      //   type: ["bar", "line", "stack", "tiled"],
+      // },
+      dataView: {
+        show: true,
       },
-      dataView: {},
       saveAsImage: {
         pixelRatio: 2,
       },
@@ -1146,32 +1148,26 @@ const SunBurstTestOption: ReactEChartsProps["option"] = {
   tooltip: {
     trigger: "item",
     triggerOn: "mousemove",
-    valueFormatter: function (value: number) {
-      return "$" + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    },
-    // formatter: function (params: any) {
-    //   if (params.data.children) {
-    //     return params.data.name;
-    //   } else {
-    //     return `${params.data.name}: $${params.data.value}`;
-    //   }
-    // }
+    // valueFormatter: function (value: number) {
+    //   return "$" + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    // },
   },
   visualMap: {
     type: "continuous",
-    min: 0,
+    min: 10000,
     max: 55000000,
     inRange: {
-      color: ["red", "blue", "green"],
+      color: ["red", "blue", "yellow", "green"],
     },
     textStyle: {
       color: "#fff",
       precision: 100,
     },
     calculable: true,
-    formatter: function (value: number) {
-      return (value / 1000000).toString().substring(0, 4) + " Million";
-    },
+    formatter: "$" + "{value}"
+    // formatter: function (value: number) {
+    //   return (value / 1000000).toString().substring(0, 4) + " Million"; 
+    // },
   },
   series: {
     type: "sunburst",

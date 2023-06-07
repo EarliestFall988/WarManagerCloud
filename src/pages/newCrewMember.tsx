@@ -67,6 +67,7 @@ const NewCrewMemberPage: NextPage = () => {
             value={name}
             disabled={isCreating}
             onChange={(e) => setName(e.target.value)}
+            autoFocus
           />
         </div>
         <div className="w-full p-2">

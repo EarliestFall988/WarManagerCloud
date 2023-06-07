@@ -81,6 +81,7 @@ const NewBlueprintPage: NextPage = () => {
             disabled={isCreating}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            autoFocus
           />
         </div>
         <div className="w-full p-2">

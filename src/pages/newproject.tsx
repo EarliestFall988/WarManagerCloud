@@ -36,6 +36,7 @@ const NewProjectPage: NextPage = () => {
               value={projectName}
               disabled={isCreating}
               onChange={(e) => setProjectName(e.target.value)}
+              autoFocus
             />
           </div>
           <div className="w-full p-2">

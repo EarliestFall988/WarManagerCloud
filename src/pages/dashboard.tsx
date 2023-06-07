@@ -8,12 +8,13 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import Link from "next/link";
 import Head from "next/head";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import {
+import React, {
   type FC,
   type ReactNode,
   useCallback,
   useEffect,
   useState,
+  type FunctionComponent,
 } from "react";
 import { useRouter } from "next/router";
 import {
@@ -23,11 +24,14 @@ import {
   DocumentIcon,
   EllipsisVerticalIcon,
   MapPinIcon,
+  NoSymbolIcon,
   PaperAirplaneIcon,
   PhoneIcon,
+  PlusIcon,
   TrashIcon,
   UserCircleIcon,
   WrenchScrewdriverIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -49,6 +53,8 @@ import {
 } from "~/components/charts/PerformanceDataPieChart";
 import SunBurstTestOption from "~/components/charts/SunburstDataTest";
 import { ReactEChartsLarge } from "~/components/charts/React-EchartsLarge";
+import * as Tabs from "@radix-ui/react-tabs";
+import { Tooltip } from "@radix-ui/react-tooltip";
 
 dayjs.extend(relativeTime);
 
@@ -205,7 +211,7 @@ const CrewMembers = () => {
         <TooltipComponent content="Add a New Crew Member" side="left">
           <Link
             href="/newCrewMember"
-            className="flex h-10 w-10 sm:h-12 sm:w-12 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
           >
             <p>+</p>
           </Link>
@@ -418,7 +424,7 @@ const Projects = () => {
         <TooltipComponent content="Add a New Project" side="left">
           <Link
             href="/newproject"
-            className="flex h-10 w-10 sm:h-12 sm:w-12 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:text-lg sm:font-semibold"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
           >
             <p>+</p>
           </Link>
@@ -707,6 +713,209 @@ const DashboardAtAGlance = () => {
   );
 };
 
+type Props = {
+  children: ReactNode;
+};
+const MoreButton: FunctionComponent<Props> = (props) => {
+  return (
+    <TooltipComponent content="More" side="bottom">
+      <Dialog.Root>
+        <TooltipComponent content="More" side="bottom">
+          <Dialog.Trigger asChild>
+            <button className="rounded text-zinc-200">
+              <EllipsisVerticalIcon className="h-6 w-6" />
+            </button>
+          </Dialog.Trigger>
+        </TooltipComponent>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/30 backdrop-blur-sm" />
+          <div className="flex h-screen w-screen items-center justify-center">
+            <Dialog.Content className="fixed top-0 m-auto h-screen w-full border-zinc-600 bg-zinc-800 p-3 py-2 md:top-[11%] md:max-h-[80vh] md:w-3/4 md:rounded-lg md:border">
+              <div className="flex w-full justify-between ">
+                <Dialog.Title className="text-lg font-bold text-white">
+                  More
+                </Dialog.Title>
+                <TooltipComponent content="Close" side="bottom">
+                  <Dialog.Close asChild>
+                    <button className="rounded p-2 text-center transition-all duration-100 hover:text-red-600">
+                      <XMarkIcon className="h-6 w-6" />
+                    </button>
+                  </Dialog.Close>
+                </TooltipComponent>
+              </div>
+              {props.children}
+            </Dialog.Content>
+          </div>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </TooltipComponent>
+  );
+};
+
+const SectorsView = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const {
+    data,
+    isLoading: loadingSearch,
+    isError: error,
+  } = api.sectors.getByName.useQuery({
+    name: searchTerm,
+  });
+
+  const context = api.useContext();
+
+  const { mutate, isLoading: isDeleting } = api.sectors.delete.useMutation({
+    onSuccess: () => {
+      void context.invalidate();
+      toast.success("Sector deleted successfully");
+    },
+
+    onError: (error) => {
+      console.log(error);
+      toast.error("Error deleting sector");
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    toast.loading("Deleting sector...", {
+      duration: 1000,
+    });
+
+    mutate({
+      id,
+    });
+  };
+
+  const loading = loadingSearch || isDeleting;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-1">
+        <input
+          className="w-full rounded bg-zinc-700 p-2 text-zinc-200 shadow outline-none transition-all duration-100 hover:bg-zinc-600 focus:ring-2 focus:ring-amber-500"
+          placeholder="Search for a sector..."
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          autoFocus
+        />
+        <TooltipComponent content="Add Sector" side="right">
+          <Link
+            href="/sectors/new"
+            className="rounded bg-amber-700 p-2 transition-all duration-100 hover:scale-105 hover:bg-amber-600"
+          >
+            <PlusIcon className="h-6 w-6 text-zinc-100" />
+          </Link>
+        </TooltipComponent>
+      </div>
+      <div className="flex max-h-[70vh] min-h-[10vh] flex-col gap-1 overflow-y-auto overflow-x-clip border-t border-zinc-600 pt-1 md:max-h-[60vh] md:px-2">
+        {loading ? (
+          <div className="flex h-[10vh] w-full items-center justify-center p-5">
+            <LoadingSpinner />
+          </div>
+        ) : error ? (
+          <div className="flex h-[10vh] items-center justify-center">
+            <p className="text-center text-lg font-semibold text-red-500">
+              There was an error. Try again later, or contact support.
+            </p>
+          </div>
+        ) : (
+          data?.map((sector) => (
+            <div
+              className="flex rounded bg-zinc-700 hover:bg-zinc-600 "
+              key={sector.id}
+            >
+              <Link
+                href={`/sectors/${sector.id}`}
+                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-l  px-1 py-2  "
+              >
+                <div className="w-1/2  text-left">
+                  <p className="truncate font-semibold text-zinc-200 sm:text-lg">
+                    {sector.name}
+                  </p>
+                  <p className="truncate text-sm text-zinc-300 sm:text-xs">
+                    {sector.departmentCode}
+                  </p>
+                </div>
+                <div className="hidden sm:flex sm:w-1/3">
+                  <p className="truncate text-center font-thin italic tracking-tight text-zinc-200">
+                    {sector.description}
+                  </p>
+                </div>
+              </Link>
+              <div className="flex justify-end">
+                <Dialog.Root>
+                  <TooltipComponent
+                    content={`Delete ${sector.name}`}
+                    side="bottom"
+                  >
+                    <Dialog.Trigger asChild>
+                      <button className="rounded p-2 text-center text-zinc-400 transition-all duration-100 hover:text-red-600">
+                        <TrashIcon className="h-6 w-6" />
+                      </button>
+                    </Dialog.Trigger>
+                  </TooltipComponent>
+                  <Dialog.Portal>
+                    <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/30 backdrop-blur-sm" />
+                    <div className="flex h-screen w-screen items-center justify-center">
+                      <Dialog.Content className="fixed top-0 m-auto h-screen w-full border-zinc-600 bg-zinc-800 p-3 py-2 md:top-[30%] md:h-40 md:max-h-[80vh] md:w-1/4 md:rounded-lg md:border">
+                        <div className="flex w-full justify-between ">
+                          <Dialog.Title className="text-lg font-bold text-white">
+                            Delete Sector
+                          </Dialog.Title>
+                          <Dialog.Close asChild>
+                            <button className="rounded p-2 text-center transition-all duration-100 hover:text-red-600">
+                              <XMarkIcon className="h-6 w-6" />
+                            </button>
+                          </Dialog.Close>
+                        </div>
+                        <p className="text-white">
+                          Are you sure you want to delete this sector? This
+                          action cannot be undone.
+                        </p>
+                        <div className="mt-2 flex justify-end">
+                          <Dialog.Close asChild>
+                            <button
+                              onClick={() => {
+                                handleDelete(sector.id);
+                              }}
+                              className="rounded bg-red-700 p-2 transition-all duration-100 hover:scale-105 hover:bg-red-600"
+                            >
+                              <p className="text-center text-lg font-semibold text-white">
+                                I Understand, Delete Anyway
+                              </p>
+                            </button>
+                          </Dialog.Close>
+                        </div>
+                      </Dialog.Content>
+                    </div>
+                  </Dialog.Portal>
+                </Dialog.Root>
+              </div>
+            </div>
+          ))
+        )}
+        {data?.length === 0 && (
+          <div className="flex h-[10vh] flex-col items-center justify-center gap-3">
+            <p className="text-center text-2xl font-semibold text-zinc-400">
+              No sectors found.
+            </p>
+            <Link
+              href="/sectors/new"
+              className="cursor-pointer rounded bg-amber-700 p-2 transition-all duration-100 hover:scale-105 hover:bg-amber-600"
+            >
+              <p className="text-center text-lg font-semibold text-white">
+                Create a sector now.
+              </p>
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const DashboardPage: NextPage = () => {
   const [context, setContext] = useState("Blueprints");
 
@@ -801,10 +1010,51 @@ const DashboardPage: NextPage = () => {
                 Projects
               </button>
             </TooltipComponent>
+            <MoreButton>
+              <div className="flex flex-col gap-2 rounded">
+                <Tabs.Root defaultValue="tab1">
+                  <Tabs.List
+                    className="border-mauve6 flex shrink-0 border-b"
+                    aria-label="Manage your account"
+                  >
+                    <Tabs.Trigger
+                      className=" flex h-[45px] flex-1 cursor-default select-none items-center justify-center bg-zinc-800 px-5 text-[15px] leading-none text-zinc-200 outline-none first:rounded-tl-md last:rounded-tr-md data-[state=active]:text-amber-500 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative data-[state=active]:focus:shadow-[0_0_0_2px] data-[state=active]:focus:shadow-black"
+                      value="tab1"
+                    >
+                      Sectors
+                    </Tabs.Trigger>
+                    <Tabs.Trigger
+                      className="flex h-[45px] flex-1 cursor-default select-none items-center justify-center bg-zinc-800 px-5 text-[15px] leading-none text-zinc-200 outline-none first:rounded-tl-md last:rounded-tr-md data-[state=active]:text-amber-500 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative data-[state=active]:focus:shadow-[0_0_0_2px] data-[state=active]:focus:shadow-black"
+                      value="tab2"
+                    >
+                      Permissions
+                    </Tabs.Trigger>
+                  </Tabs.List>
+                  <Tabs.Content
+                    className="grow bg-zinc-800 p-5 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black"
+                    value="tab1"
+                  >
+                    <SectorsView />
+                  </Tabs.Content>
+                  <Tabs.Content
+                    className="grow bg-zinc-800 p-5 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black"
+                    value="tab2"
+                  >
+                    <div className="text-center text-[2rem] font-semibold text-zinc-500">
+                      {"Under construction ... coming soon! "}
+                    </div>
+                  </Tabs.Content>
+                </Tabs.Root>
+              </div>
+            </MoreButton>
           </div>
           <div className="sm:w-40">
             <SignedIn>
-              <UserButton showName={true} />
+              <TooltipComponent content="Account" side="bottom">
+                <div>
+                  <UserButton showName={true} />
+                </div>
+              </TooltipComponent>
             </SignedIn>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { blueprintsRouter } from "./routers/blueprints";
 import { crewMembersRouter } from "./routers/crewMembers";
 import { projectsRouter } from "./routers/projects";
 import { schedulesRouter } from "./routers/schedules";
+import { sectorsRouter } from "./routers/sectors";
 
 /**
  * This is the primary router for your server.
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   crewMembers: crewMembersRouter,
   projects: projectsRouter,
   schedules: schedulesRouter,
+  sectors: sectorsRouter,
 });
 
 // export type definition of API

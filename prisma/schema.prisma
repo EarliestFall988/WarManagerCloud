@@ -43,6 +43,9 @@ model Project {
   percentComplete Float    @default(0)
   completed       Boolean  @default(false)
 
+  TotalManHours Int   @default(0)
+  JobDetails    Json? @default("{}") @db.Json
+
   laborCost         Float @default(0)
   subContractorCost Float @default(0)
   materialCost      Float @default(0)
@@ -99,7 +102,7 @@ model CrewMember {
   travel      String  @db.VarChar(255)
   skills      Json?
   rating      String  @db.VarChar(255)
-  sector  Sector? @relation(fields: [sectorId], references: [id]) 
+  sector      Sector? @relation(fields: [sectorId], references: [id])
 
   lastReviewDate DateTime?
 
@@ -129,9 +132,27 @@ model Blueprint {
 
   data String @db.Text
 
-  sector Sector[]
+  sector      Sector[]
+  permissions Permissions[]
 
   notes Note[]
+
+  authorId String
+
+  @@index([authorId])
+}
+
+model Equipment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String  @db.VarChar(255) // this is the name of the equipment, like "Manitex 40100 Crane"
+  type        String  @db.VarChar(255) // this is the type of equipment, like a crane, or a forklift
+  EquipmentId String  @db.VarChar(255) //this is some JR&Co's internal ID
+  description String? @db.VarChar(255) // this is a description of the equipment if desired
+
+  data Json? @db.Json // other data
 
   authorId String
 
@@ -165,6 +186,22 @@ model Log {
   description String @db.VarChar(255)
 
   data String @db.Text
+
+  authorId String
+
+  @@index([authorId])
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String @db.VarChar(255)
+  description String @db.VarChar(255)
+  reason      String @db.VarChar(255)
+  url         String @db.VarChar(255)
+  status      String @db.VarChar(255)
 
   authorId String
 
@@ -218,4 +255,33 @@ model MaterialType {
 
   @@index([authorId])
   @@index([scopeOfWorkId])
+}
+
+model Permissions {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String @db.VarChar(255)
+  description String @db.VarChar(255)
+  keywords    Json?  @db.Json
+
+  authorId String
+  users    User[]
+  blueprints Blueprint[]
+
+  @@index([authorId])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clerkId     String        @unique @db.VarChar(255)
+  permissions Permissions[]
+
+  authorId String
+
+  @@index([authorId])
 }
