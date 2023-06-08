@@ -149,7 +149,7 @@ model Equipment {
 
   name        String  @db.VarChar(255) // this is the name of the equipment, like "Manitex 40100 Crane"
   type        String  @db.VarChar(255) // this is the type of equipment, like a crane, or a forklift
-  EquipmentId String  @db.VarChar(255) //this is some JR&Co's internal ID
+  EquipmentId String  @db.VarChar(255) // this is some JR&Co's internal ID
   description String? @db.VarChar(255) // this is a description of the equipment if desired
 
   data Json? @db.Json // other data
