@@ -21,10 +21,12 @@ import {
   ArrowDownCircleIcon,
   ArrowDownTrayIcon,
   ArrowsUpDownIcon,
+  Bars3Icon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
   DocumentIcon,
   EllipsisVerticalIcon,
+  InboxIcon,
   MapPinIcon,
   PaperAirplaneIcon,
   PhoneIcon,
@@ -158,6 +160,50 @@ const BlueprintsList = () => {
   );
 };
 
+const PositionTag = (props: { position: string }) => {
+  let style = "border-zinc-600 text-gray-100 font-thin";
+
+  switch (props.position.toLowerCase()) {
+    case "laborer":
+      style = "border-amber-600 text-amber-600";
+      break;
+    case "project manager":
+      style = "border-purple-500 text-purple-500 font-semibold";
+      break;
+    case "foreman":
+      style = "border-amber-400 text-amber-400 font-semibold";
+      break;
+    case "specialist foreman":
+      style = "border-orange-300 text-orange-300";
+      break;
+    case "specialist":
+      style = "border-green-200 text-green-200";
+      break;
+    case "superintendent":
+      style = "border-red-500 text-red-500 font-semibold";
+      break;
+
+    case "machine operator":
+      style = "border-gray-500 text-gray-300 font-semibold";
+      break;
+
+    case "travel":
+      style = "border-blue-500 text-blue-300";
+      break;
+
+    default:
+      break;
+  }
+
+  return (
+    <div
+      className={`${style} flex items-center justify-center gap-1 whitespace-nowrap rounded-full border px-1 text-sm`}
+    >
+      <p>{props.position}</p>
+    </div>
+  );
+};
+
 const CrewMembers = () => {
   const [crewSearchTerm, setCrewSearchTerm] = useState("");
 
@@ -250,17 +296,17 @@ const CrewMembers = () => {
                   <Link
                     href={`/crewmember/${crewMember.id}`}
                     passHref
-                    className="flex w-full items-center gap-1 rounded-sm p-1 shadow-sm transition-all duration-100  sm:justify-between"
+                    className="flex w-11/12 items-center gap-1 rounded-sm p-1 shadow-sm transition-all duration-100 sm:w-full  sm:justify-between"
                   >
-                    <UserCircleIcon className="h-10 w-10 text-zinc-300" />
-                    <div className="w-3/2 flex flex-col items-start text-left text-white sm:w-1/3">
-                      <p className="text-sm tracking-tight text-zinc-400">
-                        {crewMember.position}
-                      </p>
+                    <UserCircleIcon className="hidden h-10 w-10 text-zinc-300 sm:block" />
+                    <div className="flex w-full flex-col items-start text-left text-white sm:w-1/3">
                       <div className="flex items-center justify-start gap-1">
                         <p className="truncate text-lg font-semibold text-white ">
                           {crewMember.name}
                         </p>
+                        {/* <div className="whitespace-nowrap rounded-full border px-1 text-sm italic tracking-tight text-zinc-400"> */}
+                        <PositionTag position={crewMember.position} />
+                        {/* </div> */}
                         {crewMember.description
                           .toLowerCase()
                           .includes("travel") &&
@@ -270,17 +316,25 @@ const CrewMembers = () => {
                           !crewMember.description
                             .toLowerCase()
                             .includes("n't") && (
-                            <PaperAirplaneIcon className="h-4 w-4 -rotate-45 text-zinc-200" />
+                            <PositionTag position={"Travel"} />
                           )}
                       </div>
-                      <div className="flex items-center gap-1 text-zinc-400">
-                        <p className="text-sm tracking-tight">
+                      <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-400">
+                        {crewMember.phone && (
+                          <PhoneIcon className="h-4 w-4 text-zinc-200" />
+                        )}
+                        <p className="whitespace-nowrap text-sm tracking-tight">
                           {crewMember.phone}
                         </p>
                         {crewMember.email && (
-                          <p className="text-sm tracking-tight">|</p>
+                          <>
+                            <p className="truncate text-left text-sm tracking-tight">
+                              •
+                            </p>
+                            <InboxIcon className="h-4 w-4 text-zinc-200" />
+                          </>
                         )}
-                        <p className="text-sm tracking-tight">
+                        <p className="w-full truncate text-sm tracking-tight">
                           {crewMember.email}
                         </p>
                       </div>
@@ -300,7 +354,7 @@ const CrewMembers = () => {
 
                   <DropdownMenu.Root>
                     <DropdownMenu.Trigger asChild>
-                      <button className="rounded-sm bg-transparent p-1 transition-all duration-100">
+                      <button className="flex w-1/12 items-center justify-end rounded-sm bg-transparent p-1 transition-all duration-100 md:w-auto">
                         <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
                       </button>
                     </DropdownMenu.Trigger>
@@ -392,6 +446,36 @@ const CrewMembers = () => {
   );
 };
 
+const StatusTagComponent = (props: { name: string }) => {
+  const status = props.name.toLowerCase();
+
+  let style = "border-zinc-400 border text-zinc-400";
+
+  if (status.startsWith("start") && !status.includes("2 weeks")) {
+    style = "border-yellow-200 border text-yellow-200";
+  } else if (status.trim() === "start 2 weeks") {
+    style = "border-orange-400 border text-orange-400";
+  } else if (status.trim().startsWith("mf")) {
+    style = "border-blue-400 border text-blue-400";
+  } else if (status.trim() === "legal") {
+    style = "border-red-400 border text-red-400";
+  } else if (status.trim() === "in progress: good") {
+    style = "border-green-400 border text-green-400";
+  } else if (status.trim() === "in progress: bad") {
+    style = "border-red-400 border-2 text-red-400";
+  } else if (status.trim() === "100% complete") {
+    style = "border-green-600 border text-green-200 bg-green-800";
+  }
+
+  return (
+    <p
+      className={`${style} whitespace-nowrap rounded-full px-1 text-center text-xs`}
+    >
+      {props.name}
+    </p>
+  );
+};
+
 const Projects = () => {
   const [projectSearchTerm, setProjectsSearchTerm] = useState("");
 
@@ -435,10 +519,7 @@ const Projects = () => {
           className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
         />
         <div className="flex gap-2">
-          <TooltipComponent
-            content="Download Projects Spreadsheet"
-            side="top"
-          >
+          <TooltipComponent content="Download Projects Spreadsheet" side="top">
             <Link
               href="/crewmember/download"
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-zinc-700 text-center transition-all duration-100 hover:bg-amber-700 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
@@ -478,7 +559,7 @@ const Projects = () => {
                   className="flex w-full items-center gap-1 rounded-sm bg-zinc-700 pl-1 hover:bg-zinc-600"
                   key={project.id}
                 >
-                  <WrenchScrewdriverIcon className="h-8 w-8 text-zinc-300" />
+                  <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" />
                   <Link
                     href={`/projects/${project.id}`}
                     passHref
@@ -494,19 +575,14 @@ const Projects = () => {
                         </p>
                       </div>
                       <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
-                        <ClipboardDocumentCheckIcon className="h-4 w-4" />
-                        <p className="w-36 truncate rounded text-left text-sm italic ">
-                          {project.status}
-                        </p>
-                        <div className="flex w-full items-center justify-start gap-1 overflow-clip">
+                        <div className="w-2/7 flex items-center justify-start gap-1 overflow-clip">
                           <MapPinIcon className="h-4 w-4" />
                           <p className="block w-28 truncate text-left text-sm font-normal italic tracking-tight">
-                            {project.city}
-                          </p>
-                          <p className="block w-full truncate text-left text-sm font-normal italic tracking-tight">
-                            {project.state}
+                            {project.city.trim()}
+                            {project.state.trim() && `, ${project.state}`}
                           </p>
                         </div>
+                        <StatusTagComponent name={project.status} />
                       </div>
                       {/* <div className="flex gap-1">
                     <p className="truncate rounded-md text-amber-200 bg-zinc-600 px-1 text-center text-sm tracking-wide">
@@ -997,7 +1073,7 @@ const DashboardPage: NextPage = () => {
                     : "rounded hover:bg-zinc-800"
                 }`}
               >
-                At a Glance
+                Glance
               </button>
             </TooltipComponent>
             <TooltipComponent content="View all Blueprints" side="bottom">
@@ -1021,7 +1097,7 @@ const DashboardPage: NextPage = () => {
                     : "rounded hover:bg-zinc-800"
                 }`}
               >
-                Crew Members
+                Crew
               </button>
             </TooltipComponent>
             <TooltipComponent content="View all Projects" side="bottom">
@@ -1087,52 +1163,76 @@ const DashboardPage: NextPage = () => {
         <div className="flex flex-col gap-4">
           <div className="flex justify-center">{/* <CreateButtons /> */}</div>
           <SignedIn>
-            <div className="flex justify-center">
-              <div className="flex w-full flex-col justify-around sm:hidden sm:w-[45vw] sm:flex-row">
-                <button
-                  onClick={() => setContext("Home")}
-                  className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                    context === "Home"
-                      ? "rounded bg-amber-800 hover:bg-amber-700"
-                      : "hover:bg-zinc-600"
-                  }`}
-                >
-                  Home
-                </button>
+            <div className="flex w-full justify-center sm:hidden">
+              <Dialog.Root>
+                <Dialog.Trigger>
+                  <button className="TooltipContent flex w-full items-center justify-center gap-3 rounded-md bg-orange-700 p-2 px-5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
+                    <Bars3Icon className="h-6 w-6 text-zinc-300" />
+                    Menu
+                  </button>
+                </Dialog.Trigger>
+                <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
+                <Dialog.Content className="TooltipContent fixed z-20 flex h-1/2 w-3/4 items-start justify-start rounded border border-zinc-700 bg-zinc-800">
+                  <div className="flex w-full flex-col justify-start p-2">
+                    <Dialog.DialogClose>
+                      <button
+                        className={`flex w-full items-center justify-center p-2 text-red-400 transition-all duration-200`}
+                      >
+                        <XMarkIcon className="h-6 w-6 " /> Close Menu
+                      </button>
+                    </Dialog.DialogClose>
+                    <Dialog.DialogClose>
+                      <button
+                        onClick={() => setContext("Home")}
+                        className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                          context === "Home"
+                            ? "rounded bg-amber-800 hover:bg-red-700"
+                            : "border-b border-zinc-600 hover:bg-zinc-600"
+                        }`}
+                      >
+                        Glance
+                      </button>
+                    </Dialog.DialogClose>
 
-                <button
-                  onClick={() => setContext("Blueprints")}
-                  className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                    context === "Blueprints"
-                      ? "rounded bg-amber-800 hover:bg-amber-700"
-                      : "hover:bg-zinc-600"
-                  }`}
-                >
-                  Blueprints
-                </button>
-
-                <button
-                  onClick={() => setContext("CrewMembers")}
-                  className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                    context === "CrewMembers"
-                      ? "rounded bg-amber-800 hover:bg-amber-700"
-                      : "hover:bg-zinc-600"
-                  }`}
-                >
-                  Crew Members
-                </button>
-
-                <button
-                  onClick={() => setContext("Projects")}
-                  className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                    context === "Projects"
-                      ? "rounded bg-amber-800 hover:bg-amber-700"
-                      : "hover:bg-zinc-600"
-                  }`}
-                >
-                  Projects
-                </button>
-              </div>
+                    <Dialog.DialogClose>
+                      <button
+                        onClick={() => setContext("Blueprints")}
+                        className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                          context === "Blueprints"
+                            ? "rounded bg-amber-800 hover:bg-red-700"
+                            : "border-b border-zinc-600 hover:bg-zinc-600"
+                        }`}
+                      >
+                        Blueprints
+                      </button>
+                    </Dialog.DialogClose>
+                    <Dialog.DialogClose>
+                      <button
+                        onClick={() => setContext("CrewMembers")}
+                        className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                          context === "CrewMembers"
+                            ? "rounded bg-amber-800 hover:bg-red-700"
+                            : "border-b border-zinc-600 hover:bg-zinc-600"
+                        }`}
+                      >
+                        Crew
+                      </button>
+                    </Dialog.DialogClose>
+                    <Dialog.DialogClose>
+                      <button
+                        onClick={() => setContext("Projects")}
+                        className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                          context === "Projects"
+                            ? "rounded bg-amber-800 hover:bg-red-700"
+                            : "border-b border-zinc-600 hover:bg-zinc-600 "
+                        }`}
+                      >
+                        Projects
+                      </button>
+                    </Dialog.DialogClose>
+                  </div>
+                </Dialog.Content>
+              </Dialog.Root>
             </div>
             <div className="overflow-y-auto">
               {context == "Home" && <DashboardAtAGlance />}
