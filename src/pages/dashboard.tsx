@@ -18,6 +18,8 @@ import React, {
 } from "react";
 import { useRouter } from "next/router";
 import {
+  ArrowDownCircleIcon,
+  ArrowDownTrayIcon,
   ArrowsUpDownIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
@@ -206,14 +208,27 @@ const CrewMembers = () => {
           placeholder="search crew members by name, or position"
           className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
         />
-        <TooltipComponent content="Add a New Crew Member" side="left">
-          <Link
-            href="/newCrewMember"
-            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
+        <div className="flex gap-2">
+          <TooltipComponent
+            content="Download Crew Members Spreadsheet"
+            side="top"
           >
-            <p>+</p>
-          </Link>
-        </TooltipComponent>
+            <Link
+              href="/crewmember/download"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-zinc-700 text-center transition-all duration-100 hover:bg-amber-700 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
+            >
+              <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
+            </Link>
+          </TooltipComponent>
+          <TooltipComponent content="Add a New Crew Member" side="top">
+            <Link
+              href="/newCrewMember"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-zinc-700 text-center transition-all duration-100 hover:bg-amber-700 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
+            >
+              <PlusIcon className="h-6 w-6 text-zinc-100" />
+            </Link>
+          </TooltipComponent>
+        </div>
       </div>
       <div className="flex justify-center overflow-y-auto">
         {isLoading ? (
@@ -419,14 +434,27 @@ const Projects = () => {
           placeholder="search projects by name, job code, or address"
           className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
         />
-        <TooltipComponent content="Add a New Project" side="left">
-          <Link
-            href="/newproject"
-            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 text-center transition-all duration-100 hover:from-amber-600 hover:to-red-600 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
+        <div className="flex gap-2">
+          <TooltipComponent
+            content="Download Projects Spreadsheet"
+            side="top"
           >
-            <p>+</p>
-          </Link>
-        </TooltipComponent>
+            <Link
+              href="/crewmember/download"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-zinc-700 text-center transition-all duration-100 hover:bg-amber-700 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
+            >
+              <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
+            </Link>
+          </TooltipComponent>
+          <TooltipComponent content="Add a New Project" side="top">
+            <Link
+              href="/newproject"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-zinc-700 text-center transition-all duration-100 hover:bg-amber-700 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
+            >
+              <PlusIcon className="h-6 w-6 text-zinc-100" />
+            </Link>
+          </TooltipComponent>
+        </div>
       </div>
 
       {(isLoading && (

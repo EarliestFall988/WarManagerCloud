@@ -27,6 +27,16 @@ export const crewMembersRouter = createTRPCRouter({
     return crewMembers;
   }),
 
+  download: privateProcedure.query(async ({ ctx }) => {
+    const crewMembers = await ctx.prisma.crewMember.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return crewMembers;
+  }),
+
   search: privateProcedure
     .input(z.object({ search: z.string().min(0).max(255) }))
     .query(async ({ ctx, input }) => {

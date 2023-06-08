@@ -33,8 +33,6 @@ export const blueprintsRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-
-
       if (input.search.length < 3) {
         const blueprints = await ctx.prisma.blueprint.findMany({
           take: 100,
@@ -128,6 +126,29 @@ export const blueprintsRouter = createTRPCRouter({
         },
         data: {
           data: input.flowInstanceData,
+        },
+      });
+
+      return blueprint;
+    }),
+
+  delete: privateProcedure
+    .input(z.object({ blueprintId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await ratelimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the rate limit, try again in a minute",
+        });
+      }
+
+      const blueprint = await ctx.prisma.blueprint.delete({
+        where: {
+          id: input.blueprintId,
         },
       });
 

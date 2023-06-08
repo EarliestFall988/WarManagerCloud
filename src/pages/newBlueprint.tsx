@@ -2,11 +2,9 @@ import type { NextPage } from "next";
 import { useState } from "react";
 import { api } from "~/utils/api";
 
-import { useRouter } from "next/router";
-
 import { toast } from "react-hot-toast";
 import { LoadingSpinner } from "~/components/loading";
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import SignInModal from "~/components/signInPage";
 
@@ -14,15 +12,11 @@ const NewBlueprintPage: NextPage = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const { push } = useRouter();
-
   const { user } = useUser();
 
   //redirect if the user is not found
   if (!user) {
-    return (
-      <SignInModal redirectUrl={`/blueprints/new`} />
-    );
+    return <SignInModal redirectUrl={`/blueprints/new`} />;
   }
 
   const { mutate, isLoading: isCreating } = api.blueprints.create.useMutation({

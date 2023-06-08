@@ -26,6 +26,15 @@ export const projectsRouter = createTRPCRouter({
     return projects;
   }),
 
+  download: privateProcedure.query(async ({ ctx }) => {
+    const projects = await ctx.prisma.project.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return projects;
+  }),
+
   search: privateProcedure
     .input(z.object({ search: z.string().min(0).max(255) }))
     .query(async ({ ctx, input }) => {
