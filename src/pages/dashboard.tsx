@@ -57,6 +57,7 @@ import {
 import SunBurstTestOption from "~/components/charts/SunburstDataTest";
 import { ReactEChartsLarge } from "~/components/charts/React-EchartsLarge";
 import * as Tabs from "@radix-ui/react-tabs";
+import { LogoComponent } from "~/components/RibbonLogo";
 
 dayjs.extend(relativeTime);
 
@@ -1049,17 +1050,7 @@ const DashboardPage: NextPage = () => {
 
       <div className="min-w-screen z-50 min-h-screen bg-zinc-800">
         <div className="flex items-center justify-between p-2 px-5 text-center text-lg font-semibold text-white">
-          <div className="flex items-center justify-start gap-1">
-            <Image
-              src="/favicon.ico"
-              width={24}
-              height={24}
-              alt="war manager logo"
-            />
-            <h1 className="text-sm sm:hidden lg:block lg:text-lg">
-              War Manager Dashboard
-            </h1>
-          </div>
+          <LogoComponent />
           <div className="text-md hidden flex-col justify-around gap-2 text-zinc-300 sm:flex sm:w-[45vw] sm:flex-row">
             <TooltipComponent
               content="View Overall JR&CO Performance"
