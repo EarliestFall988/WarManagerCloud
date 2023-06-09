@@ -13,6 +13,7 @@
   "dependencies": {
     "@clerk/nextjs": "^4.18.3",
     "@clerk/themes": "^1.7.4",
+    "@ducanh2912/next-pwa": "^8.6.0",
     "@formkit/auto-animate": "^1.0.0-beta.6",
     "@heroicons/react": "^2.0.18",
     "@prisma/client": "^4.15.0",

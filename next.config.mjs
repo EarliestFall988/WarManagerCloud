@@ -1,4 +1,9 @@
 import { withAxiom } from "next-axiom/dist/withAxiom.js";
+import pwa from "@ducanh2912/next-pwa";
+
+const withPWA = pwa({
+  dest: "public",
+});
 
 /**
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
@@ -32,4 +37,4 @@ const config = {
   },
   swcMinify: true,
 };
-export default withAxiom(config);
+export default withPWA(withAxiom(config));
