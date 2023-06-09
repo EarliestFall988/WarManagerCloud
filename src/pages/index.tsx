@@ -11,6 +11,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import type { NextPage } from "next";
+import Head from "next/head";
 import Link from "next/link";
 import { LogoComponent, LogoComponentLarge } from "~/components/RibbonLogo";
 
@@ -155,70 +156,75 @@ import { LogoComponent, LogoComponentLarge } from "~/components/RibbonLogo";
 
 const HomePage: NextPage = () => {
   return (
-    <main className="min-h-[100vh] overflow-x-hidden bg-zinc-800">
-      <div className="h-[90vh] w-full">
-        <div className="flex items-center justify-between p-2">
-          <LogoComponentLarge />
-          {/* <p className="hidden font-semibold text-zinc-200 sm:text-3xl md:block">
+    <>
+      <Head>
+        <title>War Manager Landing Page</title>
+      </Head>
+      <main className="min-h-[100vh] overflow-x-hidden bg-zinc-800">
+        <div className="h-[90vh] w-full">
+          <div className="flex items-center justify-between p-2">
+            <LogoComponentLarge />
+            {/* <p className="hidden font-semibold text-zinc-200 sm:text-3xl md:block">
             War Manager
           </p> */}
-          <div className="flex items-center gap-3">
-            <SignedIn>
-              <Link href="/dashboard">
-                <div className="cursor-pointer rounded p-2 font-semibold transition-all duration-100 hover:text-amber-500">
-                  Dashboard
-                </div>
-              </Link>
-              <UserButton />
-            </SignedIn>
-          </div>
-
-          <SignedOut>
-            <SignInButton>
-              <div className="cursor-pointer rounded p-2 font-semibold transition-all duration-100 hover:text-amber-500">
-                Sign In
-              </div>
-            </SignInButton>
-          </SignedOut>
-        </div>
-        <div className="m-auto flex h-[90vh] w-4/5 flex-col items-start justify-center gap-10 sm:w-1/2">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl lg:text-[4rem] xl:text-[6rem]">
-            Construction Management is{" "}
-            <span className="bg-gradient-to-br from-amber-400 to-red-700 bg-clip-text text-transparent">
-              Tough
-            </span>
-          </h1>
-          <p className="text-zinc-300 sm:text-3xl">
-            War Manager is your{" "}
-            <span className="font-semibold text-amber-600 ">
-              digital multi-tool
-            </span>{" "}
-            to anticipate challenges in the field.
-          </p>
-          <SignUpButton redirectUrl="/dashboard" mode="modal">
-            <div className="cursor-pointer rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 font-semibold hover:scale-105">
-              Sign Up
+            <div className="flex items-center gap-3">
+              <SignedIn>
+                <Link href="/dashboard">
+                  <div className="cursor-pointer rounded p-2 font-semibold transition-all duration-100 hover:text-amber-500">
+                    Dashboard
+                  </div>
+                </Link>
+                <UserButton />
+              </SignedIn>
             </div>
-          </SignUpButton>
+
+            <SignedOut>
+              <SignInButton>
+                <div className="cursor-pointer rounded p-2 font-semibold transition-all duration-100 hover:text-amber-500">
+                  Sign In
+                </div>
+              </SignInButton>
+            </SignedOut>
+          </div>
+          <div className="m-auto flex h-[90vh] w-4/5 flex-col items-start justify-center gap-10 sm:w-1/2">
+            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl lg:text-[4rem] xl:text-[6rem]">
+              Construction Management is{" "}
+              <span className="bg-gradient-to-br from-amber-400 to-red-700 bg-clip-text text-transparent">
+                Tough
+              </span>
+            </h1>
+            <p className="text-zinc-300 sm:text-3xl">
+              War Manager is your{" "}
+              <span className="font-semibold text-amber-600 ">
+                digital multi-tool
+              </span>{" "}
+              to anticipate challenges in the field.
+            </p>
+            <SignUpButton redirectUrl="/dashboard" mode="modal">
+              <div className="cursor-pointer rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 font-semibold hover:scale-105">
+                Sign Up
+              </div>
+            </SignUpButton>
+          </div>
         </div>
-      </div>
-      <div className="h-[50vh] border-t border-zinc-700 bg-zinc-900 bg-center p-2">
-        <h2 className="border-b border-zinc-700 py-1 text-2xl font-bold tracking-tight text-white sm:py-3 sm:text-4xl lg:py-5 lg:text-[2rem] xl:text-[4rem]">
-          Features
-        </h2>
-        <div className="flex flex-col gap-2 py-5 text-lg font-semibold text-zinc-300">
-          <p> {">"} Plan with digital marker boards</p>
-          <p> {">"} Track Crews and Projects</p>
-          <p> {">"} Coordinate on the fly with office teams</p>
-          <p> {">"} Manage Equipment, Burn Rate and other details...</p>
-        </div>
-        {/* <SignUpButton redirectUrl="/dashboard" mode="modal">
+        <div className="h-[50vh] border-t border-zinc-700 bg-zinc-900 bg-center p-2">
+          <h2 className="border-b border-zinc-700 py-1 text-2xl font-bold tracking-tight text-white sm:py-3 sm:text-4xl lg:py-5 lg:text-[2rem] xl:text-[4rem]">
+            Features
+          </h2>
+          <div className="flex flex-col gap-2 py-5 text-lg font-semibold text-zinc-300">
+            <p> {">"} Plan with digital marker boards</p>
+            <p> {">"} Track Crews and Projects</p>
+            <p> {">"} Coordinate on the fly with office teams</p>
+            <p> {">"} Manage Equipment, Burn Rate and other details...</p>
+          </div>
+          {/* <SignUpButton redirectUrl="/dashboard" mode="modal">
           <div className="cursor-pointer rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 font-semibold hover:scale-105">
             Sign Up
           </div>
         </SignUpButton> */}
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 };
 
