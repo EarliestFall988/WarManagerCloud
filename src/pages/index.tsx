@@ -187,7 +187,7 @@ const HomePage: NextPage = () => {
             </SignedOut>
           </div>
           <div className="m-auto flex h-[90vh] w-4/5 flex-col items-start justify-center gap-10 sm:w-1/2">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl md:text-[3rem] lg:text-[4rem] xl:text-[6rem]">
+            <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl md:text-[3rem] lg:text-[4rem] xl:text-[6rem]">
               Construction Management is{" "}
               <span className="bg-gradient-to-br from-amber-400 to-red-700 bg-clip-text text-transparent">
                 Hard Work
@@ -220,12 +220,11 @@ const HomePage: NextPage = () => {
           </div>
         </div>
         <div className="h-[50vh] border-t border-zinc-700 bg-zinc-900 bg-center p-2">
-          <h2 className="border-b border-zinc-700 py-1 text-2xl font-bold tracking-tight text-white sm:py-3 sm:text-4xl lg:py-5 lg:text-[2rem] xl:text-[4rem]">
+          <h2 className="border-b border-zinc-700 py-1 text-3xl font-bold tracking-tight text-white sm:py-3 sm:text-4xl lg:py-5 lg:text-[2rem] xl:text-[3rem]">
             Features
           </h2>
-          <div className="flex flex-col gap-2 py-5 text-lg font-semibold text-zinc-300">
+          <div className="flex flex-col gap-4 py-5 text-lg font-semibold text-zinc-300">
             <p>
-              {" "}
               {">"}{" "}
               {"Create and send visual labor 'Blueprint' plans with ease."}
             </p>
