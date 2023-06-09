@@ -197,26 +197,35 @@ const HomePage: NextPage = () => {
               War Manager enables you to stay organized and keep your team on
               the same page.
             </p>
-            <div className="flex w-full items-end justify-between gap-4">
-              <div>
-                {/* <p>Sign in</p> */}
-                <SignInButton redirectUrl="/dashboard" mode="modal">
-                  <div className="flex w-32 cursor-pointer items-center justify-center gap-2  rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 text-center font-semibold hover:scale-105">
-                    Sign In
-                    <ArrowRightIcon className="inline h-5 w-5" />
-                  </div>
-                </SignInButton>
+            <SignedIn>
+              <Link href="/dashboard">
+                <div className="cursor-pointer rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 font-semibold transition-all duration-100 hover:scale-105">
+                  Go to Dashboard
+                </div>
+              </Link>
+            </SignedIn>
+            <SignedOut>
+              <div className="flex w-full items-end justify-between gap-4">
+                <div>
+                  {/* <p>Sign in</p> */}
+                  <SignInButton redirectUrl="/dashboard">
+                    <div className="flex w-32 cursor-pointer items-center justify-center gap-2  rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 text-center font-semibold transition-all duration-100 hover:scale-105">
+                      Sign In
+                      <ArrowRightIcon className="inline h-5 w-5" />
+                    </div>
+                  </SignInButton>
+                </div>
+                <div>
+                  <p>{"Don't have an account?"}</p>
+                  <SignUpButton redirectUrl="/dashboard">
+                    <div className="flex w-32 cursor-pointer items-center justify-center gap-2 rounded border border-zinc-400 bg-zinc-600 p-2 text-center font-semibold transition-all duration-100 hover:scale-105">
+                      Sign Up
+                      <ArrowRightIcon className="inline h-5 w-5" />
+                    </div>
+                  </SignUpButton>
+                </div>
               </div>
-              <div>
-                <p>{"Don't have an account?"}</p>
-                <SignUpButton redirectUrl="/dashboard" mode="modal">
-                  <div className="flex w-32 cursor-pointer items-center justify-center gap-2 rounded border border-zinc-400 bg-zinc-600 p-2 text-center font-semibold hover:scale-105">
-                    Sign Up
-                    <ArrowRightIcon className="inline h-5 w-5" />
-                  </div>
-                </SignUpButton>
-              </div>
-            </div>
+            </SignedOut>
           </div>
         </div>
         <div className="h-[50vh] border-t border-zinc-700 bg-zinc-900 bg-center p-2">
@@ -230,8 +239,7 @@ const HomePage: NextPage = () => {
             </p>
             <p>
               {" "}
-              {">"} Coordinate illustrated crew skills to meet project
-              demands.
+              {">"} Coordinate illustrated crew skills to meet project demands.
             </p>
             <p>
               {">"} Up to date employee contacts, and relevant job information

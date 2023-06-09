@@ -541,7 +541,7 @@ const Projects = () => {
         <div className="flex gap-2">
           <TooltipComponent content="Download Projects Spreadsheet" side="top">
             <Link
-              href="/crewmember/download"
+              href="/projects/download"
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-zinc-700 text-center transition-all duration-100 hover:bg-amber-700 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
             >
               <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
