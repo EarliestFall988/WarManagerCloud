@@ -18,21 +18,17 @@ import React, {
 } from "react";
 import { useRouter } from "next/router";
 import {
-  ArrowDownCircleIcon,
   ArrowDownTrayIcon,
   ArrowsUpDownIcon,
   Bars3Icon,
-  ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
   DocumentIcon,
   EllipsisVerticalIcon,
   InboxIcon,
   MapPinIcon,
-  PaperAirplaneIcon,
   PhoneIcon,
   PlusIcon,
   TrashIcon,
-  UserCircleIcon,
   WrenchScrewdriverIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
@@ -42,7 +38,6 @@ import * as Dialog from "@radix-ui/react-dialog";
 
 import { toast } from "react-hot-toast";
 import TooltipComponent from "~/components/Tooltip";
-import Image from "next/image";
 import { ReactECharts } from "~/components/charts/React-Echarts";
 // import GaugeOption from "~/components/charts/GaugeChartDataTest";
 // import PieChartOption from "~/components/charts/PieChartDataTest";

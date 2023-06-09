@@ -1,5 +1,4 @@
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
-import { Tooltip } from "@radix-ui/react-tooltip";
 import Link from "next/link";
 import TooltipComponent from "./Tooltip";
 

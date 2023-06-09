@@ -3,18 +3,16 @@
 
 import {
   SignInButton,
-  SignOutButton,
-  SignUp,
   SignUpButton,
   SignedIn,
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
+import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { LogoComponent, LogoComponentLarge } from "~/components/RibbonLogo";
+import { LogoComponentLarge } from "~/components/RibbonLogo";
 
 // import { api } from "~/utils/api";
 // import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
@@ -210,7 +208,7 @@ const HomePage: NextPage = () => {
                 </SignInButton>
               </div>
               <div>
-                <p>Don't have an account?</p>
+                <p>{"Don't have an account?"}</p>
                 <SignUpButton redirectUrl="/dashboard" mode="modal">
                   <div className="flex w-32 cursor-pointer items-center justify-center gap-2 rounded border border-zinc-400 bg-zinc-600 p-2 text-center font-semibold hover:scale-105">
                     Sign Up
