@@ -187,9 +187,17 @@ const PositionTag = (props: { position: string }) => {
     case "machine operator":
       style = "border-gray-500 text-gray-300 font-semibold";
       break;
-
     case "travel":
-      style = "border-blue-500 text-blue-300";
+      style = "border-sky-500 text-sky-300";
+      break;
+    case "shingle":
+      style = "border-orange-300 text-orange-300";
+      break;
+    case "tpo":
+      style = "border-blue-500 text-blue-500";
+      break;
+    case "subcontractor":
+      style = "border-green-400 text-green-400";
       break;
 
     default:
@@ -318,6 +326,26 @@ const CrewMembers = () => {
                             .toLowerCase()
                             .includes("n't") && (
                             <PositionTag position={"Travel"} />
+                          )}
+                        {crewMember.description.toLowerCase().includes("tpo") &&
+                          !crewMember.description
+                            .toLowerCase()
+                            .includes("not") &&
+                          !crewMember.description
+                            .toLowerCase()
+                            .includes("n't") && (
+                            <PositionTag position={"TPO"} />
+                          )}
+                        {crewMember.description
+                          .toLowerCase()
+                          .includes("shingle") &&
+                          !crewMember.description
+                            .toLowerCase()
+                            .includes("not") &&
+                          !crewMember.description
+                            .toLowerCase()
+                            .includes("n't") && (
+                            <PositionTag position={"Shingle"} />
                           )}
                       </div>
                       <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-400">
