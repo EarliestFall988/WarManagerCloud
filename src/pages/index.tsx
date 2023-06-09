@@ -230,11 +230,11 @@ const HomePage: NextPage = () => {
             </p>
             <p>
               {" "}
-              {">"} Coordinate illustrated crew skills with project
-              requirements.
+              {">"} Coordinate illustrated crew skills to meet project
+              demands.
             </p>
             <p>
-              {">"} Up to date employee contacts, and relavent job information
+              {">"} Up to date employee contacts, and relevant job information
               on your mobile device.
             </p>
             <p>{">"} Easily download reports to Excel or Google sheets.</p>
