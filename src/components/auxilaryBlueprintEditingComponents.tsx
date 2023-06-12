@@ -421,15 +421,18 @@ export const ExportBlueprint = () => {
     name: searchTerm,
   });
 
+  const context = api.useContext();
+
   const { mutate, isLoading: isCreating } = api.schedules.create.useMutation({
     onSuccess: (data) => {
       toast.success("Schedule created");
       Copy(data.link);
       setTitle("");
       setDescription("");
+      void context.schedules.invalidate();
     },
     onError: (error) => {
-      toast.error("Something went wrong creating the schedule :(");
+      toast.error("Something went wrong creating the schedule");
       console.error(error);
     },
   });
@@ -552,6 +555,8 @@ export const ExportBlueprint = () => {
 
               <Link
                 href={data.link}
+                target="_blank"
+                passHref
                 className="rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
               >
                 <ArrowUpRightIcon className="h-5 w-5 text-white" />
@@ -722,7 +727,9 @@ export const More = () => {
 
       <div className="flex justify-center gap-1 p-1">
         <div className="flex h-32 items-center justify-center p-5">
-          <LoadingSpinner />
+          <p>{"Under Construction... :)"}</p>
+
+          {/* <LoadingSpinner /> */}
         </div>
       </div>
     </div>
