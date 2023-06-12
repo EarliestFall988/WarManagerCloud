@@ -131,7 +131,7 @@ const BlueprintsList = () => {
                 <Link
                   href={`/blueprints/${blueprint.id}`}
                   passHref
-                  className="flex w-full items-center justify-between gap-1 rounded-sm bg-zinc-700 p-2 transition-all duration-100 hover:bg-zinc-600"
+                  className="flex w-full cursor-pointer items-center justify-between gap-1 rounded-sm bg-zinc-700 p-2 transition-all duration-100 hover:bg-zinc-600"
                 >
                   <DocumentIcon className="h-6 w-6 text-zinc-300" />
                   <h2 className="w-3/2 truncate text-left text-lg font-semibold tracking-tight sm:w-1/4">
@@ -1191,78 +1191,90 @@ const DashboardPage: NextPage = () => {
           <div className="flex w-full flex-col gap-2">
             {user != null && user != undefined ? (
               <>
-                <div className="flex w-full justify-center border-r border-zinc-700 md:hidden">
-                  <Dialog.Root>
-                    <Dialog.Trigger>
-                      <button className="TooltipContent flex w-full items-center justify-center gap-3 rounded-md bg-orange-700 p-2 px-5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
-                        <Bars3Icon className="h-6 w-6 text-zinc-300" />
-                        Menu
-                      </button>
-                    </Dialog.Trigger>
-                    <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
-                    <Dialog.Content className="TooltipContent fixed z-20 flex h-1/2 w-3/4 items-start justify-start rounded border border-zinc-700 bg-zinc-800">
-                      <div className="flex w-full flex-col justify-start p-2">
-                        <Dialog.DialogClose>
-                          <button
-                            className={`flex w-full items-center justify-center p-2 text-red-400 transition-all duration-200`}
-                          >
-                            <XMarkIcon className="h-6 w-6 " /> Close Menu
-                          </button>
-                        </Dialog.DialogClose>
-                        <Dialog.DialogClose>
-                          <button
-                            onClick={() => setContext("Home")}
-                            className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                              context === "Home"
-                                ? "rounded bg-amber-800 hover:bg-red-700"
-                                : "border-b border-zinc-600 hover:bg-zinc-600"
-                            }`}
-                          >
-                            Glance
-                          </button>
-                        </Dialog.DialogClose>
+                <div className="flex w-full items-center justify-between gap-2 border-r border-zinc-700 p-2 md:hidden">
+                  <div className="flex w-full items-center justify-start gap-2">
+                    <Dialog.Root>
+                      <Dialog.Trigger>
+                        <button className="TooltipContent flex w-full gap-3 rounded-md bg-orange-700 p-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
+                          <Bars3Icon className="h-6 w-6 text-zinc-300" />
+                        </button>
+                      </Dialog.Trigger>
+                      {/* <div className="fixed z-20 top-0 w-screen h-screen flex items-center justify-center"> */}
+                      <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
+                      <Dialog.Content className="TooltipContent fixed inset-5 z-20 flex items-start justify-start rounded border border-zinc-700 bg-zinc-800">
+                        <div className="flex w-full flex-col justify-start p-2">
+                          <Dialog.DialogClose>
+                            <button
+                              className={`flex w-full items-center justify-center p-2 text-red-400 transition-all duration-200`}
+                            >
+                              <XMarkIcon className="h-6 w-6 " /> Close Menu
+                            </button>
+                          </Dialog.DialogClose>
+                          <Dialog.DialogClose>
+                            <button
+                              onClick={() => setContext("Home")}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                                context === "Home"
+                                  ? "rounded bg-amber-800 hover:bg-red-700"
+                                  : "border-b border-zinc-600 hover:bg-zinc-600"
+                              }`}
+                            >
+                              Glance
+                            </button>
+                          </Dialog.DialogClose>
 
-                        <Dialog.DialogClose>
-                          <button
-                            onClick={() => setContext("Blueprints")}
-                            className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                              context === "Blueprints"
-                                ? "rounded bg-amber-800 hover:bg-red-700"
-                                : "border-b border-zinc-600 hover:bg-zinc-600"
-                            }`}
-                          >
-                            Blueprints
-                          </button>
-                        </Dialog.DialogClose>
-                        <Dialog.DialogClose>
-                          <button
-                            onClick={() => setContext("CrewMembers")}
-                            className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                              context === "CrewMembers"
-                                ? "rounded bg-amber-800 hover:bg-red-700"
-                                : "border-b border-zinc-600 hover:bg-zinc-600"
-                            }`}
-                          >
-                            Crew
-                          </button>
-                        </Dialog.DialogClose>
-                        <Dialog.DialogClose>
-                          <button
-                            onClick={() => setContext("Projects")}
-                            className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                              context === "Projects"
-                                ? "rounded bg-amber-800 hover:bg-red-700"
-                                : "border-b border-zinc-600 hover:bg-zinc-600 "
-                            }`}
-                          >
-                            Projects
-                          </button>
-                        </Dialog.DialogClose>
-                      </div>
-                    </Dialog.Content>
-                  </Dialog.Root>
+                          <Dialog.DialogClose>
+                            <button
+                              onClick={() => setContext("Blueprints")}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                                context === "Blueprints"
+                                  ? "rounded bg-amber-800 hover:bg-red-700"
+                                  : "border-b border-zinc-600 hover:bg-zinc-600"
+                              }`}
+                            >
+                              Blueprints
+                            </button>
+                          </Dialog.DialogClose>
+                          <Dialog.DialogClose>
+                            <button
+                              onClick={() => setContext("CrewMembers")}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                                context === "CrewMembers"
+                                  ? "rounded bg-amber-800 hover:bg-red-700"
+                                  : "border-b border-zinc-600 hover:bg-zinc-600"
+                              }`}
+                            >
+                              Crew
+                            </button>
+                          </Dialog.DialogClose>
+                          <Dialog.DialogClose>
+                            <button
+                              onClick={() => setContext("Projects")}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                                context === "Projects"
+                                  ? "rounded bg-amber-800 hover:bg-red-700"
+                                  : "border-b border-zinc-600 hover:bg-zinc-600 "
+                              }`}
+                            >
+                              Projects
+                            </button>
+                          </Dialog.DialogClose>
+                        </div>
+                      </Dialog.Content>
+                      {/* </div> */}
+                    </Dialog.Root>
+                    <div className="text-lg font-semibold">
+                      {context == "Home" && <p>Glance</p>}
+                      {context == "Blueprints" && <p>Blueprints</p>}
+                      {context == "CrewMembers" && <p>Crew Members</p>}
+                      {context == "Projects" && <p>Projects</p>}
+                    </div>
+                  </div>
+                  <div>
+                    <UserButton />
+                  </div>
                 </div>
-                <div className="h-screen w-full overflow-y-auto">
+                <div className="w-full overflow-y-auto">
                   {context == "Home" && <DashboardAtAGlance />}
                   {context == "Blueprints" && <BlueprintsList />}
                   {context == "CrewMembers" && <CrewMembers />}

@@ -3,6 +3,7 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
+  MiniMap,
   ReactFlowProvider,
   useReactFlow,
 } from "reactflow";
@@ -127,10 +128,7 @@ const Flow = () => {
   );
 
   return (
-    <div
-      className="h-[95vh] w-full bg-zinc-800 sm:h-[100vh]"
-      ref={reactFlowWrapper}
-    >
+    <div className="h-[100vh] w-full bg-zinc-800" ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         nodeTypes={nodeTypes}
