@@ -4,8 +4,6 @@ import { LoadingSpinner } from "./loading";
 import type { Blueprint, CrewMember, Project } from "@prisma/client";
 import type { Edge, Node } from "reactflow";
 import {
-  ArrowUpLeftIcon,
-  ArrowUpOnSquareIcon,
   ArrowUpRightIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
@@ -17,7 +15,6 @@ import useScript from "./dragDropTouchEventsHandling";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
-import { User } from "@clerk/nextjs/server";
 import { GetListOfNodesSortedByColumn } from "~/states/state";
 import TooltipComponent from "./Tooltip";
 
@@ -313,7 +310,10 @@ export const CrewList = (props: { nodes: Node[] }) => {
               <MagnifyingGlassIcon className="h-5 w-5" />
             </button>
           </TooltipComponent>
-          <TooltipComponent content="View Crew Members NOT on the blueprints" side={"top"}>
+          <TooltipComponent
+            content="View Crew Members NOT on the blueprints"
+            side={"top"}
+          >
             <button
               onClick={() => setNodeMode("notOnBlueprint")}
               className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
@@ -323,7 +323,10 @@ export const CrewList = (props: { nodes: Node[] }) => {
               <QueueListIcon className="h-5 w-5" />
             </button>
           </TooltipComponent>
-          <TooltipComponent content="View Crew Members ONLY on the blueprint" side={"top"}>
+          <TooltipComponent
+            content="View Crew Members ONLY on the blueprint"
+            side={"top"}
+          >
             <button
               onClick={() => setNodeMode("onlyOnBlueprint")}
               className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${

@@ -3,17 +3,16 @@
 
 import {
   SignInButton,
-  SignOutButton,
-  SignUp,
   SignUpButton,
   SignedIn,
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { LogoComponent, LogoComponentLarge } from "~/components/RibbonLogo";
+import { LogoComponentLarge } from "~/components/RibbonLogo";
 
 // import { api } from "~/utils/api";
 // import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
@@ -160,7 +159,8 @@ const HomePage: NextPage = () => {
       <Head>
         <title>War Manager Landing Page</title>
       </Head>
-      <main className="min-h-[100vh] overflow-x-hidden bg-zinc-800">
+      <div className="fixed left-0 top-0 -z-20 h-full w-full bg-bhall bg-cover bg-top" />
+      <main className="min-h-[100vh] overflow-x-hidden bg-zinc-800/80">
         <div className="h-[90vh] w-full">
           <div className="flex items-center justify-between p-2">
             <LogoComponentLarge />
@@ -179,7 +179,7 @@ const HomePage: NextPage = () => {
             </div>
 
             <SignedOut>
-              <SignInButton>
+              <SignInButton redirectUrl="/dashboard">
                 <div className="cursor-pointer rounded p-2 font-semibold transition-all duration-100 hover:text-amber-500">
                   Sign In
                 </div>
@@ -187,35 +187,66 @@ const HomePage: NextPage = () => {
             </SignedOut>
           </div>
           <div className="m-auto flex h-[90vh] w-4/5 flex-col items-start justify-center gap-10 sm:w-1/2">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl lg:text-[4rem] xl:text-[6rem]">
+            <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl md:text-[3rem] lg:text-[4rem] xl:text-[6rem]">
               Construction Management is{" "}
               <span className="bg-gradient-to-br from-amber-400 to-red-700 bg-clip-text text-transparent">
-                Tough
+                Hard Work
               </span>
             </h1>
             <p className="text-zinc-300 sm:text-3xl">
-              War Manager is your{" "}
-              <span className="font-semibold text-amber-600 ">
-                digital multi-tool
-              </span>{" "}
-              to anticipate challenges in the field.
+              War Manager enables you to stay organized and keep your team on
+              the same page.
             </p>
-            <SignUpButton redirectUrl="/dashboard" mode="modal">
-              <div className="cursor-pointer rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 font-semibold hover:scale-105">
-                Sign Up
+            <SignedIn>
+              <Link href="/dashboard">
+                <div className="cursor-pointer rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 font-semibold transition-all duration-100 hover:scale-105">
+                  Go to Dashboard
+                </div>
+              </Link>
+            </SignedIn>
+            <SignedOut>
+              <div className="flex w-full items-end justify-between gap-4">
+                <div>
+                  {/* <p>Sign in</p> */}
+                  <SignInButton redirectUrl="/dashboard">
+                    <div className="flex w-32 cursor-pointer items-center justify-center gap-2  rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 text-center font-semibold transition-all duration-100 hover:scale-105">
+                      Sign In
+                      <ArrowRightIcon className="inline h-5 w-5" />
+                    </div>
+                  </SignInButton>
+                </div>
+                <div>
+                  <p>{"Don't have an account?"}</p>
+                  <SignUpButton redirectUrl="/dashboard">
+                    <div className="flex w-32 cursor-pointer items-center justify-center gap-2 rounded border border-zinc-400 bg-zinc-600 p-2 text-center font-semibold transition-all duration-100 hover:scale-105">
+                      Sign Up
+                      <ArrowRightIcon className="inline h-5 w-5" />
+                    </div>
+                  </SignUpButton>
+                </div>
               </div>
-            </SignUpButton>
+            </SignedOut>
           </div>
         </div>
         <div className="h-[50vh] border-t border-zinc-700 bg-zinc-900 bg-center p-2">
-          <h2 className="border-b border-zinc-700 py-1 text-2xl font-bold tracking-tight text-white sm:py-3 sm:text-4xl lg:py-5 lg:text-[2rem] xl:text-[4rem]">
+          <h2 className="border-b border-zinc-700 py-1 text-3xl font-bold tracking-tight text-white sm:py-3 sm:text-4xl lg:py-5 lg:text-[2rem] xl:text-[3rem]">
             Features
           </h2>
-          <div className="flex flex-col gap-2 py-5 text-lg font-semibold text-zinc-300">
-            <p> {">"} Plan with digital marker boards</p>
-            <p> {">"} Track Crews and Projects</p>
-            <p> {">"} Coordinate on the fly with office teams</p>
-            <p> {">"} Manage Equipment, Burn Rate and other details...</p>
+          <div className="flex flex-col gap-4 py-5 text-lg font-semibold text-zinc-300">
+            <p>
+              {">"}{" "}
+              {"Create and send visual labor 'Blueprint' plans with ease."}
+            </p>
+            <p>
+              {" "}
+              {">"} Coordinate illustrated crew skills to meet project demands.
+            </p>
+            <p>
+              {">"} Up to date employee contacts, and relevant job information
+              on your mobile device.
+            </p>
+            <p>{">"} Easily download reports to Excel or Google sheets.</p>
+            <p> {">"} Enhanced communication between field and office teams.</p>
           </div>
           {/* <SignUpButton redirectUrl="/dashboard" mode="modal">
           <div className="cursor-pointer rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 font-semibold hover:scale-105">

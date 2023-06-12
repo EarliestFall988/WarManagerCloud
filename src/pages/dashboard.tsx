@@ -18,21 +18,17 @@ import React, {
 } from "react";
 import { useRouter } from "next/router";
 import {
-  ArrowDownCircleIcon,
   ArrowDownTrayIcon,
   ArrowsUpDownIcon,
   Bars3Icon,
-  ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
   DocumentIcon,
   EllipsisVerticalIcon,
   InboxIcon,
   MapPinIcon,
-  PaperAirplaneIcon,
   PhoneIcon,
   PlusIcon,
   TrashIcon,
-  UserCircleIcon,
   WrenchScrewdriverIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
@@ -42,7 +38,6 @@ import * as Dialog from "@radix-ui/react-dialog";
 
 import { toast } from "react-hot-toast";
 import TooltipComponent from "~/components/Tooltip";
-import Image from "next/image";
 import { ReactECharts } from "~/components/charts/React-Echarts";
 // import GaugeOption from "~/components/charts/GaugeChartDataTest";
 // import PieChartOption from "~/components/charts/PieChartDataTest";
@@ -299,16 +294,16 @@ const CrewMembers = () => {
             {crewData.length > 0 &&
               crewData?.map((crewMember) => (
                 <div
-                  className="flex rounded-sm bg-zinc-700 hover:bg-zinc-600"
+                  className="flex h-12 rounded-sm bg-zinc-700 hover:bg-zinc-600"
                   key={crewMember.id}
                 >
                   <Link
                     href={`/crewmember/${crewMember.id}`}
                     passHref
-                    className="flex w-11/12 items-center gap-1 rounded-sm p-1 shadow-sm transition-all duration-100 sm:w-full  sm:justify-between"
+                    className="flex w-11/12 flex-grow items-center gap-1 rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
                   >
-                    <UserCircleIcon className="hidden h-10 w-10 text-zinc-300 sm:block" />
-                    <div className="flex w-full flex-col items-start text-left text-white sm:w-1/3">
+                    {/* <UserCircleIcon className="hidden h-10 w-10 flex-1 text-zinc-300 md:block" /> */}
+                    <div className="flex w-full flex-col items-start justify-start  text-left text-white">
                       <div className="flex items-center justify-start gap-1">
                         <p className="truncate text-lg font-semibold text-white ">
                           {crewMember.name}
@@ -368,17 +363,13 @@ const CrewMembers = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="hidden px-1 tracking-tight sm:flex sm:w-1/2 ">
-                      <p className="h-full w-full truncate text-left italic text-zinc-300">
-                        {crewMember.description}
-                      </p>
-                    </div>
-                    <div className="hidden w-1/6 truncate text-right text-sm italic sm:flex">
-                      <p className="w-full text-right">
-                        <span className="text-zinc-400">updated</span>{" "}
-                        {dayjs(crewMember.updatedAt).fromNow()}
-                      </p>
-                    </div>
+                    <p className="hidden flex-grow truncate  tracking-tight sm:block lg:w-1/2 ">
+                      {crewMember.description}
+                    </p>
+                    <p className="hidden  w-32 truncate text-right text-sm italic sm:block">
+                      {/* <span className="text-zinc-400">updated</span>{" "} */}
+                      {dayjs(crewMember.updatedAt).fromNow()}
+                    </p>
                   </Link>
 
                   <DropdownMenu.Root>
@@ -550,7 +541,7 @@ const Projects = () => {
         <div className="flex gap-2">
           <TooltipComponent content="Download Projects Spreadsheet" side="top">
             <Link
-              href="/crewmember/download"
+              href="/projects/download"
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-zinc-700 text-center transition-all duration-100 hover:bg-amber-700 sm:h-12 sm:w-12 sm:text-lg sm:font-semibold"
             >
               <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
@@ -1047,6 +1038,46 @@ const SectorsView = () => {
   );
 };
 
+const MoreContent = () => {
+  return (
+    <div className="flex flex-col gap-2 rounded">
+      <Tabs.Root defaultValue="tab1">
+        <Tabs.List
+          className="border-mauve6 flex shrink-0 border-b"
+          aria-label="Manage your account"
+        >
+          <Tabs.Trigger
+            className=" flex h-[45px] flex-1 cursor-default select-none items-center justify-center bg-zinc-800 px-5 text-[15px] leading-none text-zinc-200 outline-none first:rounded-tl-md last:rounded-tr-md data-[state=active]:text-amber-500 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative data-[state=active]:focus:shadow-[0_0_0_2px] data-[state=active]:focus:shadow-black"
+            value="tab1"
+          >
+            Sectors
+          </Tabs.Trigger>
+          <Tabs.Trigger
+            className="flex h-[45px] flex-1 cursor-default select-none items-center justify-center bg-zinc-800 px-5 text-[15px] leading-none text-zinc-200 outline-none first:rounded-tl-md last:rounded-tr-md data-[state=active]:text-amber-500 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative data-[state=active]:focus:shadow-[0_0_0_2px] data-[state=active]:focus:shadow-black"
+            value="tab2"
+          >
+            Permissions
+          </Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content
+          className="grow bg-zinc-800 p-5 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black"
+          value="tab1"
+        >
+          <SectorsView />
+        </Tabs.Content>
+        <Tabs.Content
+          className="grow bg-zinc-800 p-5 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black"
+          value="tab2"
+        >
+          <div className="text-center text-[2rem] font-semibold text-zinc-500">
+            {"Under construction ... coming soon! "}
+          </div>
+        </Tabs.Content>
+      </Tabs.Root>
+    </div>
+  );
+};
+
 const DashboardPage: NextPage = () => {
   const [context, setContext] = useState("Blueprints");
 
@@ -1078,7 +1109,9 @@ const DashboardPage: NextPage = () => {
 
       <div className="min-w-screen z-50 min-h-screen bg-zinc-800">
         <div className="flex items-center justify-between p-2 px-5 text-center text-lg font-semibold text-white">
-          <LogoComponent />
+          <Link href="/">
+            <LogoComponent />
+          </Link>
           <div className="text-md hidden flex-col justify-around gap-2 text-zinc-300 sm:flex sm:w-[45vw] sm:flex-row">
             <TooltipComponent
               content="View Overall JR&CO Performance"
@@ -1132,41 +1165,7 @@ const DashboardPage: NextPage = () => {
               </button>
             </TooltipComponent>
             <MoreButton>
-              <div className="flex flex-col gap-2 rounded">
-                <Tabs.Root defaultValue="tab1">
-                  <Tabs.List
-                    className="border-mauve6 flex shrink-0 border-b"
-                    aria-label="Manage your account"
-                  >
-                    <Tabs.Trigger
-                      className=" flex h-[45px] flex-1 cursor-default select-none items-center justify-center bg-zinc-800 px-5 text-[15px] leading-none text-zinc-200 outline-none first:rounded-tl-md last:rounded-tr-md data-[state=active]:text-amber-500 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative data-[state=active]:focus:shadow-[0_0_0_2px] data-[state=active]:focus:shadow-black"
-                      value="tab1"
-                    >
-                      Sectors
-                    </Tabs.Trigger>
-                    <Tabs.Trigger
-                      className="flex h-[45px] flex-1 cursor-default select-none items-center justify-center bg-zinc-800 px-5 text-[15px] leading-none text-zinc-200 outline-none first:rounded-tl-md last:rounded-tr-md data-[state=active]:text-amber-500 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative data-[state=active]:focus:shadow-[0_0_0_2px] data-[state=active]:focus:shadow-black"
-                      value="tab2"
-                    >
-                      Permissions
-                    </Tabs.Trigger>
-                  </Tabs.List>
-                  <Tabs.Content
-                    className="grow bg-zinc-800 p-5 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black"
-                    value="tab1"
-                  >
-                    <SectorsView />
-                  </Tabs.Content>
-                  <Tabs.Content
-                    className="grow bg-zinc-800 p-5 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black"
-                    value="tab2"
-                  >
-                    <div className="text-center text-[2rem] font-semibold text-zinc-500">
-                      {"Under construction ... coming soon! "}
-                    </div>
-                  </Tabs.Content>
-                </Tabs.Root>
-              </div>
+              <MoreContent />
             </MoreButton>
           </div>
           <div className="sm:w-40">
@@ -1249,6 +1248,11 @@ const DashboardPage: NextPage = () => {
                         Projects
                       </button>
                     </Dialog.DialogClose>
+                    {/* <Dialog.DialogClose>
+                      <MoreButton>
+                        <MoreContent />
+                      </MoreButton>
+                    </Dialog.DialogClose> */}
                   </div>
                 </Dialog.Content>
               </Dialog.Root>

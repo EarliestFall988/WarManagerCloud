@@ -1,4 +1,3 @@
-import { CrewMember } from "@prisma/client";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { read, utils, writeFileXLSX, type WorkSheet } from "xlsx";
@@ -8,7 +7,6 @@ import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
-import { SignedIn, SignedOut } from "@clerk/nextjs/dist/components.server";
 import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 

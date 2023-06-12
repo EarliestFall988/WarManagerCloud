@@ -1,4 +1,4 @@
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { useState } from "react";
 
@@ -13,7 +13,6 @@ const NewCrewMemberPage: NextPage = () => {
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
   const [position, setPosition] = useState("Laborer");
-  const [crewCount, setCrewCount] = useState("1");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [travel, setTravel] = useState("No");
@@ -32,7 +31,6 @@ const NewCrewMemberPage: NextPage = () => {
       setName("");
       setNotes("");
       setPosition("");
-      setCrewCount("");
       // void api.blueprints.getAll.invalidate();
     },
     onError: (e) => {
@@ -102,7 +100,7 @@ const NewCrewMemberPage: NextPage = () => {
             onChange={(e) => setPhone(e.target.value)}
             pattern={"[0-9]{3}-[0-9]{3}-[0-9]{4}"}
           />
-           <p className="mt-2 hidden text-sm text-red-500 peer-[&:not(:placeholder-shown):not(:focus):invalid]:block">
+          <p className="mt-2 hidden text-sm text-red-500 peer-[&:not(:placeholder-shown):not(:focus):invalid]:block">
             Please enter a valid phone number (000-000-0000)
           </p>
         </div>
