@@ -293,7 +293,7 @@ const CrewMembers = () => {
           <p className="text-lg italic text-red-500">could not load data</p>
         </div>
       ) : (
-        <div className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100">
+        <div className="flex h-[80vh]  w-full flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-zinc-700 p-2 text-gray-100 md:h-[94vh]">
           {crewData.length > 0 &&
             crewData?.map((crewMember) => (
               <div
@@ -303,7 +303,7 @@ const CrewMembers = () => {
                 <Link
                   href={`/crewmember/${crewMember.id}`}
                   passHref
-                  className="flex w-11/12 flex-grow items-center gap-1 rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
+                  className="flex w-11/12 flex-grow items-center gap-1 overflow-x-clip rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
                 >
                   {/* <UserCircleIcon className="hidden h-10 w-10 flex-1 text-zinc-300 md:block" /> */}
                   <div className="flex w-full flex-col items-start justify-start  text-left text-white">
@@ -566,7 +566,7 @@ const Projects = () => {
           </div>
         )) ||
         (data && data?.length > 0 && (
-          <>
+          <div className="h-[80vh] overflow-y-auto overflow-x-hidden md:h-[94vh] ">
             <div className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
               {data?.map((project) => (
                 <div
@@ -692,7 +692,7 @@ const Projects = () => {
                 </div>
               ))}
             </div>
-          </>
+          </div>
         ))}
       {data?.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-4">
