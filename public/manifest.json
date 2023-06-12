@@ -1,6 +1,6 @@
 {
-  "start_url": "/",
-  "id": "/",
+  "start_url": "/dashboard",
+  "id": "/dashboard",
   "name": "War Manager Production Cloud Service",
   "short_name": "War Manager",
   "description": "War Manager enables you to stay organized and keep your team on the same page.",
