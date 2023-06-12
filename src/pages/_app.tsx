@@ -19,14 +19,14 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           name="description"
           content="War Manager is your digital multi-tool to anticipate challenges in the field."
         />
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="mask-icon" href="/icon.png" color="#27272a" />
+        <link rel="shortcut icon" crossOrigin="use-credentials" href="/favicon.ico" />
+        <link rel="mask-icon" crossOrigin="use-credentials" href="/icon.png" color="#27272a" />
         <meta name="theme-color" content="#27272a" />
-        <link rel="apple-touch-icon" href="logo.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="logo.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="logo.png" />
-        <link rel="apple-touch-icon" sizes="167x167" href="logo.png" />
-        <link rel="manifest" href="/manifest.json" />
+        {/* <link rel="apple-touch-icon" crossOrigin="use-credentials" href="logo.png" />
+        <link rel="apple-touch-icon" crossOrigin="use-credentials" sizes="152x152" href="logo.png" />
+        <link rel="apple-touch-icon" crossOrigin="use-credentials" sizes="180x180" href="logo.png" />
+        <link rel="apple-touch-icon" crossOrigin="use-credentials" sizes="167x167" href="logo.png" /> */}
+        <link rel="manifest" crossOrigin="use-credentials" href="/manifest.json"/>
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:url" content="https://warmanager.net" />
         <meta name="twitter:title" content="War Manager" />

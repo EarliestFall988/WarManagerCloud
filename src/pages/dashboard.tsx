@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Link from "next/link";
 import Head from "next/head";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignInButton, SignedIn, UserButton, useUser } from "@clerk/nextjs";
 import React, {
   type FC,
   type ReactNode,
@@ -843,10 +843,10 @@ const MoreButton: FunctionComponent<Props> = (props) => {
     <TooltipComponent content="More" side="bottom">
       <Dialog.Root>
         <TooltipComponent content="More" side="bottom">
-          <Dialog.Trigger asChild>
-            <button className="rounded text-zinc-200">
-              <EllipsisVerticalIcon className="h-6 w-6" />
-            </button>
+          <Dialog.Trigger>
+            {/* <button className="rounded text-zinc-200"> */}
+            <EllipsisVerticalIcon className="h-6 w-6" />
+            {/* </button> */}
           </Dialog.Trigger>
         </TooltipComponent>
         <Dialog.Portal>
@@ -1083,6 +1083,8 @@ const DashboardPage: NextPage = () => {
 
   const { query } = useRouter();
 
+  const { user } = useUser();
+
   useEffect(() => {
     if (query.context) {
       setContext(query.context as string);
@@ -1180,102 +1182,109 @@ const DashboardPage: NextPage = () => {
         </div>
         <div className="flex flex-col gap-4">
           <div className="flex justify-center">{/* <CreateButtons /> */}</div>
-          <SignedIn>
-            <div className="flex w-full justify-center sm:hidden">
-              <Dialog.Root>
-                <Dialog.Trigger>
-                  <button className="TooltipContent flex w-full items-center justify-center gap-3 rounded-md bg-orange-700 p-2 px-5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
-                    <Bars3Icon className="h-6 w-6 text-zinc-300" />
-                    Menu
-                  </button>
-                </Dialog.Trigger>
-                <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
-                <Dialog.Content className="TooltipContent fixed z-20 flex h-1/2 w-3/4 items-start justify-start rounded border border-zinc-700 bg-zinc-800">
-                  <div className="flex w-full flex-col justify-start p-2">
-                    <Dialog.DialogClose>
-                      <button
-                        className={`flex w-full items-center justify-center p-2 text-red-400 transition-all duration-200`}
-                      >
-                        <XMarkIcon className="h-6 w-6 " /> Close Menu
-                      </button>
-                    </Dialog.DialogClose>
-                    <Dialog.DialogClose>
-                      <button
-                        onClick={() => setContext("Home")}
-                        className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                          context === "Home"
-                            ? "rounded bg-amber-800 hover:bg-red-700"
-                            : "border-b border-zinc-600 hover:bg-zinc-600"
-                        }`}
-                      >
-                        Glance
-                      </button>
-                    </Dialog.DialogClose>
+          {/* <SignedIn> */}
+          {user ? (
+            <>
+              <div className="flex w-full justify-center sm:hidden">
+                <Dialog.Root>
+                  <Dialog.Trigger>
+                    <button className="TooltipContent flex w-full items-center justify-center gap-3 rounded-md bg-orange-700 p-2 px-5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
+                      <Bars3Icon className="h-6 w-6 text-zinc-300" />
+                      Menu
+                    </button>
+                  </Dialog.Trigger>
+                  <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
+                  <Dialog.Content className="TooltipContent fixed z-20 flex h-1/2 w-3/4 items-start justify-start rounded border border-zinc-700 bg-zinc-800">
+                    <div className="flex w-full flex-col justify-start p-2">
+                      <Dialog.DialogClose>
+                        <button
+                          className={`flex w-full items-center justify-center p-2 text-red-400 transition-all duration-200`}
+                        >
+                          <XMarkIcon className="h-6 w-6 " /> Close Menu
+                        </button>
+                      </Dialog.DialogClose>
+                      <Dialog.DialogClose>
+                        <button
+                          onClick={() => setContext("Home")}
+                          className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                            context === "Home"
+                              ? "rounded bg-amber-800 hover:bg-red-700"
+                              : "border-b border-zinc-600 hover:bg-zinc-600"
+                          }`}
+                        >
+                          Glance
+                        </button>
+                      </Dialog.DialogClose>
 
-                    <Dialog.DialogClose>
-                      <button
-                        onClick={() => setContext("Blueprints")}
-                        className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                          context === "Blueprints"
-                            ? "rounded bg-amber-800 hover:bg-red-700"
-                            : "border-b border-zinc-600 hover:bg-zinc-600"
-                        }`}
-                      >
-                        Blueprints
-                      </button>
-                    </Dialog.DialogClose>
-                    <Dialog.DialogClose>
-                      <button
-                        onClick={() => setContext("CrewMembers")}
-                        className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                          context === "CrewMembers"
-                            ? "rounded bg-amber-800 hover:bg-red-700"
-                            : "border-b border-zinc-600 hover:bg-zinc-600"
-                        }`}
-                      >
-                        Crew
-                      </button>
-                    </Dialog.DialogClose>
-                    <Dialog.DialogClose>
-                      <button
-                        onClick={() => setContext("Projects")}
-                        className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                          context === "Projects"
-                            ? "rounded bg-amber-800 hover:bg-red-700"
-                            : "border-b border-zinc-600 hover:bg-zinc-600 "
-                        }`}
-                      >
-                        Projects
-                      </button>
-                    </Dialog.DialogClose>
-                    {/* <Dialog.DialogClose>
+                      <Dialog.DialogClose>
+                        <button
+                          onClick={() => setContext("Blueprints")}
+                          className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                            context === "Blueprints"
+                              ? "rounded bg-amber-800 hover:bg-red-700"
+                              : "border-b border-zinc-600 hover:bg-zinc-600"
+                          }`}
+                        >
+                          Blueprints
+                        </button>
+                      </Dialog.DialogClose>
+                      <Dialog.DialogClose>
+                        <button
+                          onClick={() => setContext("CrewMembers")}
+                          className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                            context === "CrewMembers"
+                              ? "rounded bg-amber-800 hover:bg-red-700"
+                              : "border-b border-zinc-600 hover:bg-zinc-600"
+                          }`}
+                        >
+                          Crew
+                        </button>
+                      </Dialog.DialogClose>
+                      <Dialog.DialogClose>
+                        <button
+                          onClick={() => setContext("Projects")}
+                          className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                            context === "Projects"
+                              ? "rounded bg-amber-800 hover:bg-red-700"
+                              : "border-b border-zinc-600 hover:bg-zinc-600 "
+                          }`}
+                        >
+                          Projects
+                        </button>
+                      </Dialog.DialogClose>
+                      {/* <Dialog.DialogClose>
                       <MoreButton>
                         <MoreContent />
                       </MoreButton>
                     </Dialog.DialogClose> */}
-                  </div>
-                </Dialog.Content>
-              </Dialog.Root>
-            </div>
-            <div className="overflow-y-auto">
-              {context == "Home" && <DashboardAtAGlance />}
-              {context == "Blueprints" && <BlueprintsList />}
-              {context == "CrewMembers" && <CrewMembers />}
-              {context == "Projects" && <Projects />}
-            </div>
-          </SignedIn>
-          <SignedOut>
-            <div className="fixed flex h-screen w-screen flex-col items-center justify-center gap-4 rounded p-4 backdrop-blur backdrop-brightness-50">
-              <p className="text-[1.5rem] font-bold">You are not signed in</p>
-              <div className="flex w-full flex-col items-center justify-center ">
-                <SignInButton mode="modal" redirectUrl="/dashboard">
-                  <div className="w-3/12 rounded bg-red-600 p-2 text-center hover:bg-red-500">
-                    Sign in
-                  </div>
-                </SignInButton>
+                    </div>
+                  </Dialog.Content>
+                </Dialog.Root>
               </div>
-            </div>
-          </SignedOut>
+              <div className="overflow-y-auto">
+                {context == "Home" && <DashboardAtAGlance />}
+                {context == "Blueprints" && <BlueprintsList />}
+                {context == "CrewMembers" && <CrewMembers />}
+                {context == "Projects" && <Projects />}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* </SignedIn>
+          <SignedOut> */}
+              <div className="fixed flex h-screen w-screen flex-col items-center justify-center gap-4 rounded p-4 backdrop-blur backdrop-brightness-50">
+                <p className="text-[1.5rem] font-bold">You are not signed in</p>
+                <div className="flex w-full flex-col items-center justify-center ">
+                  <SignInButton mode="modal" redirectUrl="/dashboard">
+                    <div className="w-3/12 rounded bg-red-600 p-2 text-center hover:bg-red-500">
+                      Sign in
+                    </div>
+                  </SignInButton>
+                </div>
+              </div>
+              {/* </SignedOut> */}
+            </>
+          )}
         </div>
       </div>
       {/* <div className="fixed inset-0 top-0 -z-10 min-h-screen bg-bhall bg-top" /> */}
