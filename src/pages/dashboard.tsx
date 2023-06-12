@@ -10,6 +10,7 @@ import Head from "next/head";
 import {
   SignInButton,
   SignOutButton,
+  SignedOut,
   UserButton,
   useUser,
 } from "@clerk/nextjs";
@@ -60,6 +61,7 @@ import SunBurstTestOption from "~/components/charts/SunburstDataTest";
 import { ReactEChartsLarge } from "~/components/charts/React-EchartsLarge";
 import * as Tabs from "@radix-ui/react-tabs";
 import { LogoComponent } from "~/components/RibbonLogo";
+import SignInModal from "~/components/signInPage";
 
 dayjs.extend(relativeTime);
 
@@ -285,12 +287,12 @@ const CrewMembers = () => {
       </div>
 
       {isLoading ? (
-        <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-zinc-700/30 p-2 sm:w-[74vw]">
+        <div className="flex w-full flex-col items-center justify-center gap-2 rounded bg-zinc-700/30 p-2">
           <LoadingSpinner />
         </div>
       ) : loadingCrewError || !crewData ? (
-        <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2 sm:w-[74vw]">
-          <p className="text-lg italic text-red-500">could not load data</p>
+        <div className="flex w-full flex-col items-center justify-center gap-2 rounded p-2">
+          <p className="text-[3rem] italic text-red-500">could not load data</p>
         </div>
       ) : (
         <div className="flex h-[80vh]  w-full flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-zinc-700 p-2 text-gray-100 md:h-[94vh]">
@@ -1188,7 +1190,7 @@ const DashboardPage: NextPage = () => {
               )}
             </div>
           </div>
-          <div className="flex w-full flex-col gap-2">
+          <div className="flex w-full flex-col gap-2 ">
             {user != null && user != undefined ? (
               <>
                 <div className="flex w-full items-center justify-between gap-2 border-r border-zinc-700 p-2 md:hidden">
@@ -1283,9 +1285,7 @@ const DashboardPage: NextPage = () => {
               </>
             ) : (
               <>
-                {/* </SignedIn>
-          <SignedOut> */}
-                <div className="fixed flex h-screen w-screen flex-col items-center justify-center gap-4 rounded p-4 backdrop-blur backdrop-brightness-50">
+                {/* <div className="fixed flex h-screen w-screen flex-col items-center justify-center gap-4 rounded p-4 backdrop-blur backdrop-brightness-50">
                   <p className="text-[1.5rem] font-bold">
                     You are not signed in
                   </p>
@@ -1296,8 +1296,13 @@ const DashboardPage: NextPage = () => {
                       </div>
                     </SignInButton>
                   </div>
+                </div> */}
+
+                <div className="fixed inset-0 top-0 bg-black-900">
+                  <SignedOut>
+                    <SignInModal redirectUrl="/dashboard" />
+                  </SignedOut>
                 </div>
-                {/* </SignedOut> */}
               </>
             )}
           </div>
