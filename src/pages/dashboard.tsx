@@ -1193,13 +1193,13 @@ const DashboardPage: NextPage = () => {
           <div className="flex w-full flex-col gap-2 ">
             {user != null && user != undefined ? (
               <>
-                <div className="w-full overflow-y-auto">
+                <div className="w-full h-[95vh] md:h-auto overflow-y-auto">
                   {context == "Home" && <DashboardAtAGlance />}
                   {context == "Blueprints" && <BlueprintsList />}
                   {context == "CrewMembers" && <CrewMembers />}
                   {context == "Projects" && <Projects />}
                 </div>
-                <div className="flex w-full items-center justify-around gap-2 border-r border-zinc-700 p-2 md:hidden">
+                <div className="flex fixed bottom-0 w-full h-[10vh] items-center justify-around gap-2 border-r border-zinc-700 p-2 md:hidden">
                   <div className="w-5" ></div>
                   <div className="flex items-center justify-start gap-2">
                     <Dialog.Root>
@@ -1210,7 +1210,7 @@ const DashboardPage: NextPage = () => {
                       </Dialog.Trigger>
                       {/* <div className="fixed z-20 top-0 w-screen h-screen flex items-center justify-center"> */}
                       <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
-                      <Dialog.Content className="TooltipContent fixed inset-5 z-20 flex items-start justify-start rounded border border-zinc-700 bg-zinc-800">
+                      <Dialog.Content className="TooltipContent fixed bottom-5 inset-10 z-20 flex items-start justify-start rounded border border-zinc-700 bg-zinc-800">
                         <div className="flex w-full flex-col justify-start p-2">
                           <Dialog.DialogClose>
                             <button
