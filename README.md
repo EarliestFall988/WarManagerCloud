@@ -5,3 +5,9 @@ https://cloud.dev.warmanager.net
 
 ## Authors/Contributers
 - Taylor Howell EarliestFall988
+
+
+## License
+Apache Open Source License
+
+See: LICENSE for more details
