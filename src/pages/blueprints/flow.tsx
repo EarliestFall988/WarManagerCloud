@@ -3,7 +3,6 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
-  MiniMap,
   ReactFlowProvider,
   useReactFlow,
 } from "reactflow";
@@ -51,7 +50,7 @@ const Flow = () => {
     shallow
   );
 
-  console.log("nodes", nodes);
+  // console.log("nodes", nodes);
 
   const { data: crewData } = api.crewMembers.getAll.useQuery();
   const { data: projectData } = api.projects.getAll.useQuery();

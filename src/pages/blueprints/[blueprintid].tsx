@@ -109,8 +109,8 @@ const BlueprintGUI = () => {
 
   const { mutate, isLoading: isSaving } = api.blueprints.save.useMutation({
     onSuccess: (data) => {
-      console.log("saved data");
-      console.log(data);
+      // console.log("saved data");
+      // console.log(data);
 
       toast.success(`${data.name} saved successfully`);
 
@@ -173,7 +173,7 @@ const BlueprintGUI = () => {
       const blueprint = blueprintData as Blueprint;
 
       if (blueprint) {
-        console.log("blueprint", blueprint);
+        // console.log("blueprint", blueprint);
 
         useBlueprintStore.setState({ blueprintId: blueprintId });
         useBlueprintStore.getState().blueprintInstance = blueprint;
@@ -181,7 +181,7 @@ const BlueprintGUI = () => {
         if (blueprint.data && blueprint.data !== "{}") {
           const flowInstance = JSON.parse(blueprint.data) as IFlowInstance;
 
-          console.log("flowInstance", flowInstance);
+          // console.log("flowInstance", flowInstance);
 
           if (flowInstance) {
             flowStore.getState().nodes = flowInstance.nodes;
@@ -189,7 +189,7 @@ const BlueprintGUI = () => {
 
             // console.log("finished loading blueprint");
 
-            console.log("nodes", flowStore.getState().nodes);
+            // console.log("nodes", flowStore.getState().nodes);
           }
         }
 

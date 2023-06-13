@@ -5,7 +5,6 @@ import {
   RocketLaunchIcon,
   TagIcon,
   TrashIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/solid";
 import type { Equipment, Tag } from "@prisma/client";
 import * as Slider from "@radix-ui/react-slider";
@@ -14,7 +13,6 @@ import Head from "next/head";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { string } from "zod";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { RemovableTagComponent } from "~/components/TagComponent";
 import TooltipComponent from "~/components/Tooltip";

@@ -2,8 +2,10 @@ import { WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
 import { memo } from "react";
 import { NodeResizer } from "reactflow";
 import HoverCardComponent from "./HoverCard";
+import { Tag } from "@prisma/client";
+import { TagComponent } from "./TagComponent";
 
-interface crewNodeInput {
+interface IProjectInput {
   data: {
     name: string;
     description: string;
@@ -17,17 +19,21 @@ interface crewNodeInput {
 
     lastUpdated: string;
     totalCost: string;
+    tags: Tag[];
   };
   selected: boolean;
 }
 
-const CrewNode = ({ data, selected }: crewNodeInput) => {
+const ProjectNode = ({ data, selected }: IProjectInput) => {
   if (!data) return <>err</>;
 
   if (typeof selected !== "boolean") return <>err</>;
 
   const startDate = new Date(data.startDate);
   const endDate = new Date(data.endDate);
+
+  console.log("data", data);
+  console.log("tags", data.tags);
 
   return (
     <>
@@ -57,16 +63,25 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
         content={
           <div>
             <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-              <div className="flex justify-left items-center gap-3 ">
-                <WrenchScrewdriverIcon className="h-12 w-12" />
-                <div className="pb-5">
+              <div className="flex justify-start items-center gap-3 ">
+                <div className="" >
+                  <WrenchScrewdriverIcon className="h-12 w-12" />
+                </div>
+                <div className="pb-2">
                   <div>{data.jobNumber}</div>
                   <div className="text-lg font-semibold">{data.name}</div>
                   <div className="flex truncate text-ellipsis text-sm italic tracking-tight text-zinc-300">
                     <p>
-                      {data.address} {data.city}, {data.state}{" "}
+                      {data.address} {data.city}, {data.state}
                     </p>
                   </div>
+                  {data.tags && (
+                    <div className="flex flex-wrap gap-1 w-[15vw]">
+                      {data.tags.map((tag) => (
+                        <TagComponent key={tag.id} tag={tag} style="text-xs" />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -118,6 +133,7 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
             </div>
 
             <div className="border-t border-zinc-700 text-sm text-zinc-300">
+
               <p className="font-thin text-zinc-400">Comments/Concerns</p>
               <p>{data.description}</p>
             </div>
@@ -128,4 +144,4 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
   );
 };
 
-export default memo(CrewNode);
+export default memo(ProjectNode);

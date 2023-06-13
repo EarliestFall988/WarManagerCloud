@@ -32,9 +32,10 @@ import {
   PlusIcon,
   TagIcon,
   TrashIcon,
-  WrenchScrewdriverIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
+
+import * as Progress from "@radix-ui/react-progress";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -58,6 +59,7 @@ import * as Tabs from "@radix-ui/react-tabs";
 import { LogoComponent } from "~/components/RibbonLogo";
 import SignInModal from "~/components/signInPage";
 import { TagComponent } from "~/components/TagComponent";
+import { Project } from "@prisma/client";
 
 dayjs.extend(relativeTime);
 
@@ -586,48 +588,48 @@ const Projects = () => {
         (data && data?.length > 0 && (
           <div className="h-[80vh] overflow-y-auto overflow-x-hidden md:h-[94vh] ">
             <div className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
-              {data?.map((project) => (
-                <div
-                  className="flex w-full items-center gap-1 rounded-sm bg-zinc-700 pl-1 hover:bg-zinc-600 select-none"
-                  key={project.id}
-                >
-                  {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}
-                  <Link
-                    href={`/projects/${project.id}`}
-                    passHref
-                    className="flex w-full items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between cursor-pointer"
+              {data?.map((project, index) => (
+                <div key={project.id} className="rounded-sm bg-zinc-700 hover:bg-zinc-600 select-none w-full">
+                  <div
+                    className="flex md:1/2 items-center gap-1 "
                   >
-                    <div className="w-3/4 sm:w-1/2">
-                      <div className="flex w-full items-center justify-start gap-1 overflow-clip">
-                        <p className="whitespace-nowrap text-sm font-normal text-zinc-300">
-                          {project.jobNumber}
-                        </p>
-                        <p className="truncate text-ellipsis ">
-                          {project.name}
-                        </p>
-                        {
-                          project.tags.length > 0 && (
-                            <div className="flex gap-1 w-1/2 overflow-x-auto">
-                              {
-                                project.tags.map((tag) => (
-                                  <TagComponent tag={tag} style="text-xs" />
-                                ))
-                              }
-                            </div>
-                          )
-                        }
-                      </div>
-                      <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
-                        <div className="w-2/7 flex items-center justify-start gap-1 overflow-clip">
-                          <MapPinIcon className="h-4 w-4" />
-                          <p className="block w-28 truncate text-left text-sm font-normal italic tracking-tight">
-                            {project.city.trim()}
-                            {project.state.trim() && `, ${project.state}`}
+                    {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}
+                    <Link
+                      href={`/projects/${project.id}`}
+                      passHref
+                      className="flex w-full items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between cursor-pointer"
+                    >
+                      <div className="w-full sm:w-1/2">
+                        <div className="flex w-full items-center justify-start gap-1 overflow-clip">
+                          <p className="whitespace-nowrap text-sm font-normal text-zinc-300">
+                            {project.jobNumber}
                           </p>
+                          <p className="truncate text-ellipsis ">
+                            {project.name}
+                          </p>
+                          {
+                            project.tags.length > 0 && (
+                              <div className="flex gap-1 w-1/2 flex-wrap">
+                                {
+                                  project.tags.map((tag) => (
+                                    <TagComponent tag={tag} key={tag.id} style="text-xs" />
+                                  ))
+                                }
+                              </div>
+                            )
+                          }
                         </div>
-                        <StatusTagComponent name={project.status} />
-                      </div>
-                      {/* <div className="flex gap-1">
+                        <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
+                          <div className="w-2/7 flex items-center justify-start gap-1 overflow-clip">
+                            <MapPinIcon className="h-4 w-4" />
+                            <p className="block w-28 truncate text-left text-sm font-normal italic tracking-tight">
+                              {project.city.trim()}
+                              {project.state.trim() && `, ${project.state}`}
+                            </p>
+                          </div>
+                          <StatusTagComponent name={project.status} />
+                        </div>
+                        {/* <div className="flex gap-1">
                     <p className="truncate rounded-md text-amber-200 bg-zinc-600 px-1 text-center text-sm tracking-wide">
                       Kansas City
                     </p>
@@ -635,92 +637,95 @@ const Projects = () => {
                       Commercial Roofing
                     </p>
                   </div> */}
-                    </div>
-                    <div className="hidden overflow-clip font-thin sm:flex sm:w-1/2">
-                      <p className="w-full truncate text-ellipsis text-center">
-                        {project.description}
-                      </p>
-                    </div>
-                    <div className="flex w-1/6 items-center justify-end gap-1 overflow-clip px-1">
-                      <p className="hidden text-xs text-zinc-400 md:block">
-                        updated
-                      </p>
-                      <p className="hidden truncate text-right text-sm italic sm:block">
-                        {dayjs(project.updatedAt).fromNow()}
-                      </p>
-                    </div>
-                  </Link>
-                  <DropdownMenu.Root>
-                    <DropdownMenu.Trigger asChild>
-                      <button className="p-1">
-                        <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
-                      </button>
-                    </DropdownMenu.Trigger>
-                    <DropdownMenu.Portal>
-                      <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-600 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
-                        <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-600" />
-                        <DropdownMenu.Item
-                          className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
-                          onSelect={() => {
-                            copyAddress(
-                              project.address +
-                              " " +
-                              project.city +
-                              " " +
-                              project.state +
-                              " " +
-                              project.zip
-                            );
-                          }}
-                        >
-                          <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
-                          Copy Address
-                        </DropdownMenu.Item>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
-                              <TrashIcon className="h-5 w-5 text-white" />
-                              Delete
-                            </button>
-                          </Dialog.Trigger>
-                          <Dialog.Portal>
-                            <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/50 backdrop-blur" />
-                            <div className="flex h-screen w-screen items-center justify-center">
-                              <Dialog.Content className="fixed top-[50%] m-auto rounded-lg bg-black p-3 py-2 drop-shadow-lg backdrop-blur">
-                                <Dialog.Title className="text-lg font-bold text-white">
-                                  Delete Project
-                                </Dialog.Title>
-                                <Dialog.Description className="text-white">
-                                  Are you sure you want to delete this project?
-                                  This action cannot be undone.
-                                </Dialog.Description>
-                                <div className="mt-4 flex justify-end gap-2">
-                                  <Dialog.Close asChild>
-                                    <button className="rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-red-600">
-                                      Cancel
-                                    </button>
-                                  </Dialog.Close>
-                                  <Dialog.Close asChild>
-                                    <button
-                                      className="rounded bg-gradient-to-br from-red-700 to-amber-700 p-2 text-center transition-all duration-100 hover:bg-red-600"
-                                      onClick={() => {
-                                        deleteJob(project.id);
-                                      }}
-                                    >
-                                      Delete
-                                    </button>
-                                  </Dialog.Close>
-                                </div>
-                              </Dialog.Content>
-                            </div>
-                          </Dialog.Portal>
-                        </Dialog.Root>
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu.Root>
+                      </div>
+                      <div className="hidden overflow-clip font-thin sm:flex sm:w-1/2">
+                        <p className="w-full truncate text-ellipsis text-center">
+                          {project.description}
+                        </p>
+                      </div>
+                      <div className="flex w-1/6 items-center justify-end gap-1 overflow-clip px-1">
+                        <p className="hidden text-xs text-zinc-400 md:block">
+                          updated
+                        </p>
+                        <p className="hidden truncate text-right text-sm italic sm:block">
+                          {dayjs(project.updatedAt).fromNow()}
+                        </p>
+                      </div>
+                    </Link>
+                    <DropdownMenu.Root>
+                      <DropdownMenu.Trigger asChild>
+                        <button className="p-1">
+                          <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
+                        </button>
+                      </DropdownMenu.Trigger>
+                      <DropdownMenu.Portal>
+                        <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-600 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                          <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-600" />
+                          <DropdownMenu.Item
+                            className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
+                            onSelect={() => {
+                              copyAddress(
+                                project.address +
+                                " " +
+                                project.city +
+                                " " +
+                                project.state +
+                                " " +
+                                project.zip
+                              );
+                            }}
+                          >
+                            <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
+                            Copy Address
+                          </DropdownMenu.Item>
+                          <Dialog.Root>
+                            <Dialog.Trigger asChild>
+                              <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
+                                <TrashIcon className="h-5 w-5 text-white" />
+                                Delete
+                              </button>
+                            </Dialog.Trigger>
+                            <Dialog.Portal>
+                              <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/50 backdrop-blur" />
+                              <div className="flex h-screen w-screen items-center justify-center">
+                                <Dialog.Content className="fixed top-[50%] m-auto rounded-lg bg-black p-3 py-2 drop-shadow-lg backdrop-blur">
+                                  <Dialog.Title className="text-lg font-bold text-white">
+                                    Delete Project
+                                  </Dialog.Title>
+                                  <Dialog.Description className="text-white">
+                                    Are you sure you want to delete this project?
+                                    This action cannot be undone.
+                                  </Dialog.Description>
+                                  <div className="mt-4 flex justify-end gap-2">
+                                    <Dialog.Close asChild>
+                                      <button className="rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-red-600">
+                                        Cancel
+                                      </button>
+                                    </Dialog.Close>
+                                    <Dialog.Close asChild>
+                                      <button
+                                        className="rounded bg-gradient-to-br from-red-700 to-amber-700 p-2 text-center transition-all duration-100 hover:bg-red-600"
+                                        onClick={() => {
+                                          deleteJob(project.id);
+                                        }}
+                                      >
+                                        Delete
+                                      </button>
+                                    </Dialog.Close>
+                                  </div>
+                                </Dialog.Content>
+                              </div>
+                            </Dialog.Portal>
+                          </Dialog.Root>
+                        </DropdownMenu.Content>
+                      </DropdownMenu.Portal>
+                    </DropdownMenu.Root>
+                  </div>
+                  <ProjectProgress project={project} index={index} />
                 </div>
               ))}
             </div>
+
           </div>
         ))}
       {data?.length === 0 && (
@@ -739,6 +744,37 @@ const Projects = () => {
     </>
   );
 };
+
+const ProjectProgress: React.FC<{ project: Project, index: number }> = ({ project, index }) => {
+
+
+  const [progress, setProgress] = React.useState(0);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setProgress(project.percentComplete), 500 * (index / 3) + 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+
+  return (
+    <TooltipComponent content={`${project.name} is ${progress}% Complete`} side="bottom">
+      {/* {progress === 0 && <div className="relative overflow-hidden rounded-b-sm bg-zinc-700 w-full h-[4px]">
+      </div>
+      } */}
+      <Progress.Root
+        className="relative overflow-hidden rounded-b-sm bg-zinc-700 w-full h-[4px]"
+        style={{
+          // Fix overflow clipping in Safari
+          // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
+          transform: 'translateZ(0)',
+        }}
+        value={progress}
+      >
+        <Progress.Indicator style={{ transform: `translateX(-${100 - progress}%)` }} className="rounded-md bg-gradient-to-r from-orange-600  to-amber-700  w-full h-full transition-transform duration-[660ms] ease-[cubic-bezier(0.65, 0, 0.35, 1)]" />
+      </Progress.Root>
+    </TooltipComponent>
+  )
+}
 
 const Loader = () => {
   return (

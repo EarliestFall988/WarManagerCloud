@@ -1,4 +1,4 @@
-import { Tag } from "@prisma/client"
+import type { Tag } from "@prisma/client"
 import TooltipComponent from "./Tooltip";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -20,7 +20,7 @@ export const TagComponent: React.FC<{ tag: Tag, style?: string, children?: React
                     paddingRight: "5px",
                     paddingLeft: "5px",
                 }}
-                className={`fade-y flex items-center justify-center gap-1 ${props.style || ""}`}
+                className={`fade-y flex items-center justify-center whitespace-nowrap gap-1 ${props.style || ""}`}
             >
                 {tag.name}
                 {props.children}

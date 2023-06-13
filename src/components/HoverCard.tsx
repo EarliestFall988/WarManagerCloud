@@ -14,7 +14,7 @@ const HoverCardComponent: FC<Props> = (props) => {
       <HoverCard.Portal>
         <HoverCard.Content
           sideOffset={-5}
-          className="HoverCardContent rounded border border-zinc-700 bg-black/60 p-3 text-zinc-200 drop-shadow-lg shadow-lg backdrop-blur max-w-[25vw]"
+          className="HoverCardContent rounded border border-zinc-700 bg-black/60 p-3 text-zinc-200 drop-shadow-lg shadow-lg backdrop-blur max-w-[40vw]"
         >
           {props.content}
           <HoverCard.Arrow
