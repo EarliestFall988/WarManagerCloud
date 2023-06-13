@@ -44,6 +44,9 @@ export const projectsRouter = createTRPCRouter({
           orderBy: {
             name: "asc",
           },
+          include: {
+            tags: true,
+          },
         });
         return projects;
       }
@@ -93,6 +96,9 @@ export const projectsRouter = createTRPCRouter({
       const project = await ctx.prisma.project.findUnique({
         where: {
           id: input.id,
+        },
+        include: {
+          tags: true,
         },
       });
 

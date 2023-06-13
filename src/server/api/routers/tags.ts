@@ -5,6 +5,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
 import { errorUtil } from "zod/lib/helpers/errorUtil";
+import { Tag } from "@prisma/client";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -43,6 +44,25 @@ export const tagsRouter = createTRPCRouter({
       });
 
       return tags;
+    }),
+
+  getTagsToAdd: privateProcedure
+    .input(z.object({ type: z.string(), projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const newTags = await ctx.prisma.tag.findMany({
+        where: {
+          type: input.type,
+          NOT: {
+            projects: {
+              some: {
+                id: input.projectId,
+              },
+            },
+          },
+        },
+      });
+
+      return newTags;
     }),
 
   getById: privateProcedure

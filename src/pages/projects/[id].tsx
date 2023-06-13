@@ -1,11 +1,20 @@
 import { SignedIn } from "@clerk/nextjs";
-import { ArrowRightIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
-import type { Equipment } from "@prisma/client";
+import {
+  ArrowRightIcon,
+  PlusIcon,
+  TagIcon,
+  TrashIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
+import type { Equipment, Tag } from "@prisma/client";
 import type { GetStaticProps, GetStaticPropsContext, NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import { string } from "zod";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
+import TooltipComponent from "~/components/Tooltip";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
@@ -41,11 +50,55 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
   const { data: project } = api.projects.getById.useQuery({ id });
 
+  const [tags, setTags] = useState([] as Tag[]);
+
+  const [selectedTag, setSelectedTag] = useState("");
+
+  const { data: newTags } = api.tags.getTagsToAdd.useQuery({
+    type: "projects",
+    projectId: id,
+  });
+
+  console.log(newTags);
+
   const mutation = api.projects.update.useMutation({
     onSuccess: (data) => {
       toast.success(`${data.name} updated successfully!`);
     },
   });
+
+  const addTagToProject = useCallback(() => {
+    const tagId = selectedTag;
+
+    if (tagId === "") {
+      toast.error("Please select a valid tag to add");
+      return;
+    }
+
+    const tagExists = tags.find((tag) => tag.id === tagId);
+
+    if (tagExists) {
+      toast.error("Tag already exists on project");
+      return;
+    }
+
+    const tag = newTags?.find((tag) => tag.id === tagId);
+
+    if (tag === undefined) {
+      toast.error("Tag does not exist");
+      return;
+    }
+
+    setTags([...tags, tag]);
+  }, [selectedTag, tags, newTags]);
+
+  const removeTagFromProject = useCallback(
+    (tagId: string) => {
+      const newTags = tags.filter((tag) => tag.id !== tagId);
+      setTags(newTags);
+    },
+    [tags]
+  );
 
   useEffect(() => {
     if (project == null) return;
@@ -88,6 +141,9 @@ const EditProjectPage = function ({ id }: { id: string }) {
     if (project.endDate) {
       setEndDate(formatDate(project.endDate));
     }
+
+    const tags = project.tags;
+    if (tags) setTags(tags);
   }, [project]);
 
   if (project === undefined || project === null) {
@@ -111,7 +167,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Name</h1>
               <input
-                className="w-full rounded p-2 text-stone-800 outline-none"
+                className="w-full rounded p-2 text-zinc-800 outline-none"
                 type="text"
                 value={name}
                 disabled={false}
@@ -121,7 +177,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Job Number</h1>
               <input
-                className="w-full rounded p-2 text-stone-800 outline-none"
+                className="w-full rounded p-2 text-zinc-800 outline-none"
                 value={jobNumber}
                 type="text"
                 onChange={(e) => setJobNumber(e.target.value)}
@@ -131,7 +187,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Description</h1>
               <input
-                className="w-full rounded p-2 text-stone-800 outline-none"
+                className="w-full rounded p-2 text-zinc-800 outline-none"
                 value={description}
                 type="text"
                 onChange={(e) => setDescription(e.target.value)}
@@ -144,7 +200,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Address</h1>
               <input
-                className="w-full rounded p-2 text-stone-800 outline-none"
+                className="w-full rounded p-2 text-zinc-800 outline-none"
                 value={address}
                 type="text"
                 onChange={(e) => setAddress(e.target.value)}
@@ -154,7 +210,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">City</h1>
               <input
-                className="w-full rounded p-2 text-stone-800 outline-none"
+                className="w-full rounded p-2 text-zinc-800 outline-none"
                 value={city}
                 type="text"
                 onChange={(e) => setCity(e.target.value)}
@@ -164,7 +220,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">State</h1>
               <input
-                className="w-full rounded p-2 text-stone-800 outline-none"
+                className="w-full rounded p-2 text-zinc-800 outline-none"
                 value={state}
                 type="text"
                 onChange={(e) => setState(e.target.value)}
@@ -177,7 +233,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Estimated Man Hours</h1>
               <input
-                className="w-full rounded p-2 text-stone-800 outline-none"
+                className="w-full rounded p-2 text-zinc-800 outline-none"
                 value={manHours}
                 type="number"
                 onChange={(e) => setManHours(e.target.value)}
@@ -191,6 +247,59 @@ const EditProjectPage = function ({ id }: { id: string }) {
               <EquipmentEditor />
             </div>
 
+            <div className="flex w-full flex-col gap-2 p-2">
+              <h1 className="text-lg font-semibold">Tags</h1>
+              <div className="min-h-[5vh] rounded bg-zinc-700 p-2">
+                <div className="flex flex-wrap gap-2 p-2">
+                  {tags.map((tag) => (
+                    <div key={tag.id}>
+                      <TagBubble
+                        tag={tag}
+                        removeTagFromProject={removeTagFromProject}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <select
+                  value={selectedTag}
+                  onChange={(e) => {
+                    setSelectedTag(e.target.value);
+                  }}
+                  className="w-full rounded border border-zinc-600 bg-zinc-700 p-2 outline-none focus:ring-2 focus:ring-amber-600"
+                >
+                  <option value="">Select A New Tag</option>
+                  {newTags
+                    ?.filter(
+                      (tag) => !tags.map((tag) => tag.id).includes(tag.id)
+                    )
+                    .map((tag) => (
+                      <option value={tag.id} key={tag.id}>
+                        <p>{tag.name}</p>
+                      </option>
+                    ))}
+                </select>
+                <button
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      addTagToProject();
+                    }
+                  }}
+                  onClick={addTagToProject}
+                  className=" flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 text-center hover:bg-amber-700"
+                >
+                  <PlusIcon className="h-5 w-5" />
+                </button>
+                <Link
+                  className="flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 hover:bg-amber-700"
+                  href="/tags"
+                >
+                  <TagIcon className="h-5 w-5" />
+                </Link>
+              </div>
+            </div>
+
             <div className="h-10"></div>
 
             <div className="w-full p-2">
@@ -199,7 +308,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
                 <div className="w-full">
                   <p className="px-2 italic text-zinc-300">Projected Start</p>
                   <input
-                    className="w-full rounded p-2 text-stone-800 outline-none"
+                    className="w-full rounded p-2 text-zinc-800 outline-none"
                     value={startDate}
                     type="date"
                     onChange={(e) => setStartDate(e.target.value)}
@@ -210,7 +319,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
                 <div className="w-full">
                   <p className="px-2 italic text-zinc-300">Projected End</p>
                   <input
-                    className="w-full rounded p-2 text-stone-800 outline-none"
+                    className="w-full rounded p-2 text-zinc-800  outline-none"
                     value={endDate}
                     type="date"
                     onChange={(e) => setEndDate(e.target.value)}
@@ -223,7 +332,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Status</h1>
               <select
-                className="w-full rounded p-2 text-stone-800 outline-none"
+                className="w-full rounded p-2 text-zinc-800 outline-none"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 disabled={false}
@@ -248,7 +357,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Notes/Concerns</h1>
               <textarea
-                className="w-full rounded p-2 text-stone-800 outline-none"
+                className="w-full rounded p-2 text-zinc-800 outline-none"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 disabled={false}
@@ -286,6 +395,34 @@ const EditProjectPage = function ({ id }: { id: string }) {
         </div>
       </main>
     </>
+  );
+};
+
+const TagBubble: React.FC<{
+  tag: Tag;
+  removeTagFromProject: (id: string) => void;
+}> = ({ tag, removeTagFromProject }) => {
+  return (
+    <TooltipComponent content={tag.description || "<no description>"} side="bottom">
+      <div
+        style={{
+          color: `${tag.backgroundColor}`,
+          border: `1px solid ${tag.backgroundColor}`,
+          borderRadius: "9999px",
+          paddingRight: "5px",
+          paddingLeft: "5px",
+        }}
+        className="fade-y flex items-center justify-center gap-1"
+      >
+        {tag.name}
+        <button
+          onClick={() => removeTagFromProject(tag.id)}
+          className="text-zinc-500 hover:text-amber-600"
+        >
+          <XMarkIcon className=" h-5 w-5 " />
+        </button>
+      </div>
+    </TooltipComponent>
   );
 };
 
@@ -356,7 +493,7 @@ const EquipmentEditor = (props: { data?: JobData | [] }) => {
       <div className="p-1"></div>
       <div className="flex gap-2">
         <input
-          className="w-full rounded p-2 text-stone-800 outline-none"
+          className="w-full rounded p-2 text-zinc-800 outline-none"
           value={type}
           id="type"
           type="text"
@@ -372,7 +509,7 @@ const EquipmentEditor = (props: { data?: JobData | [] }) => {
           }}
         />
         <input
-          className="w-1/6 rounded p-2 text-center text-stone-800 outline-none"
+          className="w-1/6 rounded p-2 text-center text-zinc-800 outline-none"
           value={quantity}
           type="number"
           onChange={(e) => setQuantity(e.target.value)}
@@ -387,9 +524,9 @@ const EquipmentEditor = (props: { data?: JobData | [] }) => {
       </div>
       <button
         onClick={AddToEquipment}
-        className="flex w-full items-center justify-center rounded bg-zinc-600 hover:bg-zinc-500"
+        className="mt-2 flex w-full items-center justify-center rounded bg-zinc-600 p-2 hover:bg-zinc-500"
       >
-        <PlusIcon className="h-10 w-10" />
+        <PlusIcon className="h-5 w-5" />
       </button>
     </div>
   );

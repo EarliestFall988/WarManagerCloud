@@ -66,6 +66,7 @@ model Project {
   sectors  Sector[]
 
   authorId String
+  tags     Tag[]
 
   @@index([authorId])
 }
@@ -106,6 +107,8 @@ model CrewMember {
 
   lastReviewDate DateTime?
 
+  tags Tag[]
+
   wage   Float
   burden Float
   rate   Float
@@ -134,6 +137,7 @@ model Blueprint {
 
   sector      Sector[]
   permissions Permissions[]
+  tags        Tag[]
 
   notes Note[]
 
@@ -296,7 +300,12 @@ model Tag {
   backgroundColor String @db.VarChar(255)
   type            String @db.VarChar(255) //crews, projects, or blueprints?
 
-  authorId String
+  authorId     String
+
+  CrewMembers  CrewMember[]
+  projects     Project[]
+  blueprints    Blueprint[]
+
 
   @@index([authorId])
 }
