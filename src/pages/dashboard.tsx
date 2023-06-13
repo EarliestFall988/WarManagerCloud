@@ -307,7 +307,7 @@ const CrewMembers = () => {
           {crewData.length > 0 &&
             crewData?.map((crewMember) => (
               <div
-                className="flex h-12 rounded-sm bg-zinc-700 hover:bg-zinc-600 sm:w-10/12 lg:w-full"
+                className="flex h-12 rounded-sm bg-zinc-700 hover:bg-zinc-600 sm:w-10/12 lg:w-full select-none cursor-pointer"
                 key={crewMember.id}
               >
                 <Link
@@ -588,14 +588,14 @@ const Projects = () => {
             <div className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
               {data?.map((project) => (
                 <div
-                  className="flex w-full items-center gap-1 rounded-sm bg-zinc-700 pl-1 hover:bg-zinc-600"
+                  className="flex w-full items-center gap-1 rounded-sm bg-zinc-700 pl-1 hover:bg-zinc-600 select-none"
                   key={project.id}
                 >
                   {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}
                   <Link
                     href={`/projects/${project.id}`}
                     passHref
-                    className="flex w-full items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
+                    className="flex w-full items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between cursor-pointer"
                   >
                     <div className="w-3/4 sm:w-1/2">
                       <div className="flex w-full items-center justify-start gap-1 overflow-clip">
