@@ -5,12 +5,14 @@ export default {
   theme: {
     extend: {
       backgroundImage: {
-        'bhall': "url('../../public/bhall.png')",
-      }
+        bhall: "url('../../public/bhall.png')",
+      },
     },
   },
-  plugins: [],
-  safelist: [
-    'verticalText',
-  ]
+  plugins: [
+    require("@tailwindcss/forms")({
+      strategy: "class",
+    }),
+  ],
+  safelist: ["verticalText"],
 } satisfies Config;

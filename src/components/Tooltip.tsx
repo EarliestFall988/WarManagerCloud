@@ -14,12 +14,12 @@ const TooltipComponent: FunctionComponent<Props> = (props) => {
         <Tooltip.Trigger asChild>{props.children}</Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content
-            className="TooltipContent text-semibold z-30 rounded bg-black/60 p-2 text-white shadow-lg backdrop-blur-sm border border-zinc-700"
+            className="TooltipContent text-semibold z-30 rounded-md bg-black/60 p-2 text-white drop-shadow-lg backdrop-blur-sm border border-zinc-500"
             side={props.side}
             sideOffset={5}
           >
-            <p className="font-semibold">{props.content}</p>
-            <Tooltip.Arrow className="fill-current text-zinc-700" />
+            <p className="font-semibold max-w-[25vw]">{props.content}</p>
+            <Tooltip.Arrow className="fill-current text-zinc-500" />
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>

@@ -112,6 +112,20 @@ a {
   animation-name: slideRightAndFade;
 }
 
+.fade-y {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  animation-name: slideUpAndFade;
+}
+
+.fade-x {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  animation-name: slideLeftAndFade;
+}
+
 .ImageTrigger {
   cursor: pointer;
   border-radius: 100%;

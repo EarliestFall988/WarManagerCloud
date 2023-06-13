@@ -7,13 +7,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Link from "next/link";
 import Head from "next/head";
-import {
-  SignInButton,
-  SignOutButton,
-  SignedOut,
-  UserButton,
-  useUser,
-} from "@clerk/nextjs";
+import { SignOutButton, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import React, {
   type FC,
   type ReactNode,
@@ -36,6 +30,7 @@ import {
   MapPinIcon,
   PhoneIcon,
   PlusIcon,
+  TagIcon,
   TrashIcon,
   WrenchScrewdriverIcon,
   XMarkIcon,
@@ -264,6 +259,14 @@ const CrewMembers = () => {
           className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
         />
         <div className="flex gap-1">
+          <TooltipComponent content="Add a New Crew Member" side="bottom">
+            <Link
+              href="/newCrewMember"
+              className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+            >
+              <PlusIcon className="h-6 w-6 text-zinc-100" />
+            </Link>
+          </TooltipComponent>
           <TooltipComponent
             content="Download Crew Members Spreadsheet"
             side="bottom"
@@ -275,12 +278,12 @@ const CrewMembers = () => {
               <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
             </Link>
           </TooltipComponent>
-          <TooltipComponent content="Add a New Crew Member" side="bottom">
+          <TooltipComponent content="View Tags" side="bottom">
             <Link
-              href="/newCrewMember"
-              className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+              href="/tags"
+              className=" flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
             >
-              <PlusIcon className="h-6 w-6 text-zinc-100" />
+              <TagIcon className="h-6 w-6 text-zinc-100" />
             </Link>
           </TooltipComponent>
         </div>
@@ -295,11 +298,15 @@ const CrewMembers = () => {
           <p className="text-[3rem] italic text-red-500">could not load data</p>
         </div>
       ) : (
-        <div className="flex h-[80vh]  w-full flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-zinc-700 p-2 text-gray-100 md:h-[94vh]">
+        <div className="flex h-[80vh] w-full flex-col  items-start justify-start gap-1 overflow-y-auto overflow-x-hidden border-t border-zinc-700 p-2 text-gray-100 md:h-[94vh]">
+          <div className="flex gap-1 rounded-sm bg-zinc-700 p-1 sm:w-10/12 lg:w-full">
+            {/* <div className="w-1/2 "></div>
+            <div>test</div> */}
+          </div>
           {crewData.length > 0 &&
             crewData?.map((crewMember) => (
               <div
-                className="flex h-12 rounded-sm bg-zinc-700 hover:bg-zinc-600"
+                className="flex h-12 rounded-sm bg-zinc-700 hover:bg-zinc-600 sm:w-10/12 lg:w-full"
                 key={crewMember.id}
               >
                 <Link
@@ -308,7 +315,7 @@ const CrewMembers = () => {
                   className="flex w-11/12 flex-grow items-center gap-1 overflow-x-clip rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
                 >
                   {/* <UserCircleIcon className="hidden h-10 w-10 flex-1 text-zinc-300 md:block" /> */}
-                  <div className="flex w-full flex-col items-start justify-start  text-left text-white">
+                  <div className="flex w-full flex-col items-start justify-start text-left text-white lg:w-1/2">
                     <div className="flex items-center justify-start gap-1">
                       <p className="truncate text-lg font-semibold text-white ">
                         {crewMember.name}
@@ -360,11 +367,11 @@ const CrewMembers = () => {
                       </p>
                     </div>
                   </div>
-                  <p className="hidden flex-grow truncate  tracking-tight sm:block lg:w-1/2 ">
+                  <p className="hidden flex-grow truncate tracking-tight md:block lg:w-1/4 ">
                     {crewMember.description}
                   </p>
-                  <p className="hidden  w-32 truncate text-right text-sm italic sm:block">
-                    {/* <span className="text-zinc-400">updated</span>{" "} */}
+                  <p className="hidden w-1/12 truncate text-left text-sm italic sm:block">
+                    <span className="text-zinc-400">updated</span>
                     {dayjs(crewMember.updatedAt).fromNow()}
                   </p>
                 </Link>
@@ -532,6 +539,14 @@ const Projects = () => {
           className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
         />
         <div className="flex gap-1">
+          <TooltipComponent content="Add a New Project" side="bottom">
+            <Link
+              href="/newproject"
+              className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+            >
+              <PlusIcon className="h-6 w-6 text-zinc-100" />
+            </Link>
+          </TooltipComponent>
           <TooltipComponent
             content="Download Projects Spreadsheet"
             side="bottom"
@@ -543,12 +558,12 @@ const Projects = () => {
               <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
             </Link>
           </TooltipComponent>
-          <TooltipComponent content="Add a New Project" side="bottom">
+          <TooltipComponent content="View Tags" side="bottom">
             <Link
-              href="/newproject"
-              className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+              href="/tags"
+              className=" flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
             >
-              <PlusIcon className="h-6 w-6 text-zinc-100" />
+              <TagIcon className="h-6 w-6 text-zinc-100" />
             </Link>
           </TooltipComponent>
         </div>
@@ -1193,14 +1208,14 @@ const DashboardPage: NextPage = () => {
           <div className="flex w-full flex-col gap-2 ">
             {user != null && user != undefined ? (
               <>
-                <div className="w-full h-[95vh] md:h-auto overflow-y-auto">
+                <div className="h-[95vh] w-full overflow-y-auto md:h-auto">
                   {context == "Home" && <DashboardAtAGlance />}
                   {context == "Blueprints" && <BlueprintsList />}
                   {context == "CrewMembers" && <CrewMembers />}
                   {context == "Projects" && <Projects />}
                 </div>
-                <div className="flex fixed bottom-0 w-full h-[10vh] items-center justify-around gap-2 border-r border-zinc-700 p-2 md:hidden">
-                  <div className="w-5" ></div>
+                <div className="fixed bottom-0 flex h-[10vh] w-full items-center justify-around gap-2 border-r border-zinc-700 p-2 md:hidden">
+                  <div className="w-5"></div>
                   <div className="flex items-center justify-start gap-2">
                     <Dialog.Root>
                       <Dialog.Trigger>
@@ -1210,7 +1225,7 @@ const DashboardPage: NextPage = () => {
                       </Dialog.Trigger>
                       {/* <div className="fixed z-20 top-0 w-screen h-screen flex items-center justify-center"> */}
                       <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
-                      <Dialog.Content className="TooltipContent fixed bottom-5 inset-10 z-20 flex items-start justify-start rounded border border-zinc-700 bg-zinc-800">
+                      <Dialog.Content className="TooltipContent fixed inset-10 bottom-5 z-20 flex items-start justify-start rounded border border-zinc-700 bg-zinc-800">
                         <div className="flex w-full flex-col justify-start p-2">
                           <Dialog.DialogClose>
                             <button

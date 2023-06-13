@@ -266,8 +266,8 @@ model Permissions {
   description String @db.VarChar(255)
   keywords    Json?  @db.Json
 
-  authorId String
-  users    User[]
+  authorId   String
+  users      User[]
   blueprints Blueprint[]
 
   @@index([authorId])
@@ -280,6 +280,21 @@ model User {
 
   clerkId     String        @unique @db.VarChar(255)
   permissions Permissions[]
+
+  authorId String
+
+  @@index([authorId])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name            String @db.VarChar(255)
+  description     String @db.VarChar(255)
+  backgroundColor String @db.VarChar(255)
+  type            String @db.VarChar(255) //crews, projects, or blueprints?
 
   authorId String
 

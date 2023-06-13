@@ -1,14 +1,28 @@
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
-import Link from "next/link";
 import TooltipComponent from "./Tooltip";
+import { useRouter } from "next/router";
 
 export const NewItemPageHeader = (props: {
   title: string;
-  context: string | undefined;
+  context?: string | undefined;
 }) => {
+  const router = useRouter();
+
   return (
     <div className="flex items-center justify-between bg-zinc-700 p-2 text-center text-lg font-semibold">
-      {props.context == "blueprints" && (
+      <TooltipComponent content="Back" side="bottom">
+        <button>
+          <ArrowLeftIcon className="h-6 w-6" onClick={() => router.back()} />
+        </button>
+      </TooltipComponent>
+      <h1 className="text-[1rem] sm:text-lg">{props.title}</h1>
+      <div className="hidden w-12 sm:flex" />
+    </div>
+  );
+};
+
+
+{/* {props.context == "blueprints" && (
         <TooltipComponent content="Back to Blueprints" side="bottom">
           <Link
             href="/dashboard?context=Blueprints"
@@ -37,9 +51,4 @@ export const NewItemPageHeader = (props: {
             <ArrowLeftIcon className="h-6 w-6" />
           </Link>
         </TooltipComponent>
-      )}
-      <h1 className="text-[1rem] sm:text-lg">{props.title}</h1>{" "}
-      <div className="hidden w-12 sm:flex" />
-    </div>
-  );
-};
+      )} */}
