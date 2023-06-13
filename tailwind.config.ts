@@ -1,4 +1,9 @@
 import { type Config } from "tailwindcss";
+import forms from "@tailwindcss/forms";
+
+const f = forms({
+  strategy: "class",
+});
 
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
@@ -9,10 +14,6 @@ export default {
       },
     },
   },
-  plugins: [
-    require("@tailwindcss/forms")({
-      strategy: "class",
-    }),
-  ],
+  plugins: [f],
   safelist: ["verticalText"],
 } satisfies Config;
