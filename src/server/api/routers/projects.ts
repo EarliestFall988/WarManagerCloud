@@ -85,6 +85,9 @@ export const projectsRouter = createTRPCRouter({
         orderBy: {
           name: "asc",
         },
+        include: {
+          tags: true,
+        },
       });
 
       return projects;
@@ -197,15 +200,18 @@ export const projectsRouter = createTRPCRouter({
         jobNumber: z.string().min(5).max(10),
         notes: z.string().min(0).max(255),
         description: z.string().min(0).max(255),
+        // tags: z.array(z.string()),
 
         address: z.string().min(3).max(255),
         city: z.string().min(2).max(255),
         state: z.string().min(2).max(2),
         // zip: z.string().min(3).max(255),
-
+        tags: z.array(z.string()),
+        estimatedManHours: z.number().min(0).max(1000000),
         startDate: z.date(),
         endDate: z.date(),
         status: z.string().min(3).max(255),
+        percentComplete: z.number().min(0).max(100),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -234,11 +240,17 @@ export const projectsRouter = createTRPCRouter({
           // zip: input.zip,
 
           notes: input.notes,
-
+          TotalManHours: input.estimatedManHours,
           startDate: input.startDate,
           endDate: input.endDate,
           status: input.status,
-        },
+          percentComplete: input.percentComplete,
+          tags: {
+            connect: input.tags?.map((tag) => ({
+              id: tag,
+            })),
+          },
+        }
       });
 
       return project;

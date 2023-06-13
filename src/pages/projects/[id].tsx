@@ -2,11 +2,13 @@ import { SignedIn } from "@clerk/nextjs";
 import {
   ArrowRightIcon,
   PlusIcon,
+  RocketLaunchIcon,
   TagIcon,
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import type { Equipment, Tag } from "@prisma/client";
+import * as Slider from "@radix-ui/react-slider";
 import type { GetStaticProps, GetStaticPropsContext, NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
@@ -14,6 +16,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { string } from "zod";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
+import { RemovableTagComponent } from "~/components/TagComponent";
 import TooltipComponent from "~/components/Tooltip";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
@@ -42,6 +45,9 @@ const EditProjectPage = function ({ id }: { id: string }) {
   const [state, setState] = useState("");
 
   const [manHours, setManHours] = useState("");
+
+  const [percentComplete, setPercentComplete] = useState(10);
+
   // const [state, setState] = useState("");
 
   const [status, setStatus] = useState("");
@@ -142,12 +148,27 @@ const EditProjectPage = function ({ id }: { id: string }) {
       setEndDate(formatDate(project.endDate));
     }
 
+    if (project.percentComplete) {
+      setPercentComplete(project.percentComplete);
+    }
+
+    if (project.TotalManHours) {
+      setManHours(project.TotalManHours.toString());
+    }
+
     const tags = project.tags;
     if (tags) setTags(tags);
   }, [project]);
 
   if (project === undefined || project === null) {
     return <LoadingPage />;
+  }
+
+  const getTagIds = () => {
+
+    const tagIds = tags.map((tag) => tag.id);
+
+    return tagIds;
   }
 
   return (
@@ -193,6 +214,71 @@ const EditProjectPage = function ({ id }: { id: string }) {
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={false}
               />
+            </div>
+
+            <div className="flex w-full flex-col gap-2 p-2">
+              <h1 className="text-lg font-semibold">Tags</h1>
+              <div className="min-h-[8vh] rounded border border-zinc-600 bg-zinc-700 p-2">
+                <div className="flex flex-wrap gap-2 p-2">
+                  {tags.length > 0 &&
+                    tags.map((tag) => (
+                      <div key={tag.id}>
+                        <RemovableTagComponent
+                          tag={tag}
+                          removeTagFromProject={removeTagFromProject}
+                        />
+                      </div>
+                    ))}
+                  {tags.length === 0 && (
+                    <div className="fade-x flex h-[4vh] w-full items-center justify-center">
+                      <p className="font-semibold italic text-zinc-500">
+                        No Tags Yet...
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <select
+                  value={selectedTag}
+                  onChange={(e) => {
+                    setSelectedTag(e.target.value);
+                  }}
+                  className="w-full rounded border border-zinc-600 bg-zinc-700 p-2 outline-none focus:ring-2 focus:ring-amber-600"
+                >
+                  <option value="">Select A New Tag</option>
+                  {newTags
+                    ?.filter(
+                      (tag) => !tags.map((tag) => tag.id).includes(tag.id)
+                    )
+                    .map((tag) => (
+                      <option value={tag.id} key={tag.id}>
+                        <p>{tag.name}</p>
+                      </option>
+                    ))}
+                </select>
+                <TooltipComponent content="Add Tag" side="bottom">
+                  <button
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        addTagToProject();
+                      }
+                    }}
+                    onClick={addTagToProject}
+                    className=" flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 text-center hover:bg-amber-700"
+                  >
+                    <PlusIcon className="h-5 w-5" />
+                  </button>
+                </TooltipComponent>
+                <TooltipComponent content="Manage Tags" side="bottom">
+                  <Link
+                    className="flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 hover:bg-amber-700"
+                    href="/tags"
+                  >
+                    <TagIcon className="h-5 w-5" />
+                  </Link>
+                </TooltipComponent>
+              </div>
             </div>
 
             <div className="h-10"></div>
@@ -245,59 +331,6 @@ const EditProjectPage = function ({ id }: { id: string }) {
                 Estimated Equipment Needs
               </h1>
               <EquipmentEditor />
-            </div>
-
-            <div className="flex w-full flex-col gap-2 p-2">
-              <h1 className="text-lg font-semibold">Tags</h1>
-              <div className="min-h-[5vh] rounded bg-zinc-700 p-2">
-                <div className="flex flex-wrap gap-2 p-2">
-                  {tags.map((tag) => (
-                    <div key={tag.id}>
-                      <TagBubble
-                        tag={tag}
-                        removeTagFromProject={removeTagFromProject}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-1">
-                <select
-                  value={selectedTag}
-                  onChange={(e) => {
-                    setSelectedTag(e.target.value);
-                  }}
-                  className="w-full rounded border border-zinc-600 bg-zinc-700 p-2 outline-none focus:ring-2 focus:ring-amber-600"
-                >
-                  <option value="">Select A New Tag</option>
-                  {newTags
-                    ?.filter(
-                      (tag) => !tags.map((tag) => tag.id).includes(tag.id)
-                    )
-                    .map((tag) => (
-                      <option value={tag.id} key={tag.id}>
-                        <p>{tag.name}</p>
-                      </option>
-                    ))}
-                </select>
-                <button
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      addTagToProject();
-                    }
-                  }}
-                  onClick={addTagToProject}
-                  className=" flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 text-center hover:bg-amber-700"
-                >
-                  <PlusIcon className="h-5 w-5" />
-                </button>
-                <Link
-                  className="flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 hover:bg-amber-700"
-                  href="/tags"
-                >
-                  <TagIcon className="h-5 w-5" />
-                </Link>
-              </div>
             </div>
 
             <div className="h-10"></div>
@@ -355,6 +388,33 @@ const EditProjectPage = function ({ id }: { id: string }) {
             </div>
 
             <div className="w-full p-2">
+              <h1 className="text-lg font-semibold">Percent Complete</h1>
+              <p>{percentComplete || 0} %</p>
+              <Slider.Root
+                className="relative flex items-center select-none touch-none w-full h-5"
+                defaultValue={[percentComplete]}
+                max={100}
+                step={1}
+                onValueChange={(value) => setPercentComplete(value[0] || 0)}
+              >
+                <Slider.Track className="bg-zinc-600 relative grow rounded-full h-[3px]">
+                  <Slider.Range className="absolute bg-white rounded-full h-full" />
+                </Slider.Track>
+                <Slider.Thumb
+                  className="block w-5 h-5 bg-white rounded-[10px] hover:bg-violet3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                  aria-label="Volume"
+                />
+              </Slider.Root>
+
+              {/* <textarea
+                className="w-full rounded p-2 text-zinc-800 outline-none"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                disabled={false}
+              /> */}
+            </div>
+
+            <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Notes/Concerns</h1>
               <textarea
                 className="w-full rounded p-2 text-zinc-800 outline-none"
@@ -373,9 +433,11 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
                   mutation.mutate({
                     id: project.id,
+                    estimatedManHours: parseInt(manHours || "0"),
                     name,
                     description,
                     jobNumber,
+                    tags: getTagIds(),
                     address,
                     city,
                     state,
@@ -383,12 +445,19 @@ const EditProjectPage = function ({ id }: { id: string }) {
                     endDate: end,
                     status,
                     notes,
+                    percentComplete
                   });
                   toast.loading("Saving changes...", { duration: 1000 });
                 }}
                 className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
               >
-                {mutation.isLoading ? <LoadingSpinner /> : <p>Save Changes</p>}
+                {mutation.isLoading ? (
+                  <LoadingSpinner />
+                ) : (
+                  <div className="flex gap-2">
+                    <p>Save</p> <RocketLaunchIcon className="h-6 w-6" />{" "}
+                  </div>
+                )}
               </button>
             </div>
           </div>
@@ -398,33 +467,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
   );
 };
 
-const TagBubble: React.FC<{
-  tag: Tag;
-  removeTagFromProject: (id: string) => void;
-}> = ({ tag, removeTagFromProject }) => {
-  return (
-    <TooltipComponent content={tag.description || "<no description>"} side="bottom">
-      <div
-        style={{
-          color: `${tag.backgroundColor}`,
-          border: `1px solid ${tag.backgroundColor}`,
-          borderRadius: "9999px",
-          paddingRight: "5px",
-          paddingLeft: "5px",
-        }}
-        className="fade-y flex items-center justify-center gap-1"
-      >
-        {tag.name}
-        <button
-          onClick={() => removeTagFromProject(tag.id)}
-          className="text-zinc-500 hover:text-amber-600"
-        >
-          <XMarkIcon className=" h-5 w-5 " />
-        </button>
-      </div>
-    </TooltipComponent>
-  );
-};
+
 
 type JobData = {
   equipment: Equipment[];
@@ -604,7 +647,7 @@ const ViewProjectPage = function ({ id }: { id: string }) {
                       <p className="italic text-green-600">
                         {Math.round(
                           (project.endDate.getTime() - new Date().getTime()) /
-                            (1000 * 3600 * 24)
+                          (1000 * 3600 * 24)
                         )}
                         <span className="p-1">Days Left</span>
                       </p>

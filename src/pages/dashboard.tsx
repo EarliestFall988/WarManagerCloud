@@ -57,6 +57,7 @@ import { ReactEChartsLarge } from "~/components/charts/React-EchartsLarge";
 import * as Tabs from "@radix-ui/react-tabs";
 import { LogoComponent } from "~/components/RibbonLogo";
 import SignInModal from "~/components/signInPage";
+import { TagComponent } from "~/components/TagComponent";
 
 dayjs.extend(relativeTime);
 
@@ -590,7 +591,7 @@ const Projects = () => {
                   className="flex w-full items-center gap-1 rounded-sm bg-zinc-700 pl-1 hover:bg-zinc-600"
                   key={project.id}
                 >
-                  <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" />
+                  {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}
                   <Link
                     href={`/projects/${project.id}`}
                     passHref
@@ -604,6 +605,17 @@ const Projects = () => {
                         <p className="truncate text-ellipsis ">
                           {project.name}
                         </p>
+                        {
+                          project.tags.length > 0 && (
+                            <div className="flex gap-1 w-1/2 overflow-x-auto">
+                              {
+                                project.tags.map((tag) => (
+                                  <TagComponent tag={tag} style="text-xs" />
+                                ))
+                              }
+                            </div>
+                          )
+                        }
                       </div>
                       <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
                         <div className="w-2/7 flex items-center justify-start gap-1 overflow-clip">
@@ -652,12 +664,12 @@ const Projects = () => {
                           onSelect={() => {
                             copyAddress(
                               project.address +
-                                " " +
-                                project.city +
-                                " " +
-                                project.state +
-                                " " +
-                                project.zip
+                              " " +
+                              project.city +
+                              " " +
+                              project.state +
+                              " " +
+                              project.zip
                             );
                           }}
                         >
@@ -751,9 +763,8 @@ const PieChartCard: FC<PieChartCardProps> = ({ title, chart }) => {
   return (
     <>
       <div
-        className={`${
-          open ? "h-72 w-1/4" : "h-14 w-1/4"
-        } overflow-hidden rounded bg-zinc-700 transition-all duration-200 `}
+        className={`${open ? "h-72 w-1/4" : "h-14 w-1/4"
+          } overflow-hidden rounded bg-zinc-700 transition-all duration-200 `}
       >
         <div className="flex items-start justify-between p-2">
           <h3 className="text-zinc-400">{title}</h3>
@@ -1093,11 +1104,9 @@ const DashboardPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{`Dashboard ${context === "Home" ? "(At a Glance)" : ""} ${
-          context === "Blueprints" ? "(Blueprints)" : ""
-        } ${context === "CrewMembers" ? "(Crew Members)" : ""} ${
-          context === "Projects" ? "(Projects)" : ""
-        } - War Manager`}</title>
+        <title>{`Dashboard ${context === "Home" ? "(At a Glance)" : ""} ${context === "Blueprints" ? "(Blueprints)" : ""
+          } ${context === "CrewMembers" ? "(Crew Members)" : ""} ${context === "Projects" ? "(Projects)" : ""
+          } - War Manager`}</title>
       </Head>
 
       <main className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-800">
@@ -1110,11 +1119,10 @@ const DashboardPage: NextPage = () => {
               >
                 <button
                   onClick={() => setContext("Home")}
-                  className={`w-full  p-2 font-semibold transition-all duration-200 ${
-                    context === "Home"
-                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                      : " border-b border-zinc-700 hover:bg-zinc-700"
-                  }`}
+                  className={`w-full  p-2 font-semibold transition-all duration-200 ${context === "Home"
+                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                    : " border-b border-zinc-700 hover:bg-zinc-700"
+                    }`}
                 >
                   Glance
                 </button>
@@ -1122,11 +1130,10 @@ const DashboardPage: NextPage = () => {
               <TooltipComponent content="View all Blueprints" side="right">
                 <button
                   onClick={() => setContext("Blueprints")}
-                  className={`w-full  p-2 font-semibold transition-all duration-200 ${
-                    context === "Blueprints"
-                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                      : " border-b border-zinc-700 hover:bg-zinc-700"
-                  }`}
+                  className={`w-full  p-2 font-semibold transition-all duration-200 ${context === "Blueprints"
+                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                    : " border-b border-zinc-700 hover:bg-zinc-700"
+                    }`}
                 >
                   Blueprints
                 </button>
@@ -1134,11 +1141,10 @@ const DashboardPage: NextPage = () => {
               <TooltipComponent content="View all Crew Members" side="right">
                 <button
                   onClick={() => setContext("CrewMembers")}
-                  className={`w-full  p-2 font-semibold transition-all duration-200 ${
-                    context === "CrewMembers"
-                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                      : " border-b border-zinc-700 hover:bg-zinc-700"
-                  }`}
+                  className={`w-full  p-2 font-semibold transition-all duration-200 ${context === "CrewMembers"
+                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                    : " border-b border-zinc-700 hover:bg-zinc-700"
+                    }`}
                 >
                   Crew
                 </button>
@@ -1146,11 +1152,10 @@ const DashboardPage: NextPage = () => {
               <TooltipComponent content="View all Projects" side="right">
                 <button
                   onClick={() => setContext("Projects")}
-                  className={`w-full p-2 font-semibold transition-all duration-200 ${
-                    context === "Projects"
-                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                      : " border-b border-zinc-700 hover:bg-zinc-700"
-                  }`}
+                  className={`w-full p-2 font-semibold transition-all duration-200 ${context === "Projects"
+                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                    : " border-b border-zinc-700 hover:bg-zinc-700"
+                    }`}
                 >
                   Projects
                 </button>
@@ -1237,11 +1242,10 @@ const DashboardPage: NextPage = () => {
                           <Dialog.DialogClose>
                             <button
                               onClick={() => setContext("Home")}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                                context === "Home"
-                                  ? "rounded bg-amber-800 hover:bg-red-700"
-                                  : "border-b border-zinc-600 hover:bg-zinc-600"
-                              }`}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Home"
+                                ? "rounded bg-amber-800 hover:bg-red-700"
+                                : "border-b border-zinc-600 hover:bg-zinc-600"
+                                }`}
                             >
                               Glance
                             </button>
@@ -1250,11 +1254,10 @@ const DashboardPage: NextPage = () => {
                           <Dialog.DialogClose>
                             <button
                               onClick={() => setContext("Blueprints")}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                                context === "Blueprints"
-                                  ? "rounded bg-amber-800 hover:bg-red-700"
-                                  : "border-b border-zinc-600 hover:bg-zinc-600"
-                              }`}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Blueprints"
+                                ? "rounded bg-amber-800 hover:bg-red-700"
+                                : "border-b border-zinc-600 hover:bg-zinc-600"
+                                }`}
                             >
                               Blueprints
                             </button>
@@ -1262,11 +1265,10 @@ const DashboardPage: NextPage = () => {
                           <Dialog.DialogClose>
                             <button
                               onClick={() => setContext("CrewMembers")}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                                context === "CrewMembers"
-                                  ? "rounded bg-amber-800 hover:bg-red-700"
-                                  : "border-b border-zinc-600 hover:bg-zinc-600"
-                              }`}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "CrewMembers"
+                                ? "rounded bg-amber-800 hover:bg-red-700"
+                                : "border-b border-zinc-600 hover:bg-zinc-600"
+                                }`}
                             >
                               Crew
                             </button>
@@ -1274,11 +1276,10 @@ const DashboardPage: NextPage = () => {
                           <Dialog.DialogClose>
                             <button
                               onClick={() => setContext("Projects")}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                                context === "Projects"
-                                  ? "rounded bg-amber-800 hover:bg-red-700"
-                                  : "border-b border-zinc-600 hover:bg-zinc-600 "
-                              }`}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Projects"
+                                ? "rounded bg-amber-800 hover:bg-red-700"
+                                : "border-b border-zinc-600 hover:bg-zinc-600 "
+                                }`}
                             >
                               Projects
                             </button>
