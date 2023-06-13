@@ -1085,7 +1085,7 @@ const DashboardPage: NextPage = () => {
         } - War Manager`}</title>
       </Head>
 
-      <div className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-800">
+      <main className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-800">
         <div className="flex items-start justify-start">
           <div className="hidden h-screen w-1/6 flex-col items-start justify-between border-r border-zinc-700 md:flex">
             <div className="flex w-full flex-col">
@@ -1193,11 +1193,18 @@ const DashboardPage: NextPage = () => {
           <div className="flex w-full flex-col gap-2 ">
             {user != null && user != undefined ? (
               <>
-                <div className="flex w-full items-center justify-between gap-2 border-r border-zinc-700 p-2 md:hidden">
-                  <div className="flex w-full items-center justify-start gap-2">
+                <div className="w-full overflow-y-auto">
+                  {context == "Home" && <DashboardAtAGlance />}
+                  {context == "Blueprints" && <BlueprintsList />}
+                  {context == "CrewMembers" && <CrewMembers />}
+                  {context == "Projects" && <Projects />}
+                </div>
+                <div className="flex w-full items-center justify-around gap-2 border-r border-zinc-700 p-2 md:hidden">
+                  <div className="w-5" ></div>
+                  <div className="flex items-center justify-start gap-2">
                     <Dialog.Root>
                       <Dialog.Trigger>
-                        <button className="TooltipContent flex w-full gap-3 rounded-md bg-orange-700 p-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
+                        <button className="TooltipContent flex w-full gap-3 rounded-full bg-amber-700 p-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
                           <Bars3Icon className="h-6 w-6 text-zinc-300" />
                         </button>
                       </Dialog.Trigger>
@@ -1265,22 +1272,16 @@ const DashboardPage: NextPage = () => {
                       </Dialog.Content>
                       {/* </div> */}
                     </Dialog.Root>
-                    <div className="text-lg font-semibold">
+                    {/* <div className="text font-semibold">
                       {context == "Home" && <p>Glance</p>}
                       {context == "Blueprints" && <p>Blueprints</p>}
                       {context == "CrewMembers" && <p>Crew Members</p>}
                       {context == "Projects" && <p>Projects</p>}
-                    </div>
+                    </div> */}
                   </div>
                   <div>
                     <UserButton />
                   </div>
-                </div>
-                <div className="w-full overflow-y-auto">
-                  {context == "Home" && <DashboardAtAGlance />}
-                  {context == "Blueprints" && <BlueprintsList />}
-                  {context == "CrewMembers" && <CrewMembers />}
-                  {context == "Projects" && <Projects />}
                 </div>
               </>
             ) : (
@@ -1298,7 +1299,7 @@ const DashboardPage: NextPage = () => {
                   </div>
                 </div> */}
 
-                <div className="fixed inset-0 top-0 bg-black-900">
+                <div className="bg-black-900 fixed inset-0 top-0">
                   <SignedOut>
                     <SignInModal redirectUrl="/dashboard" />
                   </SignedOut>
@@ -1307,7 +1308,7 @@ const DashboardPage: NextPage = () => {
             )}
           </div>
         </div>
-      </div>
+      </main>
       {/* <div className="fixed inset-0 top-0 -z-10 min-h-screen bg-bhall bg-top" /> */}
     </>
   );
