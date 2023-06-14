@@ -45,7 +45,7 @@ export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projec
         selectedTags.push(...selectedTagData || []);
         tags.push(...tagData || []);
 
-    }, []);
+    }, [allTags, savedTags]);
 
     const onChange = useCallback((e: MultiValue<{
         value: string;
@@ -70,7 +70,7 @@ export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projec
 
 
     if (isLoading) {
-        return <LoadingSpinner />;
+        return <div className="w-full" > <LoadingSpinner /></div>;
     }
 
     if (isError) {
