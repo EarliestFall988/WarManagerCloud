@@ -622,12 +622,13 @@ const Projects = () => {
                         <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
                           <div className="w-2/7 flex items-center justify-start gap-1 overflow-clip">
                             <MapPinIcon className="h-4 w-4" />
-                            <p className="block w-28 truncate text-left text-sm font-normal italic tracking-tight">
+                            <p className="block max-w-[7rem] truncate text-left text-sm font-normal italic tracking-tight">
                               {project.city.trim()}
                               {project.state.trim() && `, ${project.state}`}
                             </p>
                           </div>
-                          <StatusTagComponent name={project.status} />
+                          <p>·</p>
+                          <p className="text-sm" >{project.status}</p>
                         </div>
                         {/* <div className="flex gap-1">
                     <p className="truncate rounded-md text-amber-200 bg-zinc-600 px-1 text-center text-sm tracking-wide">
@@ -744,6 +745,8 @@ const Projects = () => {
     </>
   );
 };
+
+
 
 const ProjectProgress: React.FC<{ project: Project, index: number }> = ({ project, index }) => {
 

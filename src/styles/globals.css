@@ -8,17 +8,18 @@ body {
 }
 
 *::-webkit-scrollbar {
-  width: 12px; /* width of the entire scrollbar */
+  width: 12px;
+  /* width of the entire scrollbar */
 }
 
 *::-webkit-scrollbar-track {
-  @apply bg-black;
-  @apply rounded-md;
+  @apply bg-zinc-900;
 }
 
 *::-webkit-scrollbar-thumb {
   @apply bg-zinc-700;
-  @apply rounded-md; /* roundness of the scroll thumb */
+  @apply rounded-sm;
+  @apply hover:bg-zinc-600;
 }
 
 @keyframes slideUpAndFade {
@@ -26,6 +27,7 @@ body {
     opacity: 0;
     transform: translateY(-2px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -37,6 +39,7 @@ body {
     opacity: 0;
     transform: translateY(2px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -48,6 +51,7 @@ body {
     opacity: 0;
     transform: translateX(-2px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -59,6 +63,7 @@ body {
     opacity: 0;
     transform: translateX(2px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -76,15 +81,19 @@ a {
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
+
 .HoverCardContent[data-side="top"] {
   animation-name: slideUpAndFade;
 }
+
 .HoverCardContent[data-side="right"] {
   animation-name: slideLeftAndFade;
 }
+
 .HoverCardContent[data-side="bottom"] {
   animation-name: slideUpAndFade;
 }
+
 .HoverCardContent[data-side="left"] {
   animation-name: slideRightAndFade;
 }
@@ -102,12 +111,15 @@ a {
 .TooltipContent[data-side="top"] {
   animation-name: slideUpAndFade;
 }
+
 .TooltipContent[data-side="right"] {
   animation-name: slideLeftAndFade;
 }
+
 .TooltipContent[data-side="bottom"] {
   animation-name: slideUpAndFade;
 }
+
 .TooltipContent[data-side="left"] {
   animation-name: slideRightAndFade;
 }
@@ -131,6 +143,7 @@ a {
   border-radius: 100%;
   display: inline-block;
 }
+
 .ImageTrigger:focus {
   box-shadow: 0 0 0 2px white;
 }
@@ -139,10 +152,12 @@ a {
   display: block;
   border-radius: 100%;
 }
+
 .Image.normal {
   width: 45px;
   height: 45px;
 }
+
 .Image.large {
   width: 60px;
   height: 60px;
@@ -154,9 +169,11 @@ a {
   font-size: 15px;
   line-height: 1.5;
 }
+
 .Text.faded {
   color: var(--mauve10);
 }
+
 .Text.bold {
   font-weight: 500;
 }

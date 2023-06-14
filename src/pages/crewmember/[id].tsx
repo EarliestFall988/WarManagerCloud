@@ -8,6 +8,8 @@ import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { CloudArrowUpIcon } from "@heroicons/react/24/solid";
+import { useRouter } from "next/router";
 
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   // const router = useRouter();
@@ -37,6 +39,8 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       }
     },
   });
+
+  const router = useRouter();
 
   const { data, isLoading } = api.crewMembers.getById.useQuery({
     crewMemberId: id,
@@ -96,6 +100,16 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   // setPosition(data.position)
   // setDescription(data.description)
 
+  const save = () => {
+    mutation.mutate({
+      crewMemberId: data.id,
+      name: crewName,
+      position,
+      notes: description,
+    });
+    toast.loading("Saving changes...", { duration: 1000 });
+  }
+
   return (
     <>
       <Head>
@@ -104,7 +118,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="min-h-screen bg-zinc-800">
-        <NewItemPageHeader title={`${data.name} `} context="crewmembers" />
+        <NewItemPageHeader title={`${data.name} `} context="crewmembers" save={save} saving={mutation.isLoading} cancel={() => router.push("/dashboard?context=CrewMembers")} />
         <div className="flex items-center justify-center">
           <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-3/5">
             <div className="w-full p-2">
@@ -231,18 +245,10 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
             <div className="w-full p-2">
               <button
                 disabled={isLoading || mutation.isLoading}
-                onClick={() => {
-                  mutation.mutate({
-                    crewMemberId: data.id,
-                    name: crewName,
-                    position,
-                    notes: description,
-                  });
-                  toast.loading("Saving changes...", { duration: 1000 });
-                }}
+                onClick={save}
                 className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
               >
-                {mutation.isLoading ? <LoadingSpinner /> : <p>Save Changes</p>}
+                {mutation.isLoading ? <LoadingSpinner /> : (<><p>Save</p> <CloudArrowUpIcon className="ml-2 h-5 w-5" /> </>)}
               </button>
             </div>
           </div>

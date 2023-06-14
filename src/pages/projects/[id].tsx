@@ -1,6 +1,7 @@
 import { SignedIn } from "@clerk/nextjs";
 import {
   ArrowRightIcon,
+  CloudArrowUpIcon,
   PlusIcon,
   RocketLaunchIcon,
   TagIcon,
@@ -11,7 +12,8 @@ import * as Slider from "@radix-ui/react-slider";
 import type { GetStaticProps, GetStaticPropsContext, NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { RemovableTagComponent } from "~/components/TagComponent";
@@ -19,6 +21,8 @@ import TooltipComponent from "~/components/Tooltip";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
+
+import Select, { MultiValue } from "react-select";
 
 function padTo2Digits(num: number) {
   return num.toString().padStart(2, "0");
@@ -31,6 +35,7 @@ function formatDate(date: Date) {
     padTo2Digits(date.getDate()),
   ].join("-");
 }
+
 
 const EditProjectPage = function ({ id }: { id: string }) {
   const [name, setName] = useState("");
@@ -46,24 +51,19 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
   const [percentComplete, setPercentComplete] = useState(10);
 
-  // const [state, setState] = useState("");
-
   const [status, setStatus] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const { data: project } = api.projects.getById.useQuery({ id });
+  const { data: project, isLoading, isError } = api.projects.getById.useQuery({ id });
 
   const [tags, setTags] = useState([] as Tag[]);
 
-  const [selectedTag, setSelectedTag] = useState("");
-
   const { data: newTags } = api.tags.getTagsToAdd.useQuery({
     type: "projects",
-    projectId: id,
   });
 
-  console.log(newTags);
+  const router = useRouter();
 
   const mutation = api.projects.update.useMutation({
     onSuccess: (data) => {
@@ -71,40 +71,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
     },
   });
 
-  const addTagToProject = useCallback(() => {
-    const tagId = selectedTag;
-
-    if (tagId === "") {
-      toast.error("Please select a valid tag to add");
-      return;
-    }
-
-    const tagExists = tags.find((tag) => tag.id === tagId);
-
-    if (tagExists) {
-      toast.error("Tag already exists on project");
-      return;
-    }
-
-    const tag = newTags?.find((tag) => tag.id === tagId);
-
-    if (tag === undefined) {
-      toast.error("Tag does not exist");
-      return;
-    }
-
-    setTags([...tags, tag]);
-  }, [selectedTag, tags, newTags]);
-
-  const removeTagFromProject = useCallback(
-    (tagId: string) => {
-      const newTags = tags.filter((tag) => tag.id !== tagId);
-      setTags(newTags);
-    },
-    [tags]
-  );
-
-  useEffect(() => {
+  useMemo(() => {
     if (project == null) return;
 
     if (project.name) {
@@ -158,8 +125,29 @@ const EditProjectPage = function ({ id }: { id: string }) {
     if (tags) setTags(tags);
   }, [project]);
 
-  if (project === undefined || project === null) {
-    return <LoadingPage />;
+  if ((!project || isLoading) && !isError) {
+    return (
+
+      <main className="min-w-screen min-h-screen bg-zinc-800">
+        <NewItemPageHeader
+          title={`Loading...`}
+          context="projects"
+          cancel={() => router.push("/dashboard?context=Projects")}
+        />
+        <LoadingPage />
+      </main>
+    );
+  }
+  else if (isError) {
+    return (
+      <main className="min-w-screen min-h-screen bg-zinc-800">
+        <NewItemPageHeader
+          title={`Error loading project`}
+          context="projects"
+          cancel={() => router.push("/dashboard?context=Projects")}
+        />
+      </main>
+    );
   }
 
   const getTagIds = () => {
@@ -168,6 +156,38 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
     return tagIds;
   }
+
+  if (!project) {
+    return (
+      <main className="min-w-screen min-h-screen bg-zinc-800">
+        <LoadingPage />
+      </main>
+    )
+  }
+
+  const SaveChanges = () => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    mutation.mutate({
+      id: project.id,
+      estimatedManHours: parseInt(manHours || "0"),
+      name,
+      description,
+      jobNumber,
+      tags: getTagIds(),
+      address,
+      city,
+      state,
+      startDate: start,
+      endDate: end,
+      status,
+      notes,
+      percentComplete
+    });
+    toast.loading("Saving changes...", { duration: 1000 });
+  }
+
 
   return (
     <>
@@ -180,6 +200,9 @@ const EditProjectPage = function ({ id }: { id: string }) {
         <NewItemPageHeader
           title={`${project?.name} (Project)`}
           context="projects"
+          save={SaveChanges}
+          cancel={() => router.push("/dashboard?context=Projects")}
+          saving={mutation.isLoading}
         />
         <div className="flex items-center justify-center">
           <div className="flex w-full flex-col items-center justify-center gap-4 p-2 sm:w-3/5">
@@ -216,66 +239,9 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
             <div className="flex w-full flex-col gap-2 p-2">
               <h1 className="text-lg font-semibold">Tags</h1>
-              <div className="min-h-[8vh] rounded border border-zinc-600 bg-zinc-700 p-2">
-                <div className="flex flex-wrap gap-2 p-2">
-                  {tags.length > 0 &&
-                    tags.map((tag) => (
-                      <div key={tag.id}>
-                        <RemovableTagComponent
-                          tag={tag}
-                          removeTagFromProject={removeTagFromProject}
-                        />
-                      </div>
-                    ))}
-                  {tags.length === 0 && (
-                    <div className="fade-x flex h-[4vh] w-full items-center justify-center">
-                      <p className="font-semibold italic text-zinc-500">
-                        No Tags Yet...
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex gap-1">
-                <select
-                  value={selectedTag}
-                  onChange={(e) => {
-                    setSelectedTag(e.target.value);
-                  }}
-                  className="w-full rounded border border-zinc-600 bg-zinc-700 p-2 outline-none focus:ring-2 focus:ring-amber-600"
-                >
-                  <option value="">Select A New Tag</option>
-                  {newTags
-                    ?.filter(
-                      (tag) => !tags.map((tag) => tag.id).includes(tag.id)
-                    )
-                    .map((tag) => (
-                      <option value={tag.id} key={tag.id}>
-                        <p>{tag.name}</p>
-                      </option>
-                    ))}
-                </select>
-                <TooltipComponent content="Add Tag" side="bottom">
-                  <button
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        addTagToProject();
-                      }
-                    }}
-                    onClick={addTagToProject}
-                    className=" flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 text-center hover:bg-amber-700"
-                  >
-                    <PlusIcon className="h-5 w-5" />
-                  </button>
-                </TooltipComponent>
-                <TooltipComponent content="Manage Tags" side="bottom">
-                  <Link
-                    className="flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 hover:bg-amber-700"
-                    href="/tags"
-                  >
-                    <TagIcon className="h-5 w-5" />
-                  </Link>
-                </TooltipComponent>
+              <div className="flex gap-2">
+                <AddTagsComponent type={"projects"} savedTags={tags} onSetTags={(e) => { setTags(e) }} />
+
               </div>
             </div>
 
@@ -425,35 +391,14 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="w-full p-2">
               <button
                 disabled={mutation.isLoading}
-                onClick={() => {
-                  const start = new Date(startDate);
-                  const end = new Date(endDate);
-
-                  mutation.mutate({
-                    id: project.id,
-                    estimatedManHours: parseInt(manHours || "0"),
-                    name,
-                    description,
-                    jobNumber,
-                    tags: getTagIds(),
-                    address,
-                    city,
-                    state,
-                    startDate: start,
-                    endDate: end,
-                    status,
-                    notes,
-                    percentComplete
-                  });
-                  toast.loading("Saving changes...", { duration: 1000 });
-                }}
+                onClick={SaveChanges}
                 className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
               >
                 {mutation.isLoading ? (
                   <LoadingSpinner />
                 ) : (
                   <div className="flex gap-2">
-                    <p>Save</p> <RocketLaunchIcon className="h-6 w-6" />{" "}
+                    <p>Save</p> <CloudArrowUpIcon className="h-6 w-6" />
                   </div>
                 )}
               </button>
@@ -465,6 +410,140 @@ const EditProjectPage = function ({ id }: { id: string }) {
   );
 };
 
+interface ITagData {
+  value: string;
+  label: string;
+}
+
+let tags = [] as { value: string; label: string }[];
+let selectedTags = [] as { value: string; label: string }[];
+
+const AddTagsComponent: React.FC<{ savedTags: Tag[], type: string, onSetTags: (tags: Tag[]) => void }> = ({ savedTags, type, onSetTags }) => {
+
+  const { data: allTags, isLoading, isError } = api.tags.getTagsToAdd.useQuery({ type });
+
+  // console.log("all tags", allTags)
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (isError) {
+    return <p>Error</p>;
+  }
+
+  useMemo(() => {
+
+    tags = [];
+    selectedTags = [];
+
+    const tagData = allTags?.map((tag) => {
+      return {
+        value: tag.id,
+        label: tag.name,
+      };
+    });
+
+    // console.log("tag data", tagData);
+
+    const selectedTagData = allTags?.filter((tag) => {
+      return savedTags?.find((savedTag) => savedTag.id === tag.id);
+    }).map((tag) => {
+      return {
+        value: tag.id,
+        label: tag.name,
+      };
+    });
+
+    // console.log("saved tags", savedTags);
+    // console.log("selected tag data", selectedTagData);
+
+    selectedTags.push(...selectedTagData);
+    tags.push(...tagData);
+
+  }, []);
+
+  const onChange = useCallback((e: MultiValue<{
+    value: string;
+    label: string;
+  }>) => {
+
+    const tags = [] as Tag[]
+
+    e.forEach((tg) => {
+      const tag = allTags.find((t) => t.id === tg.value);
+
+      if (tag) {
+        tags.push(tag);
+      }
+    });
+
+    onSetTags(tags);
+
+  }, [allTags]);
+
+
+  return (
+    <div className="flex gap-1 w-full text-zinc-800">
+      <Select
+        closeMenuOnSelect={false}
+        defaultValue={selectedTags}
+        isMulti
+        name="currentTags"
+        options={tags}
+        classNamePrefix="select"
+        className="w-full rounded outline-none"
+        onChange={(e) => { onChange(e) }}
+      />
+      <TooltipComponent content="Edit Tags..." side="bottom">
+        <Link className="flex items-center justify-center rounded bg-zinc-100 text-amber-700 p-2 hover:bg-zinc-50 border" href="/tags">
+          <TagIcon className="w-5 h-5 cursor-pointer" />
+        </Link>
+      </TooltipComponent>
+    </div>
+  );
+}
+
+
+{/* <select
+        value={selectedTag}
+        onChange={(e) => {
+          setSelectedTag(e.target.value);
+        }}
+        className="w-full rounded border border-zinc-600 bg-zinc-700 p-2 outline-none focus:ring-2 focus:ring-amber-600"
+      >
+        <option value="">Select A New Tag</option>
+        {tags
+          ?.filter(
+            (tag) => !tags.map((tag) => tag.id).includes(tag.id)
+          )
+          .map((tag) => (
+            <option value={tag.id} key={tag.id}>
+              <p>{tag.name}</p>
+            </option>
+          ))}
+      </select>
+      <TooltipComponent content="Add Tag" side="bottom">
+        <button
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              addTagToProject();
+            }
+          }}
+          onClick={addTagToProject}
+          className=" flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 text-center hover:bg-amber-700"
+        >
+          <PlusIcon className="h-5 w-5" />
+        </button>
+      </TooltipComponent>
+      <TooltipComponent content="Manage Tags" side="bottom">
+        <Link
+          className="flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 hover:bg-amber-700"
+          href="/tags"
+        >
+          <TagIcon className="h-5 w-5" />
+        </Link>
+      </TooltipComponent> */}
 
 
 type JobData = {

@@ -45,18 +45,11 @@ export const tagsRouter = createTRPCRouter({
     }),
 
   getTagsToAdd: privateProcedure
-    .input(z.object({ type: z.string(), projectId: z.string() }))
+    .input(z.object({ type: z.string() }))
     .query(async ({ ctx, input }) => {
       const newTags = await ctx.prisma.tag.findMany({
         where: {
           type: input.type,
-          NOT: {
-            projects: {
-              some: {
-                id: input.projectId,
-              },
-            },
-          },
         },
       });
 
