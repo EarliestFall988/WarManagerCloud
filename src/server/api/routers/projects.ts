@@ -45,7 +45,7 @@ export const projectsRouter = createTRPCRouter({
         const projects = await ctx.prisma.project.findMany({
           take: 100,
           orderBy: {
-            name: "asc",
+            updatedAt: "desc",
           },
           include: {
             tags: true,
