@@ -628,7 +628,7 @@ const Projects = () => {
           </div>
         )) ||
         (data && data?.length > 0 && (
-          <div className="h-[80vh] overflow-y-auto overflow-x-hidden md:h-[94vh] ">
+          <div className="h-[80vh] w-full overflow-y-auto overflow-x-hidden md:h-[94vh] ">
             <div className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
               {data?.map((project, index) => (
                 <div key={project.id} className="rounded-sm bg-zinc-700 hover:bg-zinc-600 select-none w-full">
@@ -1202,7 +1202,7 @@ const DashboardPage: NextPage = () => {
 
       <main className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-800">
         <div className="flex items-start justify-start">
-          <div className="md:w-12" ></div>
+          <div className="sm:w-12" ></div>
           <div onMouseEnter={() => { setToggle(true) }} onMouseLeave={() => { setToggle(false) }} className={`hidden md:fixed bg-zinc-800/80 hover:shadow-xl backdrop-blur-sm overflow-x-clip duration-75 transition-all h-screen w-12 hover:w-1/6 flex-col items-start justify-between border-r border-zinc-700 md:flex z-40`}>
             <div className="flex w-full flex-col justify-start items-center">
               <TooltipComponent
@@ -1314,7 +1314,7 @@ const DashboardPage: NextPage = () => {
           <div className="flex w-full flex-col gap-2 ">
             {user != null && user != undefined ? (
               <>
-                <div className="h-[95vh] w-full overflow-y-auto md:h-auto">
+                <div className="h-[95vh] sm:h-auto w-full overflow-y-auto md:h-auto">
                   {context == "Home" && <DashboardAtAGlance />}
                   {context == "Blueprints" && <BlueprintsList />}
                   {context == "CrewMembers" && <CrewMembers />}

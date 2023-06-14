@@ -8,6 +8,10 @@ type Props = {
 };
 
 const TooltipComponent: FunctionComponent<Props> = (props) => {
+
+
+  if (!props.content) return (<div />)
+  
   return (
     <Tooltip.Provider delayDuration={0}>
       <Tooltip.Root>

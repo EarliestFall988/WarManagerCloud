@@ -79,6 +79,61 @@ export const projectsRouter = createTRPCRouter({
         return projects;
       }
 
+      if (input.search.length >= 3 && input.filter.length > 0) {
+        const projects = await ctx.prisma.project.findMany({
+          take: 100,
+          orderBy: {
+            updatedAt: "desc",
+          },
+          include: {
+            tags: true,
+          },
+          where: {
+            AND: [
+              {
+                OR: [
+                  {
+                    name: {
+                      contains: input.search,
+                    },
+                  },
+                  {
+                    jobNumber: {
+                      contains: input.search,
+                    },
+                  },
+                  {
+                    city: {
+                      contains: input.search,
+                    },
+                  },
+                  {
+                    state: {
+                      contains: input.search,
+                    },
+                  },
+                  {
+                    description: {
+                      contains: input.search,
+                    },
+                  },
+                ],
+              },
+              {
+                tags: {
+                  some: {
+                    id: {
+                      in: input.filter,
+                    }
+                  },
+                },
+              },
+            ],
+          },
+        });
+        return projects;
+      }
+
       const projects = await ctx.prisma.project.findMany({
         take: 100,
         where: {
@@ -111,7 +166,7 @@ export const projectsRouter = createTRPCRouter({
           ],
         },
         orderBy: {
-          name: "asc",
+          updatedAt: "desc",
         },
         include: {
           tags: true,
