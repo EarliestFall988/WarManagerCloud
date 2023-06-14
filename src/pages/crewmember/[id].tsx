@@ -6,13 +6,14 @@ import { api } from "~/utils/api";
 import Head from "next/head";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { CloudArrowUpIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
+import { type Tag } from "@prisma/client";
+import { TagsMultiselectDropdown } from "~/components/TagDropdown";
 
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
-  // const router = useRouter();
 
   const [crewName, setCrewName] = useState("");
   const [position, setPosition] = useState("");
@@ -25,9 +26,18 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [burden, setBurden] = useState("0");
   const [rating, setRating] = useState("5");
 
+  const [tags, setTags] = useState([] as Tag[]);
+  const router = useRouter();
+
+  const crewContext = api.useContext().crewMembers;
+  const tagsContext = api.useContext().tags;
+
   const mutation = api.crewMembers.update.useMutation({
     onSuccess: (data) => {
       toast.success(`${data.name} (${data.position}) updated successfully!`);
+      void crewContext.invalidate();
+      void tagsContext.invalidate();
+      void router.push("/dashboard?context=CrewMembers")
     },
     onError: (e) => {
       const errorMessage = e.shape?.data?.zodError?.fieldErrors;
@@ -40,13 +50,13 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     },
   });
 
-  const router = useRouter();
+
 
   const { data, isLoading } = api.crewMembers.getById.useQuery({
     crewMemberId: id,
   });
 
-  useEffect(() => {
+  useMemo(() => {
     if (data == null) return;
 
     if (data.name) {
@@ -82,6 +92,9 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       setRating(data.rating);
     }
 
+    if (data.tags) {
+      setTags(data.tags)
+    }
 
   }, [data]);
 
@@ -100,12 +113,21 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   // setPosition(data.position)
   // setDescription(data.description)
 
+  const getTagsStringArray = () => {
+    const tagsStringArray = [] as string[];
+    tags.forEach((tag) => {
+      tagsStringArray.push(tag.id);
+    });
+    return tagsStringArray;
+  }
+
   const save = () => {
     mutation.mutate({
       crewMemberId: data.id,
       name: crewName,
       position,
       notes: description,
+      tags: getTagsStringArray(),
     });
     toast.loading("Saving changes...", { duration: 1000 });
   }
@@ -151,6 +173,11 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                 <option value="Other">Other</option>
               </select>
             </div>
+
+            <div className="w-full p-2">
+              <p className="py-1 text-lg">Tags</p>
+              <TagsMultiselectDropdown type={"crews"} savedTags={tags} onSetTags={setTags} />
+            </ div>
 
             <div className="w-full p-2">
               <p className="py-1 text-lg">Phone Number</p>

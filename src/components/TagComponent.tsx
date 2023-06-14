@@ -3,7 +3,7 @@ import TooltipComponent from "./Tooltip";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
 
-export const TagComponent: React.FC<{ tag: Tag, style?: string, children?: React.ReactNode }> = (props) => {
+export const TagBubble: React.FC<{ tag: Tag, style?: string, children?: React.ReactNode }> = (props) => {
 
     const tag = props.tag;
 
@@ -30,20 +30,20 @@ export const TagComponent: React.FC<{ tag: Tag, style?: string, children?: React
 }
 
 
-export const RemovableTagComponent: React.FC<{
+export const RemovableTagBubble: React.FC<{
     tag: Tag;
     removeTagFromProject: (id: string) => void;
     style?: string;
 }> = ({ tag, removeTagFromProject, style }) => {
     return (
 
-        <TagComponent tag={tag} style={style}>
+        <TagBubble tag={tag} style={style}>
             <button
                 onClick={() => removeTagFromProject(tag.id)}
                 className="text-zinc-500 hover:text-amber-600"
             >
                 <XMarkIcon className=" h-5 w-5 " />
             </button>
-        </TagComponent>
+        </TagBubble>
     );
 };

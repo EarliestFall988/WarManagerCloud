@@ -59,7 +59,7 @@ export const projectsRouter = createTRPCRouter({
 
       if (input.search.length < 3 && input.filter.length > 0) {
         const projects = await ctx.prisma.project.findMany({
-          take: 100,
+          take: 30,
           orderBy: {
             updatedAt: "desc",
           },
@@ -81,7 +81,7 @@ export const projectsRouter = createTRPCRouter({
 
       if (input.search.length >= 3 && input.filter.length > 0) {
         const projects = await ctx.prisma.project.findMany({
-          take: 100,
+          take: 30,
           orderBy: {
             updatedAt: "desc",
           },
@@ -135,7 +135,7 @@ export const projectsRouter = createTRPCRouter({
       }
 
       const projects = await ctx.prisma.project.findMany({
-        take: 100,
+        take: 30,
         where: {
           OR: [
             {

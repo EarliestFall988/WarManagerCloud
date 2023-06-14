@@ -38,40 +38,119 @@ export const crewMembersRouter = createTRPCRouter({
   }),
 
   search: privateProcedure
-    .input(z.object({ search: z.string().min(0).max(255) }))
+    .input(z.object({ search: z.string().min(0).max(255), filter: z.array(z.string()) }))
     .query(async ({ ctx, input }) => {
-      if (input.search.length < 3) {
+
+
+      if (input.search.length < 3 && input.filter.length === 0) {
         const crewMembers = await ctx.prisma.crewMember.findMany({
-          take: 100,
+          take: 30,
           orderBy: {
             name: "asc",
+          },
+          include: {
+            tags: true,
           },
         });
         return crewMembers;
       }
 
-      const crewMembers = await ctx.prisma.crewMember.findMany({
-        take: 100,
-        where: {
-          OR: [
-            {
-              name: {
-                contains: input.search,
-              },
-            },
-            {
-              position: {
-                contains: input.search,
-              },
-            },
-          ],
-        },
-        orderBy: {
-          name: "asc",
-        },
-      });
+      if (input.search.length < 3 && input.filter.length > 0) {
 
-      return crewMembers;
+        const crewMembers = await ctx.prisma.crewMember.findMany({
+          take: 30,
+          orderBy: {
+            name: "asc",
+          },
+          include: {
+            tags: true,
+          },
+          where: {
+            tags: {
+              some: {
+                id: {
+                  in: input.filter,
+                }
+              },
+            },
+          },
+        });
+        return crewMembers;
+
+      }
+
+      if (input.search.length > 2 && input.filter.length > 0) {
+        const crewMembers = await ctx.prisma.crewMember.findMany({
+          take: 30,
+          where: {
+            AND: [
+              {
+                OR: [
+                  {
+                    name: {
+                      contains: input.search,
+                    },
+                  },
+                  {
+                    position: {
+                      contains: input.search,
+                    },
+                  },
+                ],
+              },
+              {
+                tags: {
+                  some: {
+                    id: {
+                      in: input.filter,
+                    }
+
+                  }
+                }
+              }
+            ],
+          },
+          include: {
+            tags: true,
+          },
+          orderBy: {
+            name: "asc",
+          },
+        });
+
+        return crewMembers;
+      }
+
+      if (input.search.length > 2 && input.filter.length == 0) {
+        const crewMembers = await ctx.prisma.crewMember.findMany({
+          take: 30,
+          where: {
+
+            OR: [
+              {
+                name: {
+                  contains: input.search,
+                },
+              },
+              {
+                position: {
+                  contains: input.search,
+                },
+              },
+            ],
+
+          },
+          include: {
+            tags: true,
+          },
+          orderBy: {
+            name: "asc",
+          },
+        });
+
+        return crewMembers;
+      }
+
     }),
 
   getById: privateProcedure
@@ -80,6 +159,9 @@ export const crewMembersRouter = createTRPCRouter({
       const crewMember = await ctx.prisma.crewMember.findUnique({
         where: {
           id: input.crewMemberId,
+        },
+        include: {
+          tags: true,
         },
       });
       return crewMember;
@@ -105,6 +187,7 @@ export const crewMembersRouter = createTRPCRouter({
         name: z.string().min(3).max(255),
         position: z.string().min(3).max(255),
         notes: z.string().min(0).max(255),
+        tags: z.array(z.string()),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -119,6 +202,21 @@ export const crewMembersRouter = createTRPCRouter({
         });
       }
 
+      const tagsToDisconnect = await ctx.prisma.project
+        .findUnique({
+          where: {
+            id: input.crewMemberId,
+          },
+        })
+        .tags();
+
+
+
+      const disconnectTags = tagsToDisconnect || [];
+
+      console.log(disconnectTags)
+      console.log(input.tags)
+
       const crewMember = await ctx.prisma.crewMember.update({
         where: {
           id: input.crewMemberId,
@@ -127,6 +225,16 @@ export const crewMembersRouter = createTRPCRouter({
           name: input.name,
           position: input.position,
           description: input.notes,
+          tags: {
+
+            disconnect: disconnectTags?.map((tag) => ({
+              id: tag.id,
+            })),
+
+            connect: input.tags?.map((tag) => ({
+              id: tag,
+            })),
+          },
         },
       });
 

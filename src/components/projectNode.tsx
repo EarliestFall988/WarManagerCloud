@@ -3,7 +3,7 @@ import { memo } from "react";
 import { NodeResizer } from "reactflow";
 import HoverCardComponent from "./HoverCard";
 import { type Tag } from "@prisma/client";
-import { TagComponent } from "./TagComponent";
+import { TagBubble } from "./TagComponent";
 
 interface IProjectInput {
   data: {
@@ -78,7 +78,7 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
                   {data.tags && (
                     <div className="flex flex-wrap gap-1 w-[15vw]">
                       {data.tags.map((tag) => (
-                        <TagComponent key={tag.id} tag={tag} style="text-xs" />
+                        <TagBubble key={tag.id} tag={tag} style="text-xs" />
                       ))}
                     </div>
                   )}
