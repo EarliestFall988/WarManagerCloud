@@ -107,7 +107,7 @@ export const TagsPopover: React.FC<{ savedTags: Tag[], type: "projects" | "crews
                 {children}
             </Popover.Trigger>
             <Popover.Portal>
-                <Popover.Content className="flex gap-2 fade-y w-[40rem] bg-black/40 backdrop-blur-sm p-2 drop-shadow-xl rounded border border-zinc-500">
+                <Popover.Content className="flex w-[20rem] md:w-[40rem] gap-2 fade-y bg-black/40 backdrop-blur-sm p-2 drop-shadow-xl rounded border border-zinc-500">
                     <TagsMultiselectDropdown savedTags={savedTags} type={type} onSetTags={onSetTags} />
                     <Popover.Close >
                         <XMarkIcon className="w-5 h-5 cursor-pointer hover:text-red-500" />

@@ -66,6 +66,7 @@ import { TagComponent } from "~/components/TagComponent";
 import { Tag, type Project } from "@prisma/client";
 import { TagsPopover } from "~/components/TagDropdown";
 import { router } from "@trpc/server";
+import { SimpleDropDown } from "~/components/dropdown";
 
 dayjs.extend(relativeTime);
 
@@ -508,6 +509,38 @@ const CrewMembers = () => {
 //   );
 // };
 
+const ProjectMenu = () => (
+  <>
+    <TooltipComponent content="Add a New Project" side="bottom">
+      <Link
+        href="/newproject"
+        className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+      >
+        <PlusIcon className="h-6 w-6 text-zinc-100" />
+      </Link>
+    </TooltipComponent>
+    <TooltipComponent
+      content="Download Projects Spreadsheet"
+      side="bottom"
+    >
+      <Link
+        href="/projects/download"
+        className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+      >
+        <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
+      </Link>
+    </TooltipComponent>
+    <TooltipComponent content="View Tags" side="bottom">
+      <Link
+        href="/tags"
+        className=" flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+      >
+        <TagIcon className="h-6 w-6 text-zinc-100" />
+      </Link>
+    </TooltipComponent>
+  </>
+)
+
 const Projects = () => {
   const [projectSearchTerm, setProjectsSearchTerm] = useState("");
 
@@ -549,13 +582,13 @@ const Projects = () => {
   return (
     <>
       <div className="flex w-full items-center justify-between gap-1 p-2">
-        <div className="w-full flex flex-wrap gap-1" >
+        <div className="w-full flex gap-1" >
           <input
             type="search"
             value={projectSearchTerm}
             onChange={(e) => setProjectsSearchTerm(e.target.value)}
             placeholder="search projects by name, job code, or address"
-            className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
+            className="w-full border border-zinc-600 rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
           />
           {/* <TooltipComponent content="Filter Tags" side="bottom"> */}
           <TagsPopover savedTags={filter} type={"projects"} onSetTags={setFilter}>
@@ -567,35 +600,18 @@ const Projects = () => {
 
 
         </div>
-        <div className="flex gap-1">
-          <TooltipComponent content="Add a New Project" side="bottom">
-            <Link
-              href="/newproject"
-              className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
-            >
-              <PlusIcon className="h-6 w-6 text-zinc-100" />
-            </Link>
-          </TooltipComponent>
-          <TooltipComponent
-            content="Download Projects Spreadsheet"
-            side="bottom"
-          >
-            <Link
-              href="/projects/download"
-              className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
-            >
-              <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
-            </Link>
-          </TooltipComponent>
-          <TooltipComponent content="View Tags" side="bottom">
-            <Link
-              href="/tags"
-              className=" flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
-            >
-              <TagIcon className="h-6 w-6 text-zinc-100" />
-            </Link>
-          </TooltipComponent>
+        <div className="hidden gap-1 md:flex">
+          <ProjectMenu />
         </div>
+        <SimpleDropDown trigger={
+          <button className="flex items-center justify-center p-2 md:hidden">
+            <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
+          </button>
+        }>
+          <div className="gap-1 flex">
+            <ProjectMenu />
+          </div>
+        </SimpleDropDown>
       </div>
 
       {(isLoading && (
@@ -922,7 +938,7 @@ const SettingsButton: FunctionComponent<Props> = (props) => {
     <Dialog.Root>
       <TooltipComponent content="Settings" side="left">
         <Dialog.Trigger className="flex items-center justify-start gap-2 border-b border-zinc-700 p-2 text-white hover:bg-zinc-700 ">
-          <Cog6ToothIcon className="h-7 w-7 text-zinc-300" />
+          <Cog6ToothIcon className="h-7 w-7 text-zinc-200" />
           {props.menuOpen && <p> Settings</p>}
         </Dialog.Trigger>
       </TooltipComponent>
@@ -1186,7 +1202,7 @@ const DashboardPage: NextPage = () => {
 
       <main className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-800">
         <div className="flex items-start justify-start">
-          <div className="w-12" ></div>
+          <div className="md:w-12" ></div>
           <div onMouseEnter={() => { setToggle(true) }} onMouseLeave={() => { setToggle(false) }} className={`hidden md:fixed bg-zinc-800/80 hover:shadow-xl backdrop-blur-sm overflow-x-clip duration-75 transition-all h-screen w-12 hover:w-1/6 flex-col items-start justify-between border-r border-zinc-700 md:flex z-40`}>
             <div className="flex w-full flex-col justify-start items-center">
               <TooltipComponent
@@ -1304,12 +1320,11 @@ const DashboardPage: NextPage = () => {
                   {context == "CrewMembers" && <CrewMembers />}
                   {context == "Projects" && <Projects />}
                 </div>
-                <div className="fixed bottom-0 flex h-[10vh] w-full items-center justify-around gap-2 border-r border-zinc-700 p-2 md:hidden">
-                  <div className="w-5"></div>
+                <div className="fixed bottom-4 left-4 flex items-center justify-around gap-1 p-2 md:hidden">
                   <div className="flex items-center justify-start gap-2">
                     <Dialog.Root>
                       <Dialog.Trigger>
-                        <button className="TooltipContent flex w-full gap-3 rounded-full bg-amber-700 p-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
+                        <button className="TooltipContent flex w-full gap-3 rounded-md bg-amber-700 p-3 z-40 drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
                           <Bars3Icon className="h-6 w-6 text-zinc-300" />
                         </button>
                       </Dialog.Trigger>
@@ -1380,9 +1395,9 @@ const DashboardPage: NextPage = () => {
                       {context == "Projects" && <p>Projects</p>}
                     </div> */}
                   </div>
-                  <div>
+                  {/* <div>
                     <UserButton />
-                  </div>
+                  </div> */}
                 </div>
               </>
             ) : (
