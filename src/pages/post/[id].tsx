@@ -5,11 +5,11 @@ import { api } from "~/utils/api";
 
 import { PageLayout } from "~/components/layout";
 
-import Image from "next/image";
+// import Image from "next/image";
 import { useRouter } from "next/router";
 
 import { PostView } from "~/components/postview";
-import type { User } from "@clerk/nextjs/server";
+// import type { User } from "@clerk/nextjs/server";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 
 const SinglePostPage: NextPage<{ postId: string }> = ({ postId }) => {

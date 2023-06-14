@@ -2,7 +2,7 @@ import { WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
 import { memo } from "react";
 import { NodeResizer } from "reactflow";
 import HoverCardComponent from "./HoverCard";
-import { Tag } from "@prisma/client";
+import { type Tag } from "@prisma/client";
 import { TagComponent } from "./TagComponent";
 
 interface IProjectInput {

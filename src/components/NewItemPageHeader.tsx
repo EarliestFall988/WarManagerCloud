@@ -5,7 +5,6 @@ import { LoadingSpinner } from "./loading";
 
 export const NewItemPageHeader: React.FC<{ title: string, context?: string | undefined, save?: () => void | undefined, cancel?: () => void, saving?: boolean }> = ({
   title,
-  context,
   save,
   cancel,
   saving

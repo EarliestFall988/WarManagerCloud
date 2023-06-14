@@ -31,6 +31,8 @@ const onDragStart = (
 const filterProjectsNotOnBlueprint = (nodes: Node[]) => {
   const projectNodes = nodes.find((node) => node.type === "project");
 
+  console.log(projectNodes);
+
   return [] as Project[]; // nodes.filter((node) => node.type !== "project") as Project[];
 };
 

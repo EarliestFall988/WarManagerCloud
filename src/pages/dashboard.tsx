@@ -59,7 +59,7 @@ import * as Tabs from "@radix-ui/react-tabs";
 import { LogoComponent } from "~/components/RibbonLogo";
 import SignInModal from "~/components/signInPage";
 import { TagComponent } from "~/components/TagComponent";
-import { Project } from "@prisma/client";
+import { type Project } from "@prisma/client";
 
 dayjs.extend(relativeTime);
 

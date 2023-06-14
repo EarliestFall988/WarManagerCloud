@@ -57,7 +57,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
   const [tags, setTags] = useState([] as Tag[]);
 
-  const { data: newTags } = api.tags.getTagsToAdd.useQuery({
+  api.tags.getTagsToAdd.useQuery({
     type: "projects",
   });
 

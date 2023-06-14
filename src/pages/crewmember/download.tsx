@@ -1,70 +1,70 @@
 import type { NextPage } from "next";
-import { useCallback, useEffect, useState } from "react";
-import { read, utils, writeFileXLSX, type WorkSheet } from "xlsx";
+import { useCallback } from "react";
+import { utils, writeFileXLSX } from "xlsx";
 import { LoadingSpinner } from "~/components/loading";
 import { api } from "~/utils/api";
 
-import dayjs from "dayjs";
+// import dayjs from "dayjs";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
 import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 
-interface President {
-  Name: string;
-  Index: number;
-}
+// interface President {
+//   Name: string;
+//   Index: number;
+// }
 
-const DownloadExample = () => {
-  /* the component state is an array of presidents */
-  const [pres, setPres] = useState<President[]>([]);
+// const DownloadExample = () => {
+//   /* the component state is an array of presidents */
+//   const [pres, setPres] = useState<President[]>([]);
 
-  /* Fetch and update the state once */
-  useEffect(() => {
-    void (async () => {
-      const f = await (
-        await fetch("https://sheetjs.com/pres.xlsx")
-      ).arrayBuffer();
-      const wb = read(f); // parse the array buffer
-      const ws = wb.Sheets[wb.SheetNames[0] as string] as WorkSheet; // get the first worksheet
-      const data: President[] = utils.sheet_to_json(ws); // generate objects
-      setPres(data); // update state
-    })();
-  }, []);
+//   /* Fetch and update the state once */
+//   useEffect(() => {
+//     void (async () => {
+//       const f = await (
+//         await fetch("https://sheetjs.com/pres.xlsx")
+//       ).arrayBuffer();
+//       const wb = read(f); // parse the array buffer
+//       const ws = wb.Sheets[wb.SheetNames[0] as string] as WorkSheet; // get the first worksheet
+//       const data: President[] = utils.sheet_to_json(ws); // generate objects
+//       setPres(data); // update state
+//     })();
+//   }, []);
 
-  /* get state data and export to XLSX */
-  const exportFile = useCallback(() => {
-    const ws = utils.json_to_sheet(pres);
-    const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, "Data");
-    writeFileXLSX(wb, "SheetJSReactAoO.xlsx");
-  }, [pres]);
+//   /* get state data and export to XLSX */
+//   const exportFile = useCallback(() => {
+//     const ws = utils.json_to_sheet(pres);
+//     const wb = utils.book_new();
+//     utils.book_append_sheet(wb, ws, "Data");
+//     writeFileXLSX(wb, "SheetJSReactAoO.xlsx");
+//   }, [pres]);
 
-  return (
-    <table>
-      <thead>
-        <th>Name</th>
-        <th>Index</th>
-      </thead>
-      <tbody>
-        {
-          /* generate row for each president */
-          pres.map((p: President) => (
-            <tr key={p.Name}>
-              <td>{p.Name}</td>
-              <td>{p.Index}</td>
-            </tr>
-          ))
-        }
-      </tbody>
-      <tfoot>
-        <td colSpan={2}>
-          <button onClick={exportFile}>Export XLSX</button>
-        </td>
-      </tfoot>
-    </table>
-  );
-};
+//   return (
+//     <table>
+//       <thead>
+//         <th>Name</th>
+//         <th>Index</th>
+//       </thead>
+//       <tbody>
+//         {
+//           /* generate row for each president */
+//           pres.map((p: President) => (
+//             <tr key={p.Name}>
+//               <td>{p.Name}</td>
+//               <td>{p.Index}</td>
+//             </tr>
+//           ))
+//         }
+//       </tbody>
+//       <tfoot>
+//         <td colSpan={2}>
+//           <button onClick={exportFile}>Export XLSX</button>
+//         </td>
+//       </tfoot>
+//     </table>
+//   );
+// };
 
 interface DownloadCrewMember {
   name: string;
@@ -172,7 +172,7 @@ const DownloadPage: NextPage = () => {
   return (
     <>
       <main className="min-h-[100vh] bg-zinc-800">
-        <NewItemPageHeader title="Download Crew Members" context="crewmembers" />
+        <NewItemPageHeader title="Download Crew Members" />
         <div className="m-auto flex w-full items-center justify-center p-2 sm:w-3/4">
           <DownloadCrewDetails />
         </div>
