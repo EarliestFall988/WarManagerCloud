@@ -22,16 +22,20 @@ import {
   ArrowRightOnRectangleIcon,
   ArrowsUpDownIcon,
   Bars3Icon,
+  ChartBarIcon,
   ClipboardDocumentIcon,
   Cog6ToothIcon,
   DocumentIcon,
   EllipsisVerticalIcon,
+  FunnelIcon,
   InboxIcon,
   MapPinIcon,
   PhoneIcon,
   PlusIcon,
   TagIcon,
   TrashIcon,
+  UserCircleIcon,
+  WrenchScrewdriverIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 
@@ -59,7 +63,9 @@ import * as Tabs from "@radix-ui/react-tabs";
 import { LogoComponent } from "~/components/RibbonLogo";
 import SignInModal from "~/components/signInPage";
 import { TagComponent } from "~/components/TagComponent";
-import { type Project } from "@prisma/client";
+import { Tag, type Project } from "@prisma/client";
+import { TagsPopover } from "~/components/TagDropdown";
+import { router } from "@trpc/server";
 
 dayjs.extend(relativeTime);
 
@@ -374,7 +380,7 @@ const CrewMembers = () => {
                     {crewMember.description}
                   </p>
                   <p className="hidden w-1/12 truncate text-left text-sm italic sm:block">
-                    <span className="text-zinc-400">updated</span>
+                    <span className="text-zinc-400">updated</span> {" "}
                     {dayjs(crewMember.updatedAt).fromNow()}
                   </p>
                 </Link>
@@ -505,8 +511,15 @@ const CrewMembers = () => {
 const Projects = () => {
   const [projectSearchTerm, setProjectsSearchTerm] = useState("");
 
+  const [filter, setFilter] = useState<Tag[]>([]);
+  const [filterOpen, setFilterOpen] = useState(false);
+
+
+  const filterToStringArray: string[] = filter.map((tag) => { return tag.id });
+
   const { data, isLoading, isError } = api.projects.search.useQuery({
     search: projectSearchTerm,
+    filter: filterToStringArray,
   });
 
   const ctx = api.useContext();
@@ -535,14 +548,25 @@ const Projects = () => {
 
   return (
     <>
-      <div className="flex w-full items-center justify-start gap-1 p-2">
-        <input
-          type="search"
-          value={projectSearchTerm}
-          onChange={(e) => setProjectsSearchTerm(e.target.value)}
-          placeholder="search projects by name, job code, or address"
-          className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
-        />
+      <div className="flex w-full items-center justify-between gap-1 p-2">
+        <div className="w-full flex flex-wrap gap-1" >
+          <input
+            type="search"
+            value={projectSearchTerm}
+            onChange={(e) => setProjectsSearchTerm(e.target.value)}
+            placeholder="search projects by name, job code, or address"
+            className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
+          />
+          {/* <TooltipComponent content="Filter Tags" side="bottom"> */}
+          <TagsPopover savedTags={filter} type={"projects"} onSetTags={setFilter}>
+            <button onClick={() => { setFilterOpen(!filterOpen) }} className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700">
+              <FunnelIcon className="h-6 w-6 text-zinc-100" />
+            </button>
+          </TagsPopover>
+          {/* </TooltipComponent> */}
+
+
+        </div>
         <div className="flex gap-1">
           <TooltipComponent content="Add a New Project" side="bottom">
             <Link
@@ -890,6 +914,7 @@ const DashboardAtAGlance = () => {
 };
 
 type Props = {
+  menuOpen?: boolean
   children: ReactNode;
 };
 const SettingsButton: FunctionComponent<Props> = (props) => {
@@ -898,7 +923,7 @@ const SettingsButton: FunctionComponent<Props> = (props) => {
       <TooltipComponent content="Settings" side="left">
         <Dialog.Trigger className="flex items-center justify-start gap-2 border-b border-zinc-700 p-2 text-white hover:bg-zinc-700 ">
           <Cog6ToothIcon className="h-7 w-7 text-zinc-300" />
-          Settings
+          {props.menuOpen && <p> Settings</p>}
         </Dialog.Trigger>
       </TooltipComponent>
       <Dialog.Portal>
@@ -1132,15 +1157,24 @@ const Settings = () => {
 const DashboardPage: NextPage = () => {
   const [context, setContext] = useState("Blueprints");
 
+  const [toggleOpen, setToggleOpen] = useState(false);
+
   const { query } = useRouter();
 
   const { user } = useUser();
+
+  const router = useRouter();
 
   useEffect(() => {
     if (query.context) {
       setContext(query.context as string);
     }
   }, [query]);
+
+  const setToggle = (open: boolean) => {
+
+    setToggleOpen(open);
+  }
 
   return (
     <>
@@ -1152,68 +1186,73 @@ const DashboardPage: NextPage = () => {
 
       <main className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-800">
         <div className="flex items-start justify-start">
-          <div className="hidden h-screen w-1/6 flex-col items-start justify-between border-r border-zinc-700 md:flex">
-            <div className="flex w-full flex-col">
+          <div className="w-12" ></div>
+          <div onMouseEnter={() => { setToggle(true) }} onMouseLeave={() => { setToggle(false) }} className={`hidden md:fixed bg-zinc-800/80 hover:shadow-xl backdrop-blur-sm overflow-x-clip duration-75 transition-all h-screen w-12 hover:w-1/6 flex-col items-start justify-between border-r border-zinc-700 md:flex z-40`}>
+            <div className="flex w-full flex-col justify-start items-center">
               <TooltipComponent
                 content="View Overall JR&CO Performance"
                 side="right"
               >
                 <button
-                  onClick={() => setContext("Home")}
-                  className={`w-full  p-2 font-semibold transition-all duration-200 ${context === "Home"
+                  onClick={() => { setContext("Home"); void router.push("/dashboard?context=Home") }}
+                  className={`w-full  p-2 font-semibold transition-all flex gap-1 ${toggleOpen ? "justify-start" : "justify-center"} items-center duration-200 ${context === "Home"
                     ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
                     : " border-b border-zinc-700 hover:bg-zinc-700"
                     }`}
                 >
-                  Glance
+                  <ChartBarIcon className="w-6 h-6" />
+                  {toggleOpen && <p>Glance</p>}
                 </button>
               </TooltipComponent>
               <TooltipComponent content="View all Blueprints" side="right">
                 <button
-                  onClick={() => setContext("Blueprints")}
-                  className={`w-full  p-2 font-semibold transition-all duration-200 ${context === "Blueprints"
+                  onClick={() => { setContext("Blueprints"); void router.push("/dashboard?context=Blueprints") }}
+                  className={`w-full  p-2 font-semibold transition-all flex gap-1 ${toggleOpen ? "justify-start" : "justify-center"} items-center duration-200 ${context === "Blueprints"
                     ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
                     : " border-b border-zinc-700 hover:bg-zinc-700"
                     }`}
                 >
-                  Blueprints
+                  <DocumentIcon className="w-6 h-6" />
+                  {toggleOpen && <p>Blueprints</p>}
                 </button>
               </TooltipComponent>
               <TooltipComponent content="View all Crew Members" side="right">
                 <button
-                  onClick={() => setContext("CrewMembers")}
-                  className={`w-full  p-2 font-semibold transition-all duration-200 ${context === "CrewMembers"
+                  onClick={() => { setContext("CrewMembers"); void router.push("/dashboard?context=CrewMembers") }}
+                  className={`w-full  p-2 font-semibold flex gap-1 ${toggleOpen ? "justify-start" : "justify-center"} items-center transition-all duration-200 ${context === "CrewMembers"
                     ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
                     : " border-b border-zinc-700 hover:bg-zinc-700"
                     }`}
                 >
-                  Crew
+                  <UserCircleIcon className="w-6 h-6" />
+                  {toggleOpen && <p>Crew</p>}
                 </button>
               </TooltipComponent>
               <TooltipComponent content="View all Projects" side="right">
                 <button
-                  onClick={() => setContext("Projects")}
-                  className={`w-full p-2 font-semibold transition-all duration-200 ${context === "Projects"
+                  onClick={() => { setContext("Projects"); void router.push("/dashboard?context=Projects") }}
+                  className={`w-full p-2 font-semibold flex gap-1 ${toggleOpen ? "justify-start" : "justify-center"} items-center transition-all duration-200 ${context === "Projects"
                     ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
                     : " border-b border-zinc-700 hover:bg-zinc-700"
                     }`}
                 >
-                  Projects
+                  <WrenchScrewdriverIcon className="w-6 h-6" />
+                  {toggleOpen && <p>Projects</p>}
                 </button>
               </TooltipComponent>
             </div>
-            <div className="flex w-full flex-col">
-              <SettingsButton>
+            <div className={`flex w-full flex-col ${toggleOpen ? "" : "items-center justify-center"} whitespace-nowrap truncate`}>
+              <SettingsButton menuOpen={toggleOpen} >
                 <Settings />
               </SettingsButton>
               <TooltipComponent content="Landing Page" side="right">
                 <div className="border-b border-zinc-700">
                   <Link
-                    className="flex gap-2  p-2 transition-all duration-200 hover:bg-zinc-700"
+                    className="flex gap-2 p-2 transition-all duration-200 hover:bg-zinc-700"
                     href="/"
                   >
                     <LogoComponent />
-                    War Manager
+                    {toggleOpen && ('War Manager')}
                   </Link>
                 </div>
               </TooltipComponent>
@@ -1229,24 +1268,29 @@ const DashboardPage: NextPage = () => {
                       className="rounded-full"
                     /> */}
                     <UserButton />
-                    <div className="flex flex-col md:w-4/6 xl:w-5/6 ">
-                      <p className="w-full truncate font-semibold md:text-sm">
-                        {user?.fullName}
-                      </p>
-                      <p className="w-full truncate text-sm text-zinc-400 md:text-xs">
-                        {user?.primaryEmailAddress?.emailAddress}
-                      </p>
-                    </div>
-                  </div>
-                  <TooltipComponent content="Sign Out" side="right">
-                    <div className="h-full w-full border-l border-zinc-700">
-                      <SignOutButton>
-                        <div className="duration 200 flex h-full w-full cursor-pointer items-center justify-center transition-all hover:bg-zinc-700">
-                          <ArrowRightOnRectangleIcon className="h-6 w-6 text-zinc-100" />
+                    {toggleOpen && (
+                      <>
+                        <div className="flex flex-col md:w-4/6 xl:w-5/6 ">
+                          <p className="w-full truncate font-semibold md:text-sm">
+                            {user?.fullName}
+                          </p>
+                          <p className="w-full truncate text-sm text-zinc-400 md:text-xs">
+                            {user?.primaryEmailAddress?.emailAddress}
+                          </p>
                         </div>
-                      </SignOutButton>
-                    </div>
-                  </TooltipComponent>
+                      </>)}
+                  </div>
+                  {toggleOpen && (
+                    <TooltipComponent content="Sign Out" side="right">
+                      <div className="h-full w-full border-l border-zinc-700">
+                        <SignOutButton>
+                          <div className="duration 200 flex h-full w-full cursor-pointer items-center justify-center transition-all hover:bg-zinc-700">
+                            <ArrowRightOnRectangleIcon className="h-6 w-6 text-zinc-100" />
+                          </div>
+                        </SignOutButton>
+                      </div>
+                    </TooltipComponent>
+                  )}
                 </div>
               )}
             </div>

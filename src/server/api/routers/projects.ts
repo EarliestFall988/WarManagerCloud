@@ -39,9 +39,10 @@ export const projectsRouter = createTRPCRouter({
   }),
 
   search: privateProcedure
-    .input(z.object({ search: z.string().min(0).max(255) }))
+    .input(z.object({ search: z.string().min(0).max(255), filter: z.array(z.string()) }))
     .query(async ({ ctx, input }) => {
-      if (input.search.length < 3) {
+
+      if (input.search.length < 3 && input.filter.length === 0) {
         const projects = await ctx.prisma.project.findMany({
           take: 100,
           orderBy: {
@@ -49,6 +50,30 @@ export const projectsRouter = createTRPCRouter({
           },
           include: {
             tags: true,
+          },
+        });
+        return projects;
+      }
+
+      console.log(input.filter);
+
+      if (input.search.length < 3 && input.filter.length > 0) {
+        const projects = await ctx.prisma.project.findMany({
+          take: 100,
+          orderBy: {
+            updatedAt: "desc",
+          },
+          include: {
+            tags: true,
+          },
+          where: {
+            tags: {
+              some: {
+                id: {
+                  in: input.filter,
+                }
+              },
+            },
           },
         });
         return projects;

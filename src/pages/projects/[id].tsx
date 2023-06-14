@@ -3,24 +3,21 @@ import {
   ArrowRightIcon,
   CloudArrowUpIcon,
   PlusIcon,
-  TagIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
 import type { Equipment, Tag } from "@prisma/client";
 import * as Slider from "@radix-ui/react-slider";
 import type { GetStaticProps, GetStaticPropsContext, NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
-import TooltipComponent from "~/components/Tooltip";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 
-import Select, { type MultiValue } from "react-select";
+import { TagsMultiselectDropdown } from "~/components/TagDropdown";
 
 function padTo2Digits(num: number) {
   return num.toString().padStart(2, "0");
@@ -248,8 +245,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="flex w-full flex-col gap-2 p-2">
               <h1 className="text-lg font-semibold">Tags</h1>
               <div className="flex gap-2">
-                <AddTagsComponent type={"projects"} savedTags={tags} onSetTags={(e) => { setTags(e); console.log("tags", e) }} />
-
+                <TagsMultiselectDropdown type={"projects"} savedTags={tags} onSetTags={(e) => { setTags(e); console.log("tags", e) }} />
               </div>
             </div>
 
@@ -417,140 +413,6 @@ const EditProjectPage = function ({ id }: { id: string }) {
     </>
   );
 };
-
-
-let tags = [] as { value: string; label: string }[];
-let selectedTags = [] as { value: string; label: string }[];
-
-const AddTagsComponent: React.FC<{ savedTags: Tag[], type: string, onSetTags: (tags: Tag[]) => void }> = ({ savedTags, type, onSetTags }) => {
-
-  const { data: allTags, isLoading, isError } = api.tags.getTagsToAdd.useQuery({ type });
-
-
-  useMemo(() => {
-
-    tags = [];
-    selectedTags = [];
-
-    const tagData = allTags?.map((tag) => {
-      return {
-        value: tag.id,
-        label: tag.name,
-      };
-    });
-
-    // console.log("tag data", tagData);
-
-    const selectedTagData = allTags?.filter((tag) => {
-      return savedTags?.find((savedTag) => savedTag.id === tag.id);
-    }).map((tag) => {
-      return {
-        value: tag.id,
-        label: tag.name,
-      };
-    });
-
-    // console.log("saved tags", savedTags);
-    // console.log("selected tag data", selectedTagData);
-
-    selectedTags.push(...selectedTagData || []);
-    tags.push(...tagData || []);
-
-  }, []);
-
-  const onChange = useCallback((e: MultiValue<{
-    value: string;
-    label: string;
-  }>) => {
-
-    const tags = [] as Tag[]
-
-    if (!allTags) return;
-
-    e.forEach((tg) => {
-      const tag = allTags.find((t) => t.id === tg.value);
-
-      if (tag) {
-        tags.push(tag);
-      }
-    });
-
-    onSetTags(tags);
-
-  }, [allTags, onSetTags]);
-
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (isError) {
-    return <p>Error</p>;
-  }
-
-
-  return (
-    <div className="flex gap-1 w-full text-zinc-800">
-      <Select
-        closeMenuOnSelect={false}
-        defaultValue={selectedTags}
-        isMulti
-        name="currentTags"
-        options={tags}
-        classNamePrefix="select"
-        className="w-full rounded outline-none"
-        onChange={(e) => { onChange(e) }}
-      />
-      <TooltipComponent content="Edit Tags..." side="bottom">
-        <Link className="flex items-center justify-center rounded bg-zinc-100 text-amber-700 p-2 hover:bg-zinc-50 border" href="/tags">
-          <TagIcon className="w-5 h-5 cursor-pointer" />
-        </Link>
-      </TooltipComponent>
-    </div>
-  );
-}
-
-
-{/* <select
-        value={selectedTag}
-        onChange={(e) => {
-          setSelectedTag(e.target.value);
-        }}
-        className="w-full rounded border border-zinc-600 bg-zinc-700 p-2 outline-none focus:ring-2 focus:ring-amber-600"
-      >
-        <option value="">Select A New Tag</option>
-        {tags
-          ?.filter(
-            (tag) => !tags.map((tag) => tag.id).includes(tag.id)
-          )
-          .map((tag) => (
-            <option value={tag.id} key={tag.id}>
-              <p>{tag.name}</p>
-            </option>
-          ))}
-      </select>
-      <TooltipComponent content="Add Tag" side="bottom">
-        <button
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              addTagToProject();
-            }
-          }}
-          onClick={addTagToProject}
-          className=" flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 text-center hover:bg-amber-700"
-        >
-          <PlusIcon className="h-5 w-5" />
-        </button>
-      </TooltipComponent>
-      <TooltipComponent content="Manage Tags" side="bottom">
-        <Link
-          className="flex cursor-pointer items-center justify-center rounded bg-zinc-600 p-2 hover:bg-amber-700"
-          href="/tags"
-        >
-          <TagIcon className="h-5 w-5" />
-        </Link>
-      </TooltipComponent> */}
-
 
 type JobData = {
   equipment: Equipment[];

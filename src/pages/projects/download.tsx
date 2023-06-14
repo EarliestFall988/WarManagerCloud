@@ -1,4 +1,4 @@
-import { Project } from "@prisma/client";
+import type { Project } from "@prisma/client";
 import type { NextPage } from "next";
 import { useCallback, } from "react";
 import { utils, writeFileXLSX, } from "xlsx";
