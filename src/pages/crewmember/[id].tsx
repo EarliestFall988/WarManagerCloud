@@ -6,7 +6,7 @@ import { api } from "~/utils/api";
 import Head from "next/head";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { CloudArrowUpIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";

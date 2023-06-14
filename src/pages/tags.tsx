@@ -3,11 +3,9 @@ import {
   ChevronUpDownIcon,
   DocumentIcon,
   EllipsisVerticalIcon,
-  PencilIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
   TagIcon,
-  TrashIcon,
   UserCircleIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
@@ -360,7 +358,7 @@ const TagWizard: React.FC<{ editTag?: Tag }> = ({ editTag }) => {
             <LoadingSpinner />
           ) : (
             <div>
-              {!editTag && (<><PlusIcon className="h-5 w-5" /> <p> Create Tag</p></>)}
+              {!editTag && (<><p> Create Tag</p></>)}
               {editTag && (<><p> Save </p></>)}
             </div>
           )}
