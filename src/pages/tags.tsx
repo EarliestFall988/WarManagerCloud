@@ -2,6 +2,7 @@ import {
   ArrowPathRoundedSquareIcon,
   ChevronUpDownIcon,
   DocumentIcon,
+  EllipsisVerticalIcon,
   PencilIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
@@ -12,7 +13,7 @@ import {
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import type { NextPage } from "next";
-import { useCallback, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import TooltipComponent from "~/components/Tooltip";
@@ -21,9 +22,10 @@ import { api } from "~/utils/api";
 
 import relativeTime from "dayjs/plugin/relativeTime";
 import type { Tag } from "@prisma/client";
+import { SimpleDropDown } from "~/components/dropdown";
 dayjs.extend(relativeTime);
 
-const NewTagWizard = () => {
+const TagWizard: React.FC<{ editTag?: Tag }> = ({ editTag }) => {
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
@@ -36,7 +38,7 @@ const NewTagWizard = () => {
   const [colorError, setColorError] = useState<string | null>(null);
   const [descriptionError, setDescriptionError] = useState<string | null>(null);
 
-  const { mutate, isLoading: isCreating } = api.tags.create.useMutation({
+  const { mutate, isLoading: isSaving } = api.tags.create.useMutation({
     onSuccess: () => {
       toast.success("Tag created successfully!");
 
@@ -99,6 +101,87 @@ const NewTagWizard = () => {
     },
   });
 
+  const { mutate: update, isLoading: isUpdating } = api.tags.update.useMutation({
+    onSuccess: () => {
+      toast.success("Tag created successfully!");
+
+      void context.invalidate();
+
+      setName("");
+      setType("");
+      setDescription("");
+      setColor(getRandomColor() || "#000000");
+    },
+    onError: (error) => {
+      const zodErrors = error.shape?.data.zodError;
+
+      if (!zodErrors) {
+        if (error.message === "A tag with this name already exists.") {
+          toast.error(
+            `A tag with the name '${name}' already exists for ${type}.`
+          );
+        } else {
+          toast.error("there was an error creating the tag");
+          console.log(error.message);
+        }
+
+        return;
+      }
+
+      const nameError = zodErrors.fieldErrors["name"];
+      console.log(nameError);
+
+      if (nameError && nameError[0]) {
+        setNameError(nameError[0]);
+        toast.error(nameError[0]);
+      }
+
+      const typeError = zodErrors.fieldErrors["type"];
+      console.log(typeError);
+
+      if (typeError && typeError[0]) {
+        setTypeError(typeError[0]);
+        toast.error(typeError[0]);
+      }
+
+      const colorError = zodErrors.fieldErrors["color"];
+      console.log(colorError);
+
+      if (colorError && colorError[0]) {
+        setColorError(colorError[0]);
+        toast.error(colorError[0]);
+      }
+
+      const descriptionError = zodErrors.fieldErrors["description"];
+      console.log(descriptionError);
+
+      if (descriptionError && descriptionError[0]) {
+        setDescriptionError(descriptionError[0]);
+        toast.error(descriptionError[0]);
+      }
+
+      toast.error("there was an error creating the tag");
+    },
+  });
+
+  const loading = isSaving || isUpdating
+
+  useMemo(() => {
+
+    if (editTag) {
+      setName(editTag.name);
+      setType(editTag.type);
+      setDescription(editTag.description);
+      setColor(editTag.backgroundColor);
+    }
+    else {
+      setName("");
+      setType("");
+      setDescription("");
+      setColor(getRandomColor() || "#000000");
+    }
+  }, [editTag]);
+
   const exampleTag = useRef<HTMLDivElement>(null);
 
   if (exampleTag) {
@@ -115,22 +198,41 @@ const NewTagWizard = () => {
 
   console.log(type);
 
-  const createNewTag = useCallback(() => {
-    toast.loading("creating tag", { duration: 1000 });
+  const setTag = useCallback(() => {
 
-    console.log("creating tag:", name, type, description, color);
+    if (editTag) {
+      toast.loading("updating tag", { duration: 1000 });
 
-    setNameError(null);
-    setTypeError(null);
-    setColorError(null);
-    setDescriptionError(null);
+      console.log("updating tag:", name, type, description, color);
 
-    mutate({
-      name,
-      type,
-      description,
-      color,
-    });
+      setNameError(null);
+      setTypeError(null);
+      setColorError(null);
+      setDescriptionError(null);
+
+      update({
+        id: editTag.id,
+        name,
+        type,
+        description,
+        color,
+      });
+    }
+    else {
+      toast.loading("creating tag", { duration: 1000 });
+
+      setNameError(null);
+      setTypeError(null);
+      setColorError(null);
+      setDescriptionError(null);
+
+      mutate({
+        name,
+        type,
+        description,
+        color,
+      });
+    }
   }, [
     mutate,
     name,
@@ -141,11 +243,13 @@ const NewTagWizard = () => {
     setTypeError,
     setColorError,
     setDescriptionError,
+    editTag,
+    update,
   ]);
 
   return (
     <div className="fade-y w-full border-b border-zinc-700 p-2">
-      <h2 className="py-2 text-2xl font-semibold">Create New Tag</h2>
+      <h2 className="py-2 text-2xl font-semibold select-none">{editTag ? "Edit Tag" : "Create New Tag"}</h2>
       <div className="flex flex-wrap items-start justify-center gap-2    md:justify-start">
         <div className="flex w-full flex-col flex-wrap items-start justify-start gap-2 md:w-1/3">
           <div className="w-full">
@@ -156,7 +260,7 @@ const NewTagWizard = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              disabled={isCreating}
+              disabled={loading}
               style={nameError ? { border: "1px solid red" } : {}}
             />
             <p className="text-sm italic text-red-500"> {nameError || ""}</p>
@@ -169,7 +273,7 @@ const NewTagWizard = () => {
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              disabled={isCreating}
+              disabled={loading}
               style={descriptionError ? { border: "1px solid red" } : {}}
             />
             <p className="text-sm italic text-red-500">
@@ -191,7 +295,7 @@ const NewTagWizard = () => {
               placeholder="crew members, etc."
               value={type}
               onChange={(e) => setType(e.target.value)}
-              disabled={isCreating}
+              disabled={loading}
               style={typeError ? { border: "1px solid red" } : {}}
             >
               <option value="">Select a category</option>
@@ -211,7 +315,7 @@ const NewTagWizard = () => {
                 value={color}
                 type="text"
                 onChange={(e) => setColor(e.target.value)}
-                disabled={isCreating}
+                disabled={loading}
                 style={colorError ? { border: "1px solid red" } : {}}
               />
               <input
@@ -219,12 +323,12 @@ const NewTagWizard = () => {
                 value={color}
                 type="color"
                 onChange={(e) => setColor(e.target.value)}
-                disabled={isCreating}
+                disabled={loading}
               />
               <button
                 onClick={() => setRandomColor()}
                 className="rounded bg-zinc-700 p-1 outline-none transition-all duration-100 hover:bg-amber-700"
-                disabled={isCreating}
+                disabled={loading}
               >
                 <ArrowPathRoundedSquareIcon className="h-6 w-6" />
               </button>
@@ -232,32 +336,33 @@ const NewTagWizard = () => {
             <p className="text-sm italic text-red-500"> {colorError || ""}</p>
           </div>
           <div className="flex h-full flex-col items-center justify-center gap-2 rounded border-zinc-700 p-2 md:border">
-            <h2 className="text-lg font-semibold">Tag Preview</h2>
+            <h2 className="text-lg font-semibold select-none  " >Tag Preview</h2>
 
             <TooltipComponent
               content={description || "<no description>"}
               side="bottom"
             >
               <div>
-                <div ref={exampleTag}>{name || "example tag"}</div>
+                <div className="select-none" ref={exampleTag}>{name || "example tag"}</div>
               </div>
             </TooltipComponent>
-            <p className="hidden text-sm italic text-zinc-400 md:block">
+            <p className="hidden text-sm italic text-zinc-400 md:block select-none">
               tip: Hover over the tag to see the description.
             </p>
           </div>
         </div>
         <button
-          onClick={() => createNewTag()}
-          disabled={isCreating}
-          className="flex w-full items-center justify-center gap-2 rounded bg-zinc-700 p-2 transition-all duration-100 hover:bg-amber-700 md:w-1/3"
+          onClick={() => setTag()}
+          disabled={loading}
+          className=" select-none flex w-full items-center justify-center gap-2 rounded bg-zinc-700 p-2 transition-all duration-100 hover:bg-amber-700 md:w-1/3"
         >
-          {isCreating ? (
+          {loading ? (
             <LoadingSpinner />
           ) : (
-            <>
-              <PlusIcon className="h-5 w-5" /> <p> Create Tag</p>
-            </>
+            <div>
+              {!editTag && (<><PlusIcon className="h-5 w-5" /> <p> Create Tag</p></>)}
+              {editTag && (<><p> Save </p></>)}
+            </div>
           )}
         </button>
       </div>
@@ -307,9 +412,9 @@ const TagsPage: NextPage = () => {
           </button>
         </TooltipComponent>
       </div>
-      {newPanelOpen && <NewTagWizard />}
+      {newPanelOpen && <TagWizard />}
       <div className="p-2">
-        <h2 className="pb-2 text-2xl font-semibold">Tags</h2>
+        <h2 className="pb-2 text-2xl font-semibold select-none">Tags</h2>
         {loading && (
           <div className="flex h-20 w-full items-center justify-center">
             <LoadingSpinner />
@@ -332,7 +437,7 @@ const TagsPage: NextPage = () => {
 
 const TagCard: React.FC<{ tag: Tag }> = ({ tag }) => {
   return (
-    <div className="flex justify-between  gap-2 rounded border border-zinc-700 p-2">
+    <div className="flex justify-between  gap-2 rounded border border-zinc-700 p-2 select-none">
       <div className="flex items-center justify-start gap-2">
         <div className="flex items-center gap-2">
           <TagIcon
@@ -361,21 +466,35 @@ const TagCard: React.FC<{ tag: Tag }> = ({ tag }) => {
           </div>
         </div>
       </div>
-      <div className="hidden items-center gap-2 md:flex">
-        <p className="hidden text-sm text-zinc-300 md:block">
-          {dayjs(tag.updatedAt || tag.createdAt).fromNow()}
-        </p>
-        <TooltipComponent content="Edit tag" side="bottom">
-          <button className="rounded bg-zinc-700 p-2 hover:bg-amber-700">
-            <PencilIcon className="h-5 w-5" />
+      <div className="flex gap-1">
+        <div className="hidden items-center gap-1 md:flex">
+          <p className="hidden text-sm text-zinc-300 md:block">
+            <span className="text-zinc-500 italic">updated</span> {dayjs(tag.updatedAt || tag.createdAt).fromNow()}
+          </p>
+          {/* <TagOptions /> */}
+        </div>
+
+        <SimpleDropDown trigger={
+          <button className="flex items-center justify-center p-2">
+            <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
           </button>
-        </TooltipComponent>
-        <TooltipComponent content="Delete tag" side="bottom">
-          <button className="rounded bg-zinc-700 p-2 hover:bg-amber-700">
-            <TrashIcon className="h-5 w-5" />
-          </button>
-        </TooltipComponent>
+        }>
+          <TagOptions tag={tag} />
+        </SimpleDropDown>
       </div>
+    </div>
+  );
+};
+
+const TagOptions: React.FC<{ tag: Tag }> = ({ tag }) => {
+  return (
+    <div className="flex flex-col justify-start items-start gap-1">
+      <TagWizard editTag={tag} />
+      <TooltipComponent content="Delete tag" side="bottom">
+        {/* <button className="rounded bg-zinc-700 p-2 hover:bg-amber-700">
+          <TrashIcon className="h-5 w-5" />
+        </button> */}
+      </TooltipComponent>
     </div>
   );
 };

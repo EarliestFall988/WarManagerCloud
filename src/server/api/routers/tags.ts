@@ -142,7 +142,7 @@ export const tagsRouter = createTRPCRouter({
           .min(0)
           .max(
             140,
-            "The description is too long! It must be less than 140 characters."
+            "The description is too long! It must be less than 140 characters"
           )
           .optional(),
         type: z
@@ -152,7 +152,7 @@ export const tagsRouter = createTRPCRouter({
         color: z.string().min(3, "The color value is incorrect.").max(20),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const authorId = ctx.currentUser;
 
       const { success } = await rateLimit.limit(authorId);
