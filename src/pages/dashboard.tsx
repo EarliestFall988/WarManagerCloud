@@ -472,35 +472,35 @@ const CrewMembers = () => {
   );
 };
 
-const StatusTagComponent = (props: { name: string }) => {
-  const status = props.name.toLowerCase();
+// const StatusTagComponent = (props: { name: string }) => {
+//   const status = props.name.toLowerCase();
 
-  let style = "border-zinc-400 border text-zinc-400";
+//   let style = "border-zinc-400 border text-zinc-400";
 
-  if (status.startsWith("start") && !status.includes("2 weeks")) {
-    style = "border-yellow-200 border text-yellow-200";
-  } else if (status.trim() === "start 2 weeks") {
-    style = "border-orange-400 border text-orange-400";
-  } else if (status.trim().startsWith("mf")) {
-    style = "border-blue-400 border text-blue-400";
-  } else if (status.trim() === "legal") {
-    style = "border-red-400 border text-red-400";
-  } else if (status.trim() === "in progress: good") {
-    style = "border-green-400 border text-green-400";
-  } else if (status.trim() === "in progress: bad") {
-    style = "border-red-400 border-2 text-red-400";
-  } else if (status.trim() === "100% complete") {
-    style = "border-green-600 border text-green-200 bg-green-800";
-  }
+//   if (status.startsWith("start") && !status.includes("2 weeks")) {
+//     style = "border-yellow-200 border text-yellow-200";
+//   } else if (status.trim() === "start 2 weeks") {
+//     style = "border-orange-400 border text-orange-400";
+//   } else if (status.trim().startsWith("mf")) {
+//     style = "border-blue-400 border text-blue-400";
+//   } else if (status.trim() === "legal") {
+//     style = "border-red-400 border text-red-400";
+//   } else if (status.trim() === "in progress: good") {
+//     style = "border-green-400 border text-green-400";
+//   } else if (status.trim() === "in progress: bad") {
+//     style = "border-red-400 border-2 text-red-400";
+//   } else if (status.trim() === "100% complete") {
+//     style = "border-green-600 border text-green-200 bg-green-800";
+//   }
 
-  return (
-    <p
-      className={`${style} whitespace-nowrap rounded-full px-1 text-center text-xs`}
-    >
-      {props.name}
-    </p>
-  );
-};
+//   return (
+//     <p
+//       className={`${style} whitespace-nowrap rounded-full px-1 text-center text-xs`}
+//     >
+//       {props.name}
+//     </p>
+//   );
+// };
 
 const Projects = () => {
   const [projectSearchTerm, setProjectsSearchTerm] = useState("");
@@ -530,6 +530,8 @@ const Projects = () => {
     },
     [mutate]
   );
+
+  console.log(data);
 
   return (
     <>

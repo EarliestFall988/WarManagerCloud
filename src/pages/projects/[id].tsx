@@ -3,7 +3,6 @@ import {
   ArrowRightIcon,
   CloudArrowUpIcon,
   PlusIcon,
-  RocketLaunchIcon,
   TagIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
@@ -13,16 +12,15 @@ import type { GetStaticProps, GetStaticPropsContext, NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
-import { RemovableTagComponent } from "~/components/TagComponent";
 import TooltipComponent from "~/components/Tooltip";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 
-import Select, { MultiValue } from "react-select";
+import Select, { type MultiValue } from "react-select";
 
 function padTo2Digits(num: number) {
   return num.toString().padStart(2, "0");
@@ -65,9 +63,15 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
   const router = useRouter();
 
+  const projectContext = api.useContext().projects;
+  const tagsContext = api.useContext().tags;
+
   const mutation = api.projects.update.useMutation({
     onSuccess: (data) => {
       toast.success(`${data.name} updated successfully!`);
+      void projectContext.invalidate();
+      void tagsContext.invalidate();
+      void router.push("/dashboard?context=Projects");
     },
   });
 
@@ -132,7 +136,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
         <NewItemPageHeader
           title={`Loading...`}
           context="projects"
-          cancel={() => router.push("/dashboard?context=Projects")}
+          cancel={() => void router.push("/dashboard?context=Projects")}
         />
         <LoadingPage />
       </main>
@@ -144,7 +148,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
         <NewItemPageHeader
           title={`Error loading project`}
           context="projects"
-          cancel={() => router.push("/dashboard?context=Projects")}
+          cancel={() => void router.push("/dashboard?context=Projects")}
         />
       </main>
     );
@@ -169,13 +173,17 @@ const EditProjectPage = function ({ id }: { id: string }) {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
+    const tags = getTagIds();
+
+    console.log("saving tags", tags)
+
     mutation.mutate({
       id: project.id,
       estimatedManHours: parseInt(manHours || "0"),
       name,
       description,
       jobNumber,
-      tags: getTagIds(),
+      tags,
       address,
       city,
       state,
@@ -185,9 +193,9 @@ const EditProjectPage = function ({ id }: { id: string }) {
       notes,
       percentComplete
     });
-    toast.loading("Saving changes...", { duration: 1000 });
-  }
 
+    toast.loading("Saving changes...", { duration: 2000 });
+  }
 
   return (
     <>
@@ -201,7 +209,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
           title={`${project?.name} (Project)`}
           context="projects"
           save={SaveChanges}
-          cancel={() => router.push("/dashboard?context=Projects")}
+          cancel={() => void router.push("/dashboard?context=Projects")}
           saving={mutation.isLoading}
         />
         <div className="flex items-center justify-center">
@@ -240,7 +248,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
             <div className="flex w-full flex-col gap-2 p-2">
               <h1 className="text-lg font-semibold">Tags</h1>
               <div className="flex gap-2">
-                <AddTagsComponent type={"projects"} savedTags={tags} onSetTags={(e) => { setTags(e) }} />
+                <AddTagsComponent type={"projects"} savedTags={tags} onSetTags={(e) => { setTags(e); console.log("tags", e) }} />
 
               </div>
             </div>
@@ -410,10 +418,6 @@ const EditProjectPage = function ({ id }: { id: string }) {
   );
 };
 
-interface ITagData {
-  value: string;
-  label: string;
-}
 
 let tags = [] as { value: string; label: string }[];
 let selectedTags = [] as { value: string; label: string }[];
@@ -422,15 +426,6 @@ const AddTagsComponent: React.FC<{ savedTags: Tag[], type: string, onSetTags: (t
 
   const { data: allTags, isLoading, isError } = api.tags.getTagsToAdd.useQuery({ type });
 
-  // console.log("all tags", allTags)
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (isError) {
-    return <p>Error</p>;
-  }
 
   useMemo(() => {
 
@@ -458,8 +453,8 @@ const AddTagsComponent: React.FC<{ savedTags: Tag[], type: string, onSetTags: (t
     // console.log("saved tags", savedTags);
     // console.log("selected tag data", selectedTagData);
 
-    selectedTags.push(...selectedTagData);
-    tags.push(...tagData);
+    selectedTags.push(...selectedTagData || []);
+    tags.push(...tagData || []);
 
   }, []);
 
@@ -469,6 +464,8 @@ const AddTagsComponent: React.FC<{ savedTags: Tag[], type: string, onSetTags: (t
   }>) => {
 
     const tags = [] as Tag[]
+
+    if (!allTags) return;
 
     e.forEach((tg) => {
       const tag = allTags.find((t) => t.id === tg.value);
@@ -480,7 +477,16 @@ const AddTagsComponent: React.FC<{ savedTags: Tag[], type: string, onSetTags: (t
 
     onSetTags(tags);
 
-  }, [allTags]);
+  }, [allTags, onSetTags]);
+
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (isError) {
+    return <p>Error</p>;
+  }
 
 
   return (
@@ -751,7 +757,7 @@ const ViewProjectPage = function ({ id }: { id: string }) {
 };
 
 const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
-  const [edit, setEdit] = useState(true);
+  const [edit] = useState(true);
 
   if (edit) {
     return <EditProjectPage id={id} />;

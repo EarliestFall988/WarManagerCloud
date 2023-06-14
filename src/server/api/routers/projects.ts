@@ -229,6 +229,14 @@ export const projectsRouter = createTRPCRouter({
         });
       }
 
+      const tagsToDisconnect = await ctx.prisma.project
+        .findUnique({
+          where: {
+            id: input.id,
+          },
+        })
+        .tags();
+
       const project = await ctx.prisma.project.update({
         where: {
           id: input.id,
@@ -249,12 +257,19 @@ export const projectsRouter = createTRPCRouter({
           status: input.status,
           percentComplete: input.percentComplete,
           tags: {
+
+            disconnect: tagsToDisconnect?.map((tag) => ({
+              id: tag.id,
+            })),
+
             connect: input.tags?.map((tag) => ({
               id: tag,
             })),
           },
         }
       });
+
+      console.log(project);
 
       return project;
     }),
