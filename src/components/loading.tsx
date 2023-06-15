@@ -14,3 +14,17 @@ export const LoadingPage = () => {
     </div>
   );
 };
+
+export const LoadingHeader: React.FC<{ title: string, loading: boolean }> = ({ title, loading }) => {
+
+  return (
+    <>
+      {loading && (
+        <div className="flex flex-col items-center justify-center gap-2 py-10">
+          <LoadingSpinner />
+          <p className="text-xl font-bold text-zinc-300">{title}</p>
+        </div>
+      )}
+    </>
+  )
+}

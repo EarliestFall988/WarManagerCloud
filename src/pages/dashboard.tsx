@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { LoadingSpinner } from "~/components/loading";
+import { LoadingHeader, LoadingSpinner } from "~/components/loading";
 
 import { api } from "~/utils/api";
 
@@ -117,9 +117,7 @@ const BlueprintsList = () => {
       </div>
 
       {loadingBlueprints ? (
-        <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-zinc-700/30 p-2 sm:w-[74vw]">
-          <LoadingSpinner />
-        </div>
+        <LoadingHeader loading={loadingBlueprints} title="Loading Blueprints" />
       ) : loadingBlueprintsError || !data ? (
         <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2 sm:w-[74vw]">
           <p className="text-lg italic text-red-500">
@@ -328,9 +326,7 @@ const CrewMembers = () => {
 
       {
         isLoading ? (
-          <div className="flex w-full flex-col items-center justify-center gap-2 rounded bg-zinc-700/30 p-2" >
-            <LoadingSpinner />
-          </div >
+          <LoadingHeader loading={isLoading} title="Loading Crew Members" />
         ) : loadingCrewError || !crewData ? (
           <div className="flex w-full flex-col items-center justify-center gap-2 rounded p-2">
             <p className="text-[3rem] italic text-red-500">could not load data</p>
@@ -626,12 +622,9 @@ const Projects = () => {
         </SimpleDropDown>
       </div>
 
-      {(isLoading && (
-        <div className="flex flex-col items-center justify-center gap-2">
-          <LoadingSpinner />
-          <p className="text-xl font-bold text-zinc-300">Loading Projects</p>
-        </div>
-      )) ||
+      { isLoading && (
+        <LoadingHeader loading={isLoading} title={"Loading Projects"} />
+      ) ||
         (isError && (
           <div className="flex flex-col items-center justify-center gap-2">
             <p className="text-xl font-bold text-zinc-300">
