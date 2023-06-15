@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import React from "react";
+import React, { useMemo } from "react";
 import { type flowState } from "./flow";
 import Head from "next/head";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
@@ -168,7 +168,7 @@ const BlueprintGUI = () => {
       blueprintId: bpId,
     });
 
-  useEffect(() => {
+  useMemo(() => {
     if (blueprintId && !loadingBlueprints) {
       const blueprint = blueprintData as Blueprint;
 

@@ -585,8 +585,6 @@ const Projects = () => {
     [mutate]
   );
 
-  console.log(data);
-
   return (
     <>
       <div className="flex w-full items-center justify-between gap-1 p-2">
