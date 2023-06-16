@@ -7,6 +7,7 @@ import { projectsRouter } from "./routers/projects";
 import { schedulesRouter } from "./routers/schedules";
 import { sectorsRouter } from "./routers/sectors";
 import { tagsRouter } from "./routers/tags";
+import { developmentRouter } from "./routers/development";
 
 /**
  * This is the primary router for your server.
@@ -22,6 +23,7 @@ export const appRouter = createTRPCRouter({
   schedules: schedulesRouter,
   sectors: sectorsRouter,
   tags: tagsRouter,
+  development: developmentRouter,
 });
 
 // export type definition of API

@@ -19,6 +19,7 @@ import React, {
 import { useRouter } from "next/router";
 import {
   ArrowDownTrayIcon,
+  ArrowLeftIcon,
   ArrowRightOnRectangleIcon,
   ArrowsUpDownIcon,
   Bars3Icon,
@@ -218,7 +219,6 @@ const PositionTag = (props: { position: string }) => {
   );
 };
 
-
 const CrewMemberLinks: React.FC<{ className?: string }> = ({ className }) => {
   return (
     <div className={className ? className : ""}>
@@ -256,7 +256,6 @@ const CrewMemberLinks: React.FC<{ className?: string }> = ({ className }) => {
 const CrewMembers = () => {
   const [crewSearchTerm, setCrewSearchTerm] = useState("");
   const [filterTags, setFilterTags] = useState<Tag[]>([]);
-
 
   const getFilterTagIds = useCallback(() => {
     return filterTags.map((tag) => tag.id);
@@ -300,7 +299,7 @@ const CrewMembers = () => {
   return (
     <>
       <div className="flex w-full items-center justify-between gap-1 p-2 ">
-        <div className="w-full flex gap-1">
+        <div className="flex w-full gap-1">
           <input
             type="search"
             value={crewSearchTerm}
@@ -308,181 +307,182 @@ const CrewMembers = () => {
             placeholder="search crew members by name, or position"
             className="w-full rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
           />
-          <TagsPopover type={"crews"} savedTags={filterTags} onSetTags={(e) => setFilterTags(e)} >
+          <TagsPopover
+            type={"crews"}
+            savedTags={filterTags}
+            onSetTags={(e) => setFilterTags(e)}
+          >
             <button className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700">
               <FunnelIcon className="h-6 w-6 text-zinc-100" />
             </button>
           </TagsPopover>
         </div>
-        <CrewMemberLinks className="hidden sm:flex gap-1" />
-        <SimpleDropDown trigger={
-          <button className="flex items-center justify-center p-2 md:hidden">
-            <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
-          </button>
-        }>
-          <CrewMemberLinks className="gap-1 flex" />
+        <CrewMemberLinks className="hidden gap-1 sm:flex" />
+        <SimpleDropDown
+          trigger={
+            <button className="flex items-center justify-center p-2 md:hidden">
+              <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
+            </button>
+          }
+        >
+          <CrewMemberLinks className="flex gap-1" />
         </SimpleDropDown>
-      </div >
+      </div>
 
-      {
-        isLoading ? (
-          <LoadingHeader loading={isLoading} title="Loading Crew Members" />
-        ) : loadingCrewError || !crewData ? (
-          <div className="flex w-full flex-col items-center justify-center gap-2 rounded p-2">
-            <p className="text-[3rem] italic text-red-500">could not load data</p>
-          </div>
-        ) : (
-          <div className="flex h-[80vh] w-full flex-col  items-start justify-start gap-1 overflow-y-auto overflow-x-hidden border-t border-zinc-700 p-2 text-gray-100 md:h-[94vh]">
-            {crewData.length > 0 &&
-              crewData?.map((crewMember) => (
-                <div
-                  className="flex w-full rounded-sm bg-zinc-700 hover:bg-zinc-600 sm:w-10/12 lg:w-full select-none cursor-pointer"
-                  key={crewMember.id}
-                >
-                  <Link
-                    href={`/crewmember/${crewMember.id}`}
-                    passHref
-                    className="flex w-11/12 flex-grow items-center gap-1 overflow-x-clip rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
-                  >
-                    {/* <UserCircleIcon className="hidden h-10 w-10 flex-1 text-zinc-300 md:block" /> */}
-                    <div className="flex w-full flex-col items-start justify-start text-left text-white lg:w-1/3">
-                      <p className="truncate text-xs text-zinc-300 ">
-                        {crewMember.position}
-                      </p>
-                      <div className="flex items-center justify-start gap-1 w-1/2">
-                        <p className="truncate text-lg font-semibold text-white ">
-                          {crewMember.name}
-                        </p>
-                        {
-                          crewMember.tags.length > 0 && (
-                            <div className="flex gap-1 flex-wrap">
-                              {
-                                crewMember.tags.map((tag) => (
-                                  <TagBubble tag={tag} key={tag.id} style="text-xs" />
-                                ))
-                              }
-                            </div>
-                          )
-                        }
-                      </div>
-                      <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-400">
-                        {crewMember.phone && (
-                          <PhoneIcon className="h-4 w-4 text-zinc-200" />
-                        )}
-                        <p className="whitespace-nowrap text-sm tracking-tight">
-                          {crewMember.phone}
-                        </p>
-                        {crewMember.email && (
-                          <>
-                            <p className="truncate text-left text-sm tracking-tight">
-                              •
-                            </p>
-                            <InboxIcon className="h-4 w-4 text-zinc-200" />
-                          </>
-                        )}
-                        <p className="w-full truncate text-sm tracking-tight">
-                          {crewMember.email}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="hidden flex-grow truncate tracking-tight md:block lg:w-1/4 ">
-                      {crewMember.description}
-                    </p>
-                    <p className="hidden w-1/12 truncate text-left text-sm italic sm:block">
-                      <span className="text-zinc-400">updated</span> {" "}
-                      {dayjs(crewMember.updatedAt).fromNow()}
-                    </p>
-                  </Link>
-
-                  <DropdownMenu.Root>
-                    <DropdownMenu.Trigger asChild>
-                      <button className="flex w-1/12 items-center justify-end rounded-sm bg-transparent p-1 transition-all duration-100 md:w-auto">
-                        <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
-                      </button>
-                    </DropdownMenu.Trigger>
-                    <DropdownMenu.Portal>
-                      <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-700 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
-                        <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-700" />
-                        <DropdownMenu.Item
-                          className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            copy(crewMember.email, "Email");
-                          }}
-                        >
-                          <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
-                          Copy Email
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item
-                          className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
-                          onSelect={(e) => {
-                            e.preventDefault();
-                            copy(crewMember.phone, "Phone");
-                          }}
-                        >
-                          <PhoneIcon className="h-5 w-5 text-zinc-200 " />
-                          Copy Phone
-                        </DropdownMenu.Item>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
-                              <TrashIcon className="h-4 w-4 text-white" />
-                              Delete
-                            </button>
-                          </Dialog.Trigger>
-                          <Dialog.Portal>
-                            <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/30 backdrop-blur" />
-                            <div className="flex h-screen w-screen items-center justify-center">
-                              <Dialog.Content className="fixed top-[50%] m-auto rounded-lg bg-black p-3 py-2 drop-shadow-lg backdrop-blur">
-                                <Dialog.Title className="text-lg font-bold text-white">
-                                  Delete Crew Member
-                                </Dialog.Title>
-                                <Dialog.Description className="text-white">
-                                  Are you sure you want to delete this crew
-                                  member? This action cannot be undone.
-                                </Dialog.Description>
-                                <div className="mt-4 flex justify-end gap-2">
-                                  <Dialog.Close asChild>
-                                    <button className="rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-red-600">
-                                      Cancel
-                                    </button>
-                                  </Dialog.Close>
-                                  <Dialog.Close asChild>
-                                    <button
-                                      className="rounded bg-gradient-to-br from-red-700 to-amber-700 p-2 text-center transition-all duration-100 hover:bg-red-600"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        removeCrewMember(crewMember.id);
-                                      }}
-                                    >
-                                      Delete
-                                    </button>
-                                  </Dialog.Close>
-                                </div>
-                              </Dialog.Content>
-                            </div>
-                          </Dialog.Portal>
-                        </Dialog.Root>
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu.Root>
-                </div>
-              ))}
-            {crewData.length === 0 && (
-              <div className="flex flex-col w-full items-center justify-center gap-2">
-                <p className="text-xl font-bold text-zinc-300">
-                  No Crew Members matching your search
-                </p>
+      {isLoading ? (
+        <LoadingHeader loading={isLoading} title="Loading Crew Members" />
+      ) : loadingCrewError || !crewData ? (
+        <div className="flex w-full flex-col items-center justify-center gap-2 rounded p-2">
+          <p className="text-[3rem] italic text-red-500">could not load data</p>
+        </div>
+      ) : (
+        <div className="flex h-[80vh] w-full flex-col  items-start justify-start gap-1 overflow-y-auto overflow-x-hidden border-t border-zinc-700 p-2 text-gray-100 md:h-[94vh]">
+          {crewData.length > 0 &&
+            crewData?.map((crewMember) => (
+              <div
+                className="flex w-full cursor-pointer select-none rounded-sm bg-zinc-700 hover:bg-zinc-600 sm:w-10/12 lg:w-full"
+                key={crewMember.id}
+              >
                 <Link
-                  href="/newCrewMember"
-                  className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
+                  href={`/crewmember/${crewMember.id}`}
+                  passHref
+                  className="flex w-11/12 flex-grow items-center gap-1 overflow-x-clip rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
                 >
-                  Create one now.
+                  {/* <UserCircleIcon className="hidden h-10 w-10 flex-1 text-zinc-300 md:block" /> */}
+                  <div className="flex w-full flex-col items-start justify-start text-left text-white lg:w-1/3">
+                    <p className="truncate text-xs text-zinc-300 ">
+                      {crewMember.position}
+                    </p>
+                    <div className="flex w-1/2 items-center justify-start gap-1">
+                      <p className="truncate text-lg font-semibold text-white ">
+                        {crewMember.name}
+                      </p>
+                      {crewMember.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {crewMember.tags.map((tag) => (
+                            <TagBubble tag={tag} key={tag.id} style="text-xs" />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-400">
+                      {crewMember.phone && (
+                        <PhoneIcon className="h-4 w-4 text-zinc-200" />
+                      )}
+                      <p className="whitespace-nowrap text-sm tracking-tight">
+                        {crewMember.phone}
+                      </p>
+                      {crewMember.email && (
+                        <>
+                          <p className="truncate text-left text-sm tracking-tight">
+                            •
+                          </p>
+                          <InboxIcon className="h-4 w-4 text-zinc-200" />
+                        </>
+                      )}
+                      <p className="w-full truncate text-sm tracking-tight">
+                        {crewMember.email}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="hidden flex-grow truncate tracking-tight md:block lg:w-1/4 ">
+                    {crewMember.description}
+                  </p>
+                  <p className="hidden w-1/12 truncate text-left text-sm italic sm:block">
+                    <span className="text-zinc-400">updated</span>{" "}
+                    {dayjs(crewMember.updatedAt).fromNow()}
+                  </p>
                 </Link>
+
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger asChild>
+                    <button className="flex w-1/12 items-center justify-end rounded-sm bg-transparent p-1 transition-all duration-100 md:w-auto">
+                      <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
+                    </button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-700 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                      <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-700" />
+                      <DropdownMenu.Item
+                        className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          copy(crewMember.email, "Email");
+                        }}
+                      >
+                        <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
+                        Copy Email
+                      </DropdownMenu.Item>
+                      <DropdownMenu.Item
+                        className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          copy(crewMember.phone, "Phone");
+                        }}
+                      >
+                        <PhoneIcon className="h-5 w-5 text-zinc-200 " />
+                        Copy Phone
+                      </DropdownMenu.Item>
+                      <Dialog.Root>
+                        <Dialog.Trigger asChild>
+                          <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
+                            <TrashIcon className="h-4 w-4 text-white" />
+                            Delete
+                          </button>
+                        </Dialog.Trigger>
+                        <Dialog.Portal>
+                          <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/30 backdrop-blur" />
+                          <div className="flex h-screen w-screen items-center justify-center">
+                            <Dialog.Content className="fixed top-[50%] m-auto rounded-lg bg-black p-3 py-2 drop-shadow-lg backdrop-blur">
+                              <Dialog.Title className="text-lg font-bold text-white">
+                                Delete Crew Member
+                              </Dialog.Title>
+                              <Dialog.Description className="text-white">
+                                Are you sure you want to delete this crew
+                                member? This action cannot be undone.
+                              </Dialog.Description>
+                              <div className="mt-4 flex justify-end gap-2">
+                                <Dialog.Close asChild>
+                                  <button className="rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-red-600">
+                                    Cancel
+                                  </button>
+                                </Dialog.Close>
+                                <Dialog.Close asChild>
+                                  <button
+                                    className="rounded bg-gradient-to-br from-red-700 to-amber-700 p-2 text-center transition-all duration-100 hover:bg-red-600"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      removeCrewMember(crewMember.id);
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                </Dialog.Close>
+                              </div>
+                            </Dialog.Content>
+                          </div>
+                        </Dialog.Portal>
+                      </Dialog.Root>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Root>
               </div>
-            )}
-          </div>
-        )}
+            ))}
+          {crewData.length === 0 && (
+            <div className="flex w-full flex-col items-center justify-center gap-2">
+              <p className="text-xl font-bold text-zinc-300">
+                No Crew Members matching your search
+              </p>
+              <Link
+                href="/newCrewMember"
+                className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
+              >
+                Create one now.
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 };
@@ -527,10 +527,7 @@ const ProjectMenu = () => (
         <PlusIcon className="h-6 w-6 text-zinc-100" />
       </Link>
     </TooltipComponent>
-    <TooltipComponent
-      content="Download Projects Spreadsheet"
-      side="bottom"
-    >
+    <TooltipComponent content="Download Projects Spreadsheet" side="bottom">
       <Link
         href="/projects/download"
         className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
@@ -547,7 +544,7 @@ const ProjectMenu = () => (
       </Link>
     </TooltipComponent>
   </>
-)
+);
 
 const Projects = () => {
   const [projectSearchTerm, setProjectsSearchTerm] = useState("");
@@ -555,8 +552,9 @@ const Projects = () => {
   const [filter, setFilter] = useState<Tag[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
 
-
-  const filterToStringArray: string[] = filter.map((tag) => { return tag.id });
+  const filterToStringArray: string[] = filter.map((tag) => {
+    return tag.id;
+  });
 
   const { data, isLoading, isError } = api.projects.search.useQuery({
     search: projectSearchTerm,
@@ -588,41 +586,50 @@ const Projects = () => {
   return (
     <>
       <div className="flex w-full items-center justify-between gap-1 p-2">
-        <div className="w-full flex gap-1" >
+        <div className="flex w-full gap-1">
           <input
             type="search"
             value={projectSearchTerm}
             onChange={(e) => setProjectsSearchTerm(e.target.value)}
             placeholder="search projects by name, job code, or address"
-            className="w-full border border-zinc-600 rounded bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
+            className="w-full rounded border border-zinc-600 bg-zinc-700 p-2 outline-none ring-2 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-600 focus:ring-amber-700 sm:w-3/5"
           />
           {/* <TooltipComponent content="Filter Tags" side="bottom"> */}
-          <TagsPopover savedTags={filter} type={"projects"} onSetTags={setFilter}>
-            <button onClick={() => { setFilterOpen(!filterOpen) }} className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700">
+          <TagsPopover
+            savedTags={filter}
+            type={"projects"}
+            onSetTags={setFilter}
+          >
+            <button
+              onClick={() => {
+                setFilterOpen(!filterOpen);
+              }}
+              className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+            >
               <FunnelIcon className="h-6 w-6 text-zinc-100" />
             </button>
           </TagsPopover>
           {/* </TooltipComponent> */}
-
-
         </div>
         <div className="hidden gap-1 md:flex">
           <ProjectMenu />
         </div>
-        <SimpleDropDown trigger={
-          <button className="flex items-center justify-center p-2 md:hidden">
-            <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
-          </button>
-        }>
-          <div className="gap-1 flex">
+        <SimpleDropDown
+          trigger={
+            <button className="flex items-center justify-center p-2 md:hidden">
+              <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
+            </button>
+          }
+        >
+          <div className="flex gap-1">
             <ProjectMenu />
           </div>
         </SimpleDropDown>
       </div>
 
-      { isLoading && (
+      {(isLoading && (
         <LoadingHeader loading={isLoading} title={"Loading Projects"} />
-      ) ||
+      )) ||
         (isError && (
           <div className="flex flex-col items-center justify-center gap-2">
             <p className="text-xl font-bold text-zinc-300">
@@ -634,15 +641,16 @@ const Projects = () => {
           <div className="h-[80vh] w-full overflow-y-auto overflow-x-hidden md:h-[94vh] ">
             <div className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
               {data?.map((project, index) => (
-                <div key={project.id} className="rounded-sm bg-zinc-700 hover:bg-zinc-600 select-none w-full">
-                  <div
-                    className="flex md:1/2 items-center gap-1 "
-                  >
+                <div
+                  key={project.id}
+                  className="w-full select-none rounded-sm bg-zinc-700 hover:bg-zinc-600"
+                >
+                  <div className="md:1/2 flex items-center gap-1 ">
                     {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}
                     <Link
                       href={`/projects/${project.id}`}
                       passHref
-                      className="flex w-full items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between cursor-pointer"
+                      className="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
                     >
                       <div className="w-full sm:w-1/2">
                         <div className="flex w-full items-center justify-start gap-1 overflow-clip">
@@ -652,17 +660,17 @@ const Projects = () => {
                           <p className="truncate text-ellipsis ">
                             {project.name}
                           </p>
-                          {
-                            project.tags.length > 0 && (
-                              <div className="flex gap-1 w-1/2 flex-wrap">
-                                {
-                                  project.tags.map((tag) => (
-                                    <TagBubble tag={tag} key={tag.id} style="text-xs" />
-                                  ))
-                                }
-                              </div>
-                            )
-                          }
+                          {project.tags.length > 0 && (
+                            <div className="flex w-1/2 flex-wrap gap-1">
+                              {project.tags.map((tag) => (
+                                <TagBubble
+                                  tag={tag}
+                                  key={tag.id}
+                                  style="text-xs"
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
                           <div className="w-2/7 flex items-center justify-start gap-1 overflow-clip">
@@ -673,7 +681,7 @@ const Projects = () => {
                             </p>
                           </div>
                           <p>·</p>
-                          <p className="text-sm" >{project.status}</p>
+                          <p className="text-sm">{project.status}</p>
                         </div>
                         {/* <div className="flex gap-1">
                     <p className="truncate rounded-md text-amber-200 bg-zinc-600 px-1 text-center text-sm tracking-wide">
@@ -712,12 +720,12 @@ const Projects = () => {
                             onSelect={() => {
                               copyAddress(
                                 project.address +
-                                " " +
-                                project.city +
-                                " " +
-                                project.state +
-                                " " +
-                                project.zip
+                                  " " +
+                                  project.city +
+                                  " " +
+                                  project.state +
+                                  " " +
+                                  project.zip
                               );
                             }}
                           >
@@ -739,8 +747,8 @@ const Projects = () => {
                                     Delete Project
                                   </Dialog.Title>
                                   <Dialog.Description className="text-white">
-                                    Are you sure you want to delete this project?
-                                    This action cannot be undone.
+                                    Are you sure you want to delete this
+                                    project? This action cannot be undone.
                                   </Dialog.Description>
                                   <div className="mt-4 flex justify-end gap-2">
                                     <Dialog.Close asChild>
@@ -771,7 +779,6 @@ const Projects = () => {
                 </div>
               ))}
             </div>
-
           </div>
         ))}
       {data?.length === 0 && (
@@ -791,38 +798,45 @@ const Projects = () => {
   );
 };
 
-
-
-const ProjectProgress: React.FC<{ project: Project, index: number }> = ({ project, index }) => {
-
-
+const ProjectProgress: React.FC<{ project: Project; index: number }> = ({
+  project,
+  index,
+}) => {
   const [progress, setProgress] = React.useState(0);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setProgress(project.percentComplete), 500 * (index / 3) + 500);
+    const timer = setTimeout(
+      () => setProgress(project.percentComplete),
+      500 * (index / 3) + 500
+    );
     return () => clearTimeout(timer);
   }, []);
 
-
   return (
-    <TooltipComponent content={`${project.name} is ${progress}% Complete`} side="bottom">
+    <TooltipComponent
+      content={`${project.name} is ${progress}% Complete`}
+      side="bottom"
+    >
       {/* {progress === 0 && <div className="relative overflow-hidden rounded-b-sm bg-zinc-700 w-full h-[4px]">
       </div>
       } */}
       <Progress.Root
-        className="relative overflow-hidden rounded-b-sm bg-zinc-700 w-full h-[4px]"
+        className="relative h-[4px] w-full overflow-hidden rounded-b-sm bg-zinc-700"
         style={{
           // Fix overflow clipping in Safari
           // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
-          transform: 'translateZ(0)',
+          transform: "translateZ(0)",
         }}
         value={progress}
       >
-        <Progress.Indicator style={{ transform: `translateX(-${100 - progress}%)` }} className="rounded-md bg-gradient-to-r from-orange-600  to-amber-700  w-full h-full transition-transform duration-[660ms] ease-[cubic-bezier(0.65, 0, 0.35, 1)]" />
+        <Progress.Indicator
+          style={{ transform: `translateX(-${100 - progress}%)` }}
+          className="ease-[cubic-bezier(0.65, 0, 0.35,  1)]  h-full w-full rounded-md bg-gradient-to-r from-orange-600 to-amber-700 transition-transform duration-[660ms]"
+        />
       </Progress.Root>
     </TooltipComponent>
-  )
-}
+  );
+};
 
 const Loader = () => {
   return (
@@ -847,8 +861,9 @@ const PieChartCard: FC<PieChartCardProps> = ({ title, chart }) => {
   return (
     <>
       <div
-        className={`${open ? "h-72 w-1/4" : "h-14 w-1/4"
-          } overflow-hidden rounded bg-zinc-700 transition-all duration-200 `}
+        className={`${
+          open ? "h-72 w-1/4" : "h-14 w-1/4"
+        } overflow-hidden rounded bg-zinc-700 transition-all duration-200 `}
       >
         <div className="flex items-start justify-between p-2">
           <h3 className="text-zinc-400">{title}</h3>
@@ -933,7 +948,7 @@ const DashboardAtAGlance = () => {
 };
 
 type Props = {
-  menuOpen?: boolean
+  menuOpen?: boolean;
   children: ReactNode;
 };
 const SettingsButton: FunctionComponent<Props> = (props) => {
@@ -1191,77 +1206,114 @@ const DashboardPage: NextPage = () => {
   }, [query]);
 
   const setToggle = (open: boolean) => {
-
     setToggleOpen(open);
-  }
+  };
 
   return (
     <>
       <Head>
-        <title>{`Dashboard ${context === "Home" ? "(At a Glance)" : ""} ${context === "Blueprints" ? "(Blueprints)" : ""
-          } ${context === "CrewMembers" ? "(Crew Members)" : ""} ${context === "Projects" ? "(Projects)" : ""
-          } - War Manager`}</title>
+        <title>{`Dashboard ${context === "Home" ? "(At a Glance)" : ""} ${
+          context === "Blueprints" ? "(Blueprints)" : ""
+        } ${context === "CrewMembers" ? "(Crew Members)" : ""} ${
+          context === "Projects" ? "(Projects)" : ""
+        } - War Manager`}</title>
       </Head>
 
       <main className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-800">
         <div className="flex items-start justify-start">
-          <div className="sm:w-12" ></div>
-          <div onMouseEnter={() => { setToggle(true) }} onMouseLeave={() => { setToggle(false) }} className={`hidden md:fixed bg-zinc-800/80 hover:shadow-xl backdrop-blur-sm overflow-x-clip duration-75 transition-all h-screen w-12 hover:w-1/6 flex-col items-start justify-between border-r border-zinc-700 md:flex z-30`}>
-            <div className="flex w-full flex-col justify-start items-center">
+          <div className="sm:w-12"></div>
+          <div
+            onMouseEnter={() => {
+              setToggle(true);
+            }}
+            onMouseLeave={() => {
+              setToggle(false);
+            }}
+            className={`z-30 hidden h-screen w-12 flex-col items-start justify-between overflow-x-clip border-r border-zinc-700 bg-zinc-800/80 backdrop-blur-sm transition-all duration-75 hover:w-1/6 hover:shadow-xl md:fixed md:flex`}
+          >
+            <div className="flex w-full flex-col items-center justify-start">
               <TooltipComponent
                 content="View Overall JR&CO Performance"
                 side="right"
               >
                 <button
-                  onClick={() => { setContext("Home"); void router.push("/dashboard?context=Home") }}
-                  className={`w-full  p-2 font-semibold transition-all flex gap-1 ${toggleOpen ? "justify-start" : "justify-center"} items-center duration-200 ${context === "Home"
-                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                    : " border-b border-zinc-700 hover:bg-zinc-700"
-                    }`}
+                  onClick={() => {
+                    setContext("Home");
+                    void router.push("/dashboard?context=Home");
+                  }}
+                  className={`flex  w-full gap-1 p-2 font-semibold transition-all ${
+                    toggleOpen ? "justify-start" : "justify-center"
+                  } items-center duration-200 ${
+                    context === "Home"
+                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                      : " border-b border-zinc-700 hover:bg-zinc-700"
+                  }`}
                 >
-                  <ChartBarIcon className="w-6 h-6" />
+                  <ChartBarIcon className="h-6 w-6" />
                   {toggleOpen && <p>Glance</p>}
                 </button>
               </TooltipComponent>
               <TooltipComponent content="View all Blueprints" side="right">
                 <button
-                  onClick={() => { setContext("Blueprints"); void router.push("/dashboard?context=Blueprints") }}
-                  className={`w-full  p-2 font-semibold transition-all flex gap-1 ${toggleOpen ? "justify-start" : "justify-center"} items-center duration-200 ${context === "Blueprints"
-                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                    : " border-b border-zinc-700 hover:bg-zinc-700"
-                    }`}
+                  onClick={() => {
+                    setContext("Blueprints");
+                    void router.push("/dashboard?context=Blueprints");
+                  }}
+                  className={`flex  w-full gap-1 p-2 font-semibold transition-all ${
+                    toggleOpen ? "justify-start" : "justify-center"
+                  } items-center duration-200 ${
+                    context === "Blueprints"
+                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                      : " border-b border-zinc-700 hover:bg-zinc-700"
+                  }`}
                 >
-                  <DocumentIcon className="w-6 h-6" />
+                  <DocumentIcon className="h-6 w-6" />
                   {toggleOpen && <p>Blueprints</p>}
                 </button>
               </TooltipComponent>
               <TooltipComponent content="View all Crew Members" side="right">
                 <button
-                  onClick={() => { setContext("CrewMembers"); void router.push("/dashboard?context=CrewMembers") }}
-                  className={`w-full  p-2 font-semibold flex gap-1 ${toggleOpen ? "justify-start" : "justify-center"} items-center transition-all duration-200 ${context === "CrewMembers"
-                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                    : " border-b border-zinc-700 hover:bg-zinc-700"
-                    }`}
+                  onClick={() => {
+                    setContext("CrewMembers");
+                    void router.push("/dashboard?context=CrewMembers");
+                  }}
+                  className={`flex  w-full gap-1 p-2 font-semibold ${
+                    toggleOpen ? "justify-start" : "justify-center"
+                  } items-center transition-all duration-200 ${
+                    context === "CrewMembers"
+                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                      : " border-b border-zinc-700 hover:bg-zinc-700"
+                  }`}
                 >
-                  <UserCircleIcon className="w-6 h-6" />
+                  <UserCircleIcon className="h-6 w-6" />
                   {toggleOpen && <p>Crew</p>}
                 </button>
               </TooltipComponent>
               <TooltipComponent content="View all Projects" side="right">
                 <button
-                  onClick={() => { setContext("Projects"); void router.push("/dashboard?context=Projects") }}
-                  className={`w-full p-2 font-semibold flex gap-1 ${toggleOpen ? "justify-start" : "justify-center"} items-center transition-all duration-200 ${context === "Projects"
-                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                    : " border-b border-zinc-700 hover:bg-zinc-700"
-                    }`}
+                  onClick={() => {
+                    setContext("Projects");
+                    void router.push("/dashboard?context=Projects");
+                  }}
+                  className={`flex w-full gap-1 p-2 font-semibold ${
+                    toggleOpen ? "justify-start" : "justify-center"
+                  } items-center transition-all duration-200 ${
+                    context === "Projects"
+                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                      : " border-b border-zinc-700 hover:bg-zinc-700"
+                  }`}
                 >
-                  <WrenchScrewdriverIcon className="w-6 h-6" />
+                  <WrenchScrewdriverIcon className="h-6 w-6" />
                   {toggleOpen && <p>Projects</p>}
                 </button>
               </TooltipComponent>
             </div>
-            <div className={`flex w-full flex-col ${toggleOpen ? "" : "items-center justify-center"} whitespace-nowrap truncate`}>
-              <SettingsButton menuOpen={toggleOpen} >
+            <div
+              className={`flex w-full flex-col ${
+                toggleOpen ? "" : "items-center justify-center"
+              } truncate whitespace-nowrap`}
+            >
+              <SettingsButton menuOpen={toggleOpen}>
                 <Settings />
               </SettingsButton>
               <TooltipComponent content="Landing Page" side="right">
@@ -1271,7 +1323,7 @@ const DashboardPage: NextPage = () => {
                     href="/"
                   >
                     <LogoComponent />
-                    {toggleOpen && ('War Manager')}
+                    {toggleOpen && "War Manager"}
                   </Link>
                 </div>
               </TooltipComponent>
@@ -1297,7 +1349,8 @@ const DashboardPage: NextPage = () => {
                             {user?.primaryEmailAddress?.emailAddress}
                           </p>
                         </div>
-                      </>)}
+                      </>
+                    )}
                   </div>
                   {toggleOpen && (
                     <TooltipComponent content="Sign Out" side="right">
@@ -1317,7 +1370,7 @@ const DashboardPage: NextPage = () => {
           <div className="flex w-full flex-col gap-2 ">
             {user != null && user != undefined ? (
               <>
-                <div className="h-[95vh] sm:h-auto w-full overflow-y-auto md:h-auto">
+                <div className="h-[95vh] w-full overflow-y-auto sm:h-auto md:h-auto">
                   {context == "Home" && <DashboardAtAGlance />}
                   {context == "Blueprints" && <BlueprintsList />}
                   {context == "CrewMembers" && <CrewMembers />}
@@ -1325,9 +1378,15 @@ const DashboardPage: NextPage = () => {
                 </div>
                 <div className="fixed bottom-4 left-4 flex items-center justify-around gap-1 p-2 md:hidden">
                   <div className="flex items-center justify-start gap-2">
+                    <button
+                      onClick={router.back}
+                      className="TooltipContent flex w-full gap-3 rounded-md bg-zinc-600 p-3 drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800"
+                    >
+                      <ArrowLeftIcon className="h-6 w-6 text-zinc-300" />
+                    </button>
                     <Dialog.Root>
                       <Dialog.Trigger>
-                        <button className="TooltipContent flex w-full gap-3 rounded-md bg-amber-700 p-3 z-40 drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
+                        <button className="TooltipContent z-40 flex w-full gap-3 rounded-md bg-amber-700 p-3 drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
                           <Bars3Icon className="h-6 w-6 text-zinc-300" />
                         </button>
                       </Dialog.Trigger>
@@ -1344,11 +1403,15 @@ const DashboardPage: NextPage = () => {
                           </Dialog.DialogClose>
                           <Dialog.DialogClose>
                             <button
-                              onClick={() => setContext("Home")}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Home"
-                                ? "rounded bg-amber-800 hover:bg-red-700"
-                                : "border-b border-zinc-600 hover:bg-zinc-600"
-                                }`}
+                              onClick={() => {
+                                setContext("Home");
+                                void router.push("/dashboard?context=Home");
+                              }}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                                context === "Home"
+                                  ? "rounded bg-amber-800 hover:bg-red-700"
+                                  : "border-b border-zinc-600 hover:bg-zinc-600"
+                              }`}
                             >
                               Glance
                             </button>
@@ -1356,33 +1419,49 @@ const DashboardPage: NextPage = () => {
 
                           <Dialog.DialogClose>
                             <button
-                              onClick={() => setContext("Blueprints")}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Blueprints"
-                                ? "rounded bg-amber-800 hover:bg-red-700"
-                                : "border-b border-zinc-600 hover:bg-zinc-600"
-                                }`}
+                              onClick={() => {
+                                setContext("Blueprints");
+                                void router.push(
+                                  "/dashboard?context=Blueprints"
+                                );
+                              }}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                                context === "Blueprints"
+                                  ? "rounded bg-amber-800 hover:bg-red-700"
+                                  : "border-b border-zinc-600 hover:bg-zinc-600"
+                              }`}
                             >
                               Blueprints
                             </button>
                           </Dialog.DialogClose>
                           <Dialog.DialogClose>
                             <button
-                              onClick={() => setContext("CrewMembers")}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "CrewMembers"
-                                ? "rounded bg-amber-800 hover:bg-red-700"
-                                : "border-b border-zinc-600 hover:bg-zinc-600"
-                                }`}
+                              onClick={() => {
+                                setContext("CrewMembers");
+                                void router.push(
+                                  "/dashboard?context=CrewMembers"
+                                );
+                              }}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                                context === "CrewMembers"
+                                  ? "rounded bg-amber-800 hover:bg-red-700"
+                                  : "border-b border-zinc-600 hover:bg-zinc-600"
+                              }`}
                             >
                               Crew
                             </button>
                           </Dialog.DialogClose>
                           <Dialog.DialogClose>
                             <button
-                              onClick={() => setContext("Projects")}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Projects"
-                                ? "rounded bg-amber-800 hover:bg-red-700"
-                                : "border-b border-zinc-600 hover:bg-zinc-600 "
-                                }`}
+                              onClick={() => {
+                                setContext("Projects");
+                                void router.push("/dashboard?context=Projects");
+                              }}
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
+                                context === "Projects"
+                                  ? "rounded bg-amber-800 hover:bg-red-700"
+                                  : "border-b border-zinc-600 hover:bg-zinc-600 "
+                              }`}
                             >
                               Projects
                             </button>
