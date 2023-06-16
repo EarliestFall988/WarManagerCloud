@@ -15,7 +15,7 @@ const pusher = new Pusher({
   key: appKey,
   secret: appSecret,
   cluster: appCluster,
-  encrypted: true,
+  encrypted: false,
 });
 
 export const developmentRouter = createTRPCRouter({
