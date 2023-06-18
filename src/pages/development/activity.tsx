@@ -15,7 +15,7 @@ const ActivityPage: NextPage = () => {
   const [text, setText] = useState<string>("");
   const [messages, setMessages] = useState<IMessage[]>([]);
 
-  const { user, isLoaded: userLoaded, isSignedIn } = useUser();
+  const { user, isLoaded: userLoading, isSignedIn } = useUser();
 
   const channelName = "channel";
   const eventName = "event";
@@ -49,7 +49,9 @@ const ActivityPage: NextPage = () => {
     mutate({ message, channel: channelName, event: eventName });
   };
 
-  // if (!user) return <SignInModal redirectUrl="/development/activity" />;
+  if (!isSignedIn) return <SignInModal redirectUrl="/development/activity" />;
+
+  // if (userLoading) return <LoadingPage />;
 
   return (
     <main className="flex min-h-[100vh] items-center justify-center bg-bhall bg-cover bg-center">

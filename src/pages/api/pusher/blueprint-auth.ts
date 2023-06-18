@@ -9,9 +9,6 @@ export default async function handler(
   res: NextApiResponse<ChannelAuthResponse | string>
 ) {
   if (req.method == "POST") {
-
-    return res.status(403).end();
-
     const reqBody = req.body as { socket_id: string; channel_name: string };
     const socket_id = reqBody.socket_id;
     const c_id = reqBody.channel_name;
@@ -29,7 +26,14 @@ export default async function handler(
       return;
     }
 
-    const channelId = result.data;
+    const containsPrivate = result.data.startsWith("private-");
+
+    if (!containsPrivate) {
+      const error = "the result must start with private-";
+      res.status(403).end();
+    }
+
+    const channelId = result.data.replace("private-", "");
     const context = await ctx(req);
 
     if (!context) {
@@ -57,6 +61,9 @@ export default async function handler(
       res.send(JSON.stringify(error));
       return;
     }
+
+    //understand that the user is allowed to access the blueprint
+    // should an access code go out??
 
     const authChannelResponse = pusher.authorizeChannel(socket_id, channelId);
     res.send(authChannelResponse);
