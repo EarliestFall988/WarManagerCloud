@@ -5,19 +5,29 @@ import Pusher from "pusher";
 
 export const GetPusher = () => {
   const pusher = new Pusher({
-    appId: process.env.PUSHER_APP_ID || "",
-    key: process.env.PUSHER_APP_KEY || "",
-    secret: process.env.PUSHER_APP_SECRET || "",
-    cluster: process.env.PUSHER_APP_CLUSTER || "",
+    appId: process.env.NEXT_PUBLIC_PUSHER_APP_ID || "",
+    key: process.env.NEXT_PUBLIC_PUSHER_KEY || "",
+    secret: process.env.NEXT_PUBLIC_PUSHER_SECRET || "",
+    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "",
     useTLS: true,
   });
 
   return pusher;
 };
 
-type userDataType = {
+export type userDataType = {
   id: string;
   user_info: {
+    email: string;
+    name: string;
+    avatar: string;
+  };
+};
+
+
+export type memberInstance = {
+  id: string;
+  info: {
     email: string;
     name: string;
     avatar: string;

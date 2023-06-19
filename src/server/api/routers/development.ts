@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "../trpc";
 import Pusher from "pusher";
 import { env } from "process";
+import { TRPCError } from "@trpc/server";
 
 // Pusher.logToConsole = env.NODE_ENV === "development";
 
@@ -23,20 +24,31 @@ export const developmentRouter = createTRPCRouter({
     .input(
       z.object({
         message: z.string().min(1).max(100),
-        channel: z.string().min(3).max(10),
+        channel: z.string().min(3).max(100),
         event: z.string().min(3).max(10),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      //   console.log("testRouter: sendMessage: input: ", input);
+      console.log("testRouter: sendMessage: input: ", input);
 
-      await pusher
+
+      const result = await pusher
         .trigger(input.channel, input.event, {
           message: input.message,
-        })
+        },
+          {
+            info: "test",
+          }
+        )
         .catch((err) => {
-          //   console.log("testRouter: sendMessage: err: ", err);
+          console.log("testRouter: sendMessage: err: ", err);
+          return new TRPCError({
+            code: "BAD_REQUEST",
+            message: JSON.stringify(err),
+          });
         });
+
+      // console.log("testRouter: sendMessage: result: ", result);
 
       return input.message;
     }),

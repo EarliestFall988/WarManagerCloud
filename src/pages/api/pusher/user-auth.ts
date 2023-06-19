@@ -6,7 +6,7 @@ type body = {
   socket_id: string;
 };
 
-export default async function handler(
+export default async function UserAuthHandler(
   req: NextApiRequest,
   res: NextApiResponse<UserAuthResponse>
 ) {
@@ -34,6 +34,11 @@ export default async function handler(
     }
 
     const authResponse = pusher.authenticateUser(socket_id, userData);
+
+    // authResponse.auth = authResponse.auth.substring(1, authResponse.auth.length - 1);
+    // authResponse.auth = authResponse.auth.replace(/\\/g, "");
+    // console.log("user auth response: ", authResponse)
+
     res.send(authResponse);
   } else {
     res.status(403).end();
