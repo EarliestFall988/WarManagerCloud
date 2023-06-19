@@ -11,6 +11,23 @@ import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
 
 
+type memberWrapper = {
+    id: string,
+    member: memberDetails
+}
+
+type membersObject = {
+    [key: string]: memberDetails
+}
+
+type memberDetails = {
+
+    name: string,
+    email: string,
+    avatar: string
+}
+
+
 const ChannelsTestPage: NextPage = () => {
 
 
@@ -176,16 +193,20 @@ const ChannelsTestPage: NextPage = () => {
     }
 
     const getListOfMembers = () => {
-        if (!members) return [] as memberInstance[];
+        if (!members) return [] as memberWrapper[];
 
-        const membersArray = [] as memberInstance[];
+        const m = members.members as membersObject;
 
-        members.each((member: memberInstance) => {
-            // console.log(member);
-            membersArray.push(member);
-        });
+        const values = Object.keys(m).map((value) => {
+            console.log("value", value)
+            const obj = m[value] as memberDetails;
 
-        return membersArray;
+            return { id: value, member: obj } as memberWrapper;
+        })
+
+        console.log("values", values)
+
+        return values;
     }
 
     return (
@@ -203,8 +224,8 @@ const ChannelsTestPage: NextPage = () => {
                                     {
                                         getListOfMembers().map((m, index) => (
                                             <div key={index} className="text-zinc-200">
-                                                <TooltipComponent side="bottom" content={m.info.email}>
-                                                    <Image src={m.info.avatar} width={32} height={32} alt={`${m.info.email}'s avatar`} className="rounded-full" />
+                                                <TooltipComponent side="bottom" content={m.member.email}>
+                                                    <Image src={m.member.avatar} width={32} height={32} alt={`${m.member.email}'s avatar`} className="rounded-full" />
                                                 </TooltipComponent>
                                             </div>
                                         ))
