@@ -8,9 +8,7 @@ import { type memberInstance } from "~/server/helpers/pusherInstance";
 import Image from "next/image";
 import TooltipComponent from "~/components/Tooltip";
 import SignInModal from "~/components/signInPage";
-import { type Blueprint } from "@prisma/client";
 import { api } from "~/utils/api";
-import { useRouter } from "next/router";
 
 
 const ChannelsTestPage: NextPage = () => {
@@ -249,7 +247,6 @@ const ChannelsTestPage: NextPage = () => {
             </div>
         </main>
     )
-
 }
 
 export default ChannelsTestPage;
