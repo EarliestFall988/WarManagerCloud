@@ -5,7 +5,6 @@ https://cloud.dev.warmanager.net
 
 ## Authors/Contributers
 - Taylor Howell EarliestFall988
-- Andrew Kaiser
 
 
 ## License
