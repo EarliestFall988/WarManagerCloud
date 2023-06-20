@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -57,6 +57,10 @@ const Flow = () => {
 
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
   const reactFlowInstance = useReactFlow();
+
+  useEffect(() => {
+    
+  }, [])
 
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
