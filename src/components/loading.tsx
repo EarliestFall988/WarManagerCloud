@@ -28,3 +28,33 @@ export const LoadingHeader: React.FC<{ title: string, loading: boolean }> = ({ t
     </>
   )
 }
+
+export const SKCubeSpinner = () => (
+  <div className="sk-cube-grid">
+    <div className="sk-cube sk-cube1"></div>
+    <div className="sk-cube sk-cube2"></div>
+    <div className="sk-cube sk-cube3"></div>
+    <div className="sk-cube sk-cube4"></div>
+    <div className="sk-cube sk-cube5"></div>
+    <div className="sk-cube sk-cube6"></div>
+    <div className="sk-cube sk-cube7"></div>
+    <div className="sk-cube sk-cube8"></div>
+    <div className="sk-cube sk-cube9"></div>
+  </div>
+)
+
+
+export const LoadingPageWithHeader: React.FC<{ title: string }> = ({ title }) => {
+
+
+  return (
+    <div className="absolute right-0 top-0 h-screen w-screen bg-black">
+      <div className="flex flex-col w-full items-center min-h-[100vh] justify-center text-center">
+        <SKCubeSpinner />
+        {title &&
+          <p className="font-bold text-zinc-200 fade-y-long">{title}</p>
+        }
+      </div>
+    </div>
+  )
+}

@@ -57,12 +57,8 @@ const Flow = () => {
 
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
   const reactFlowInstance = useReactFlow();
-
-  useEffect(() => {
-    
-  }, [])
-
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);

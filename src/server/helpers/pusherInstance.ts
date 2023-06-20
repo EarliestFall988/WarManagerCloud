@@ -24,26 +24,6 @@ type userDataType = {
   };
 };
 
-export type memberWrapper = {
-  id: string,
-  member: memberDetails
-}
-
-export type membersObject = {
-  [key: string]: memberDetails
-}
-
-export type memberDetails = {
-  name: string,
-  email: string,
-  avatar: string
-}
-
-export type MemberMe = {
-  id: string,
-  info: memberDetails
-}
-
 export const handleAuth = async (req: NextApiRequest) => {
   const { userId } = getAuth(req);
 

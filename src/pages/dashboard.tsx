@@ -1216,7 +1216,7 @@ const DashboardPage: NextPage = () => {
           } - War Manager`}</title>
       </Head>
 
-      <main className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-800">
+      <main className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-900">
 
         <div className="flex items-start justify-start">
           <div className="sm:w-12"></div>

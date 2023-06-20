@@ -1,21 +1,38 @@
-import { RocketLaunchIcon } from "@heroicons/react/24/solid";
-import { type NextPage } from "next";
-import { useCallback, useEffect, useState } from "react";
-import Pusher, { type Members, type Channel } from "pusher-js";
-import { LoadingPage } from "~/components/loading";
-import { useUser } from "@clerk/nextjs";
-import Image from "next/image";
-import TooltipComponent from "~/components/Tooltip";
-import SignInModal from "~/components/signInPage";
-import { api } from "~/utils/api";
-import { GetPusherClient, type MemberMe, type memberDetails, type memberWrapper, type membersObject } from "~/utils/pusherClientUtil";
-import { toast } from "react-hot-toast";
+import type { NextPage } from "next";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-const ChannelsTestPage: NextPage = () => {
+
+import * as Y from "yjs";
+import { IndexeddbPersistence } from 'y-indexeddb'
+import { toast } from "react-hot-toast";
+import { LoadingPage, LoadingPageWithHeader } from "~/components/loading";
+import { GetPusherClient, MemberMe, memberDetails, memberWrapper, membersObject } from "~/utils/pusherClientUtil";
+import type { Channel, Members } from "pusher-js";
+import Pusher from "pusher-js"
+import { useUser } from "@clerk/nextjs";
+import { api } from "~/utils/api";
+import TooltipComponent from "~/components/Tooltip";
+import Image from "next/image";
+import { NewItemPageHeader } from "~/components/NewItemPageHeader";
+import SignInModal from "~/components/signInPage";
+
+
+const YJSPage: NextPage = () => {
+
 
     const { isSignedIn } = useUser();
+
     const id = "clic46tem0004lngsgwtz6upl"
 
+    const [text, setText] = useState("")
+    const [text2, setText2] = useState("")
+
+    //yjs
+    const [doc1, setDoc1] = useState<Y.Doc | null>(null)
+    const [doc2, setDoc2] = useState<Y.Doc | null>(null)
+    const [synced, setSynced] = useState(false)
+
+    //pusher
     const [channelName, setChannelName] = useState<string>(`presence-${id}`);
     const [eventName, setEventName] = useState<string>("client-event");
     const [members, setMembers] = useState<Members | undefined>(undefined);
@@ -26,27 +43,49 @@ const ChannelsTestPage: NextPage = () => {
 
     const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
 
+    const { data: blueprint } = api.blueprints.getOneById.useQuery(
+        {
+            blueprintId: id
+        }
+    )
+
     useEffect(() => {
+
+        const d1 = new Y.Doc();
+        const d2 = new Y.Doc();
 
         const p = GetPusherClient();
         setPusher(p);
-        
-        p.signin(); // sign in the user
-
-        p.connection.bind("connected", () => {
-            // console.log("connected");
+        p.signin();
+        p.connection.bind('connected', () => {
+            console.log("connected");
             handleSubscribe(p);
         });
 
+        setDoc1(d1);
+        setDoc2(d2);
+
+        const browserDB = new IndexeddbPersistence(id, d1)
+
+        browserDB.on('synced', () => {
+            setSynced(true);
+            setText(d1.getArray('array').toArray()[0] as string)
+        })
+
+        // setProvider(p);
+
         return () => {
-            // console.log("unsubscribing");
+            doc1?.destroy();
+            doc2?.destroy();
+
             handleUnsubscribe(p);
             p.disconnect();
         }
     }, [])
 
+
     const updateText = useCallback((data: string) => {
-        setReceivedMessages([...receivedMessages, data]);
+        setReceivedMessages([...receivedMessages, data]); // yjs goes here
     }, [receivedMessages]);
 
     useEffect(() => {
@@ -68,11 +107,31 @@ const ChannelsTestPage: NextPage = () => {
         }
     }, [pusherChannel, receivedMessages, eventName, updateText])
 
-    const { data: blueprint } = api.blueprints.getOneById.useQuery(
-        {
-            blueprintId: id
+
+    const handleSubscribe = (p: Pusher) => {
+
+        // console.log("handleSubscribe")
+
+        if (!channelName || !p) {
+            return;
         }
-    )
+
+        const channel = p.subscribe(channelName);
+
+        channel.bind("pusher:subscription_succeeded", function (members: Members) {
+            setMembers(members);
+            // console.log(`success! ${channelName} connection - members`, members);
+            setPusherChannel(channel);
+            toast.success("Connected! You can now see live changes.")
+        });
+
+        channel.bind("pusher:subscription_error", function (status: number) {
+            console.log(`error! ${channelName} connection - status`, status);
+            setIsError(`Not authorized to view resource. Try signing in.`);
+            // toast.error("Not authorized to view resource. Try signing in.");
+        });
+    }
+
 
     const updateMembers = useCallback(() => {
         setMembers(members);
@@ -135,29 +194,6 @@ const ChannelsTestPage: NextPage = () => {
     }, [pusherChannel, members, updateMembers])
 
 
-    const handleSubscribe = (p: Pusher) => {
-
-        // console.log("handleSubscribe")
-
-        if (!channelName || !p) {
-            return;
-        }
-
-        const channel = p.subscribe(channelName);
-
-        channel.bind("pusher:subscription_succeeded", function (members: Members) {
-            setMembers(members);
-            // console.log(`success! ${channelName} connection - members`, members);
-            setPusherChannel(channel);
-        });
-
-        channel.bind("pusher:subscription_error", function (status: number) {
-            console.log(`error! ${channelName} connection - status`, status);
-            setIsError(`Not authorized to view resource. Try signing in.`);
-            // toast.error("Not authorized to view resource. Try signing in.");
-        });
-    }
-
     const handleUnsubscribe = (p: Pusher) => {
         if (!channelName || !p) {
             return;
@@ -175,12 +211,35 @@ const ChannelsTestPage: NextPage = () => {
         // console.log("sending message", message)
 
         pusherChannel.trigger(eventName, message);
-        updateText(message);
+        updateText(message); // yjs trigger here!!
     }, [pusherChannel, eventName, message, updateText])
 
 
-    if (!pusherChannel && !error && !blueprint) {
-        return <LoadingPage />
+    // if (true) {
+    //     return <LoadingPageWithHeader title="syncing" />
+    // }
+
+    if ((!pusherChannel || !pusher || !members || !blueprint || !synced) && !error) {
+
+        if (!synced) {
+            return <LoadingPageWithHeader title={""} />
+        }
+
+        if (!blueprint) {
+            return <LoadingPageWithHeader title={""} />
+        }
+
+        if (!pusher) {
+            return <LoadingPageWithHeader title={""} />
+        }
+
+        if (!pusherChannel) {
+            return <LoadingPageWithHeader title={""} />
+        }
+
+        if (!members) {
+            return <LoadingPageWithHeader title={""} />
+        }
     }
 
     if (error && isSignedIn) {
@@ -241,67 +300,63 @@ const ChannelsTestPage: NextPage = () => {
         return m;
     }
 
-    return (
-        <main className="bg-zinc-900 min-h-[100vh] p-2 flex ">
-            <div className="bg-zinc-800 flex flex-col justify-between p-2 rounded gap-2 w-full">
 
-                <div className="flex flex-col justify-between items-start gap-1">
-                    <div className="flex gap-2 whitespace-nowrap border-b border-zinc-700 w-full justify-between" >
-                        <h1 className="text-zinc-200 text-lg font-semibold">Messages</h1>
-                        <p className="text-zinc-200">{blueprint?.name}</p>
+    if (doc1 && doc2) {
+
+        doc1.on('update', update => {
+            Y.applyUpdate(doc2, update)
+            // console.log("doc1", doc1.getArray('array').toArray())
+            setText(doc1.getArray('array').toArray()[0] as string)
+        })
+
+        doc2.on('update', update => {
+            Y.applyUpdate(doc1, update)
+            // console.log("doc2", doc2.getArray('array').toArray())
+            setText2(doc2.getArray('array').toArray()[0] as string)
+        })
+    }
+
+    const callUpdate = (value: string) => {
+        // console.log("before", value);
+        doc1?.getArray('array').insert(0, [value])
+        setText(value);
+    }
+
+
+    return (
+        <main className="min-h-[100vh] bg-zinc-900 justify-start items-start flex flex-col gap-2">
+            <NewItemPageHeader title="YJS Test" />
+            <div className="flex flex-col gap-4 w-full md:w-1/2 mx-auto bg-zinc-800 p-2 rounded" >
+                <div className="flex justify-center w-1/2" >
+                    <div className="overflow-hidden w-full bg-zinc-800 border-b border-zinc-700 p-1">
                         {
                             getListOfMembers().length > 0 && (
-                                <div className="flex gap-2 justify-center items-center p-2">
-                                    <p className="text-zinc-200">Members:</p>
+                                <div className="flex gap-2 justify-start items-center">
                                     {
                                         getListOfMembers().map((m, index) => (
-
-                                            <div key={index} className={`text-zinc-200 ${getMyData()?.id == m?.id ? "bg-amber-600 rounded-full p-[3px]" : (m != null ? "p-[3px] rounded-full bg-zinc-500" : "")} `}>
+                                            <div key={index} className={`text-zinc-200 ${getMyData()?.id == m?.id ? "" : (m != null ? "" : "")} `}>
                                                 <TooltipComponent side="bottom" content={`${getMyData()?.id == m?.id ? `${m != null ? m.member.email : ""} (Me)` : (m != null ? m.member.email : "")}`}>
-                                                    <Image src={m?.member.avatar || ""} width={32} height={32} alt={`${m != null ? m.member.email : ""}'s avatar`} className="rounded-full" />
+                                                    <Image src={m?.member.avatar || ""} width={32} height={32} alt={`${m != null ? m.member.email : ""}'s avatar`} className="rounded-md" />
                                                 </TooltipComponent>
                                             </div>
-
                                         ))
                                     }
                                 </div>
                             )
                         }
                     </div>
-                    <div>
-                        {
-                            receivedMessages.length > 0 && (
-                                receivedMessages.map((message, index) => (
-                                    <p key={index} className="text-zinc-200">{message}</p>
-                                ))
-                            )
-                        }
-                        {
-                            receivedMessages.length === 0 && (
-                                <p className="text-zinc-200">No messages received</p>
-                            )
-                        }
-                    </div>
                 </div>
-                <div className="flex justify-start gap-2 w-full">
-                    <div className="flex flex-col gap-2 w-1/2" >
-                        <input type="text" value={channelName} onChange={(e) => setChannelName(e.target.value)} placeholder="channel name" className="rounded px-1 bg-zinc-700 border border-zinc-600 w-full hover:border-zinc-500 focus:ring-1 focus:ring-amber-700 outline-none text-zinc-200" />
-                        <input type="text" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="event name" className="rounded px-1 bg-zinc-700 border border-zinc-600 w-full hover:border-zinc-500 focus:ring-1 focus:ring-amber-700 outline-none text-zinc-200" />
-                        <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="message" className="rounded px-1 bg-zinc-700 border border-zinc-600 w-full hover:border-zinc-500 focus:ring-1 focus:ring-amber-700 outline-none text-zinc-200" />
-                        <button className="rounded px-1 bg-amber-700 w-full flex items-center justify-center p-1 outline-none text-zinc-200" onClick={() => { handleSendMessage() }}>
-                            <RocketLaunchIcon className="h-5 w-5 text-zinc-50" />
-                        </button>
-                    </div>
-                    <div className="flex flex-col gap-2 rounded w-1/3" >
-                        <p className="text-zinc-200">Channel: {channelName}</p>
-                        <p className="text-zinc-200">Event: {eventName}</p>
-                        <p>Pusher: {pusher ? "connected" : "disconnected"}</p>
-                        <p>Socket Connection: {pusherChannel ? "connected" : "disconnected"}</p>
-                    </div>
+                <div>
+                    <h3 >Edit Document</h3>
+                    <textarea value={text} onChange={(e) => { callUpdate(e.currentTarget.value) }} className="rounded p-2 bg-zinc-700 border-zinc-600 border w-1/2">
+                    </textarea>
                 </div>
+
+                {/* <textarea value={text2} onChange={(e) => { callUpdate2(e.currentTarget.value) }} className="rounded p-2 bg-zinc-700 border-zinc-600 border w-1/2">
+                </textarea> */}
             </div>
         </main>
     )
 }
 
-export default ChannelsTestPage;
+export default YJSPage;
