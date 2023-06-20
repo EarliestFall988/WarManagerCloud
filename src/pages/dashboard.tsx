@@ -720,12 +720,12 @@ const Projects = () => {
                             onSelect={() => {
                               copyAddress(
                                 project.address +
-                                  " " +
-                                  project.city +
-                                  " " +
-                                  project.state +
-                                  " " +
-                                  project.zip
+                                " " +
+                                project.city +
+                                " " +
+                                project.state +
+                                " " +
+                                project.zip
                               );
                             }}
                           >
@@ -861,9 +861,8 @@ const PieChartCard: FC<PieChartCardProps> = ({ title, chart }) => {
   return (
     <>
       <div
-        className={`${
-          open ? "h-72 w-1/4" : "h-14 w-1/4"
-        } overflow-hidden rounded bg-zinc-700 transition-all duration-200 `}
+        className={`${open ? "h-72 w-1/4" : "h-14 w-1/4"
+          } overflow-hidden rounded bg-zinc-700 transition-all duration-200 `}
       >
         <div className="flex items-start justify-between p-2">
           <h3 className="text-zinc-400">{title}</h3>
@@ -1212,161 +1211,153 @@ const DashboardPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{`Dashboard ${context === "Home" ? "(At a Glance)" : ""} ${
-          context === "Blueprints" ? "(Blueprints)" : ""
-        } ${context === "CrewMembers" ? "(Crew Members)" : ""} ${
-          context === "Projects" ? "(Projects)" : ""
-        } - War Manager`}</title>
+        <title>{`Dashboard ${context === "Home" ? "(At a Glance)" : ""} ${context === "Blueprints" ? "(Blueprints)" : ""
+          } ${context === "CrewMembers" ? "(Crew Members)" : ""} ${context === "Projects" ? "(Projects)" : ""
+          } - War Manager`}</title>
       </Head>
 
       <main className="min-w-screen min-h-screen overflow-x-hidden bg-zinc-800">
+
         <div className="flex items-start justify-start">
           <div className="sm:w-12"></div>
-          <div
-            onMouseEnter={() => {
-              setToggle(true);
-            }}
-            onMouseLeave={() => {
-              setToggle(false);
-            }}
-            className={`z-30 hidden h-screen w-12 flex-col items-start justify-between overflow-x-clip border-r border-zinc-700 bg-zinc-800/80 backdrop-blur-sm transition-all duration-75 hover:w-1/6 hover:shadow-xl md:fixed md:flex`}
-          >
-            <div className="flex w-full flex-col items-center justify-start">
-              <TooltipComponent
-                content="View Overall JR&CO Performance"
-                side="right"
-              >
-                <button
-                  onClick={() => {
-                    setContext("Home");
-                    void router.push("/dashboard?context=Home");
-                  }}
-                  className={`flex  w-full gap-1 p-2 font-semibold transition-all ${
-                    toggleOpen ? "justify-start" : "justify-center"
-                  } items-center duration-200 ${
-                    context === "Home"
-                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                      : " border-b border-zinc-700 hover:bg-zinc-700"
-                  }`}
-                >
-                  <ChartBarIcon className="h-6 w-6" />
-                  {toggleOpen && <p>Glance</p>}
-                </button>
-              </TooltipComponent>
-              <TooltipComponent content="View all Blueprints" side="right">
-                <button
-                  onClick={() => {
-                    setContext("Blueprints");
-                    void router.push("/dashboard?context=Blueprints");
-                  }}
-                  className={`flex  w-full gap-1 p-2 font-semibold transition-all ${
-                    toggleOpen ? "justify-start" : "justify-center"
-                  } items-center duration-200 ${
-                    context === "Blueprints"
-                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                      : " border-b border-zinc-700 hover:bg-zinc-700"
-                  }`}
-                >
-                  <DocumentIcon className="h-6 w-6" />
-                  {toggleOpen && <p>Blueprints</p>}
-                </button>
-              </TooltipComponent>
-              <TooltipComponent content="View all Crew Members" side="right">
-                <button
-                  onClick={() => {
-                    setContext("CrewMembers");
-                    void router.push("/dashboard?context=CrewMembers");
-                  }}
-                  className={`flex  w-full gap-1 p-2 font-semibold ${
-                    toggleOpen ? "justify-start" : "justify-center"
-                  } items-center transition-all duration-200 ${
-                    context === "CrewMembers"
-                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                      : " border-b border-zinc-700 hover:bg-zinc-700"
-                  }`}
-                >
-                  <UserCircleIcon className="h-6 w-6" />
-                  {toggleOpen && <p>Crew</p>}
-                </button>
-              </TooltipComponent>
-              <TooltipComponent content="View all Projects" side="right">
-                <button
-                  onClick={() => {
-                    setContext("Projects");
-                    void router.push("/dashboard?context=Projects");
-                  }}
-                  className={`flex w-full gap-1 p-2 font-semibold ${
-                    toggleOpen ? "justify-start" : "justify-center"
-                  } items-center transition-all duration-200 ${
-                    context === "Projects"
-                      ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
-                      : " border-b border-zinc-700 hover:bg-zinc-700"
-                  }`}
-                >
-                  <WrenchScrewdriverIcon className="h-6 w-6" />
-                  {toggleOpen && <p>Projects</p>}
-                </button>
-              </TooltipComponent>
-            </div>
+          {user && (
             <div
-              className={`flex w-full flex-col ${
-                toggleOpen ? "" : "items-center justify-center"
-              } truncate whitespace-nowrap`}
+              onMouseEnter={() => {
+                setToggle(true);
+              }}
+              onMouseLeave={() => {
+                setToggle(false);
+              }}
+              className={`z-30 hidden h-screen w-12 flex-col items-start justify-between overflow-x-clip border-r border-zinc-700 bg-zinc-800/80 backdrop-blur-sm transition-all duration-75 hover:w-1/6 hover:shadow-xl md:fixed md:flex`}
             >
-              <SettingsButton menuOpen={toggleOpen}>
-                <Settings />
-              </SettingsButton>
-              <TooltipComponent content="Landing Page" side="right">
-                <div className="border-b border-zinc-700">
-                  <Link
-                    className="flex gap-2 p-2 transition-all duration-200 hover:bg-zinc-700"
-                    href="/"
+              <div className="flex w-full flex-col items-center justify-start">
+                <TooltipComponent
+                  content="View Overall JR&CO Performance"
+                  side="right"
+                >
+                  <button
+                    onClick={() => {
+                      setContext("Home");
+                      void router.push("/dashboard?context=Home");
+                    }}
+                    className={`flex  w-full gap-1 p-2 font-semibold transition-all ${toggleOpen ? "justify-start" : "justify-center"
+                      } items-center duration-200 ${context === "Home"
+                        ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                        : " border-b border-zinc-700 hover:bg-zinc-700"
+                      }`}
                   >
-                    <LogoComponent />
-                    {toggleOpen && "War Manager"}
-                  </Link>
-                </div>
-              </TooltipComponent>
+                    <ChartBarIcon className="h-6 w-6" />
+                    {toggleOpen && <p>Glance</p>}
+                  </button>
+                </TooltipComponent>
+                <TooltipComponent content="View all Blueprints" side="right">
+                  <button
+                    onClick={() => {
+                      setContext("Blueprints");
+                      void router.push("/dashboard?context=Blueprints");
+                    }}
+                    className={`flex  w-full gap-1 p-2 font-semibold transition-all ${toggleOpen ? "justify-start" : "justify-center"
+                      } items-center duration-200 ${context === "Blueprints"
+                        ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                        : " border-b border-zinc-700 hover:bg-zinc-700"
+                      }`}
+                  >
+                    <DocumentIcon className="h-6 w-6" />
+                    {toggleOpen && <p>Blueprints</p>}
+                  </button>
+                </TooltipComponent>
+                <TooltipComponent content="View all Crew Members" side="right">
+                  <button
+                    onClick={() => {
+                      setContext("CrewMembers");
+                      void router.push("/dashboard?context=CrewMembers");
+                    }}
+                    className={`flex  w-full gap-1 p-2 font-semibold ${toggleOpen ? "justify-start" : "justify-center"
+                      } items-center transition-all duration-200 ${context === "CrewMembers"
+                        ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                        : " border-b border-zinc-700 hover:bg-zinc-700"
+                      }`}
+                  >
+                    <UserCircleIcon className="h-6 w-6" />
+                    {toggleOpen && <p>Crew</p>}
+                  </button>
+                </TooltipComponent>
+                <TooltipComponent content="View all Projects" side="right">
+                  <button
+                    onClick={() => {
+                      setContext("Projects");
+                      void router.push("/dashboard?context=Projects");
+                    }}
+                    className={`flex w-full gap-1 p-2 font-semibold ${toggleOpen ? "justify-start" : "justify-center"
+                      } items-center transition-all duration-200 ${context === "Projects"
+                        ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                        : " border-b border-zinc-700 hover:bg-zinc-700"
+                      }`}
+                  >
+                    <WrenchScrewdriverIcon className="h-6 w-6" />
+                    {toggleOpen && <p>Projects</p>}
+                  </button>
+                </TooltipComponent>
+              </div>
+              <div
+                className={`flex w-full flex-col ${toggleOpen ? "" : "items-center justify-center"
+                  } truncate whitespace-nowrap`}
+              >
+                <SettingsButton menuOpen={toggleOpen}>
+                  <Settings />
+                </SettingsButton>
+                <TooltipComponent content="Landing Page" side="right">
+                  <div className="border-b border-zinc-700">
+                    <Link
+                      className="flex gap-2 p-2 transition-all duration-200 hover:bg-zinc-700"
+                      href="/"
+                    >
+                      <LogoComponent />
+                      {toggleOpen && "War Manager"}
+                    </Link>
+                  </div>
+                </TooltipComponent>
 
-              {user != null && (
-                <div className="flex">
-                  <div className="flex w-5/6 items-center gap-2 p-2 transition-all duration-200">
-                    {/* <Image
+                {user != null && (
+                  <div className="flex">
+                    <div className="flex w-5/6 items-center gap-2 p-2 transition-all duration-200">
+                      {/* <Image
                       src={user?.profileImageUrl}
                       width={40}
                       height={40}
                       alt={` ${user?.fullName || "unknown"}'s picture'`}
                       className="rounded-full"
                     /> */}
-                    <UserButton />
+                      <UserButton />
+                      {toggleOpen && (
+                        <>
+                          <div className="flex flex-col md:w-4/6 xl:w-5/6 ">
+                            <p className="w-full truncate font-semibold md:text-sm">
+                              {user?.fullName}
+                            </p>
+                            <p className="w-full truncate text-sm text-zinc-400 md:text-xs">
+                              {user?.primaryEmailAddress?.emailAddress}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
                     {toggleOpen && (
-                      <>
-                        <div className="flex flex-col md:w-4/6 xl:w-5/6 ">
-                          <p className="w-full truncate font-semibold md:text-sm">
-                            {user?.fullName}
-                          </p>
-                          <p className="w-full truncate text-sm text-zinc-400 md:text-xs">
-                            {user?.primaryEmailAddress?.emailAddress}
-                          </p>
+                      <TooltipComponent content="Sign Out" side="right">
+                        <div className="h-full w-full border-l border-zinc-700">
+                          <SignOutButton>
+                            <div className="duration 200 flex h-full w-full cursor-pointer items-center justify-center transition-all hover:bg-zinc-700">
+                              <ArrowRightOnRectangleIcon className="h-6 w-6 text-zinc-100" />
+                            </div>
+                          </SignOutButton>
                         </div>
-                      </>
+                      </TooltipComponent>
                     )}
                   </div>
-                  {toggleOpen && (
-                    <TooltipComponent content="Sign Out" side="right">
-                      <div className="h-full w-full border-l border-zinc-700">
-                        <SignOutButton>
-                          <div className="duration 200 flex h-full w-full cursor-pointer items-center justify-center transition-all hover:bg-zinc-700">
-                            <ArrowRightOnRectangleIcon className="h-6 w-6 text-zinc-100" />
-                          </div>
-                        </SignOutButton>
-                      </div>
-                    </TooltipComponent>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          )}
           <div className="flex w-full flex-col gap-2 ">
             {user != null && user != undefined ? (
               <>
@@ -1407,11 +1398,10 @@ const DashboardPage: NextPage = () => {
                                 setContext("Home");
                                 void router.push("/dashboard?context=Home");
                               }}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                                context === "Home"
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Home"
                                   ? "rounded bg-amber-800 hover:bg-red-700"
                                   : "border-b border-zinc-600 hover:bg-zinc-600"
-                              }`}
+                                }`}
                             >
                               Glance
                             </button>
@@ -1425,11 +1415,10 @@ const DashboardPage: NextPage = () => {
                                   "/dashboard?context=Blueprints"
                                 );
                               }}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                                context === "Blueprints"
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Blueprints"
                                   ? "rounded bg-amber-800 hover:bg-red-700"
                                   : "border-b border-zinc-600 hover:bg-zinc-600"
-                              }`}
+                                }`}
                             >
                               Blueprints
                             </button>
@@ -1442,11 +1431,10 @@ const DashboardPage: NextPage = () => {
                                   "/dashboard?context=CrewMembers"
                                 );
                               }}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                                context === "CrewMembers"
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "CrewMembers"
                                   ? "rounded bg-amber-800 hover:bg-red-700"
                                   : "border-b border-zinc-600 hover:bg-zinc-600"
-                              }`}
+                                }`}
                             >
                               Crew
                             </button>
@@ -1457,11 +1445,10 @@ const DashboardPage: NextPage = () => {
                                 setContext("Projects");
                                 void router.push("/dashboard?context=Projects");
                               }}
-                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${
-                                context === "Projects"
+                              className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Projects"
                                   ? "rounded bg-amber-800 hover:bg-red-700"
                                   : "border-b border-zinc-600 hover:bg-zinc-600 "
-                              }`}
+                                }`}
                             >
                               Projects
                             </button>
