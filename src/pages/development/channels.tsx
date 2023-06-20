@@ -11,10 +11,6 @@ import { api } from "~/utils/api";
 import type { MemberMe, memberDetails, memberWrapper, membersObject } from "~/server/helpers/pusherInstance";
 import { toast } from "react-hot-toast";
 
-
-// const removeNulls = <S>(value: S | undefined): value is S => value != null;
-// type NoUndefinedField<T> = { [P in keyof T]-?: NoUndefinedField<NonNullable<T[P]>> };
-
 const ChannelsTestPage: NextPage = () => {
 
 
@@ -30,7 +26,6 @@ const ChannelsTestPage: NextPage = () => {
     const [error, setIsError] = useState<string | null>(null);
 
     const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
-
 
 
     useEffect(() => {
@@ -170,16 +165,6 @@ const ChannelsTestPage: NextPage = () => {
             setIsError(`Not authorized to view resource. Try signing in.`);
             // toast.error("Not authorized to view resource. Try signing in.");
         });
-
-        // channel.bind("pusher:member_added", (member: Members) => {
-        //     // console.log(member);
-        //     // setMembers(member);
-        // });
-
-        // channel.bind("pusher:member_removed", (member: Members) => {
-        //     // console.log(member);
-        //     // setMembers(member);
-        // });
     }
 
     const handleUnsubscribe = (p: Pusher) => {
