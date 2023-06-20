@@ -34,10 +34,14 @@ export type membersObject = {
 }
 
 export type memberDetails = {
-
   name: string,
   email: string,
   avatar: string
+}
+
+export type MemberMe = {
+  id: string,
+  info: memberDetails
 }
 
 export const handleAuth = async (req: NextApiRequest) => {

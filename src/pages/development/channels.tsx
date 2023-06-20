@@ -8,7 +8,12 @@ import Image from "next/image";
 import TooltipComponent from "~/components/Tooltip";
 import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
-import type { memberDetails, memberWrapper, membersObject } from "~/server/helpers/pusherInstance";
+import type { MemberMe, memberDetails, memberWrapper, membersObject } from "~/server/helpers/pusherInstance";
+import { toast } from "react-hot-toast";
+
+
+// const removeNulls = <S>(value: S | undefined): value is S => value != null;
+// type NoUndefinedField<T> = { [P in keyof T]-?: NoUndefinedField<NonNullable<T[P]>> };
 
 const ChannelsTestPage: NextPage = () => {
 
@@ -90,6 +95,59 @@ const ChannelsTestPage: NextPage = () => {
         }
     )
 
+    useEffect(() => {
+
+        if (pusherChannel && pusherChannel.bind) {
+
+
+            pusherChannel.unbind("pusher:member_added");
+
+            pusherChannel.bind("pusher:member_added", (data: MemberMe) => {
+                // console.log("data", data);
+                members?.addMember(data)
+                console.log(data);
+                toast.loading(`${data.info.name} joining...`,
+                    {
+                        duration: 3000,
+                    }
+                )
+                // console.log("added member", members);
+            })
+        }
+
+        return () => {
+            if (pusherChannel)
+                pusherChannel.unbind("pusher:member_added");
+        }
+    }, [pusherChannel, receivedMessages, updateText, members])
+
+
+    useEffect(() => {
+
+        if (pusherChannel && pusherChannel.bind) {
+
+
+            pusherChannel.unbind("pusher:member_removed");
+
+            pusherChannel.bind("pusher:member_removed", (data: MemberMe) => {
+                // console.log("data", data);
+                members?.removeMember(data);
+                toast.loading(`${data.info.name} leaving... `,
+                    {
+                        duration: 3000,
+                    }
+                )
+                // console.log("removed member", members);
+            })
+        }
+
+        return () => {
+            if (pusherChannel)
+                pusherChannel.unbind("pusher:member_removed");
+        }
+    }, [pusherChannel, receivedMessages, members, updateText])
+
+
 
     const handleSubscribe = (p: Pusher) => {
 
@@ -103,24 +161,25 @@ const ChannelsTestPage: NextPage = () => {
 
         channel.bind("pusher:subscription_succeeded", function (members: Members) {
             setMembers(members);
-            console.log(`success! ${channelName} connection - members`, members);
+            // console.log(`success! ${channelName} connection - members`, members);
             setPusherChannel(channel);
         });
 
         channel.bind("pusher:subscription_error", function (status: number) {
             console.log(`error! ${channelName} connection - status`, status);
             setIsError(`Not authorized to view resource. Try signing in.`);
+            // toast.error("Not authorized to view resource. Try signing in.");
         });
 
-        channel.bind("pusher:member_added", (member: Members) => {
-            console.log(member);
-            // setMembers(member);
-        });
+        // channel.bind("pusher:member_added", (member: Members) => {
+        //     // console.log(member);
+        //     // setMembers(member);
+        // });
 
-        channel.bind("pusher:member_removed", (member: Members) => {
-            console.log(member);
-            // setMembers(member);
-        });
+        // channel.bind("pusher:member_removed", (member: Members) => {
+        //     // console.log(member);
+        //     // setMembers(member);
+        // });
     }
 
     const handleUnsubscribe = (p: Pusher) => {
@@ -167,21 +226,43 @@ const ChannelsTestPage: NextPage = () => {
         )
     }
 
+
+
     const getListOfMembers = () => {
         if (!members) return [] as memberWrapper[];
+
+        // console.log(members);
 
         const m = members.members as membersObject;
 
         const values = Object.keys(m).map((value) => {
-            console.log("value", value)
+            // console.log("value", value)
             const obj = m[value] as memberDetails;
+            if (value !== undefined && obj !== undefined)
+                return { id: value, member: obj } as memberWrapper | null; // <- leave this null alone. JS/TS doesn't remove the null/undefined in a filter
 
-            return { id: value, member: obj } as memberWrapper;
+            return null;
         })
 
-        console.log("values", values)
+
+        values.flatMap((value) => {
+            // console.log("flatmapping", value)
+            if (value !== null)
+                return [value];
+            else return [];
+        })
+
+        // console.log("returning member values", values)
 
         return values;
+    }
+
+    const getMyData = () => {
+        if (!members) return null;
+
+        const m = members.me as MemberMe;
+
+        return m;
     }
 
     return (
@@ -198,11 +279,13 @@ const ChannelsTestPage: NextPage = () => {
                                     <p className="text-zinc-200">Members:</p>
                                     {
                                         getListOfMembers().map((m, index) => (
-                                            <div key={index} className="text-zinc-200">
-                                                <TooltipComponent side="bottom" content={m.member.email}>
-                                                    <Image src={m.member.avatar} width={32} height={32} alt={`${m.member.email}'s avatar`} className="rounded-full" />
+
+                                            <div key={index} className={`text-zinc-200 ${getMyData()?.id == m?.id ? "bg-amber-600 rounded-full p-[3px]" : (m != null ? "p-[3px] rounded-full bg-zinc-500" : "")} `}>
+                                                <TooltipComponent side="bottom" content={`${getMyData()?.id == m?.id ? `${m != null ? m.member.email : ""} (Me)` : (m != null ? m.member.email : "")}`}>
+                                                    <Image src={m?.member.avatar || ""} width={32} height={32} alt={`${m != null ? m.member.email : ""}'s avatar`} className="rounded-full" />
                                                 </TooltipComponent>
                                             </div>
+
                                         ))
                                     }
                                 </div>
