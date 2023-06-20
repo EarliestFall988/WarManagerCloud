@@ -4,38 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 import Pusher, { type Members, type Channel } from "pusher-js";
 import { LoadingPage } from "~/components/loading";
 import { useUser } from "@clerk/nextjs";
-import { type memberInstance } from "~/server/helpers/pusherInstance";
 import Image from "next/image";
 import TooltipComponent from "~/components/Tooltip";
 import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
-
-
-type memberWrapper = {
-    id: string,
-    member: memberDetails
-}
-
-type membersObject = {
-    [key: string]: memberDetails
-}
-
-type memberDetails = {
-
-    name: string,
-    email: string,
-    avatar: string
-}
-
+import type { memberDetails, memberWrapper, membersObject } from "~/server/helpers/pusherInstance";
 
 const ChannelsTestPage: NextPage = () => {
 
 
     const { isSignedIn } = useUser();
     const id = "clic46tem0004lngsgwtz6upl"
-
-
-    // console.log("id", id)
 
     const [channelName, setChannelName] = useState<string>(`presence-${id}`);
     const [eventName, setEventName] = useState<string>("client-event");
@@ -50,11 +29,6 @@ const ChannelsTestPage: NextPage = () => {
 
 
     useEffect(() => {
-
-        // if (!SignedIn) return;
-
-
-        // console.log("signed in")
 
         const p = new Pusher("848a626dcb2145f64ca1", {
             cluster: "us2",
@@ -102,7 +76,6 @@ const ChannelsTestPage: NextPage = () => {
                 // console.log("data", data);
                 updateText(data)
             })
-
         }
 
         return () => {
@@ -140,11 +113,13 @@ const ChannelsTestPage: NextPage = () => {
         });
 
         channel.bind("pusher:member_added", (member: Members) => {
-            setMembers(member);
+            console.log(member);
+            // setMembers(member);
         });
 
         channel.bind("pusher:member_removed", (member: Members) => {
-            setMembers(member);
+            console.log(member);
+            // setMembers(member);
         });
     }
 

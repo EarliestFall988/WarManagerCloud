@@ -15,7 +15,7 @@ export const GetPusher = () => {
   return pusher;
 };
 
-export type userDataType = {
+type userDataType = {
   id: string;
   user_info: {
     email: string;
@@ -24,15 +24,21 @@ export type userDataType = {
   };
 };
 
+export type memberWrapper = {
+  id: string,
+  member: memberDetails
+}
 
-export type memberInstance = {
-  id: string;
-  info: {
-    email: string;
-    name: string;
-    avatar: string;
-  };
-};
+export type membersObject = {
+  [key: string]: memberDetails
+}
+
+export type memberDetails = {
+
+  name: string,
+  email: string,
+  avatar: string
+}
 
 export const handleAuth = async (req: NextApiRequest) => {
   const { userId } = getAuth(req);
