@@ -1,14 +1,14 @@
 import type { NextPage } from "next";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 
 import * as Y from "yjs";
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { toast } from "react-hot-toast";
-import { LoadingPage, LoadingPageWithHeader } from "~/components/loading";
-import { GetPusherClient, MemberMe, memberDetails, memberWrapper, membersObject } from "~/utils/pusherClientUtil";
+import { LoadingPageWithHeader } from "~/components/loading";
+import { GetPusherClient, type MemberMe, type memberDetails, type memberWrapper, type membersObject } from "~/utils/pusherClientUtil";
 import type { Channel, Members } from "pusher-js";
-import Pusher from "pusher-js"
+import type Pusher from "pusher-js"
 import { useUser } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 import TooltipComponent from "~/components/Tooltip";
@@ -25,11 +25,9 @@ const YJSPage: NextPage = () => {
     const id = "clic46tem0004lngsgwtz6upl"
 
     const [text, setText] = useState("")
-    const [text2, setText2] = useState("")
 
     //yjs
     const [doc1, setDoc1] = useState<Y.Doc | null>(null)
-    const [doc2, setDoc2] = useState<Y.Doc | null>(null)
     const [synced, setSynced] = useState(false)
 
     //pusher
@@ -52,7 +50,6 @@ const YJSPage: NextPage = () => {
     useEffect(() => {
 
         const d1 = new Y.Doc();
-        const d2 = new Y.Doc();
 
         const p = GetPusherClient();
         setPusher(p);
@@ -63,7 +60,6 @@ const YJSPage: NextPage = () => {
         });
 
         setDoc1(d1);
-        setDoc2(d2);
 
         const browserDB = new IndexeddbPersistence(id, d1)
 
@@ -76,7 +72,6 @@ const YJSPage: NextPage = () => {
 
         return () => {
             doc1?.destroy();
-            doc2?.destroy();
 
             handleUnsubscribe(p);
             p.disconnect();
@@ -301,18 +296,12 @@ const YJSPage: NextPage = () => {
     }
 
 
-    if (doc1 && doc2) {
+    if (doc1) {
 
-        doc1.on('update', update => {
-            Y.applyUpdate(doc2, update)
+        doc1.on('update', _update => { //remove the underscore
+            // Y.applyUpdate(doc2, update)
             // console.log("doc1", doc1.getArray('array').toArray())
             setText(doc1.getArray('array').toArray()[0] as string)
-        })
-
-        doc2.on('update', update => {
-            Y.applyUpdate(doc1, update)
-            // console.log("doc2", doc2.getArray('array').toArray())
-            setText2(doc2.getArray('array').toArray()[0] as string)
         })
     }
 

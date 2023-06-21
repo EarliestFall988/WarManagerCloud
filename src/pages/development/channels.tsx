@@ -1,7 +1,8 @@
 import { RocketLaunchIcon } from "@heroicons/react/24/solid";
 import { type NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
-import Pusher, { type Members, type Channel } from "pusher-js";
+import { type Members, type Channel } from "pusher-js";
+import type Pusher from "pusher-js"
 import { LoadingPage } from "~/components/loading";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
