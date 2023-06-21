@@ -69,10 +69,9 @@ const YJSPage: NextPage = () => {
         // setProvider(p);
 
         return () => {
-            doc?.destroy();
-
             handleUnsubscribe(p);
             p.disconnect();
+            doc?.destroy();
         }
     }, [])
 
@@ -90,9 +89,12 @@ const YJSPage: NextPage = () => {
             pusherChannel.unbind(eventName);
 
             pusherChannel.bind(eventName, (data: Uint8Array) => {
-                // console.log("data", data);
-                if (doc)
-                    Y.applyUpdate(doc, data)
+                console.log("data", data);
+
+                if (doc) {
+                    Y.applyUpdate(doc, data);
+                }
+                // Y.applyUpdate(doc, data)
                 // updateText(data)
             })
         }
@@ -102,6 +104,28 @@ const YJSPage: NextPage = () => {
                 pusherChannel.unbind(eventName);
         }
     }, [pusherChannel, receivedMessages, eventName, doc])
+
+
+    if (doc) {
+        doc.on('update', _update => { //remove the underscore
+            // Y.applyUpdate(doc2, update)
+            // console.log("doc1", doc1.getArray('array').toArray())
+            setText(doc.getArray('array').toArray()[0] as string)
+
+            const state1 = Y.encodeStateAsUpdate(doc)
+
+            if (pusherChannel) {
+                pusherChannel.trigger(eventName, state1);
+            }
+
+            // const data = doc.getArray('array').toArray()[0] as string;
+            // console.log("before", data);
+
+            // if (pusherChannel) {
+            //     pusherChannel.trigger(eventName, data); // transmit the update to other clients
+            // }
+        })
+    }
 
 
     const handleSubscribe = (p: Pusher) => {
@@ -303,21 +327,10 @@ const YJSPage: NextPage = () => {
 
 
 
-    if (doc) {
-        doc.on('update', update => { //remove the underscore
-            // Y.applyUpdate(doc2, update)
-            // console.log("doc1", doc1.getArray('array').toArray())
-            setText(doc.getArray('array').toArray()[0] as string)
 
-            if (pusherChannel) {
-                console.log("update", update);
-                pusherChannel.trigger(eventName, update); // transmit the update to other clients
-            }
-        })
-    }
 
     const callUpdate = (value: string) => {
-        console.log("before", value);
+        // console.log("before", value);
         doc?.getArray('array').insert(0, [value]) //<- insert data here...
         setText(value);
     }
