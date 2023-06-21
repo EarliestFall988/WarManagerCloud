@@ -7,6 +7,8 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 import { toast } from "react-hot-toast";
 import { LoadingPage2 } from "~/components/loading";
 import { GetPusherClient, type MemberMe, type memberDetails, type memberWrapper, type membersObject } from "~/utils/pusherUtils";
+import { LoadingPage2 } from "~/components/loading";
+import { GetPusherClient, type MemberMe, type memberDetails, type memberWrapper, type membersObject } from "~/utils/pusherUtils";
 import type { Channel, Members } from "pusher-js";
 import type Pusher from "pusher-js"
 import { useUser } from "@clerk/nextjs";
@@ -26,6 +28,7 @@ const YJSPage: NextPage = () => {
     const [text, setText] = useState("")
 
     //yjs
+    const [doc, setDoc] = useState<Y.Doc | null>(null)
     const [doc, setDoc] = useState<Y.Doc | null>(null)
     const [synced, setSynced] = useState(false)
 
@@ -59,6 +62,7 @@ const YJSPage: NextPage = () => {
         });
 
         setDoc(d1);
+        setDoc(d1);
 
         const browserDB = new IndexeddbPersistence(id, d1)
 
@@ -71,6 +75,7 @@ const YJSPage: NextPage = () => {
 
         return () => {
             doc?.destroy();
+            doc?.destroy();
 
             handleUnsubscribe(p);
             p.disconnect();
@@ -78,6 +83,9 @@ const YJSPage: NextPage = () => {
     }, [])
 
 
+    // const updateText = useCallback((data: string) => {
+    //     setReceivedMessages([...receivedMessages, data]); // yjs goes here
+    // }, [receivedMessages]);
     // const updateText = useCallback((data: string) => {
     //     setReceivedMessages([...receivedMessages, data]); // yjs goes here
     // }, [receivedMessages]);
@@ -93,6 +101,8 @@ const YJSPage: NextPage = () => {
                 // console.log("data", data);
                 doc?.getArray('array').insert(0, [data])
                 // updateText(data)
+                doc?.getArray('array').insert(0, [data])
+                // updateText(data)
             })
         }
 
@@ -100,6 +110,7 @@ const YJSPage: NextPage = () => {
             if (pusherChannel)
                 pusherChannel.unbind(eventName);
         }
+    }, [pusherChannel, receivedMessages, eventName, doc])
     }, [pusherChannel, receivedMessages, eventName, doc])
 
 
@@ -117,6 +128,7 @@ const YJSPage: NextPage = () => {
             setMembers(members);
             // console.log(`success! ${channelName} connection - members`, members);
             setPusherChannel(channel);
+            toast.success("Connected!")
             toast.success("Connected!")
         });
 
@@ -202,7 +214,16 @@ const YJSPage: NextPage = () => {
     //     if (!pusherChannel) {
     //         return;
     //     }
+    // const handleSendMessage = useCallback(() => {
+    //     if (!pusherChannel) {
+    //         return;
+    //     }
 
+    //     // console.log("sending message", message)
+
+    //     pusherChannel.trigger(eventName, message);
+    //     updateText(message); // yjs trigger here!!
+    // }, [pusherChannel, eventName, message, updateText])
     //     // console.log("sending message", message)
 
     //     pusherChannel.trigger(eventName, message);
@@ -224,7 +245,17 @@ const YJSPage: NextPage = () => {
         // if (!blueprint) {
         //     return <LoadingPageWithHeader title={""} />
         // }
+        // if (!synced) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
 
+        // if (!blueprint) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
+
+        // if (!pusher) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
         // if (!pusher) {
         //     return <LoadingPageWithHeader title={""} />
         // }
@@ -232,11 +263,18 @@ const YJSPage: NextPage = () => {
         // if (!pusherChannel) {
         //     return <LoadingPageWithHeader title={""} />
         // }
+        // if (!pusherChannel) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
 
         // if (!members) {
         //     return <LoadingPageWithHeader title={""} />
         // }
+        // if (!members) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
 
+        return <LoadingPage2 />
         return <LoadingPage2 />
     }
 
@@ -301,8 +339,15 @@ const YJSPage: NextPage = () => {
 
     if (doc) {
         doc.on('update', update => { //remove the underscore
+    if (doc) {
+        doc.on('update', update => { //remove the underscore
             // Y.applyUpdate(doc2, update)
             // console.log("doc1", doc1.getArray('array').toArray())
+            setText(doc.getArray('array').toArray()[0] as string)
+
+            if (pusherChannel) {
+                pusherChannel.trigger(eventName, update); // transmit the update to other clients
+            }
             setText(doc.getArray('array').toArray()[0] as string)
 
             if (pusherChannel) {
@@ -313,6 +358,7 @@ const YJSPage: NextPage = () => {
 
     const callUpdate = (value: string) => {
         // console.log("before", value);
+        doc?.getArray('array').insert(0, [value]) //<- insert data here...
         doc?.getArray('array').insert(0, [value]) //<- insert data here...
         setText(value);
     }
@@ -342,6 +388,7 @@ const YJSPage: NextPage = () => {
                     </div>
                 </div>
                 <div>
+                    <h3>Edit Document</h3>
                     <h3>Edit Document</h3>
                     <textarea value={text} onChange={(e) => { callUpdate(e.currentTarget.value) }} className="rounded p-2 bg-zinc-700 border-zinc-600 border w-1/2">
                     </textarea>
