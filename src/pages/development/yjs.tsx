@@ -89,9 +89,10 @@ const YJSPage: NextPage = () => {
 
             pusherChannel.unbind(eventName);
 
-            pusherChannel.bind(eventName, (data: string) => {
+            pusherChannel.bind(eventName, (data: Uint8Array) => {
                 // console.log("data", data);
-                doc?.getArray('array').insert(0, [data])
+                if (doc)
+                    Y.applyUpdate(doc, data)
                 // updateText(data)
             })
         }
@@ -198,7 +199,7 @@ const YJSPage: NextPage = () => {
         setPusherChannel(null);
     }
 
-    
+
     // const handleSendMessage = useCallback(() => {
     //     if (!pusherChannel) {
     //         return;
@@ -301,7 +302,7 @@ const YJSPage: NextPage = () => {
     }
 
 
-   
+
     if (doc) {
         doc.on('update', update => { //remove the underscore
             // Y.applyUpdate(doc2, update)
@@ -309,13 +310,14 @@ const YJSPage: NextPage = () => {
             setText(doc.getArray('array').toArray()[0] as string)
 
             if (pusherChannel) {
+                console.log("update", update);
                 pusherChannel.trigger(eventName, update); // transmit the update to other clients
             }
         })
     }
 
     const callUpdate = (value: string) => {
-        // console.log("before", value);
+        console.log("before", value);
         doc?.getArray('array').insert(0, [value]) //<- insert data here...
         setText(value);
     }
