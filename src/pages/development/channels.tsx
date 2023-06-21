@@ -9,7 +9,7 @@ import Image from "next/image";
 import TooltipComponent from "~/components/Tooltip";
 import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
-import { GetPusherClient, type MemberMe, type memberDetails, type memberWrapper, type membersObject } from "~/utils/pusherClientUtil";
+import { GetPusherClient, type MemberMe, type memberDetails, type memberWrapper, type membersObject } from "~/utils/pusherUtils";
 import { toast } from "react-hot-toast";
 
 const ChannelsTestPage: NextPage = () => {

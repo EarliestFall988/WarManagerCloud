@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import * as Y from "yjs";
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { toast } from "react-hot-toast";
-import { LoadingPageWithHeader } from "~/components/loading";
-import { GetPusherClient, type MemberMe, type memberDetails, type memberWrapper, type membersObject } from "~/utils/pusherClientUtil";
+import { LoadingPage2 } from "~/components/loading";
+import { GetPusherClient, type MemberMe, type memberDetails, type memberWrapper, type membersObject } from "~/utils/pusherUtils";
 import type { Channel, Members } from "pusher-js";
 import type Pusher from "pusher-js"
 import { useUser } from "@clerk/nextjs";
@@ -15,7 +15,6 @@ import TooltipComponent from "~/components/Tooltip";
 import Image from "next/image";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import SignInModal from "~/components/signInPage";
-
 
 const YJSPage: NextPage = () => {
 
@@ -27,7 +26,7 @@ const YJSPage: NextPage = () => {
     const [text, setText] = useState("")
 
     //yjs
-    const [doc1, setDoc1] = useState<Y.Doc | null>(null)
+    const [doc, setDoc] = useState<Y.Doc | null>(null)
     const [synced, setSynced] = useState(false)
 
     //pusher
@@ -59,7 +58,7 @@ const YJSPage: NextPage = () => {
             handleSubscribe(p);
         });
 
-        setDoc1(d1);
+        setDoc(d1);
 
         const browserDB = new IndexeddbPersistence(id, d1)
 
@@ -71,7 +70,7 @@ const YJSPage: NextPage = () => {
         // setProvider(p);
 
         return () => {
-            doc1?.destroy();
+            doc?.destroy();
 
             handleUnsubscribe(p);
             p.disconnect();
@@ -79,9 +78,9 @@ const YJSPage: NextPage = () => {
     }, [])
 
 
-    const updateText = useCallback((data: string) => {
-        setReceivedMessages([...receivedMessages, data]); // yjs goes here
-    }, [receivedMessages]);
+    // const updateText = useCallback((data: string) => {
+    //     setReceivedMessages([...receivedMessages, data]); // yjs goes here
+    // }, [receivedMessages]);
 
     useEffect(() => {
 
@@ -92,7 +91,8 @@ const YJSPage: NextPage = () => {
 
             pusherChannel.bind(eventName, (data: string) => {
                 // console.log("data", data);
-                updateText(data)
+                doc?.getArray('array').insert(0, [data])
+                // updateText(data)
             })
         }
 
@@ -100,7 +100,7 @@ const YJSPage: NextPage = () => {
             if (pusherChannel)
                 pusherChannel.unbind(eventName);
         }
-    }, [pusherChannel, receivedMessages, eventName, updateText])
+    }, [pusherChannel, receivedMessages, eventName, doc])
 
 
     const handleSubscribe = (p: Pusher) => {
@@ -117,7 +117,7 @@ const YJSPage: NextPage = () => {
             setMembers(members);
             // console.log(`success! ${channelName} connection - members`, members);
             setPusherChannel(channel);
-            toast.success("Connected! You can now see live changes.")
+            toast.success("Connected!")
         });
 
         channel.bind("pusher:subscription_error", function (status: number) {
@@ -198,16 +198,17 @@ const YJSPage: NextPage = () => {
         setPusherChannel(null);
     }
 
-    const handleSendMessage = useCallback(() => {
-        if (!pusherChannel) {
-            return;
-        }
+    // const handleSendMessage = useCallback(() => {
+    //     if (!pusherChannel) {
+    //         return;
+    //     }
 
-        // console.log("sending message", message)
+    //     // console.log("sending message", message)
 
-        pusherChannel.trigger(eventName, message);
-        updateText(message); // yjs trigger here!!
-    }, [pusherChannel, eventName, message, updateText])
+    //     pusherChannel.trigger(eventName, message);
+    //     updateText(message); // yjs trigger here!!
+    // }, [pusherChannel, eventName, message, updateText])
+
 
 
     // if (true) {
@@ -216,25 +217,27 @@ const YJSPage: NextPage = () => {
 
     if ((!pusherChannel || !pusher || !members || !blueprint || !synced) && !error) {
 
-        if (!synced) {
-            return <LoadingPageWithHeader title={""} />
-        }
+        // if (!synced) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
 
-        if (!blueprint) {
-            return <LoadingPageWithHeader title={""} />
-        }
+        // if (!blueprint) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
 
-        if (!pusher) {
-            return <LoadingPageWithHeader title={""} />
-        }
+        // if (!pusher) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
 
-        if (!pusherChannel) {
-            return <LoadingPageWithHeader title={""} />
-        }
+        // if (!pusherChannel) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
 
-        if (!members) {
-            return <LoadingPageWithHeader title={""} />
-        }
+        // if (!members) {
+        //     return <LoadingPageWithHeader title={""} />
+        // }
+
+        return <LoadingPage2 />
     }
 
     if (error && isSignedIn) {
@@ -296,18 +299,21 @@ const YJSPage: NextPage = () => {
     }
 
 
-    if (doc1) {
-
-        doc1.on('update', _update => { //remove the underscore
+    if (doc) {
+        doc.on('update', update => { //remove the underscore
             // Y.applyUpdate(doc2, update)
             // console.log("doc1", doc1.getArray('array').toArray())
-            setText(doc1.getArray('array').toArray()[0] as string)
+            setText(doc.getArray('array').toArray()[0] as string)
+
+            if (pusherChannel) {
+                pusherChannel.trigger(eventName, update); // transmit the update to other clients
+            }
         })
     }
 
     const callUpdate = (value: string) => {
         // console.log("before", value);
-        doc1?.getArray('array').insert(0, [value])
+        doc?.getArray('array').insert(0, [value]) //<- insert data here...
         setText(value);
     }
 
@@ -336,7 +342,7 @@ const YJSPage: NextPage = () => {
                     </div>
                 </div>
                 <div>
-                    <h3 >Edit Document</h3>
+                    <h3>Edit Document</h3>
                     <textarea value={text} onChange={(e) => { callUpdate(e.currentTarget.value) }} className="rounded p-2 bg-zinc-700 border-zinc-600 border w-1/2">
                     </textarea>
                 </div>
