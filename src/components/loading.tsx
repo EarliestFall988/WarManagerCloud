@@ -46,7 +46,6 @@ export const SKCubeSpinner = () => (
 
 export const LoadingPageWithHeader: React.FC<{ title: string }> = ({ title }) => {
 
-
   return (
     <div className="absolute right-0 top-0 h-screen w-screen bg-black">
       <div className="flex flex-col w-full items-center min-h-[100vh] justify-center text-center">
@@ -54,6 +53,17 @@ export const LoadingPageWithHeader: React.FC<{ title: string }> = ({ title }) =>
         {title &&
           <p className="font-bold text-zinc-200 fade-y-long">{title}</p>
         }
+      </div>
+    </div>
+  )
+}
+
+export const LoadingPage2 = () => {
+
+  return (
+    <div className="absolute right-0 top-0 h-screen w-screen bg-black">
+      <div className="flex flex-col w-full items-center min-h-[100vh] justify-center text-center">
+        <SKCubeSpinner />
       </div>
     </div>
   )
