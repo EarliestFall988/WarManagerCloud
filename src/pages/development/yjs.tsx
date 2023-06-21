@@ -15,6 +15,7 @@ import TooltipComponent from "~/components/Tooltip";
 import Image from "next/image";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import SignInModal from "~/components/signInPage";
+import { Blueprint } from "@prisma/client";
 
 const YJSPage: NextPage = () => {
 
@@ -36,6 +37,7 @@ const YJSPage: NextPage = () => {
     const [pusherChannel, setPusherChannel] = useState<Channel | null>(null);
     const [pusher, setPusher] = useState<Pusher | null>(null);
     const [error, setIsError] = useState<string | null>(null);
+    const [ytext, setYText] = useState<Y.Text| null>(null)
 
     const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
 
@@ -44,7 +46,7 @@ const YJSPage: NextPage = () => {
             blueprintId: id
         }
     )
-
+    
     useEffect(() => {
 
         const d1 = new Y.Doc();
@@ -57,7 +59,11 @@ const YJSPage: NextPage = () => {
             handleSubscribe(p);
         });
 
+
         setDoc(d1);
+        
+        const yTextData = d1.getText('text')
+        setYText(yTextData)
 
         const browserDB = new IndexeddbPersistence(id, d1)
 
@@ -107,15 +113,14 @@ const YJSPage: NextPage = () => {
 
 
     if (doc) {
-        doc.on('update', _update => { //remove the underscore
+        doc.on('update', update => { //remove the underscore
             // Y.applyUpdate(doc2, update)
             // console.log("doc1", doc1.getArray('array').toArray())
-            setText(doc.getArray('array').toArray()[0] as string)
-
-            const state1 = Y.encodeStateAsUpdate(doc)
+            
+            console.log(update);
 
             if (pusherChannel) {
-                pusherChannel.trigger(eventName, state1);
+                pusherChannel.trigger(eventName, update);
             }
 
             // const data = doc.getArray('array').toArray()[0] as string;
@@ -236,33 +241,7 @@ const YJSPage: NextPage = () => {
 
 
 
-    // if (true) {
-    //     return <LoadingPageWithHeader title="syncing" />
-    // }
-
     if ((!pusherChannel || !pusher || !members || !blueprint || !synced) && !error) {
-
-        // if (!synced) {
-        //     return <LoadingPageWithHeader title={""} />
-        // }
-
-        // if (!blueprint) {
-        //     return <LoadingPageWithHeader title={""} />
-        // }
-
-        // if (!pusher) {
-        //     return <LoadingPageWithHeader title={""} />
-        // }
-
-
-        // if (!pusherChannel) {
-        //     return <LoadingPageWithHeader title={""} />
-        // }
-
-
-        // if (!members) {
-        //     return <LoadingPageWithHeader title={""} />
-        // }
 
         return <LoadingPage2 />
     }
@@ -331,8 +310,8 @@ const YJSPage: NextPage = () => {
 
     const callUpdate = (value: string) => {
         // console.log("before", value);
+        setText(value)
         doc?.getArray('array').insert(0, [value]) //<- insert data here...
-        setText(value);
     }
 
 
