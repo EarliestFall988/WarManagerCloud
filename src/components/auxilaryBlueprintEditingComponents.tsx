@@ -1,15 +1,19 @@
-import React, { useCallback, useState } from "react";
+import React, { ReactNode, useCallback, useState } from "react";
 import { api } from "~/utils/api";
 import { LoadingSpinner } from "./loading";
 import type { Blueprint, CrewMember, Project } from "@prisma/client";
 import type { Edge, Node } from "reactflow";
 import {
   ArrowUpRightIcon,
+  BookmarkIcon,
+  Cog6ToothIcon,
+  CogIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
   PlusIcon,
   QueueListIcon,
   RocketLaunchIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/solid";
 import useScript from "./dragDropTouchEventsHandling";
 import Link from "next/link";
@@ -17,6 +21,7 @@ import { toast } from "react-hot-toast";
 import Image from "next/image";
 import { GetListOfNodesSortedByColumn } from "~/states/state";
 import TooltipComponent from "./Tooltip";
+import * as Tabs from '@radix-ui/react-tabs';
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -115,9 +120,8 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           <TooltipComponent content="View All Projects" side={"top"}>
             <button
               onClick={() => setNodeMode("all")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
-                nodeMode === "all" ? "bg-zinc-600" : ""
-              }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${nodeMode === "all" ? "bg-zinc-600" : ""
+                }`}
             >
               <MagnifyingGlassIcon className="h-5 w-5" />
             </button>
@@ -128,9 +132,8 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           >
             <button
               onClick={() => setNodeMode("notOnBlueprint")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
-                nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
-              }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
+                }`}
             >
               <QueueListIcon className="h-5 w-5" />
             </button>
@@ -141,9 +144,8 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           >
             <button
               onClick={() => setNodeMode("onlyOnBlueprint")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
-                nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
-              }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
+                }`}
             >
               <ListBulletIcon className="h-5 w-5" />
             </button>
@@ -305,9 +307,8 @@ export const CrewList = (props: { nodes: Node[] }) => {
           <TooltipComponent content="View All Crew Members" side={"top"}>
             <button
               onClick={() => setNodeMode("all")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
-                nodeMode === "all" ? "bg-zinc-600" : ""
-              }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${nodeMode === "all" ? "bg-zinc-600" : ""
+                }`}
             >
               <MagnifyingGlassIcon className="h-5 w-5" />
             </button>
@@ -318,9 +319,8 @@ export const CrewList = (props: { nodes: Node[] }) => {
           >
             <button
               onClick={() => setNodeMode("notOnBlueprint")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
-                nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
-              }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
+                }`}
             >
               <QueueListIcon className="h-5 w-5" />
             </button>
@@ -331,9 +331,8 @@ export const CrewList = (props: { nodes: Node[] }) => {
           >
             <button
               onClick={() => setNodeMode("onlyOnBlueprint")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
-                nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
-              }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
+                }`}
             >
               <ListBulletIcon className="h-5 w-5" />
             </button>
@@ -720,19 +719,79 @@ export const Stats = (props: {
   );
 };
 
-export const More = () => {
-  GetListOfNodesSortedByColumn();
+
+const TabContent: React.FC<{ value: string, children: ReactNode }> = ({ value, children }) => {
+  return (
+    <Tabs.Content
+      className="fade-x h-[60vh] w-full sm:m-0 lg:min-h-[30vh] border-t border-zinc-600"
+      value={value}
+    >
+      {children}
+    </Tabs.Content>
+  );
+}
+
+export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
+  // GetListOfNodesSortedByColumn();
+
+  const [blueprintName, setblueprintName] = useState(blueprint.name);
+  const [blueprintDescription, setBlueprintDescription] = useState(blueprint.description);
 
   return (
     <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
-      <h1 className="w-full text-center font-bold sm:text-lg">More</h1>
-
       <div className="flex justify-center gap-1 p-1">
-        <div className="flex h-32 items-center justify-center p-5">
-          <p>{"Under Construction... :)"}</p>
+        <Tabs.Root className="w-full" defaultValue="tab1">
+          <Tabs.List className="flex justify-around gap-2 pb-1">
+            <Tabs.Trigger className="w-full p-2 bg-zinc-600 font-semibold flex items-center justify-center gap-2 data-[state=active]:bg-amber-700" value="tab1">
+              <SparklesIcon className="w-6 h-6" /> More
+            </Tabs.Trigger>
+            <Tabs.Trigger className="w-full bg-zinc-600 font-semibold flex items-center justify-center gap-2 data-[state=active]:bg-amber-700" value="tab2">
+              <Cog6ToothIcon className="w-6 h-6" /> Settings
+            </Tabs.Trigger>
+          </Tabs.List>
+          <TabContent value="tab1" >
+            <div
+              className="flex items-center select-none justify-start border-b border-zinc-600 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
+              draggable={false}
+              onDragStart={(event) => onDragStart(event, "c-" + "test")}
+            >
+              <BookmarkIcon className="w-12 h-12 text-yellow-200 " />
+              <div className="w-2/3 truncate">
+                <p className="truncate text-sm sm:text-lg">Sticky Note</p>
+                <p className="truncate text-sm font-normal italic text-zinc-300">
+                  {"Make a note of something important"}
+                </p>
+              </div>
+            </div>
+            
+            <div
+              className="flex items-center select-none justify-start border-b border-zinc-600 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
+              draggable={false}
+              onDragStart={(event) => onDragStart(event, "c-" + "test")}
+            >
+              <BookmarkIcon className="w-12 h-12 text-yellow-200 " />
+              <div className="w-2/3 truncate">
+                <p className="truncate text-sm sm:text-lg">Sticky Note</p>
+                <p className="truncate text-sm font-normal italic text-zinc-300">
+                  {"Make a note of something important"}
+                </p>
+              </div>
+            </div>
+          </TabContent>
+          <TabContent value="tab2" >
+            <div className="h-full flex flex-col w-1/2 gap-2 " >
+              <div>
+                <p className="font-semibold">Title</p>
+                <input type="text" placeholder="blueprint name" value={blueprintName} onChange={(e) => { setblueprintName(e.currentTarget.value) }} className="p-1 rounded w-full text-zinc-700" />
+              </div>
+              <div>
+                <p className="font-semibold">Description</p>
+                <input type="text" placeholder="blueprint name" value={blueprintDescription} onChange={(e) => { setBlueprintDescription(e.currentTarget.value) }} className="p-1 rounded w-full text-zinc-700" />
+              </div>
+            </div>
+          </TabContent>
+        </Tabs.Root>
 
-          {/* <LoadingSpinner /> */}
-        </div>
       </div>
     </div>
   );

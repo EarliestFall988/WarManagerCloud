@@ -304,7 +304,7 @@ const BlueprintGUI = () => {
                   {toggle === "Stats" && (
                     <Stats blueprint={blueprint} currentNodes={nodes} />
                   )}
-                  {toggle == "More" && <More />}
+                  {toggle == "More" && <More blueprint={blueprint} />}
                 </div>
                 <div className="flex flex-col items-end gap-1 p-1 sm:gap-1 sm:p-0">
                   {/* {toggle !== "" && (
