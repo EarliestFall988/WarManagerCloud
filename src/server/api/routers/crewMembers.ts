@@ -22,6 +22,9 @@ export const crewMembersRouter = createTRPCRouter({
       orderBy: {
         name: "asc",
       },
+      include: {
+        tags: true,
+      },
     });
 
     return crewMembers;
@@ -38,10 +41,13 @@ export const crewMembersRouter = createTRPCRouter({
   }),
 
   search: privateProcedure
-    .input(z.object({ search: z.string().min(0).max(255), filter: z.array(z.string()) }))
+    .input(
+      z.object({
+        search: z.string().min(0).max(255),
+        filter: z.array(z.string()),
+      })
+    )
     .query(async ({ ctx, input }) => {
-
-
       if (input.search.length < 3 && input.filter.length === 0) {
         const crewMembers = await ctx.prisma.crewMember.findMany({
           take: 30,
@@ -56,7 +62,6 @@ export const crewMembersRouter = createTRPCRouter({
       }
 
       if (input.search.length < 3 && input.filter.length > 0) {
-
         const crewMembers = await ctx.prisma.crewMember.findMany({
           take: 30,
           orderBy: {
@@ -70,13 +75,12 @@ export const crewMembersRouter = createTRPCRouter({
               some: {
                 id: {
                   in: input.filter,
-                }
+                },
               },
             },
           },
         });
         return crewMembers;
-
       }
 
       if (input.search.length > 2 && input.filter.length > 0) {
@@ -103,11 +107,10 @@ export const crewMembersRouter = createTRPCRouter({
                   some: {
                     id: {
                       in: input.filter,
-                    }
-
-                  }
-                }
-              }
+                    },
+                  },
+                },
+              },
             ],
           },
           include: {
@@ -125,7 +128,6 @@ export const crewMembersRouter = createTRPCRouter({
         const crewMembers = await ctx.prisma.crewMember.findMany({
           take: 30,
           where: {
-
             OR: [
               {
                 name: {
@@ -138,7 +140,6 @@ export const crewMembersRouter = createTRPCRouter({
                 },
               },
             ],
-
           },
           include: {
             tags: true,
@@ -150,7 +151,6 @@ export const crewMembersRouter = createTRPCRouter({
 
         return crewMembers;
       }
-
     }),
 
   getById: privateProcedure
@@ -175,6 +175,9 @@ export const crewMembersRouter = createTRPCRouter({
           name: {
             contains: input.name,
           },
+        },
+        include: {
+          tags: true,
         },
       });
       return crewMembers;
@@ -210,12 +213,10 @@ export const crewMembersRouter = createTRPCRouter({
         })
         .tags();
 
-
-
       const disconnectTags = tagsToDisconnect || [];
 
-      console.log(disconnectTags)
-      console.log(input.tags)
+      console.log(disconnectTags);
+      console.log(input.tags);
 
       const crewMember = await ctx.prisma.crewMember.update({
         where: {
@@ -226,7 +227,6 @@ export const crewMembersRouter = createTRPCRouter({
           position: input.position,
           description: input.notes,
           tags: {
-
             disconnect: disconnectTags?.map((tag) => ({
               id: tag.id,
             })),
