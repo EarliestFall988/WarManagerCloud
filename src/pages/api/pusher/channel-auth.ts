@@ -1,21 +1,20 @@
-import { get } from "http";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { type ChannelAuthResponse } from "pusher";
-import { string, z } from "zod";
+import { z } from "zod";
 import { prisma } from "~/server/db";
-import { GetPusher, ctx } from "~/server/helpers/pusherInstance";
+import { ctx } from "~/server/helpers/pusherInstance";
 
 type errorResponse = {
   error: string;
 }
 
-type authResponse = {
-  socket_id: string;
-  channelId: string;
-  key: {
-    auth: string
-  }
-}
+// type authResponse = {
+//   socket_id: string;
+//   channelId: string;
+//   key: {
+//     auth: string
+//   }
+// }
 
 export default async function ChannelAuthHandler(
   req: NextApiRequest,
@@ -63,9 +62,9 @@ export default async function ChannelAuthHandler(
 
     // console.log("channelId: ", channelId)
 
-    const p = GetPusher();
+    // const p = GetPusher();
 
-    const response = p.authorizeChannel(socket_id, channelId);
+    // const response = p.authorizeChannel(socket_id, channelId);
 
     //verify the blueprint is created....
     const blueprintResult = await prisma.blueprint.findUnique({

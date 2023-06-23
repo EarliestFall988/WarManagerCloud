@@ -426,7 +426,9 @@ type EquipmentEstimation = {
   type: string;
 };
 
-const EquipmentEditor = (props: { data?: JobData | [] }) => {
+
+//props: { data?: JobData | [] }
+const EquipmentEditor = () => {
   // if (!props.data) {
   //   return (
   //     <div className="w-full rounded bg-white p-2 font-semibold italic text-zinc-500">

@@ -7,7 +7,6 @@ import {
   ArrowUpRightIcon,
   BookmarkIcon,
   Cog6ToothIcon,
-  CogIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
   PlusIcon,

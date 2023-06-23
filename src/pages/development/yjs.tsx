@@ -10,8 +10,8 @@ import { useEffect, useState } from "react";
 //   ssr: false,
 // })
 
-const websocketConnection =
-  "wss://s9267.nyc1.piesocket.com/v3/1?api_key=j4wp6LYQnmMVL4QYvIWBCQ6q7Bw2qp8q3p56Pfg3";
+// const websocketConnection =
+//   "wss://s9267.nyc1.piesocket.com/v3/1?api_key=j4wp6LYQnmMVL4QYvIWBCQ6q7Bw2qp8q3p56Pfg3";
 const websocketConnection1 = "ws://localhost:1234";
 const roomName = "my-roomname";
 
