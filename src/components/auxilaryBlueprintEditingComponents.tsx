@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useState } from "react";
+import React, { type ReactNode, useCallback, useState } from "react";
 import { api } from "~/utils/api";
 import { LoadingSpinner } from "./loading";
 import type { Blueprint, CrewMember, Project } from "@prisma/client";
@@ -763,7 +763,7 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
                 </p>
               </div>
             </div>
-            
+
             <div
               className="flex items-center select-none justify-start border-b border-zinc-600 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
               draggable={false}

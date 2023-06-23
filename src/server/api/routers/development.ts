@@ -52,4 +52,20 @@ export const developmentRouter = createTRPCRouter({
 
       return input.message;
     }),
+
+  OpenChanel: privateProcedure
+    .input(
+      z.object({
+        channel: z.string().min(3).max(100),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+
+      console.log("testRouter: OpenChanel: input: ", input);
+
+      //connect to pie socket...
+
+      return input.channel;
+
+    }),
 });
