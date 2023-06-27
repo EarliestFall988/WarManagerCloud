@@ -1,6 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
 
-const SignInModal = (props: { redirectUrl: string }) => {
+const SignInModal = (props: { redirectUrl?: string }) => {
   return (
     <>
       <div className="absolute top-0 h-screen w-screen bg-bhall bg-left-bottom md:bg-left-top brightness-110 saturate-150" />
@@ -18,10 +18,13 @@ const SignInModal = (props: { redirectUrl: string }) => {
               </div>
             </SignInButton> */}
 
-            <SignIn redirectUrl={props.redirectUrl} appearance={{
+            <SignIn redirectUrl={props.redirectUrl || "/dashboard/activity"} appearance={{
               elements: {
                 card: "bg-transparent shadow-sm",
                 logoBox: "bg-transparent",
+                formButtonPrimary: "bg-gradient-to-r from-amber-600 to-red-800 text-white font-semibold shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-100",
+                formFieldAction: "text-amber-600 hover:text-amber-500 font-semibold transition-all duration-100",
+                footerActionLink: "text-amber-600 hover:text-amber-500 font-semibold transition-all duration-100",
               }
             }} />
 

@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import React, { useMemo } from "react";
 import { type flowState } from "./flow";
 import Head from "next/head";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -28,7 +28,7 @@ import {
   DeleteSelected,
   type IFlowInstance,
 } from "../../states/state";
-import { LoadingPage, LoadingSpinner } from "~/components/loading";
+import { LoadingPage, LoadingPage2, LoadingSpinner } from "~/components/loading";
 import {
   CrewList,
   ExportBlueprint,
@@ -99,6 +99,10 @@ const selector = (state: flowState) => ({
 //   }
 
 const BlueprintGUI = () => {
+
+  const { isLoaded, isSignedIn } = useUser();
+  const router = useRouter();
+
   const { nodes, edges } = flowStore(selector, shallow);
 
   const [toggle, setToggle] = useState("");
@@ -215,8 +219,13 @@ const BlueprintGUI = () => {
 
   const blueprint = useBlueprintStore.getState().blueprintInstance;
 
-  if (!blueprintId) {
-    return <LoadingPage />;
+
+  if (!isLoaded || !blueprintId) {
+    return <LoadingPage2 />;
+  }
+
+  if (!isSignedIn && isLoaded) {
+    return <SignInModal redirectUrl={`/blueprints/${blueprintId}`} />;
   }
 
   return (
@@ -230,7 +239,7 @@ const BlueprintGUI = () => {
         )}
 
         {/* <meta name="description" content="" /> */}
-        
+
         {blueprint.name && (
           <meta name="description">{`${blueprint.description}`}</meta>
         )}
@@ -244,12 +253,14 @@ const BlueprintGUI = () => {
         <div className="absolute inset-0 top-0 z-20 flex h-12 w-full items-center justify-between bg-zinc-700 p-1 text-gray-100 drop-shadow-md ">
           <div className="flex w-1/2 items-center justify-start gap-4 sm:w-1/3">
             <TooltipComponent content="Back" side="bottom">
-              <Link
+              <button
                 className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-                href="/dashboard?context=Blueprints"
+                onClick={() => {
+                  router.back();
+                }}
               >
                 <ArrowLeftIcon className="h-6 w-6" />
-              </Link>
+              </button>
             </TooltipComponent>
             <div className="max-w-1/2 truncate rounded p-1 text-center text-sm font-semibold tracking-tight text-zinc-200 md:text-lg">
               <TooltipComponent content="Blueprint Name" side="bottom">
@@ -293,9 +304,8 @@ const BlueprintGUI = () => {
             <>
               <FlowWithProvider />
               <div
-                className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700/80 drop-shadow-lg backdrop-blur-md transition-all duration-75 sm:gap-1 sm:p-1 ${
-                  toggle == "" ? "w-12" : " w-full md:w-[50vw] lg:w-[40vw]"
-                }`}
+                className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700/80 drop-shadow-lg backdrop-blur-md transition-all duration-75 sm:gap-1 sm:p-1 ${toggle == "" ? "w-12" : " w-full md:w-[50vw] lg:w-[40vw]"
+                  }`}
               >
                 <div className="w-full overflow-y-auto overflow-x-hidden ">
                   {toggle === "GetLink" && <ExportBlueprint />}
@@ -318,11 +328,10 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="Projects" side="left">
                     <button
                       onClick={() => ToggleMenu("Project")}
-                      className={`btn-add  z-20 rounded ${
-                        toggle == "Project"
-                          ? "bg-amber-800 hover:bg-amber-700"
-                          : "bg-zinc-600 hover:bg-zinc-500"
-                      }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${toggle == "Project"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                        }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <WrenchScrewdriverIcon className="h-6 w-6" />
                     </button>
@@ -330,11 +339,10 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="Crew Members" side="left">
                     <button
                       onClick={() => ToggleMenu("Employee")}
-                      className={`btn-add  z-20 rounded ${
-                        toggle == "Employee"
-                          ? "bg-amber-800 hover:bg-amber-700"
-                          : "bg-zinc-600 hover:bg-zinc-500"
-                      }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${toggle == "Employee"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                        }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <IdentificationIcon className="h-6 w-6" />
                     </button>
@@ -343,11 +351,10 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="Share" side="left">
                     <button
                       onClick={() => ToggleMenu("GetLink")}
-                      className={`btn-add  z-20 rounded ${
-                        toggle == "GetLink"
-                          ? "bg-amber-800 hover:bg-amber-700"
-                          : "bg-zinc-600 hover:bg-zinc-500"
-                      }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${toggle == "GetLink"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                        }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <PaperAirplaneIcon className="h-6 w-6" />
                     </button>
@@ -355,11 +362,10 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="Blueprint Stats" side="left">
                     <button
                       onClick={() => ToggleMenu("Stats")}
-                      className={`btn-add  z-20 rounded ${
-                        toggle == "Stats"
-                          ? "bg-amber-800 hover:bg-amber-700"
-                          : "bg-zinc-600 hover:bg-zinc-500"
-                      }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${toggle == "Stats"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                        }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <PresentationChartBarIcon className="h-6 w-6" />
                     </button>
@@ -368,11 +374,10 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="More" side="left">
                     <button
                       onClick={() => ToggleMenu("More")}
-                      className={`btn-add  z-20 rounded ${
-                        toggle == "More"
-                          ? "bg-amber-800 hover:bg-amber-700"
-                          : "bg-zinc-600 hover:bg-zinc-500"
-                      }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${toggle == "More"
+                        ? "bg-amber-800 hover:bg-amber-700"
+                        : "bg-zinc-600 hover:bg-zinc-500"
+                        }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <EllipsisHorizontalIcon className="h-6 w-6" />
                     </button>

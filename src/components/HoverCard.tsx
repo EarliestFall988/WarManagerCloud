@@ -18,7 +18,7 @@ const HoverCardComponent: FC<Props> = (props) => {
       <HoverCard.Portal>
         <HoverCard.Content
           sideOffset={-10}
-          className="HoverCardContent max-w-[40vw] rounded border border-zinc-500 bg-black/60 text-zinc-200 shadow-lg drop-shadow-lg backdrop-blur"
+          className="HoverCardContent max-w-[25vw] min-w-[15vw] rounded border border-zinc-500 bg-black/60 text-zinc-200 shadow-lg drop-shadow-lg backdrop-blur"
         >
           {props.editURL && (
             <div className="absolute flex w-full items-end justify-end p-1">

@@ -169,7 +169,7 @@ const HomePage: NextPage = () => {
           </p> */}
             <div className="flex items-center gap-3">
               <SignedIn>
-                <Link href="/dashboard/crew">
+                <Link href="/dashboard/activity">
                   <div className="cursor-pointer rounded p-2 font-semibold transition-all duration-100 hover:text-amber-500">
                     Dashboard
                   </div>
@@ -179,7 +179,7 @@ const HomePage: NextPage = () => {
             </div>
 
             <SignedOut>
-              <SignInButton redirectUrl="/dashboard/crew">
+              <SignInButton redirectUrl="/dashboard/activity">
                 <div className="cursor-pointer rounded p-2 font-semibold transition-all duration-100 hover:text-amber-500">
                   Sign In
                 </div>
@@ -198,7 +198,7 @@ const HomePage: NextPage = () => {
               the same page.
             </p>
             <SignedIn>
-              <Link href="/dashboard">
+              <Link href="/dashboard/activity">
                 <div className="cursor-pointer rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 font-semibold transition-all duration-100 hover:scale-105">
                   Go to Dashboard
                 </div>
@@ -208,7 +208,7 @@ const HomePage: NextPage = () => {
               <div className="flex w-full items-end justify-between gap-4">
                 <div>
                   {/* <p>Sign in</p> */}
-                  <SignInButton redirectUrl="/dashboard/crew">
+                  <SignInButton redirectUrl="/dashboard/activity">
                     <div className="flex w-32 cursor-pointer items-center justify-center gap-2  rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 text-center font-semibold transition-all duration-100 hover:scale-105">
                       Sign In
                       <ArrowRightIcon className="inline h-5 w-5" />
@@ -217,7 +217,7 @@ const HomePage: NextPage = () => {
                 </div>
                 <div>
                   <p>{"Don't have an account?"}</p>
-                  <SignUpButton redirectUrl="/dashboard/crew">
+                  <SignUpButton redirectUrl="/dashboard/activity">
                     <div className="flex w-32 cursor-pointer items-center justify-center gap-2 rounded border border-zinc-400 bg-zinc-600 p-2 text-center font-semibold transition-all duration-100 hover:scale-105">
                       Sign Up
                       <ArrowRightIcon className="inline h-5 w-5" />
