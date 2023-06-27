@@ -20,7 +20,7 @@ export const TagBubble: React.FC<{ tag: Tag, style?: string, children?: React.Re
                     paddingRight: "5px",
                     paddingLeft: "5px",
                 }}
-                className={`fade-y flex items-center justify-center whitespace-nowrap gap-1 ${props.style || ""}`}
+                className={`fade-y z-0 flex items-center justify-center whitespace-nowrap gap-1 ${props.style || ""}`}
             >
                 {tag.name}
                 {props.children}

@@ -123,9 +123,8 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           <TooltipComponent content="View All Projects" side={"top"}>
             <button
               onClick={() => setNodeMode("all")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
-                nodeMode === "all" ? "bg-zinc-600" : ""
-              }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${nodeMode === "all" ? "bg-zinc-600" : ""
+                }`}
             >
               <MagnifyingGlassIcon className="h-5 w-5" />
             </button>
@@ -136,9 +135,8 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           >
             <button
               onClick={() => setNodeMode("notOnBlueprint")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
-                nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
-              }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
+                }`}
             >
               <QueueListIcon className="h-5 w-5" />
             </button>
@@ -149,9 +147,8 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           >
             <button
               onClick={() => setNodeMode("onlyOnBlueprint")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
-                nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
-              }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
+                }`}
             >
               <ListBulletIcon className="h-5 w-5" />
             </button>
@@ -316,9 +313,8 @@ export const CrewList = (props: { nodes: Node[] }) => {
             <TooltipComponent content="View All Crew Members" side={"top"}>
               <button
                 onClick={() => setNodeMode("all")}
-                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
-                  nodeMode === "all" ? "bg-zinc-600" : ""
-                }`}
+                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${nodeMode === "all" ? "bg-zinc-600" : ""
+                  }`}
               >
                 <MagnifyingGlassIcon className="h-5 w-5" />
               </button>
@@ -329,9 +325,8 @@ export const CrewList = (props: { nodes: Node[] }) => {
             >
               <button
                 onClick={() => setNodeMode("notOnBlueprint")}
-                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
-                  nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
-                }`}
+                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
+                  }`}
               >
                 <QueueListIcon className="h-5 w-5" />
               </button>
@@ -342,9 +337,8 @@ export const CrewList = (props: { nodes: Node[] }) => {
             >
               <button
                 onClick={() => setNodeMode("onlyOnBlueprint")}
-                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
-                  nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
-                }`}
+                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
+                  }`}
               >
                 <ListBulletIcon className="h-5 w-5" />
               </button>
@@ -694,7 +688,7 @@ export const Stats = (props: {
         <div className="pb-4">
           <div className="flex gap-3">
             <TooltipComponent
-              content="Count how many crew members exist on the blueprint"
+              content="The project count on the blueprint"
               side={"top"}
             >
               <div className="flex gap-1 rounded bg-zinc-600 px-2">
@@ -704,7 +698,7 @@ export const Stats = (props: {
             </TooltipComponent>
 
             <TooltipComponent
-              content="Count how many projects exist on the blueprint"
+              content="The crew count on the blueprint"
               side={"top"}
             >
               <div className="flex gap-1 rounded bg-zinc-600 px-2">

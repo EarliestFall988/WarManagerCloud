@@ -15,6 +15,9 @@ import { useEffect, useState } from "react";
 const websocketConnection1 = "ws://localhost:1234";
 const roomName = "my-roomname";
 
+const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
+const localWebRTCConnection = "ws://localhost:4444";
+
 type yjsWsProviderProps = {
   status: string;
 };
@@ -35,7 +38,8 @@ const YjsPage: NextPage = () => {
     );
 
     const webrtcProvider = new WebrtcProvider(roomName, ydoc, {
-      signaling: ["wss://definitive-obese-condor.gigalixirapp.com/"]
+      signaling: [localWebRTCConnection ],
+      password: "password",
     });
 
     wsProvider.on("status", (event: yjsWsProviderProps) => {
