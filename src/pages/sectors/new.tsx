@@ -42,7 +42,7 @@ const NewSectorPage: NextPage = () => {
       <Head>
         <title>New Sector - War Manager</title>
       </Head>
-      <main className="min-h-[100vh] bg-zinc-800">
+      <main className="min-h-[100vh] bg-zinc-900">
         <NewItemPageHeader title="New Sector" context="blueprints" />
         <SignedIn>
           <div className="m-auto w-full sm:w-2/3">

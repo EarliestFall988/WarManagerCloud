@@ -6,7 +6,7 @@ const SignInModal = (props: { redirectUrl?: string }) => {
       <div className="absolute top-0 h-screen w-screen bg-bhall bg-left-bottom md:bg-left-top brightness-110 saturate-150" />
       <div className="absolute top-0 flex flex-col h-screen w-screen text-center justify-between overflow-hidden">
         <div className="flex md:hidden" />
-        <div className="flex flex-col justify-center items-center gap-2 bg-black p-3 shadow-lg h-2/5 md:w-1/2 xl:w-1/3 md:h-full duration-100 transition-all">
+        <div className="flex flex-col justify-center items-center gap-2 bg-black/90 md:bg-black h-full p-3 shadow-lg md:w-1/2 xl:w-1/3 md:h-full duration-100 transition-all">
           {/* <h1 className="text-3xl font-bold text-gray-100 lg:text-[2em]" >
             {"You are not signed in"}
           </h1> */}

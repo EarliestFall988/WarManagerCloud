@@ -1,7 +1,7 @@
 import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon, ChartBarIcon, Cog6ToothIcon, DocumentIcon, NewspaperIcon, PlusIcon, TrashIcon, UserCircleIcon, UsersIcon, WrenchScrewdriverIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import TooltipComponent from "./Tooltip";
 import { LogoComponent } from "./RibbonLogo";
-import { SignOutButton, UserButton, useUser } from "@clerk/nextjs";
+import { SignOutButton, UserButton, UserProfile, useUser } from "@clerk/nextjs";
 import { type FunctionComponent, useState, type ReactNode, useMemo } from "react";
 import { type NextRouter, useRouter } from "next/router";
 import { api } from "~/utils/api";
@@ -10,6 +10,7 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { LoadingSpinner } from "./loading";
 import * as Tabs from "@radix-ui/react-tabs";
+import Image from "next/image";
 
 type Props = {
     menuOpen?: boolean;
@@ -444,12 +445,17 @@ export const DashboardMenu = () => {
                     )}
                 </div>
             </div>
-            <MobileMenu context={context} router={router} />
+            <div className="z-30">
+                <MobileMenu context={context} router={router} />
+            </div>
         </>
     )
 }
 
 const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context, router }) => {
+
+
+    const { user } = useUser()
 
     return (
         <div className="fixed bottom-4 left-4 flex items-center justify-around gap-1 p-2 md:hidden">
@@ -462,21 +468,32 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                 </button>
                 <Dialog.Root>
                     <Dialog.Trigger asChild>
-                        <button className="TooltipContent z-40 flex w-full gap-3 rounded-md bg-amber-700 p-3 drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
+                        <button className="TooltipContent flex w-full gap-3 rounded-md bg-amber-700 p-3 drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
                             <Bars3Icon className="h-6 w-6 text-zinc-300" />
                         </button>
                     </Dialog.Trigger>
-                    <Dialog.Overlay className="z-50 TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
-                    <Dialog.Content className="TooltipContent z-50 fixed inset-10 bottom-5 flex items-start justify-start rounded border border-zinc-700 bg-zinc-800">
+                    <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
+
+                    <Dialog.Content className="fade-y-long TooltipContent fixed bottom-10 inset-0 h-[50vh] w-[70vw] m-auto flex flex-col items-start justify-start rounded-xl border border-zinc-900 bg-zinc-900">
+
+                        <div className="w-full p-2 flex justify-between">
+                            <div className="w-1/2 flex gap-1 items-center justify-start">
+                                <Image src={user?.profileImageUrl || ""} width={32} height={32} alt="Profile Image" className="rounded-full" />
+                                {/* <p className="font-semibold">{user?.fullName}</p> */}
+                            </div>
+                            <div>
+                                <SignOutButton>
+                                    <div
+                                        className={`w-full p-2 text-lg transition-all duration-200 flex items-center justify-start gap-2`}
+                                    >
+                                        <ArrowRightOnRectangleIcon className="h-6 w-6" /> Sign Out
+                                    </div>
+                                </SignOutButton>
+                            </div>
+                        </div>
+
                         <div className="w-full h-full flex flex-col justify-between p-2">
                             <div className="flex flex-col w-full">
-                                <Dialog.DialogClose asChild>
-                                    <button
-                                        className={`flex w-full items-center justify-center p-2 text-red-400 transition-all duration-200`}
-                                    >
-                                        <XMarkIcon className="h-6 w-6 " /> Close Menu
-                                    </button>
-                                </Dialog.DialogClose>
                                 {/* <Dialog.DialogClose asChild>
                                 <button
                                     onClick={() => {
@@ -496,8 +513,8 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                                         onClick={() => {
                                             void router.push("/dashboard/activity");
                                         }}
-                                        className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Activity"
-                                            ? "rounded bg-amber-800 hover:bg-red-700"
+                                        className={`w-full p-3 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Activity"
+                                            ? "bg-amber-800 hover:bg-red-700"
                                             : "border-b border-zinc-600 hover:bg-zinc-600"
                                             }`}
                                     >
@@ -511,8 +528,8 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                                         onClick={() => {
                                             void router.push("/dashboard/blueprints")
                                         }}
-                                        className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Blueprints"
-                                            ? "rounded bg-amber-800 hover:bg-red-700"
+                                        className={`w-full p-3 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Blueprints"
+                                            ? "bg-amber-800 hover:bg-red-700"
                                             : "border-b border-zinc-600 hover:bg-zinc-600"
                                             }`}
                                     >
@@ -525,8 +542,8 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                                         onClick={() => {
                                             void router.push("/dashboard/crew")
                                         }}
-                                        className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "CrewMembers"
-                                            ? "rounded bg-amber-800 hover:bg-red-700"
+                                        className={`w-full p-3 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "CrewMembers"
+                                            ? "bg-amber-800 hover:bg-red-700"
                                             : "border-b border-zinc-600 hover:bg-zinc-600"
                                             }`}
                                     >
@@ -539,25 +556,13 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                                         onClick={() => {
                                             void router.push("/dashboard/projects")
                                         }}
-                                        className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Projects"
-                                            ? "rounded bg-amber-800 hover:bg-red-700"
+                                        className={`w-full p-3 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Projects"
+                                            ? "bg-amber-800 hover:bg-red-700"
                                             : "border-b border-zinc-600 hover:bg-zinc-600 "
                                             }`}
                                     >
                                         <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
                                     </button>
-                                </Dialog.DialogClose>
-                            </div>
-                            <div className="flex flex-col w-full">
-                                <Dialog.DialogClose asChild>
-                                    <SignOutButton>
-                                        <UserButton />
-                                        <div
-                                            className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2`}
-                                        >
-                                            <ArrowRightOnRectangleIcon className="h-6 w-6 " /> Sign Out
-                                        </div>
-                                    </SignOutButton>
                                 </Dialog.DialogClose>
                             </div>
                         </div>

@@ -176,7 +176,7 @@ const DownloadPage: NextPage = () => {
 
   return (
     <>
-      <main className="min-h-[100vh] bg-zinc-800">
+      <main className="min-h-[100vh] bg-zinc-900">
         <NewItemPageHeader title="Download Projects" />
         <div className="m-auto flex w-full items-center justify-center p-2 sm:w-3/4">
           <DownloadProjectDetails />

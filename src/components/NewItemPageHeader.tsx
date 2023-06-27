@@ -14,7 +14,7 @@ export const NewItemPageHeader: React.FC<{ title: string, context?: string | und
 
   return (
     <>
-      <div className="select-none fixed top-0 z-20 w-full flex items-center shadow-lg border-b border-zinc-600 justify-between bg-zinc-700/90 backdrop-blur-sm p-2 text-center text-lg font-semibold">
+      <div className="select-none fixed top-0 z-20 w-full flex items-center shadow-lg border-b border-zinc-700 justify-between bg-zinc-800/90 backdrop-blur-md p-2 text-center text-lg font-semibold">
         <TooltipComponent content="Back" side="bottom">
           <button disabled={saving} className="p-2 hover:bg-zinc-600 rounded disabled:text-zinc-400" onClick={() => {
             if (cancel !== undefined) {
