@@ -2,8 +2,8 @@ import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon, ChartBarIcon, Cog6
 import TooltipComponent from "./Tooltip";
 import { LogoComponent } from "./RibbonLogo";
 import { SignOutButton, UserButton, useUser } from "@clerk/nextjs";
-import { type FunctionComponent, useEffect, useState, type ReactNode, useMemo } from "react";
-import { useRouter } from "next/router";
+import { type FunctionComponent, useState, type ReactNode, useMemo } from "react";
+import { type NextRouter, useRouter } from "next/router";
 import { api } from "~/utils/api";
 import * as  Dialog from "@radix-ui/react-dialog";
 import { toast } from "react-hot-toast";
@@ -262,9 +262,6 @@ export const DashboardMenu = () => {
 
     const router = useRouter();
 
-    console.log("test");
-    console.log("path name", router);
-
     useMemo(() => {
         if (router.pathname === "/dashboard/crew") {
             setContext("CrewMembers");
@@ -426,22 +423,15 @@ export const DashboardMenu = () => {
                     )}
                 </div>
             </div>
-            <MobileMenu />
+            <MobileMenu context={context} router={router} />
         </>
     )
 }
 
-
-
-const MobileMenu = () => {
-
-
-    const router = useRouter();
-
-    const [context, setContext] = useState<string>("Home");
+const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context, router }) => {
 
     return (
-        <div className="fixed bottom-4 left-4 flex items-center justify-around gap-1 p-2 md:hidden">
+        <div className="z-30 fixed bottom-4 left-4 flex items-center justify-around gap-1 p-2 md:hidden">
             <div className="flex items-center justify-start gap-2">
                 <button
                     onClick={router.back}
@@ -450,12 +440,11 @@ const MobileMenu = () => {
                     <ArrowLeftIcon className="h-6 w-6 text-zinc-300" />
                 </button>
                 <Dialog.Root>
-                    <Dialog.Trigger>
+                    <Dialog.Trigger asChild>
                         <button className="TooltipContent z-40 flex w-full gap-3 rounded-md bg-amber-700 p-3 drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
                             <Bars3Icon className="h-6 w-6 text-zinc-300" />
                         </button>
                     </Dialog.Trigger>
-                    {/* <div className="fixed z-20 top-0 w-screen h-screen flex items-center justify-center"> */}
                     <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
                     <Dialog.Content className="TooltipContent fixed inset-10 bottom-5 z-20 flex items-start justify-start rounded border border-zinc-700 bg-zinc-800">
                         <div className="flex w-full flex-col justify-start p-2">
@@ -521,18 +510,8 @@ const MobileMenu = () => {
                             </Dialog.DialogClose>
                         </div>
                     </Dialog.Content>
-                    {/* </div> */}
                 </Dialog.Root>
-                {/* <div className="text font-semibold">
-                      {context == "Home" && <p>Glance</p>}
-                      {context == "Blueprints" && <p>Blueprints</p>}
-                      {context == "CrewMembers" && <p>Crew Members</p>}
-                      {context == "Projects" && <p>Projects</p>}
-                    </div> */}
             </div>
-            {/* <div>
-                    <UserButton />
-                  </div> */}
         </div>
     )
 }

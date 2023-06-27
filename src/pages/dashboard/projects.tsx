@@ -18,7 +18,6 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { DashboardMenu } from "~/components/dashboardMenu";
 dayjs.extend(relativeTime);
 
-
 const ProjectMenu = () => (
     <>
         <TooltipComponent content="Add a New Project" side="bottom">
@@ -190,14 +189,6 @@ const ProjectsPage: NextPage = () => {
                                                         <p>·</p>
                                                         <p className="text-sm">{project.status}</p>
                                                     </div>
-                                                    {/* <div className="flex gap-1">
-                    <p className="truncate rounded-md text-amber-200 bg-zinc-600 px-1 text-center text-sm tracking-wide">
-                      Kansas City
-                    </p>
-                    <p className="truncate rounded-md text-amber-200 bg-zinc-600 px-1 text-center text-sm tracking-wide">
-                      Commercial Roofing
-                    </p>
-                  </div> */}
                                                 </div>
                                                 <div className="hidden overflow-clip font-thin sm:flex sm:w-1/2">
                                                     <p className="w-full truncate text-ellipsis text-center">
