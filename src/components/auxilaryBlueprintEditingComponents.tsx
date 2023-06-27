@@ -15,6 +15,8 @@ import {
   RocketLaunchIcon,
   SparklesIcon,
   TrashIcon,
+  UserIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
 import useScript from "./dragDropTouchEventsHandling";
 import Link from "next/link";
@@ -297,16 +299,16 @@ export const CrewList = (props: { nodes: Node[] }) => {
           <div className="flex w-full items-center justify-center gap-1 px-2 text-center text-xs font-bold sm:text-lg">
             <p>
               {nodeMode === "all" && <span>All</span>}
-              {"Crew Members"}
+              {" Crew Members"}
               {nodeMode === "notOnBlueprint" && (
                 <>
                   {" "}
-                  <span className="text-orange-500">Not</span> on Blueprint
+                  <span className="text-orange-500"> Not</span> on Blueprint
                 </>
               )}
               {nodeMode === "onlyOnBlueprint" && (
                 <>
-                  <span className="text-blue-500">Only</span> on Blueprint
+                  <span className="text-blue-500"> Only</span> on Blueprint
                 </>
               )}
             </p>
@@ -633,51 +635,51 @@ export const Stats = (props: {
       </div>
     );
 
-  const crewCount = data.nodes.filter(
+  const crewCount = currentNodes.filter(
     (node) => node.type === "crewNode"
   ).length;
 
-  const projectCount = data.nodes.filter(
+  const projectCount = currentNodes.filter(
     (node) => node.type === "projectNode"
   ).length;
 
   const findDuplicateCrewNodes = (nodes: Node[]) => {
-    const crewNodes = nodes.filter((node) => node.type === "crewNode");
-    const crewNames = crewNodes.map((node) => node.data as CrewMember);
-
-    const duplicateCrewNames = crewNames.filter((name) =>
-      crewNames.find((n) => n.id === name.id)
-    );
+    const filteredNodes = nodes.filter((node) => node.type === "crewNode");
+    const crewNodes = filteredNodes.map((node) => node.data as CrewMember);
 
     const duplicateCrewNodes: CrewMember[] = [];
 
-    crewNames.filter((node) => {
-      const res =
-        duplicateCrewNames.includes(node) &&
-        !duplicateCrewNodes.find((n) => n.id === node.id);
+    crewNodes.findIndex((node, index) => {
+      crewNodes.findLastIndex((n, index2) => {
+        if (node.id === n.id && index != index2) {
+          if (duplicateCrewNodes.find((n) => n.id === node.id)) return false;
 
-      if (res) duplicateCrewNodes.push(node);
+          duplicateCrewNodes.push(node);
+          return true;
+        }
+      });
     });
+
     return duplicateCrewNodes;
   };
 
   const findDuplicateProjectNodes = (nodes: Node[]) => {
-    const projectNodes = nodes.filter((node) => node.type === "projectNode");
-    const projectNames = projectNodes.map((node) => node.data as Project);
-
-    const duplicateProjectNames = projectNames.filter((name) =>
-      projectNames.find((n) => n.id === name.id)
-    );
+    const filteredNodes = nodes.filter((node) => node.type === "projectNode");
+    const projectNodes = filteredNodes.map((node) => node.data as Project);
 
     const duplicateProjectNodes: Project[] = [];
 
-    projectNames.filter((node) => {
-      const res =
-        duplicateProjectNames.includes(node) &&
-        !duplicateProjectNodes.find((n) => n.id === node.id);
+    projectNodes.findIndex((node, index) => {
+      projectNodes.findLastIndex((n, index2) => {
+        if (node.id === n.id && index != index2) {
+          if (duplicateProjectNodes.find((n) => n.id === node.id)) return false;
 
-      if (res) duplicateProjectNodes.push(node);
+          duplicateProjectNodes.push(node);
+          return true;
+        }
+      });
     });
+
     return duplicateProjectNodes;
   };
 
@@ -691,33 +693,55 @@ export const Stats = (props: {
 
       <div className="flex flex-col gap-1 p-1">
         <div className="pb-4">
-          <div className="flex gap-2">
-            <p className="font-semibold">Crew Count:</p>
-            <p> {crewCount} </p>
-          </div>
+          <div className="flex gap-3">
+            <TooltipComponent
+              content="Count how many crew members exist on the blueprint"
+              side={"top"}
+            >
+              <div className="flex gap-1 rounded bg-zinc-600 px-2">
+                <WrenchScrewdriverIcon className="h-6 w-6" />
+                <p>{projectCount}</p>
+              </div>
+            </TooltipComponent>
 
+            <TooltipComponent
+              content="Count how many projects exist on the blueprint"
+              side={"top"}
+            >
+              <div className="flex gap-1 rounded bg-zinc-600 px-2">
+                <UserIcon className="h-6 w-6" />
+                <p> {crewCount} </p>
+              </div>
+            </TooltipComponent>
+          </div>
           <div className="py-2">
-            <p className="font-semibold">Duplicate Crew Members</p>
+            <p className="text-center text-lg font-semibold">
+              Duplicate Crew Members
+            </p>
 
             {findDuplicateCrewNodes(currentNodes).length > 0 ? (
               <div className="border-t border-zinc-600">
-                {findDuplicateCrewNodes(data.nodes).map((node) => (
+                {findDuplicateCrewNodes(currentNodes).map((node) => (
                   <p className="border-b border-zinc-600 p-1" key={node.id}>
                     {node.name}{" "}
                   </p>
                 ))}
               </div>
             ) : (
-              <span>None</span>
+              <span className="text-center italic text-zinc-500">
+                No Duplicates
+              </span>
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <p className="font-semibold">Project Count:</p>
           <p> {projectCount} </p>
-        </div>
+        </div> */}
         <div className="py-2">
-          <p className="font-semibold">Duplicate Projects</p>
+          <p className="text-center text-lg font-semibold">
+            Duplicate Projects
+          </p>
           {findDuplicateProjectNodes(currentNodes).length > 0 ? (
             <div className="border-t border-zinc-600">
               {findDuplicateProjectNodes(data.nodes).map((node) => (
@@ -727,7 +751,9 @@ export const Stats = (props: {
               ))}
             </div>
           ) : (
-            <span>None</span>
+            <span className="text-center italic text-zinc-500">
+              No Duplicates
+            </span>
           )}
         </div>
       </div>
@@ -755,6 +781,10 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
   const [blueprintName, setblueprintName] = useState(blueprint.name);
   const [blueprintDescription, setBlueprintDescription] = useState(
     blueprint.description
+  );
+
+  useScript(
+    "https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"
   );
 
   return (
@@ -805,29 +835,29 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
             </div>
           </TabContent>
           <TabContent value="tab2">
-            <div className="flex w-1/2 flex-col gap-2 py-4 ">
+            <div className="flex w-1/2 flex-col gap-2 py-4 placeholder:text-zinc-700 placeholder:italic">
               <div>
                 <p className="font-semibold">Title</p>
                 <input
                   type="text"
-                  placeholder="blueprint name"
+                  placeholder="Blueprint Name"
                   value={blueprintName}
                   onChange={(e) => {
                     setblueprintName(e.currentTarget.value);
                   }}
-                  className="w-full rounded p-1 text-zinc-700"
+                  className="w-full rounded p-1 text-zinc-700 hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600"
                 />
               </div>
               <div>
                 <p className="font-semibold">Description</p>
                 <input
                   type="text"
-                  placeholder="blueprint name"
+                  placeholder="Blueprint Description"
                   value={blueprintDescription}
                   onChange={(e) => {
                     setBlueprintDescription(e.currentTarget.value);
                   }}
-                  className="w-full rounded p-1 text-zinc-700"
+                  className="w-full rounded p-1 text-zinc-700 outline-none hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600"
                 />
               </div>
             </div>
@@ -838,7 +868,7 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
                   content="Warning! You will not be able to recover the blueprint after you delete it."
                   side={"left"}
                 >
-                  <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 p-2 font-bold">
+                  <button className="transition-color flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 p-2 font-bold duration-100 hover:bg-red-500">
                     <TrashIcon className="h-5 w-5" />
                     Delete Blueprint Forever
                   </button>

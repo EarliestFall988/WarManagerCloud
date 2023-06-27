@@ -204,9 +204,8 @@ const EditProjectPage = function ({ id }: { id: string }) {
       <main className="min-w-screen min-h-screen bg-zinc-800">
         <NewItemPageHeader
           title={`${project?.name} (Project)`}
-          context="projects"
           save={SaveChanges}
-          cancel={() => void router.push("/dashboard?context=Projects")}
+          cancel={() => void router.back()}
           saving={mutation.isLoading}
         />
         <div className="flex items-center justify-center">

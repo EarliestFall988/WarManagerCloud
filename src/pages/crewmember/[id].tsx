@@ -140,7 +140,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="min-h-screen bg-zinc-800">
-        <NewItemPageHeader title={`${data.name} `} context="crewmembers" save={save} saving={mutation.isLoading} cancel={() => void router.push("/dashboard?context=CrewMembers")} />
+        <NewItemPageHeader title={`${data.name} `} save={save} saving={mutation.isLoading} cancel={() => void router.back()} />
         <div className="flex items-center justify-center">
           <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-3/5">
             <div className="w-full p-2">

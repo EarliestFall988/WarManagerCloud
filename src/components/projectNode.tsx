@@ -7,6 +7,7 @@ import { TagBubble } from "./TagComponent";
 
 interface IProjectInput {
   data: {
+    id: string;
     name: string;
     description: string;
     address: string;
@@ -32,12 +33,13 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
   const startDate = new Date(data.startDate);
   const endDate = new Date(data.endDate);
 
-  console.log("data", data);
-  console.log("tags", data.tags);
+  // console.log("data", data);
+  // console.log("tags", data.tags);
 
   return (
     <>
       <HoverCardComponent
+      editURL={`/projects/${data.id}`}
         trigger={
           <div className="h-full w-full">
             <div className="flex h-full w-full cursor-move rounded-sm border-b-2 border-amber-700 bg-zinc-700 px-1 text-zinc-100 transition-all duration-100 hover:bg-zinc-600">

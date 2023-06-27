@@ -9,9 +9,12 @@ import { NodeResizer } from "reactflow";
 
 // import * as HoverCard from "@radix-ui/react-hover-card";
 import HoverCardComponent from "./HoverCard";
+import type { Tag } from "@prisma/client";
+import { TagBubble } from "./TagComponent";
 
 interface crewNodeInput {
   data: {
+    id: string;
     name: string;
     description: string;
     position: string;
@@ -23,6 +26,7 @@ interface crewNodeInput {
     burden: string;
     createdAt: string;
     lastReviewDate: string;
+    tags: Tag[];
   };
   selected: boolean;
 }
@@ -49,11 +53,14 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
   const wageNumber = Number(data.wage);
   const burdenNumber = Number(data.burden);
 
+  console.log("crew tags", data.tags);
+
   return (
     <>
       <HoverCardComponent
+        editURL={`/crewmember/${data.id}`}
         trigger={
-          <div className="w-full h-full">
+          <div className="h-full w-full">
             {/* <Handle type="target" position={Position.Bottom} id={"fanfan"} /> */}
             <div className={theme}>
               <div className="h-8 w-28">
@@ -78,25 +85,46 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
             <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
               <div className="flex items-center gap-3 pb-3">
                 <UserCircleIcon className="h-12 w-12" />
-                <div>
-                  <div className="text-lg font-semibold">{data.name}</div>
-                  <div className="truncate text-ellipsis italic tracking-tight text-zinc-300">
-                    {data.position}
+                <div className="flex flex-col">
+                  <div>
+                    <div className="text-lg font-semibold">{data.name}</div>
+                    <div className="truncate text-ellipsis italic tracking-tight text-zinc-300">
+                      {data.position}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  {data.email && (
-                    <div className="flex items-center gap-2">
-                      <IdentificationIcon className="h-4 w-4" />
-                      <div className="text-sm">{data.email}</div>
-                    </div>
-                  )}
-                  {data.phone && (
-                    <div className="flex items-center gap-2">
-                      <PhoneIcon className="h-4 w-4" />
-                      <div className="text-sm">{data.phone}</div>
-                    </div>
-                  )}
+                  <div>
+                    {data.email && (
+                      <div className="flex items-center gap-2">
+                        <IdentificationIcon className="h-4 w-4" />
+                        <div className="text-sm">{data.email}</div>
+                      </div>
+                    )}
+                    {data.phone && (
+                      <div className="flex items-center gap-2">
+                        <PhoneIcon className="h-4 w-4" />
+                        <div className="text-sm">{data.phone}</div>
+                      </div>
+                    )}
+                    {!data.email && !data.phone && (
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm">
+                          <span className="font-thin text-zinc-400">
+                            Contact
+                          </span>{" "}
+                          (none)
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="max-h-[5rem] w-full">
+                    {data.tags && (
+                      <div className="flex w-[15vw] flex-wrap gap-1">
+                        {data.tags.map((tag) => (
+                          <TagBubble key={tag.id} tag={tag} style="text-xs" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
