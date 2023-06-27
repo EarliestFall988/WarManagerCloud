@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon, ChartBarIcon, Cog6ToothIcon, DocumentIcon, PlusIcon, TrashIcon, UserCircleIcon, WrenchScrewdriverIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon, ChartBarIcon, Cog6ToothIcon, DocumentIcon, NewspaperIcon, PlusIcon, TrashIcon, UserCircleIcon, UsersIcon, WrenchScrewdriverIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import TooltipComponent from "./Tooltip";
 import { LogoComponent } from "./RibbonLogo";
 import { SignOutButton, UserButton, useUser } from "@clerk/nextjs";
@@ -278,6 +278,11 @@ export const DashboardMenu = () => {
         if (router.pathname === "/dashboard/glance") {
             setContext("Home");
         }
+
+        if (router.pathname === "/dashboard/activity") {
+            setContext("Activity");
+        }
+
     }, [router.pathname]);
 
     const { user } = useUser();
@@ -288,7 +293,7 @@ export const DashboardMenu = () => {
 
     return (
         <>
-            <div className="sm:w-12"></div>
+            <div className="md:w-12"></div>
 
             <div
                 onMouseEnter={() => {
@@ -300,7 +305,23 @@ export const DashboardMenu = () => {
                 className={`hidden h-screen z-30 w-12 flex-col items-start justify-between overflow-x-clip border-r bg-zinc-900/90 border-zinc-700 backdrop-blur transition-all duration-75 hover:w-1/6 hover:shadow-xl md:fixed md:flex`}
             >
                 <div className="flex w-full flex-col items-center justify-start">
-                    <TooltipComponent
+                    <TooltipComponent content="View Recent Activity" side="right">
+                        <button
+                            onClick={() => {
+                                // void router.push("/dashboard?context=Projects");
+                                void router.push("/dashboard/activity")
+                            }}
+                            className={`flex w-full gap-1 p-2 font-semibold ${toggleOpen ? "justify-start" : "justify-center"
+                                } items-center transition-all duration-200 ${context === "Activity"
+                                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                                    : " border-b border-zinc-700 hover:bg-zinc-700"
+                                }`}
+                        >
+                            <NewspaperIcon className="h-6 w-6" />
+                            {toggleOpen && <p>Recent Activity</p>}
+                        </button>
+                    </TooltipComponent>
+                    {/* <TooltipComponent
                         content="View Overall JR&CO Performance"
                         side="right"
                     >
@@ -319,7 +340,7 @@ export const DashboardMenu = () => {
                             <ChartBarIcon className="h-6 w-6" />
                             {toggleOpen && <p>Glance</p>}
                         </button>
-                    </TooltipComponent>
+                    </TooltipComponent> */}
                     <TooltipComponent content="View all Blueprints" side="right">
                         <button
                             onClick={() => {
@@ -431,7 +452,7 @@ export const DashboardMenu = () => {
 const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context, router }) => {
 
     return (
-        <div className="z-30 fixed bottom-4 left-4 flex items-center justify-around gap-1 p-2 md:hidden">
+        <div className="fixed bottom-4 left-4 flex items-center justify-around gap-1 p-2 md:hidden">
             <div className="flex items-center justify-start gap-2">
                 <button
                     onClick={router.back}
@@ -445,69 +466,100 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                             <Bars3Icon className="h-6 w-6 text-zinc-300" />
                         </button>
                     </Dialog.Trigger>
-                    <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
-                    <Dialog.Content className="TooltipContent fixed inset-10 bottom-5 z-20 flex items-start justify-start rounded border border-zinc-700 bg-zinc-800">
-                        <div className="flex w-full flex-col justify-start p-2">
-                            <Dialog.DialogClose>
-                                <button
-                                    className={`flex w-full items-center justify-center p-2 text-red-400 transition-all duration-200`}
-                                >
-                                    <XMarkIcon className="h-6 w-6 " /> Close Menu
-                                </button>
-                            </Dialog.DialogClose>
-                            <Dialog.DialogClose>
+                    <Dialog.Overlay className="z-50 TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
+                    <Dialog.Content className="TooltipContent z-50 fixed inset-10 bottom-5 flex items-start justify-start rounded border border-zinc-700 bg-zinc-800">
+                        <div className="w-full h-full flex flex-col justify-between p-2">
+                            <div className="flex flex-col w-full">
+                                <Dialog.DialogClose asChild>
+                                    <button
+                                        className={`flex w-full items-center justify-center p-2 text-red-400 transition-all duration-200`}
+                                    >
+                                        <XMarkIcon className="h-6 w-6 " /> Close Menu
+                                    </button>
+                                </Dialog.DialogClose>
+                                {/* <Dialog.DialogClose asChild>
                                 <button
                                     onClick={() => {
-                                        void router.push("/dashboard?context=Home");
+                                        void router.push("/dashboard/glance");
                                     }}
-                                    className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Home"
+                                    className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Home"
                                         ? "rounded bg-amber-800 hover:bg-red-700"
                                         : "border-b border-zinc-600 hover:bg-zinc-600"
                                         }`}
                                 >
                                     Glance
                                 </button>
-                            </Dialog.DialogClose>
+                            </Dialog.DialogClose> */}
 
-                            <Dialog.DialogClose>
-                                <button
-                                    onClick={() => {
-                                        void router.push("/dashboard/blueprints")
-                                    }}
-                                    className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Blueprints"
-                                        ? "rounded bg-amber-800 hover:bg-red-700"
-                                        : "border-b border-zinc-600 hover:bg-zinc-600"
-                                        }`}
-                                >
-                                    Blueprints
-                                </button>
-                            </Dialog.DialogClose>
-                            <Dialog.DialogClose>
-                                <button
-                                    onClick={() => {
-                                        void router.push("/dashboard/crew")
-                                    }}
-                                    className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "CrewMembers"
-                                        ? "rounded bg-amber-800 hover:bg-red-700"
-                                        : "border-b border-zinc-600 hover:bg-zinc-600"
-                                        }`}
-                                >
-                                    Crew
-                                </button>
-                            </Dialog.DialogClose>
-                            <Dialog.DialogClose>
-                                <button
-                                    onClick={() => {
-                                        void router.push("/dashboard/projects")
-                                    }}
-                                    className={`w-full p-2 text-lg font-bold transition-all duration-200 ${context === "Projects"
-                                        ? "rounded bg-amber-800 hover:bg-red-700"
-                                        : "border-b border-zinc-600 hover:bg-zinc-600 "
-                                        }`}
-                                >
-                                    Projects
-                                </button>
-                            </Dialog.DialogClose>
+                                <Dialog.DialogClose asChild>
+                                    <button
+                                        onClick={() => {
+                                            void router.push("/dashboard/activity");
+                                        }}
+                                        className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Activity"
+                                            ? "rounded bg-amber-800 hover:bg-red-700"
+                                            : "border-b border-zinc-600 hover:bg-zinc-600"
+                                            }`}
+                                    >
+                                        <NewspaperIcon className="h-6 w-6" />
+                                        Recent Activity
+                                    </button>
+                                </Dialog.DialogClose>
+
+                                <Dialog.DialogClose asChild>
+                                    <button
+                                        onClick={() => {
+                                            void router.push("/dashboard/blueprints")
+                                        }}
+                                        className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Blueprints"
+                                            ? "rounded bg-amber-800 hover:bg-red-700"
+                                            : "border-b border-zinc-600 hover:bg-zinc-600"
+                                            }`}
+                                    >
+                                        <DocumentIcon className="h-6 w-6" />
+                                        Blueprints
+                                    </button>
+                                </Dialog.DialogClose>
+                                <Dialog.DialogClose asChild>
+                                    <button
+                                        onClick={() => {
+                                            void router.push("/dashboard/crew")
+                                        }}
+                                        className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "CrewMembers"
+                                            ? "rounded bg-amber-800 hover:bg-red-700"
+                                            : "border-b border-zinc-600 hover:bg-zinc-600"
+                                            }`}
+                                    >
+                                        <UsersIcon className="h-6 w-6" />
+                                        Crew
+                                    </button>
+                                </Dialog.DialogClose>
+                                <Dialog.DialogClose asChild>
+                                    <button
+                                        onClick={() => {
+                                            void router.push("/dashboard/projects")
+                                        }}
+                                        className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Projects"
+                                            ? "rounded bg-amber-800 hover:bg-red-700"
+                                            : "border-b border-zinc-600 hover:bg-zinc-600 "
+                                            }`}
+                                    >
+                                        <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
+                                    </button>
+                                </Dialog.DialogClose>
+                            </div>
+                            <div className="flex flex-col w-full">
+                                <Dialog.DialogClose asChild>
+                                    <SignOutButton>
+                                        <UserButton />
+                                        <div
+                                            className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2`}
+                                        >
+                                            <ArrowRightOnRectangleIcon className="h-6 w-6 " /> Sign Out
+                                        </div>
+                                    </SignOutButton>
+                                </Dialog.DialogClose>
+                            </div>
                         </div>
                     </Dialog.Content>
                 </Dialog.Root>

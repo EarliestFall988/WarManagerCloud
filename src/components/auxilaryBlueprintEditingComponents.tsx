@@ -25,6 +25,7 @@ import { GetListOfNodesSortedByColumn } from "~/states/state";
 import TooltipComponent from "./Tooltip";
 import * as Tabs from "@radix-ui/react-tabs";
 import { TagBubble } from "./TagComponent";
+import { ScheduleItem } from "./ScheduleItem";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -530,50 +531,51 @@ export const ExportBlueprint = () => {
             </div>
           )}
           {links?.map((data) => (
-            <button
-              onClick={() => Copy(data.link)}
-              key={data.id}
-              className="flex w-full items-center justify-between border-b border-zinc-600 transition-all duration-200 hover:rounded-sm hover:bg-zinc-600 sm:py-2  "
-            >
-              <div className="flex w-8/12 items-center">
-                {data && data.user && data.user.profilePicture && (
-                  <Image
-                    className="scale-75 rounded-full sm:scale-90"
-                    src={data.user.profilePicture}
-                    width={50}
-                    height={50}
-                    alt={`${data.user.email || "unknown"} + 's profile picture`}
-                  />
-                )}
-                <div className="flex w-5/6 flex-col items-start justify-center pl-1 sm:w-2/3 ">
-                  {data.user?.profilePicture === null && (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-400">
-                      <p className="font-semibold text-white">
-                        {data.user?.email?.charAt(0).toUpperCase()}
-                      </p>
-                    </div>
-                  )}
-                  <p className="w-full truncate text-left text-lg font-semibold tracking-tight">
-                    {data.title}
-                  </p>
-                  <p className="text-sm text-zinc-400">
-                    {data.user?.email || "unknown"}
-                  </p>
-                </div>
-              </div>
-              <p className="hidden italic text-zinc-300 sm:flex sm:w-1/2">
-                {data.description}
-              </p>
+            // <button
+            //   onClick={() => Copy(data.link)}
+            //   key={data.id}
+            //   className="flex w-full items-center justify-between border-b border-zinc-600 transition-all duration-200 hover:rounded-sm hover:bg-zinc-600 sm:py-2  "
+            // >
+            //   <div className="flex w-8/12 items-center">
+            //     {data && data.user && data.user.profilePicture && (
+            //       <Image
+            //         className="scale-75 rounded-full sm:scale-90"
+            //         src={data.user.profilePicture}
+            //         width={50}
+            //         height={50}
+            //         alt={`${data.user.email || "unknown"} + 's profile picture`}
+            //       />
+            //     )}
+            //     <div className="flex w-5/6 flex-col items-start justify-center pl-1 sm:w-2/3 ">
+            //       {data.user?.profilePicture === null && (
+            //         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-400">
+            //           <p className="font-semibold text-white">
+            //             {data.user?.email?.charAt(0).toUpperCase()}
+            //           </p>
+            //         </div>
+            //       )}
+            //       <p className="w-full truncate text-left text-lg font-semibold tracking-tight">
+            //         {data.title}
+            //       </p>
+            //       <p className="text-sm text-zinc-400">
+            //         {data.user?.email || "unknown"}
+            //       </p>
+            //     </div>
+            //   </div>
+            //   <p className="hidden italic text-zinc-300 sm:flex sm:w-1/2">
+            //     {data.description}
+            //   </p>
 
-              <Link
-                href={data.link}
-                target="_blank"
-                passHref
-                className="rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
-              >
-                <ArrowUpRightIcon className="h-5 w-5 text-white" />
-              </Link>
-            </button>
+            //   <Link
+            //     href={data.link}
+            //     target="_blank"
+            //     passHref
+            //     className="rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
+            //   >
+            //     <ArrowUpRightIcon className="h-5 w-5 text-white" />
+            //   </Link>
+            // </button>
+            <ScheduleItem key={data.id} data={data} />
           ))}
           {links?.length === 0 && searchTerm === "" && (
             <div className="flex flex-col items-center justify-center gap-5 py-5">

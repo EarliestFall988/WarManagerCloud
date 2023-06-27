@@ -9,16 +9,21 @@ import { toast } from "react-hot-toast";
 import { TagBubble } from "~/components/TagComponent";
 import { TagsPopover } from "~/components/TagDropdown";
 import { SimpleDropDown } from "~/components/dropdown";
-import { LoadingHeader } from "~/components/loading";
+import { LoadingHeader, LoadingPage } from "~/components/loading";
 import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import TooltipComponent from "~/components/Tooltip";
 import { DashboardMenu } from "~/components/dashboardMenu";
+import SignInModal from "~/components/signInPage";
+import { useUser } from "@clerk/nextjs";
 dayjs.extend(relativeTime);
 
 
 const CrewMembersPage: NextPage = () => {
+
+    const { user, isSignedIn } = useUser();
+
     const [crewSearchTerm, setCrewSearchTerm] = useState("");
     const [filterTags, setFilterTags] = useState<Tag[]>([]);
 
@@ -61,6 +66,12 @@ const CrewMembersPage: NextPage = () => {
         [mutate]
     );
 
+    if (!isSignedIn) {
+       return <SignInModal redirectUrl="/dashboard/crew" />;
+    }
+
+    // if (!user) return <LoadingPage />;
+
     return (
         <main className="flex min-h-[100vh] bg-zinc-900" >
             <DashboardMenu />
@@ -100,10 +111,10 @@ const CrewMembersPage: NextPage = () => {
                     <LoadingHeader loading={isLoading} title="Loading Crew Members" />
                 ) : loadingCrewError || !crewData ? (
                     <div className="flex w-full flex-col items-center justify-center gap-2 rounded p-2">
-                        <p className="text-[3rem] italic text-red-500">could not load data</p>
+                        <p className="italic text-red-500">could not load data</p>
                     </div>
                 ) : (
-                    <div className="flex h-[80vh] w-full flex-col  items-start justify-start gap-1 overflow-y-auto overflow-x-hidden border-t border-zinc-700 p-2 text-gray-100 md:h-[94vh]">
+                    <div className="flex h-[85vh] w-full flex-col items-start justify-start gap-1 overflow-y-auto overflow-x-hidden border-t border-zinc-700 p-2 text-gray-100 md:h-[94vh]">
                         {crewData.length > 0 &&
                             crewData?.map((crewMember) => (
                                 <div

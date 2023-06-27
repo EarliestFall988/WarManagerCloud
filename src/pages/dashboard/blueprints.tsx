@@ -9,12 +9,15 @@ import { api } from "~/utils/api";
 
 import relativeTime from "dayjs/plugin/relativeTime";
 import { DashboardMenu } from "~/components/dashboardMenu";
+import { useUser } from "@clerk/nextjs";
+import SignInModal from "~/components/signInPage";
 
 dayjs.extend(relativeTime);
 
 
 const BlueprintsListPage: NextPage = () => {
 
+    const { isSignedIn } = useUser();
 
     const [blueprintSearchTerm, setBlueprintSearchTerm] = useState("");
 
@@ -42,6 +45,10 @@ const BlueprintsListPage: NextPage = () => {
     //     </div>
     //   );
 
+    if (!isSignedIn) {
+        return <SignInModal redirectUrl="/dashboard/crew" />;
+     }
+
     return (
         <>
             <div className="flex w-full min-h-[100vh] bg-zinc-900" >
@@ -68,7 +75,7 @@ const BlueprintsListPage: NextPage = () => {
                 {loadingBlueprints ? (
                     <LoadingHeader loading={loadingBlueprints} title="Loading Blueprints" />
                 ) : loadingBlueprintsError || !data ? (
-                    <div className="m-auto flex h-[50vh] w-full flex-col items-center justify-center gap-2 rounded bg-red-500/10 p-2 sm:w-[74vw]">
+                    <div className="flex items-center justify-center w-full">
                         <p className="text-lg italic text-red-500">
                             Could not load blueprints
                         </p>
