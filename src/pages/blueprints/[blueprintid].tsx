@@ -36,7 +36,7 @@ import {
   ProjectsList,
   Stats,
 } from "~/components/auxilaryBlueprintEditingComponents";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { api } from "~/utils/api";
 
 import { shallow } from "zustand/shallow";

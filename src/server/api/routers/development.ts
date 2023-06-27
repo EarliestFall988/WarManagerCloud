@@ -28,7 +28,7 @@ export const developmentRouter = createTRPCRouter({
         event: z.string().min(3).max(10),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       console.log("testRouter: sendMessage: input: ", input);
 
 
@@ -50,6 +50,6 @@ export const developmentRouter = createTRPCRouter({
 
       // console.log("testRouter: sendMessage: result: ", result);
 
-      return input.message;
+      return result;
     }),
 });
