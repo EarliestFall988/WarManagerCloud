@@ -9,7 +9,7 @@ import { toast } from "react-hot-toast";
 import { TagBubble } from "~/components/TagComponent";
 import { TagsPopover } from "~/components/TagDropdown";
 import { SimpleDropDown } from "~/components/dropdown";
-import { LoadingHeader, LoadingPage } from "~/components/loading";
+import { LoadingHeader, LoadingPage2 } from "~/components/loading";
 import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -22,7 +22,7 @@ dayjs.extend(relativeTime);
 
 const CrewMembersPage: NextPage = () => {
 
-    const { user, isSignedIn } = useUser();
+    const { isSignedIn, isLoaded } = useUser();
 
     const [crewSearchTerm, setCrewSearchTerm] = useState("");
     const [filterTags, setFilterTags] = useState<Tag[]>([]);
@@ -66,11 +66,14 @@ const CrewMembersPage: NextPage = () => {
         [mutate]
     );
 
-    if (!isSignedIn) {
-       return <SignInModal redirectUrl="/dashboard/crew" />;
+
+    if (!isLoaded) {
+        return <LoadingPage2 />
     }
 
-    // if (!user) return <LoadingPage />;
+    if (!isSignedIn && isLoaded) {
+       return <SignInModal redirectUrl="/dashboard/crew" />;
+    }
 
     return (
         <main className="flex min-h-[100vh] bg-zinc-900" >

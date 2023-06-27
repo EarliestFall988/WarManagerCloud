@@ -1,8 +1,10 @@
+import { useUser } from "@clerk/nextjs";
 import { type NextPage } from "next";
 import { useState } from "react";
 import { ScheduleItem } from "~/components/ScheduleItem";
 import { DashboardMenu } from "~/components/dashboardMenu";
-import { LoadingSpinner } from "~/components/loading";
+import { LoadingPage2, LoadingSpinner } from "~/components/loading";
+import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
 
 
@@ -10,6 +12,7 @@ const SchedulesContainer = () => {
 
     const [searchTerm, setSearchTerm] = useState("")
     const { data: links, isLoading, isError } = api.schedules.getByName.useQuery({ name: searchTerm })
+
 
     return (
         <div className="border border-zinc-700 rounded w-full md:w-[50vw] p-3 h-[50vh] flex flex-col gap-1">
@@ -61,6 +64,16 @@ const SchedulesContainer = () => {
 
 const RecentActivityPage: NextPage = () => {
 
+
+    const { isSignedIn, isLoaded } = useUser();
+
+    if (!isLoaded) {
+        return <LoadingPage2 />
+    }
+
+    if (!isSignedIn && isLoaded) {
+        return <SignInModal redirectUrl="/dashboard/crew" />;
+    }
 
     return (
         <main className="flex min-h-[100vh] bg-zinc-900" >

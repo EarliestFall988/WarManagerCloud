@@ -11,11 +11,13 @@ import { TagBubble } from "~/components/TagComponent";
 import { TagsPopover } from "~/components/TagDropdown";
 import TooltipComponent from "~/components/Tooltip";
 import { SimpleDropDown } from "~/components/dropdown";
-import { LoadingHeader } from "~/components/loading";
+import { LoadingHeader, LoadingPage2 } from "~/components/loading";
 import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { DashboardMenu } from "~/components/dashboardMenu";
+import { useUser } from "@clerk/nextjs";
+import SignInModal from "~/components/signInPage";
 dayjs.extend(relativeTime);
 
 const ProjectMenu = () => (
@@ -86,6 +88,16 @@ const ProjectsPage: NextPage = () => {
         },
         [mutate]
     );
+
+    const { isSignedIn, isLoaded } = useUser();
+
+    if (!isLoaded) {
+        return <LoadingPage2 />
+    }
+
+    if (!isSignedIn && isLoaded) {
+        return <SignInModal redirectUrl="/dashboard/crew" />;
+    }
 
     return (
         <main className="flex min-h-[100vh] bg-zinc-900">

@@ -1,5 +1,4 @@
-import { SignIn, SignInButton } from "@clerk/nextjs";
-import { ArrowRightIcon } from "@heroicons/react/24/solid";
+import { SignIn } from "@clerk/nextjs";
 
 const SignInModal = (props: { redirectUrl: string }) => {
   return (
@@ -24,7 +23,7 @@ const SignInModal = (props: { redirectUrl: string }) => {
                 card: "bg-transparent shadow-sm",
                 logoBox: "bg-transparent",
               }
-            }}  />
+            }} />
 
           </div>
         </div>

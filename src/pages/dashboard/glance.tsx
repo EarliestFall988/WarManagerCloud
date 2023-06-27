@@ -3,7 +3,7 @@ import { type NextPage } from "next";
 import { type FC, type ReactNode, useState } from "react";
 import { ReactECharts } from "~/components/charts/React-Echarts";
 import { ReactEChartsLarge } from "~/components/charts/React-EchartsLarge";
-import { LoadingSpinner } from "~/components/loading";
+import { LoadingPage2, LoadingSpinner } from "~/components/loading";
 
 // import GaugeOption from "~/components/charts/GaugeChartDataTest";
 // import PieChartOption from "~/components/charts/PieChartDataTest";
@@ -17,6 +17,8 @@ import {
 } from "~/components/charts/PerformanceDataPieChart";
 import SunBurstTestOption from "~/components/charts/SunburstDataTest";
 import { DashboardMenu } from "~/components/dashboardMenu";
+import { useUser } from "@clerk/nextjs";
+import SignInModal from "~/components/signInPage";
 
 
 const Loader = () => {
@@ -63,6 +65,16 @@ const PieChartCard: FC<PieChartCardProps> = ({ title, chart }) => {
 
 const GlancePage: NextPage = () => {
     const loading = false;
+
+    const { isSignedIn, isLoaded } = useUser();
+
+    if (!isLoaded) {
+        return <LoadingPage2 />
+    }
+
+    if (!isSignedIn && isLoaded) {
+        return <SignInModal redirectUrl="/dashboard/crew" />;
+    }
 
     return (
         <main className="min-h-[100vh] bg-zinc-900 flex" >
