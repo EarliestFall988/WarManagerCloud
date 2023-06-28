@@ -18,10 +18,14 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { DashboardMenu } from "~/components/dashboardMenu";
 import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
+import Head from "next/head";
 dayjs.extend(relativeTime);
 
 const ProjectMenu = () => (
     <>
+        <Head>
+            <title>Projects | War Manager</title>
+        </Head>
         <TooltipComponent content="Add a New Project" side="bottom">
             <Link
                 href="/newproject"
@@ -156,7 +160,7 @@ const ProjectsPage: NextPage = () => {
                         </div>
                     )) ||
                     (data && data?.length > 0 && (
-                        <div className="h-[80vh] w-full overflow-y-auto overflow-x-hidden md:h-[94vh] ">
+                        <div className="w-full overflow-y-auto overflow-x-hidden ">
                             <div className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
                                 {data?.map((project, index) => (
                                     <div
@@ -170,7 +174,7 @@ const ProjectsPage: NextPage = () => {
                                                 passHref
                                                 className="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
                                             >
-                                                <div className="w-full sm:w-1/2">
+                                                <div className="flex-grow">
                                                     <div className="flex w-full items-center justify-start gap-1 overflow-clip">
                                                         <p className="whitespace-nowrap text-sm font-normal text-zinc-300">
                                                             {project.jobNumber}
@@ -179,7 +183,7 @@ const ProjectsPage: NextPage = () => {
                                                             {project.name}
                                                         </p>
                                                         {project.tags.length > 0 && (
-                                                            <div className="flex w-1/2 flex-wrap gap-1">
+                                                            <div className="flex flex-wrap gap-1">
                                                                 {project.tags.map((tag) => (
                                                                     <TagBubble
                                                                         tag={tag}
@@ -191,8 +195,8 @@ const ProjectsPage: NextPage = () => {
                                                         )}
                                                     </div>
                                                     <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
-                                                        <div className="w-2/7 flex items-center justify-start gap-1 overflow-clip">
-                                                            <MapPinIcon className="h-4 w-4" />
+                                                        <div className="flex items-center justify-start gap-1 overflow-clip text-xs">
+                                                            {/* <MapPinIcon className="h-4 w-4" /> */}
                                                             <p className="block max-w-[7rem] truncate text-left text-sm font-normal italic tracking-tight">
                                                                 {project.city.trim()}
                                                                 {project.state.trim() && `, ${project.state}`}
@@ -202,16 +206,13 @@ const ProjectsPage: NextPage = () => {
                                                         <p className="text-sm">{project.status}</p>
                                                     </div>
                                                 </div>
-                                                <div className="hidden overflow-clip font-thin sm:flex sm:w-1/2">
+                                                <div className="hidden overflow-clip font-thin flex-shrink  max-w-[30%] sm:flex">
                                                     <p className="w-full truncate text-ellipsis text-center">
                                                         {project.description}
                                                     </p>
                                                 </div>
-                                                <div className="flex w-1/6 items-center justify-end gap-1 overflow-clip px-1">
+                                                <div className="flex-shrink text-right items-center justify-end gap-1">
                                                     <p className="hidden text-xs text-zinc-400 md:block">
-                                                        updated
-                                                    </p>
-                                                    <p className="hidden truncate text-right text-sm italic sm:block">
                                                         {dayjs(project.updatedAt).fromNow()}
                                                     </p>
                                                 </div>
@@ -223,8 +224,8 @@ const ProjectsPage: NextPage = () => {
                                                     </button>
                                                 </DropdownMenu.Trigger>
                                                 <DropdownMenu.Portal>
-                                                    <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-600 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
-                                                        <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-600" />
+                                                    <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-500 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                                                        <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-500" />
                                                         <DropdownMenu.Item
                                                             className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
                                                             onSelect={() => {

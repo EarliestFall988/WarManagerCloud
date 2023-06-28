@@ -303,7 +303,7 @@ export const DashboardMenu = () => {
                 onMouseLeave={() => {
                     setToggle(false);
                 }}
-                className={`hidden h-screen z-30 w-12 flex-col items-start justify-between overflow-x-clip border-r bg-zinc-900/90 border-zinc-700 backdrop-blur transition-all duration-75 hover:w-1/6 hover:shadow-xl md:fixed md:flex`}
+                className={`hidden h-screen z-30 w-12 flex-col items-start justify-between overflow-x-clip border-r bg-zinc-800/90 border-zinc-700 backdrop-blur transition-all duration-75 hover:w-1/6 hover:shadow-xl md:fixed md:flex`}
             >
                 <div className="flex w-full flex-col items-center justify-start">
                     <TooltipComponent content="View Recent Activity" side="right">

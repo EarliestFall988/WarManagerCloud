@@ -19,6 +19,7 @@ import SunBurstTestOption from "~/components/charts/SunburstDataTest";
 import { DashboardMenu } from "~/components/dashboardMenu";
 import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
+import Head from "next/head";
 
 
 const Loader = () => {
@@ -43,6 +44,9 @@ const PieChartCard: FC<PieChartCardProps> = ({ title, chart }) => {
 
     return (
         <>
+            <Head>
+                <title>At A Glance | War Manager</title>
+            </Head>
             <div
                 className={`${open ? "h-72" : "h-14"
                     } overflow-hidden rounded bg-zinc-700 transition-all duration-200 m-auto w-[90vw] md:m-0 md:w-1/4`}
