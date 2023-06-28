@@ -387,6 +387,9 @@ export const projectsRouter = createTRPCRouter({
             // },
           ],
         },
+        include: {
+          tags: true,
+        },
       });
 
       return project;

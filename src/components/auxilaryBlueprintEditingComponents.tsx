@@ -4,7 +4,6 @@ import { LoadingSpinner } from "./loading";
 import type { Blueprint, CrewMember, Project, Tag } from "@prisma/client";
 import type { Edge, Node } from "reactflow";
 import {
-  ArrowUpRightIcon,
   BookmarkIcon,
   Cog6ToothIcon,
   ListBulletIcon,
@@ -37,12 +36,28 @@ const onDragStart = (
   event.dataTransfer.effectAllowed = "move";
 };
 
-const filterProjectsNotOnBlueprint = (nodes: Node[]) => {
-  const projectNodes = nodes.find((node) => node.type === "project");
+type filterProjectsProp = {
+  nodes: Node[];
+  data: (Project & { tags: Tag[] })[] | undefined;
+}
 
-  console.log(projectNodes);
+const FilterProjects = ({ nodes, data }: filterProjectsProp) => {
 
-  return [] as Project[]; // nodes.filter((node) => node.type !== "project") as Project[];
+  return data?.filter((project) => {
+    if (
+      nodes.find((node) => {
+        if (node.type === "projectNode") {
+          const nodeData = node.data as { id: string };
+          if (nodeData.id === project.id) {
+            return true;
+          }
+        }
+        return false;
+      })
+    )
+      return false;
+    return true;
+  });
 };
 
 export const ProjectsList = (props: { nodes: Node[] }) => {
@@ -71,9 +86,9 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
 
   const getProjectsToView = () => {
     if (nodeMode === "all" && !isLoadingProjects && !isErrorProjects) {
-      return searchedProjects || ([] as Project[]);
+      return searchedProjects || ([] as (Project & { tags: Tag[] })[]);
     } else if (nodeMode === "notOnBlueprint") {
-      return filterProjectsNotOnBlueprint(props.nodes) || ([] as Project[]);
+      return FilterProjects({ nodes: props.nodes, data: searchedProjects });
     } else if (nodeMode === "onlyOnBlueprint") {
       const nodes = props.nodes.filter((node) => node.type === "project");
 
@@ -84,9 +99,9 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
         });
       });
 
-      return projects || ([] as Project[]);
+      return projects || ([] as (Project & { tags: Tag[] })[]);
     } else {
-      return [] as Project[];
+      return [] as (Project & { tags: Tag[] })[];
     }
   };
 
@@ -178,17 +193,34 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
                   draggable={draggable}
                   onDragStart={(event) => onDragStart(event, "p-" + project.id)}
                 >
-                  <div className="w-2/3 truncate ">
-                    <p className="truncate text-sm sm:text-lg">
-                      {project.name}
+                  <div className="w-full truncate">
+                    <p className="truncate text-xs font-normal text-zinc-300">
+                      {project.jobNumber}
                     </p>
-                    <p className="truncate text-sm font-normal italic text-zinc-300">
-                      {project.city}, {project.state || "N/A"}
+
+                    <div className="truncate flex flex-wrap justify-start items-center flex-grow gap-1 font-semibold text-md">
+                      {project.name}
+                      {
+                        project.tags.map((tag) => (
+                          <TagBubble key={tag.id} tag={tag} style={"text-xs font-normal"} />
+                        ))
+                      }
+                    </div>
+
+                    <p className="truncate text-xs font-normal text-zinc-300">
+                      {project.city && project.state && (
+                        <>
+                          {project.city}, {project.state}
+                        </>
+                      )}
+                      {!project.city && !project.state && (
+                        <span className="text-zinc-400">N/A</span>
+                      )}
                     </p>
                   </div>
-                  <p className="hidden w-1/2 text-sm font-normal italic tracking-tight text-zinc-300 sm:flex">
+                  {/* <p className="hidden w-1/2 text-sm font-normal italic tracking-tight text-zinc-300 sm:flex">
                     {project.description}
-                  </p>
+                  </p> */}
                 </div>
               </Link>
             ))}
@@ -246,8 +278,6 @@ export const CrewList = (props: { nodes: Node[] }) => {
       name: searchTerm,
     });
 
-  console.log(searchTerm);
-  console.log(searchResult);
 
   let dataToUse = data;
 
@@ -376,8 +406,8 @@ export const CrewList = (props: { nodes: Node[] }) => {
                   onDragStart={(event) => onDragStart(event, "c-" + crew.id)}
                 >
                   <div className="max-w-[50%] truncate  ">
-                    <p className="truncate text-sm sm:text-lg">{crew.name}</p>
-                    <p className="h-5 truncate text-sm font-normal italic text-zinc-300">
+                    <p className="truncate text-md font-semibold">{crew.name}</p>
+                    <p className="h-5 truncate text-xs font-normal text-zinc-300">
                       {crew.position}
                     </p>
                   </div>
@@ -531,50 +561,6 @@ export const ExportBlueprint = () => {
             </div>
           )}
           {links?.map((data) => (
-            // <button
-            //   onClick={() => Copy(data.link)}
-            //   key={data.id}
-            //   className="flex w-full items-center justify-between border-b border-zinc-600 transition-all duration-200 hover:rounded-sm hover:bg-zinc-600 sm:py-2  "
-            // >
-            //   <div className="flex w-8/12 items-center">
-            //     {data && data.user && data.user.profilePicture && (
-            //       <Image
-            //         className="scale-75 rounded-full sm:scale-90"
-            //         src={data.user.profilePicture}
-            //         width={50}
-            //         height={50}
-            //         alt={`${data.user.email || "unknown"} + 's profile picture`}
-            //       />
-            //     )}
-            //     <div className="flex w-5/6 flex-col items-start justify-center pl-1 sm:w-2/3 ">
-            //       {data.user?.profilePicture === null && (
-            //         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-400">
-            //           <p className="font-semibold text-white">
-            //             {data.user?.email?.charAt(0).toUpperCase()}
-            //           </p>
-            //         </div>
-            //       )}
-            //       <p className="w-full truncate text-left text-lg font-semibold tracking-tight">
-            //         {data.title}
-            //       </p>
-            //       <p className="text-sm text-zinc-400">
-            //         {data.user?.email || "unknown"}
-            //       </p>
-            //     </div>
-            //   </div>
-            //   <p className="hidden italic text-zinc-300 sm:flex sm:w-1/2">
-            //     {data.description}
-            //   </p>
-
-            //   <Link
-            //     href={data.link}
-            //     target="_blank"
-            //     passHref
-            //     className="rounded bg-zinc-600 p-2 hover:scale-105 hover:bg-zinc-500"
-            //   >
-            //     <ArrowUpRightIcon className="h-5 w-5 text-white" />
-            //   </Link>
-            // </button>
             <ScheduleItem key={data.id} data={data} />
           ))}
           {links?.length === 0 && searchTerm === "" && (
