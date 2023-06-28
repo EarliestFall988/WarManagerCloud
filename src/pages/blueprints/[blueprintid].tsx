@@ -302,7 +302,7 @@ const BlueprintGUI = () => {
             <LoadingPage />
           ) : (
             <>
-              <FlowWithProvider />
+              <FlowWithProvider blueprintId={blueprintId} />
               <div
                 className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700/80 drop-shadow-lg backdrop-blur-md transition-all duration-75 sm:gap-1 sm:p-1 ${toggle == "" ? "w-12" : " w-full md:w-[50vw] lg:w-[40vw]"
                   }`}

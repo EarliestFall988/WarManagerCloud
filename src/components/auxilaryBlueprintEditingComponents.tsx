@@ -80,7 +80,6 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
     name: search,
   });
 
-  console.log(searchedProjects);
 
   const draggable = !isError && !isLoading && data !== undefined;
 
@@ -90,7 +89,11 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
     } else if (nodeMode === "notOnBlueprint") {
       return FilterProjects({ nodes: props.nodes, data: searchedProjects });
     } else if (nodeMode === "onlyOnBlueprint") {
-      const nodes = props.nodes.filter((node) => node.type === "project");
+      const nodes = props.nodes.filter((node) => node.type === "projectNode");
+
+      console.log("props nodes", props.nodes);
+
+      console.log("nodes", nodes);
 
       const projects = data?.filter((project) => {
         return nodes.some((node) => {
@@ -98,6 +101,8 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           return nodeProject.id === project.id;
         });
       });
+
+      console.log("projects", projects);
 
       return projects || ([] as (Project & { tags: Tag[] })[]);
     } else {
@@ -764,6 +769,7 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
     blueprint.description
   );
 
+  
   useScript(
     "https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"
   );
@@ -788,11 +794,10 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
           </Tabs.List>
           <TabContent value="tab1">
             <div
-              className="flex select-none items-center justify-start border-b border-zinc-600 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
-              draggable={false}
-              onDragStart={(event) => onDragStart(event, "c-" + "test")}
+              className="flex select-none items-center justify-start border-b p-1 border-zinc-600 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
+              draggable={true}
+              onDragStart={(event) => onDragStart(event, "n-" + "cljg8hams0000lnh8pxfll9rf")}
             >
-              <BookmarkIcon className="h-12 w-12 text-yellow-200 " />
               <div className="w-2/3 truncate">
                 <p className="truncate text-sm sm:text-lg">Sticky Note</p>
                 <p className="truncate text-sm font-normal italic text-zinc-300">
@@ -801,10 +806,10 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
               </div>
             </div>
 
-            <div
+            {/* <div
               className="flex select-none items-center justify-start border-b border-zinc-600 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
-              draggable={false}
-              onDragStart={(event) => onDragStart(event, "c-" + "test")}
+              draggable={true}
+              onDragStart={(event) => onDragStart(event, "n-" + "test")}
             >
               <BookmarkIcon className="h-12 w-12 text-yellow-200 " />
               <div className="w-2/3 truncate">
@@ -813,7 +818,7 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
                   {"Make a note of something important"}
                 </p>
               </div>
-            </div>
+            </div> */}
           </TabContent>
           <TabContent value="tab2">
             <div className="flex w-1/2 flex-col gap-2 py-4 placeholder:text-zinc-700 placeholder:italic">

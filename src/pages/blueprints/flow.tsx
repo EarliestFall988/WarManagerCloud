@@ -21,6 +21,7 @@ import { useStore } from "../../states/state";
 
 import crewNode from "~/components/crewNode";
 import projectNode from "~/components/projectNode";
+import noteNode from "~/components/noteNode";
 import { api } from "~/utils/api";
 
 export type flowState = {
@@ -42,9 +43,10 @@ const selector = (state: flowState) => ({
 const nodeTypes = {
   crewNode,
   projectNode,
+  noteNode,
 };
 
-const Flow = () => {
+const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore(
     selector,
     shallow
@@ -54,11 +56,12 @@ const Flow = () => {
 
   const { data: crewData } = api.crewMembers.getAll.useQuery();
   const { data: projectData } = api.projects.getAll.useQuery();
+  const { data: noteData } = api.notes.getAll.useQuery({});
 
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
   const reactFlowInstance = useReactFlow();
 
-  console.log("flow instance", reactFlowInstance);
+  // console.log("flow instance", reactFlowInstance);
 
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
 
@@ -81,13 +84,13 @@ const Flow = () => {
       const dataId = data.split("-")[1];
 
       const blockResult = {
-        type: type == "p" ? "projectNode" : "crewNode",
+        type: type == "p" ? "projectNode" : (type == "c" ? "crewNode" : "noteNode"),
         data: {},
       };
 
       if (type == "p") {
         const project = projectData.find((project) => project.id == dataId);
-        if (project == null) return;
+        if (!project) return;
 
         blockResult.data = project;
       }
@@ -96,8 +99,23 @@ const Flow = () => {
         const crewMember = crewData.find(
           (crewMember) => crewMember.id == dataId
         );
-        if (crewMember == null) return;
+        if (!crewMember) return;
         blockResult.data = crewMember;
+      }
+
+      if (type == "n") {
+
+        console.log("node", dataId);
+        const note = noteData?.find(
+          (note) => note.id == dataId
+        )
+
+        // console.log("note", note)
+
+        if (!note) return;
+        blockResult.data = {...note, blueprintId};
+
+        // console.log(blockResult);
       }
 
       const position = reactFlowInstance.project({
@@ -126,7 +144,7 @@ const Flow = () => {
         nodes: [...state.nodes, newNode],
       }));
     },
-    [crewData, projectData, reactFlowInstance]
+    [crewData, projectData, reactFlowInstance, noteData, blueprintId]
   );
 
   return (
@@ -165,10 +183,10 @@ const Flow = () => {
   );
 };
 
-const FlowWithProvider = () => {
+const FlowWithProvider: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
   return (
     <ReactFlowProvider>
-      <Flow />
+      <Flow blueprintId={blueprintId} />
     </ReactFlowProvider>
   );
 };
