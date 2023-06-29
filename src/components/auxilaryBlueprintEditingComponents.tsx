@@ -4,8 +4,6 @@ import { LoadingSpinner } from "./loading";
 import type { Blueprint, CrewMember, Project, Tag } from "@prisma/client";
 import type { Edge, Node } from "reactflow";
 import {
-
-  CloudArrowDownIcon,
   CloudArrowUpIcon,
   Cog6ToothIcon,
   ListBulletIcon,
@@ -29,7 +27,6 @@ import { TagBubble } from "./TagComponent";
 import { ScheduleItem } from "./ScheduleItem";
 import { DialogComponent } from "./dialog";
 import { useRouter } from "next/router";
-import { on } from "events";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,

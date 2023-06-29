@@ -9,9 +9,12 @@ import Link from "next/link";
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
+  ArrowTopRightOnSquareIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
+  ArrowsPointingOutIcon,
   CloudArrowUpIcon,
+  DocumentTextIcon,
   EllipsisHorizontalIcon,
   IdentificationIcon,
   PaperAirplaneIcon,
@@ -263,7 +266,7 @@ const BlueprintGUI = () => {
               </button>
             </TooltipComponent>
             <div className="max-w-1/2 truncate rounded p-1 text-center text-sm font-semibold tracking-tight text-zinc-200 md:text-lg">
-              <TooltipComponent content="Blueprint Name" side="bottom">
+              <TooltipComponent content={blueprint.description} side="bottom">
                 <div className="py-1">
                   {blueprint.name ? blueprint.name : <LoadingSpinner />}
                 </div>
@@ -274,6 +277,18 @@ const BlueprintGUI = () => {
           <div className="flex w-1/2 items-center justify-end gap-1 sm:w-1/3 sm:gap-2">
             {blueprint.id && (
               <>
+                <TooltipComponent content="Share blueprint with other project managers" side="bottom">
+                  <button
+                    disabled={isSaving}
+                    className="rounded flex bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(`${window.location.href}`);
+                      toast.success("Copied blueprint link to clipboard");
+                    }}
+                  >
+                    <ArrowTopRightOnSquareIcon className="h-6 w-6" />
+                  </button>
+                </TooltipComponent>
                 <TooltipComponent content="Save to Cloud" side="bottom">
                   <button
                     disabled={isSaving}
@@ -348,7 +363,7 @@ const BlueprintGUI = () => {
                     </button>
                   </TooltipComponent>
                   <div className="w-full border-b border-zinc-600" />
-                  <TooltipComponent content="Share" side="left">
+                  <TooltipComponent content="Schedules" side="left">
                     <button
                       onClick={() => ToggleMenu("GetLink")}
                       className={`btn-add  z-20 rounded ${toggle == "GetLink"
@@ -356,7 +371,7 @@ const BlueprintGUI = () => {
                         : "bg-zinc-600 hover:bg-zinc-500"
                         }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
-                      <PaperAirplaneIcon className="h-6 w-6" />
+                      <DocumentTextIcon className="h-6 w-6" />
                     </button>
                   </TooltipComponent>
                   <TooltipComponent content="Blueprint Stats" side="left">
