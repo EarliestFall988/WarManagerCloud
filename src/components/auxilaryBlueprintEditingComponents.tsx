@@ -4,7 +4,9 @@ import { LoadingSpinner } from "./loading";
 import type { Blueprint, CrewMember, Project, Tag } from "@prisma/client";
 import type { Edge, Node } from "reactflow";
 import {
-  BookmarkIcon,
+
+  CloudArrowDownIcon,
+  CloudArrowUpIcon,
   Cog6ToothIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
@@ -25,6 +27,9 @@ import TooltipComponent from "./Tooltip";
 import * as Tabs from "@radix-ui/react-tabs";
 import { TagBubble } from "./TagComponent";
 import { ScheduleItem } from "./ScheduleItem";
+import { DialogComponent } from "./dialog";
+import { useRouter } from "next/router";
+import { on } from "events";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -764,15 +769,77 @@ const TabContent: React.FC<{ value: string; children: ReactNode }> = ({
 export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
   // GetListOfNodesSortedByColumn();
 
-  const [blueprintName, setblueprintName] = useState(blueprint.name);
+  const [blueprintName, setBlueprintName] = useState(blueprint.name);
   const [blueprintDescription, setBlueprintDescription] = useState(
     blueprint.description
   );
 
-  
+  const context = api.useContext().blueprints;
+  const router = useRouter();
+
+  const { mutate, isLoading: isDeleting } = api.blueprints.delete.useMutation({
+
+    onSuccess: () => {
+      console.log("Blueprint Deleted");
+      toast.success("Blueprint Deleted");
+      void context.invalidate();
+      void router.push("/dashboard/blueprints");
+    },
+
+    onError: (error) => {
+      toast.error("Error Deleting Blueprint");
+      console.log(error);
+    }
+  });
+
+  const { mutate: mutateUpdate, isLoading: isUpdating } = api.blueprints.updateDetails.useMutation({
+
+    onSuccess: () => {
+      console.log("Blueprint Updated");
+      toast.success("Blueprint Updated");
+      void context.invalidate();
+    },
+
+    onError: (error) => {
+      toast.error("Error Updating Blueprint");
+      console.log(error);
+    }
+
+  });
+
   useScript(
     "https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"
   );
+
+  const DeleteBlueprint = useCallback(() => {
+    toast.loading("Deleting Blueprint", { duration: 1000 });
+    mutate({ blueprintId: blueprint.id });
+  }, [blueprint.id, mutate]);
+
+  const UpdateBlueprint = useCallback(() => {
+    toast.loading("Updating Blueprint", { duration: 1000 });
+    mutateUpdate({
+      blueprintId: blueprint.id,
+      name: blueprintName,
+      description: blueprintDescription,
+    });
+  }, [
+    blueprint.id,
+    blueprintName,
+    blueprintDescription,
+    mutateUpdate,
+  ]);
+
+  if (!blueprint) return <div></div>
+
+  if (isDeleting || isUpdating) {
+    return (
+      <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] flex flex-col items-center justify-center">
+        <LoadingSpinner />
+        {/* <p className="text-center">Deleting Blueprint</p> */}
+      </div>
+    )
+  }
 
   return (
     <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
@@ -780,13 +847,13 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
         <Tabs.Root className="w-full" defaultValue="tab1">
           <Tabs.List className="flex justify-around gap-2 pb-1">
             <Tabs.Trigger
-              className="flex w-full items-center justify-center gap-2 bg-zinc-600 p-2 font-semibold data-[state=active]:bg-amber-700"
+              className="flex w-full items-center justify-center gap-2 border-zinc-600 bg-zinc-700 rounded-t p-2 font-semibold border-b-2 data-[state=active]:border-amber-700"
               value="tab1"
             >
               <SparklesIcon className="h-6 w-6" /> More
             </Tabs.Trigger>
             <Tabs.Trigger
-              className="flex w-full items-center justify-center gap-2 bg-zinc-600 font-semibold data-[state=active]:bg-amber-700"
+              className="flex w-full items-center justify-center gap-2 border-zinc-600 bg-zinc-700 rounded-t font-semibold border-b-2 data-[state=active]:border-amber-700"
               value="tab2"
             >
               <Cog6ToothIcon className="h-6 w-6" /> Settings
@@ -821,17 +888,18 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
             </div> */}
           </TabContent>
           <TabContent value="tab2">
-            <div className="flex w-1/2 flex-col gap-2 py-4 placeholder:text-zinc-700 placeholder:italic">
+            <div className="flex w-2/3 flex-col gap-2 py-2 placeholder:text-zinc-700 placeholder:italic ">
               <div>
                 <p className="font-semibold">Title</p>
                 <input
+                  autoFocus
                   type="text"
                   placeholder="Blueprint Name"
                   value={blueprintName}
                   onChange={(e) => {
-                    setblueprintName(e.currentTarget.value);
+                    setBlueprintName(e.currentTarget.value);
                   }}
-                  className="w-full rounded p-1 text-zinc-700 hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600"
+                  className="w-full rounded p-1 text-zinc-700 hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600 outline-none"
                 />
               </div>
               <div>
@@ -843,22 +911,33 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
                   onChange={(e) => {
                     setBlueprintDescription(e.currentTarget.value);
                   }}
-                  className="w-full rounded p-1 text-zinc-700 outline-none hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600"
+                  className="w-full rounded p-1 text-zinc-700 hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600 outline-none"
                 />
               </div>
+              <div className="py-2">
+                <button onClick={
+                  (e) => {
+                    e.preventDefault();
+                    UpdateBlueprint();
+                  }
+                } className="bg-zinc-500 w-full flex items-center justify-center p-1 hover:bg-amber-700 rounded gap-2">
+                  <CloudArrowUpIcon className="h-5 w-5" /> Save Details
+                </button>
+              </div>
             </div>
-            <div className="h-10 w-full border-t border-zinc-600 py-4">
-              <div className="w-full">
-                <p className="font-semibold">Danger Zone</p>
-                <TooltipComponent
-                  content="Warning! You will not be able to recover the blueprint after you delete it."
-                  side={"left"}
-                >
-                  <button className="transition-color flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 p-2 font-bold duration-100 hover:bg-red-500">
-                    <TrashIcon className="h-5 w-5" />
-                    Delete Blueprint Forever
-                  </button>
-                </TooltipComponent>
+            <div className="h-10 w-full border-t border-zinc-600 py-4 ">
+              <div className="w-full flex flex-col gap-2 rounded pr-1">
+                <p className="font-semibold text-lg">Danger Zone</p>
+
+                <DialogComponent title="Delete Blueprint Forever?" description="Warning! You will not be able to recover the blueprint after you delete it."
+                  yes={() => { DeleteBlueprint() }} trigger={
+                    <button className="transition-color flex w-full items-center justify-center gap-2 rounded-3xl bg-red-600 p-2 font-bold duration-100 hover:bg-red-500">
+                      <TrashIcon className="h-5 w-5" />
+                      Delete Blueprint Forever
+                    </button>
+                  } />
+
+                <p className="font-bold italic tracking-tight text-amber-600 text-center">{"Warning! you will not be able to recover the blueprint once it's deleted!"}</p>
               </div>
             </div>
           </TabContent>
