@@ -60,14 +60,16 @@ const BlueprintsListPage: NextPage = () => {
       <div className="flex min-h-[100vh] w-full bg-zinc-900">
         <DashboardMenu />
         <div className="w-full">
-          <div className=" flex w-full items-center justify-start gap-1 p-2">
-            <input
-              type="search"
-              value={blueprintSearchTerm}
-              onChange={(e) => setBlueprintSearchTerm(e.target.value)}
-              placeholder="search blueprints"
-              className="w-full rounded bg-zinc-800 p-2 outline-none ring-1 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-700 focus:ring-amber-700 sm:w-3/5"
-            />
+          <div className=" flex w-full items-center justify-between gap-1 p-2">
+            <div className="flex w-full gap-1">
+              <input
+                type="search"
+                value={blueprintSearchTerm}
+                onChange={(e) => setBlueprintSearchTerm(e.target.value)}
+                placeholder="search blueprints"
+                className="w-full rounded bg-zinc-800 p-2 outline-none ring-1 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-700 focus:ring-amber-700 sm:w-3/5"
+              />
+            </div>
             <TooltipComponent content="Create a New Blueprint" side="bottom">
               <Link
                 href="/newblueprint"

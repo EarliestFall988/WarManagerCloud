@@ -5,6 +5,8 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
 
+import isMobilePhone from "validator/lib/isMobilePhone";
+
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
   token: "AX_sAdsdfsgODM5ZjExZGEtMmmVjNmE345445kGVmZTk5MzQ=",
@@ -186,11 +188,16 @@ export const crewMembersRouter = createTRPCRouter({
   update: privateProcedure
     .input(
       z.object({
-        crewMemberId: z.string(),
-        name: z.string().min(3).max(255),
-        position: z.string().min(3).max(255),
-        notes: z.string().min(0).max(255),
+        crewMemberId: z.string({ required_error: "Crew member ID is required." }),
+        name: z.string({ required_error: "Crew member name is required." }).min(3, "A crew member's name must be at least 3 characters long.").max(255, "A crew member's name cannot be longer than 255 characters."),
+        position: z.string({ required_error: "A crew member's position is required." }).min(3, "A crew member must have a position").max(255, "The position name is too long."),
+        notes: z.string().min(0).max(255, "Crew member notes must be less than 255 characters.").optional(),
+        phone: z.string({ required_error: "Phone Number is required." }).refine(isMobilePhone, "The phone number is invalid."),
+        email: z.string({ required_error: "Email is required." }).email("The email is invalid.").max(255, "Email must be less than 255 characters."),
         tags: z.array(z.string()),
+        wage: z.number({ required_error: "A crew member must have a wage" }).min(0, "The wage must be a positive number.").max(1000000, "The wage must be less than 1000000."),
+        burden: z.number({ required_error: "A crew member must have burden" }).min(0, "The burden must be a positive number.").max(1000000, "The burden must be less than 1000000."),
+        rating: z.number({ required_error: "A rating has not been assigned to the crew member" }).min(0, "The rating must be a value greater than or equal to zero.").max(10, "The rating must be less than or equal to 10."),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -215,17 +222,21 @@ export const crewMembersRouter = createTRPCRouter({
 
       const disconnectTags = tagsToDisconnect || [];
 
-      console.log(disconnectTags);
-      console.log(input.tags);
 
       const crewMember = await ctx.prisma.crewMember.update({
         where: {
           id: input.crewMemberId,
         },
         data: {
-          name: input.name,
-          position: input.position,
-          description: input.notes,
+          name: input.name.trim(),
+          position: input.position.trim(),
+          description: input.notes?.trim(),
+          phone: input.phone.trim(),
+          email: input.email.trim(),
+          wage: input.wage,
+          burden: input.burden,
+          rating: input.rating.toString().trim(),
+
           tags: {
             disconnect: disconnectTags?.map((tag) => ({
               id: tag.id,
@@ -244,15 +255,15 @@ export const crewMembersRouter = createTRPCRouter({
   create: privateProcedure
     .input(
       z.object({
-        name: z.string().min(3).max(255),
-        position: z.string().min(3).max(255),
-        notes: z.string().min(0).max(255),
-        phone: z.string().min(0).max(255),
-        email: z.string().min(0).max(255),
-        travel: z.boolean(),
-        wage: z.number(),
-        burden: z.number(),
-        rating: z.number(),
+        name: z.string({ required_error: "Crew member name is required." }).min(3, "A crew member's name must be at least 3 characters long.").max(255, "A crew member's name cannot be longer than 255 characters."),
+        position: z.string({ required_error: "A crew member's position is required." }).min(3, "A crew member must have a position").max(255, "The position name is too long."),
+        notes: z.string().min(0).max(255, "Crew member notes must be less than 255 characters.").optional(),
+        phone: z.string({ required_error: "Phone Number is required." }).refine(isMobilePhone, "The phone number is invalid."),
+        email: z.string({ required_error: "Email is required." }).email("The email is invalid.").max(255, "Email must be less than 255 characters."),
+        tags: z.array(z.string()),
+        wage: z.number({ required_error: "A crew member must have a wage" }).min(0, "The wage must be a positive number.").max(1000000, "The wage must be less than 1000000."),
+        burden: z.number({ required_error: "A crew member must have burden" }).min(0, "The burden must be a positive number.").max(1000000, "The burden must be less than 1000000."),
+        rating: z.number({ required_error: "A rating has not been assigned to the crew member" }).min(0, "The rating must be a value greater than or equal to zero.").max(10, "The rating must be less than or equal to 10."),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -267,25 +278,43 @@ export const crewMembersRouter = createTRPCRouter({
         });
       }
 
+      const FoundCrewMember = await ctx.prisma.crewMember.findFirst({
+        where: {
+          name: input.name.trim(),
+        },
+      });
+
+      if (FoundCrewMember) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "A crew member with this name already exists.",
+        });
+      }
+
       const crewMember = await ctx.prisma.crewMember.create({
         data: {
           authorId,
-          name: input.name,
-          position: input.position,
-          description: input.notes,
+          name: input.name.trim(),
+          position: input.position.trim(),
+          description: input.notes?.trim() || "",
 
-          phone: input.phone,
-          email: input.email,
-          travel: input.travel.toString(),
+          phone: input.phone.trim(),
+          email: input.email.trim(),
           skills: "",
-          rating: "",
+          rating: input.rating.toString().trim(),
           lastReviewDate: new Date(),
 
           wage: input.wage,
           burden: input.burden,
+          travel: "",
           rate: 0,
           hours: 0,
           total: 0,
+          tags: {
+            connect: input.tags?.map((tag) => ({
+              id: tag,
+            })),
+          },
         },
       });
 

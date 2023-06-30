@@ -1,6 +1,5 @@
-import { ArrowDownTrayIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, InboxIcon, PhoneIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, PhoneIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { type CrewMember, type Tag } from "@prisma/client";
-import * as  Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { type NextPage } from "next"
 import Link from "next/link";
@@ -18,6 +17,8 @@ import { DashboardMenu } from "~/components/dashboardMenu";
 import SignInModal from "~/components/signInPage";
 import { useUser } from "@clerk/nextjs";
 import Head from "next/head";
+import { useAutoAnimate } from '@formkit/auto-animate/react'
+import { DialogComponent } from "~/components/dialog";
 dayjs.extend(relativeTime);
 
 
@@ -27,6 +28,8 @@ const CrewMembersPage: NextPage = () => {
 
     const [crewSearchTerm, setCrewSearchTerm] = useState("");
     const [filterTags, setFilterTags] = useState<Tag[]>([]);
+
+    const [animationParent] = useAutoAnimate()
 
     const getFilterTagIds = useCallback(() => {
         return filterTags.map((tag) => tag.id);
@@ -54,12 +57,16 @@ const CrewMembersPage: NextPage = () => {
         },
     });
 
-
-
     const removeCrewMember = useCallback(
         (id: string) => {
-            toast.loading("Deleting Crew Member", { duration: 2000 });
-            mutate({ crewMemberId: id });
+
+            const timer = setInterval(() => {
+
+                toast.loading("Deleting Crew Member", { duration: 2000 });
+                mutate({ crewMemberId: id });
+                clearInterval(timer);
+
+            }, 100);
         },
         [mutate]
     );
@@ -119,7 +126,7 @@ const CrewMembersPage: NextPage = () => {
                             <p className="italic text-red-500">could not load data</p>
                         </div>
                     ) : (
-                        <div className="flex flex-col items-start justify-start gap-1 border-t border-zinc-700 p-2 text-gray-100">
+                        <div ref={animationParent} className="flex flex-col items-start justify-start gap-1 border-t border-zinc-700 p-2 text-gray-100">
                             {crewData.length > 0 &&
                                 crewData?.map((crewMember) => (
                                     <CrewMemberItem crewMember={crewMember} tags={crewMember.tags} key={crewMember.id} removeCrewMember={(e) => { removeCrewMember(e) }} />
@@ -237,46 +244,12 @@ const CrewMemberItem: FC<{ crewMember: CrewMember, tags: Tag[], removeCrewMember
                             <PhoneIcon className="h-5 w-5 text-zinc-200 " />
                             Copy Phone
                         </DropdownMenu.Item>
-                        <Dialog.Root>
-                            <Dialog.Trigger asChild>
-                                <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
-                                    <TrashIcon className="h-4 w-4 text-white" />
-                                    Delete
-                                </button>
-                            </Dialog.Trigger>
-                            <Dialog.Portal>
-                                <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/30 backdrop-blur" />
-                                <div className="flex h-screen w-screen items-center justify-center">
-                                    <Dialog.Content className="fixed top-[50%] m-auto rounded-lg bg-black p-3 py-2 drop-shadow-lg backdrop-blur">
-                                        <Dialog.Title className="text-lg font-bold text-white">
-                                            Delete Crew Member
-                                        </Dialog.Title>
-                                        <Dialog.Description className="text-white">
-                                            Are you sure you want to delete this crew
-                                            member? This action cannot be undone.
-                                        </Dialog.Description>
-                                        <div className="mt-4 flex justify-end gap-2">
-                                            <Dialog.Close asChild>
-                                                <button className="rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-red-600">
-                                                    Cancel
-                                                </button>
-                                            </Dialog.Close>
-                                            <Dialog.Close asChild>
-                                                <button
-                                                    className="rounded bg-gradient-to-br from-red-700 to-amber-700 p-2 text-center transition-all duration-100 hover:bg-red-600"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        removeCrewMember(crewMember.id);
-                                                    }}
-                                                >
-                                                    Delete
-                                                </button>
-                                            </Dialog.Close>
-                                        </div>
-                                    </Dialog.Content>
-                                </div>
-                            </Dialog.Portal>
-                        </Dialog.Root>
+                        <DialogComponent title={"Are you sure you want to delete is crew member?"} description="This crew member can not be recovered after you delete them." yes={() => { removeCrewMember(crewMember.id); }} trigger={
+                            <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
+                                <TrashIcon className="h-4 w-4 text-white" />
+                                Delete
+                            </button>
+                        } />
                     </DropdownMenu.Content>
                 </DropdownMenu.Portal>
             </DropdownMenu.Root>
@@ -290,7 +263,7 @@ const CrewMemberLinks: React.FC<{ className?: string }> = ({ className }) => {
         <div className={className ? className : ""}>
             <TooltipComponent content="Add a New Crew Member" side="bottom">
                 <Link
-                    href="/newCrewMember"
+                    href="/crewmember/new"
                     className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
                 >
                     <PlusIcon className="h-6 w-6 text-zinc-100" />

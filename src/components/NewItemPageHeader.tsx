@@ -3,10 +3,11 @@ import TooltipComponent from "./Tooltip";
 import { useRouter } from "next/router";
 import { LoadingSpinner } from "./loading";
 
-export const NewItemPageHeader: React.FC<{ title: string, context?: string | undefined, save?: () => void | undefined, cancel?: () => void, saving?: boolean }> = ({
+export const NewItemPageHeader: React.FC<{ title: string, context?: string | undefined, save?: () => void | undefined, deleting?: boolean, cancel?: () => void, saving?: boolean }> = ({
   title,
   save,
   cancel,
+  deleting,
   saving
 }) => {
   const router = useRouter();
@@ -27,12 +28,13 @@ export const NewItemPageHeader: React.FC<{ title: string, context?: string | und
             <ArrowLeftIcon className="h-6 w-6" />
           </button>
         </TooltipComponent>
-        {!saving && <h1 className="fade-x text-[1rem] sm:text-lg w-2/3 truncate">{title}</h1>}
+        {!saving && !deleting && <h1 className="fade-x text-[1rem] sm:text-lg w-2/3 truncate">{title}</h1>}
         {saving && <h1 className="fade-x text-[1rem] sm:text-lg w-2/3 truncate">Saving <span>{title}</span>...</h1>}
+        {deleting && <h1 className="fade-x text-[1rem] sm:text-lg w-2/3 truncate">Deleting <span>{title}</span>...</h1>}
         <div className="flex gap-2 items-center" >
           {save !== undefined && <TooltipComponent content="Save Changes" side="bottom">
-            <button disabled={saving} onClick={save} className="p-2 flex justify-center items-center bg-amber-700 rounded font-normal hover:scale-105 hover:bg-amber-600 duration-100 transition-all disabled:bg-zinc-600/70 disabled:text-zinc-400">
-              {saving ? <LoadingSpinner /> : <CloudArrowUpIcon className="h-6 w-6" />}
+            <button disabled={saving || deleting} onClick={save} className="p-2 flex justify-center items-center bg-amber-700 rounded font-normal hover:scale-105 hover:bg-amber-600 duration-100 transition-all disabled:bg-zinc-600/70 disabled:text-zinc-400">
+              {(saving || deleting) ? <LoadingSpinner /> : <CloudArrowUpIcon className="h-6 w-6" />}
             </button>
           </TooltipComponent>
           }

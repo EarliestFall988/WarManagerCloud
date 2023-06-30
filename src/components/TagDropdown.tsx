@@ -8,8 +8,8 @@ import Link from "next/link";
 import { TagIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import * as Popover from '@radix-ui/react-popover';
 
-let tags = [] as { value: string; label: string }[];
-let selectedTags = [] as { value: string; label: string }[];
+let tags = [] as { value: string; label: string, color: string }[];
+let selectedTags = [] as { value: string; label: string, color: string }[];
 
 export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projects" | "crews" | "blueprints", onSetTags: (tags: Tag[]) => void }> = ({ savedTags, type, onSetTags }) => {
 
@@ -25,6 +25,7 @@ export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projec
             return {
                 value: tag.id,
                 label: tag.name,
+                color: tag.backgroundColor
             };
         });
 
@@ -36,6 +37,7 @@ export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projec
             return {
                 value: tag.id,
                 label: tag.name,
+                color: tag.backgroundColor
             };
         });
 
@@ -50,6 +52,7 @@ export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projec
     const onChange = useCallback((e: MultiValue<{
         value: string;
         label: string;
+        color: string;
     }>) => {
 
         const tags = [] as Tag[]
@@ -79,7 +82,7 @@ export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projec
 
 
     return (
-        <div className="flex gap-1 w-full text-zinc-800">
+        <div className="flex gap-1 w-full text-zinc-800 ">
             <Select
                 closeMenuOnSelect={false}
                 defaultValue={selectedTags}
@@ -87,11 +90,30 @@ export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projec
                 name="currentTags"
                 options={tags}
                 classNamePrefix="select"
-                className="w-full rounded outline-none"
+                className="w-full ring-2 ring-zinc-700 rounded outline-none hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800 text-zinc-300"
                 onChange={(e) => { onChange(e) }}
+                unstyled
+                placeholder="Add Tags..."
+                classNames={{
+                    valueContainer(props) {
+                        return `flex flex-wrap p-2 bg-zinc-800 rounded-l focus:bg-red-500 gap-1 ${props.selectProps.classNamePrefix ? props.selectProps.classNamePrefix + "-value-container" : ""}`;
+                    },
+                    multiValue({ data }) {
+                        return `text-zinc-300 border border-zinc-300 px-2 rounded-xl px-1 flex items-center text-sm`;
+                    },
+                    container({ isFocused }) {
+                        return `w-full bg-zinc-800 rounded ${isFocused ? "ring-2 ring-amber-700" : "hover:ring-zinc-600 hover:ring-2"} `;
+                    },
+                    menuList(props) {
+                        return `bg-zinc-900 rounded text-zinc-200 p-1 border-2 border-zinc-500`;
+                    },
+                    option({ data }) {
+                        return `hover:bg-zinc-700 hover:text-zinc-100 cursor-pointer rounded p-2 md:p-1`;
+                    }
+                }}
             />
-            <TooltipComponent content="Edit Tags..." side="bottom">
-                <Link className="flex items-center justify-center rounded bg-zinc-100 text-amber-700 p-2 hover:bg-zinc-50 border" href="/tags">
+            <TooltipComponent content="Tags..." side="bottom">
+                <Link className="flex items-center w-6 justify-center rounded bg-zinc-700 text-zinc-100 p-2 hover:bg-zinc-600" href="/tags">
                     <TagIcon className="w-5 h-5 cursor-pointer" />
                 </Link>
             </TooltipComponent>

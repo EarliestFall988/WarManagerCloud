@@ -8,6 +8,7 @@ import { useUser } from "@clerk/nextjs";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import SignInModal from "~/components/signInPage";
 import { useRouter } from "next/router";
+import { ButtonCallToActionComponent } from "~/components/input";
 
 const NewBlueprintPage: NextPage = () => {
   const [name, setName] = useState("");
@@ -77,16 +78,16 @@ const NewBlueprintPage: NextPage = () => {
   // const edges = [] as object[];
 
   return (
-    <div className="min-h-[100vh] bg-zinc-800">
+    <div className="min-h-[100vh] bg-zinc-900">
       <NewItemPageHeader title="New Blueprint" context="blueprints" save={() => save()} />
       <div
         className="m-auto flex flex-col md:w-1/2"
       // onSubmit={() => mutate({ name, description, nodes, edges })}
       >
         <div className="w-full p-2">
-          <p className="py-1 text-lg">Blueprint Title</p>
+          <p className="py-1 text-lg font-semibold">Blueprint Title</p>
           <input
-            className="w-full rounded p-2 text-stone-800"
+            className="w-full ring-2 ring-zinc-700 rounded p-2 outline-none text-zinc-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800"
             type="text"
             placeholder="Name"
             disabled={isCreating}
@@ -96,9 +97,9 @@ const NewBlueprintPage: NextPage = () => {
           />
         </div>
         <div className="w-full p-2">
-          <p className="py-1 text-lg">Blueprint Description</p>
+          <p className="py-1 text-lg font-semibold">Blueprint Description</p>
           <input
-            className="w-full rounded p-2 text-stone-800 outline-none"
+            className="w-full ring-2 ring-zinc-700 rounded p-2 outline-none text-zinc-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800"
             type="text"
             placeholder="Description"
             disabled={isCreating}
@@ -108,13 +109,18 @@ const NewBlueprintPage: NextPage = () => {
         </div>
         <div className="p-2" />
         <div className="w-full p-2">
-          <button
+          {/* <button
             disabled={isCreating}
             onClick={() => save()}
-            className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white"
+            className="flex h-10 w-full items-center justify-center rounded bg-amber-800 hover:bg-amber-700 duration-100 transition-color font-semibold text-white"
           >
             {isCreating ? <LoadingSpinner /> : <p>Create Blueprint</p>}
-          </button>
+          </button> */}
+
+          <ButtonCallToActionComponent disabled={isCreating}
+            onClick={() => save()} >
+            {isCreating ? <LoadingSpinner /> : <p>Create Blueprint</p>}
+          </ButtonCallToActionComponent>
         </div>
       </div>
     </div>
