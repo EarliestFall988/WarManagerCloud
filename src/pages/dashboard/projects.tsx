@@ -1,4 +1,4 @@
-import { ArrowDownTrayIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, MapPinIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { type Project, type Tag } from "@prisma/client";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as  DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -19,6 +19,8 @@ import { DashboardMenu } from "~/components/dashboardMenu";
 import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 import Head from "next/head";
+import { useAutoAnimate } from '@formkit/auto-animate/react';
+import { DialogComponent } from "~/components/dialog";
 dayjs.extend(relativeTime);
 
 const ProjectMenu = () => (
@@ -56,6 +58,7 @@ const ProjectMenu = () => (
 
 const ProjectsPage: NextPage = () => {
 
+    const [animateParent] = useAutoAnimate();
 
     const [projectSearchTerm, setProjectsSearchTerm] = useState("");
 
@@ -161,7 +164,7 @@ const ProjectsPage: NextPage = () => {
                     )) ||
                     (data && data?.length > 0 && (
                         <div className="w-full overflow-y-auto overflow-x-hidden ">
-                            <div className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
+                            <div ref={animateParent} className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
                                 {data?.map((project, index) => (
                                     <div
                                         key={project.id}
@@ -174,7 +177,7 @@ const ProjectsPage: NextPage = () => {
                                                 passHref
                                                 className="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
                                             >
-                                                <div className="flex-grow">
+                                                <div className="lg:w-1/2">
                                                     <div className="flex w-full items-center justify-start gap-1 overflow-clip">
                                                         <p className="whitespace-nowrap text-sm font-normal text-zinc-300">
                                                             {project.jobNumber}
@@ -202,11 +205,11 @@ const ProjectsPage: NextPage = () => {
                                                                 {project.state.trim() && `, ${project.state}`}
                                                             </p>
                                                         </div>
-                                                        <p>·</p>
+                                                        {project.city && project.state && project.status && <p>·</p>}
                                                         <p className="text-sm">{project.status}</p>
                                                     </div>
                                                 </div>
-                                                <div className="hidden overflow-clip font-thin flex-shrink  max-w-[30%] sm:flex">
+                                                <div className="hidden overflow-clip text-center font-thin flex-shrink  max-w-[30%] lg:flex">
                                                     <p className="w-full truncate text-ellipsis text-center">
                                                         {project.description}
                                                     </p>
@@ -224,7 +227,7 @@ const ProjectsPage: NextPage = () => {
                                                     </button>
                                                 </DropdownMenu.Trigger>
                                                 <DropdownMenu.Portal>
-                                                    <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-500 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                                                    <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-500 bg-black/60 p-3 py-2 drop-shadow-lg backdrop-blur ">
                                                         <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-500" />
                                                         <DropdownMenu.Item
                                                             className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
@@ -243,7 +246,7 @@ const ProjectsPage: NextPage = () => {
                                                             <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
                                                             Copy Address
                                                         </DropdownMenu.Item>
-                                                        <Dialog.Root>
+                                                        {/* <Dialog.Root>
                                                             <Dialog.Trigger asChild>
                                                                 <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
                                                                     <TrashIcon className="h-5 w-5 text-white" />
@@ -281,7 +284,15 @@ const ProjectsPage: NextPage = () => {
                                                                     </Dialog.Content>
                                                                 </div>
                                                             </Dialog.Portal>
-                                                        </Dialog.Root>
+                                                        </Dialog.Root> */}
+
+                                                        <DialogComponent title="Delete Project?" description="Are you sure you want to delete the project? After deletion it cannot be recovered." yes={() => { deleteJob(project.id); }} trigger={
+                                                            <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
+                                                                <TrashIcon className="h-5 w-5 text-white" />
+                                                                Delete
+                                                            </button>
+                                                        } />
+
                                                     </DropdownMenu.Content>
                                                 </DropdownMenu.Portal>
                                             </DropdownMenu.Root>
