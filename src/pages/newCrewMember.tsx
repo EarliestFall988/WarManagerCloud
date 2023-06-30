@@ -1,6 +1,7 @@
 import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useCallback, useState } from "react";
 
 import { toast } from "react-hot-toast";
 import { LoadingSpinner } from "~/components/loading";
@@ -10,6 +11,9 @@ import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
 
 const NewCrewMemberPage: NextPage = () => {
+
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
   const [position, setPosition] = useState("Laborer");
@@ -25,13 +29,22 @@ const NewCrewMemberPage: NextPage = () => {
   const burdenNumber = parseFloat(burden);
   const ratingNumber = parseInt(rating);
 
+  const context = api.useContext().crewMembers;
+
   const { mutate, isLoading: isCreating } = api.crewMembers.create.useMutation({
     onSuccess: (data) => {
       toast.success(`${data.name} (${data.position}) added successfully!`);
       setName("");
       setNotes("");
       setPosition("");
-      // void api.blueprints.getAll.invalidate();
+      setPhone("");
+      setEmail("");
+      setTravel("");
+      setWage("");
+      setBurden("");
+      setRating("");
+      void context.invalidate();
+      void router.back();
     },
     onError: (e) => {
       const errorMessage = e.shape?.data?.zodError?.fieldErrors;
@@ -46,6 +59,53 @@ const NewCrewMemberPage: NextPage = () => {
 
   const { user } = useUser();
 
+  const save = useCallback(() => {
+
+    if (!name) {
+      return toast.error("Please enter a name");
+    }
+
+    if (!position) {
+      return toast.error("Please enter a position");
+    }
+
+    if (!phone) {
+      return toast.error("Please enter a phone number");
+    }
+
+    if (!email) {
+      return toast.error("Please enter an email");
+    }
+
+    if (!wageNumber) {
+      return toast.error("Please enter a wage");
+    }
+
+    if (!burdenNumber) {
+      return toast.error("Please enter a burden");
+    }
+
+    if (!ratingNumber) {
+      return toast.error("Please enter a rating");
+    }
+
+
+    toast.loading("Saving", { duration: 1000 });
+
+    mutate({
+      name,
+      notes,
+      position,
+      phone,
+      email,
+      travel: canTravel,
+      wage: wageNumber,
+      burden: burdenNumber,
+      rating: ratingNumber,
+    });
+  }, [name, notes, position, phone, email, canTravel, wageNumber, burdenNumber, ratingNumber, mutate]);
+
+
   //redirect if the user is not found
   if (!user) {
     return <SignInModal redirectUrl={`/newCrewMember`} />;
@@ -53,7 +113,7 @@ const NewCrewMemberPage: NextPage = () => {
 
   return (
     <main className="min-h-[100vh] bg-zinc-800">
-      <NewItemPageHeader title="New Crew Member" context="crewmembers" />
+      <NewItemPageHeader title="New Crew Member" save={() => { save() }} saving={isCreating} cancel={() => void router.back()} />
       {/* <SignedIn> */}
       <div className="m-auto flex flex-col md:w-1/2">
         <div className="w-full p-2">
@@ -184,18 +244,19 @@ const NewCrewMemberPage: NextPage = () => {
           <button
             disabled={isCreating}
             onClick={() => {
-              toast.loading("Saving", { duration: 1000 });
-              mutate({
-                name,
-                position,
-                notes,
-                phone,
-                email,
-                travel: canTravel,
-                wage: wageNumber,
-                burden: burdenNumber,
-                rating: ratingNumber,
-              });
+              // mutate({
+              //   name,
+              //   position,
+              //   notes,
+              //   phone,
+              //   email,
+              //   travel: canTravel,
+              //   wage: wageNumber,
+              //   burden: burdenNumber,
+              //   rating: ratingNumber,
+              // });
+
+              save();
             }}
             className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
           >

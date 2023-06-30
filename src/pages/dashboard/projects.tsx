@@ -319,7 +319,7 @@ const ProjectProgress: React.FC<{ project: Project; index: number }> = ({
     useEffect(() => {
         const timer = setTimeout(
             () => setProgress(project.percentComplete),
-            500 * (index / 3) + 500
+            500 // * (index / 3) + 500
         );
         return () => clearTimeout(timer);
     }, []);

@@ -37,7 +37,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       toast.success(`${data.name} (${data.position}) updated successfully!`);
       void crewContext.invalidate();
       void tagsContext.invalidate();
-      void router.push("/dashboard?context=CrewMembers")
+      void router.back();
     },
     onError: (e) => {
       const errorMessage = e.shape?.data?.zodError?.fieldErrors;

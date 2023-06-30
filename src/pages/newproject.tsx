@@ -1,6 +1,7 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import type { NextPage } from "next";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useCallback, useState } from "react";
 import { toast } from "react-hot-toast";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingSpinner } from "~/components/loading";
@@ -11,20 +12,35 @@ const NewProjectPage: NextPage = () => {
   const [projectName, setProjectName] = useState("");
   const [projectNotes, setProjectNotes] = useState("");
 
+  const context = api.useContext().projects;
+
+  const router = useRouter();
+
   const { mutate, isLoading: isCreating } = api.projects.create.useMutation({
     onSuccess: (data) => {
       toast.success(`${data.name} added successfully!`);
       setProjectName("");
       setProjectNotes("");
-      //void api.projects.getAll.invalidate()
+      void context.invalidate();
+      void router.back();
     },
   });
 
   // const isCreating = false;
 
+  const save = useCallback(() => {
+
+    if (projectName === "") return toast.error("Please enter a name for the project");
+
+    toast.loading("Saving Project", { duration: 1000 });
+
+    mutate({ name: projectName, description: projectNotes });
+  }
+    , [projectName, projectNotes, mutate]);
+
   return (
     <div className="min-w-screen min-h-screen bg-zinc-800">
-      <NewItemPageHeader title="New Project" context="projects" />
+      <NewItemPageHeader title="New Project" context="projects" save={() => { save() }} cancel={() => router.back()} />
       <SignedIn>
         <div className="m-auto flex flex-col md:w-1/2">
           <div className="w-full p-2">
@@ -54,8 +70,9 @@ const NewProjectPage: NextPage = () => {
             <button
               disabled={isCreating}
               onClick={() => {
-                toast.loading("Saving Project", { duration: 1000 });
-                mutate({ name: projectName, description: projectNotes });
+                // toast.loading("Saving Project", { duration: 1000 });
+                // mutate({ name: projectName, description: projectNotes });
+                save();
               }}
               className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
             >

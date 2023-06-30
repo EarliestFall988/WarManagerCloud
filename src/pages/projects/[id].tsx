@@ -68,7 +68,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
       toast.success(`${data.name} updated successfully!`);
       void projectContext.invalidate();
       void tagsContext.invalidate();
-      void router.push("/dashboard?context=Projects");
+      void router.back();
     },
   });
 
@@ -133,7 +133,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
         <NewItemPageHeader
           title={`Loading...`}
           context="projects"
-          cancel={() => void router.push("/dashboard?context=Projects")}
+          cancel={() => void router.back()}
         />
         <LoadingPage />
       </main>
@@ -145,7 +145,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
         <NewItemPageHeader
           title={`Error loading project`}
           context="projects"
-          cancel={() => void router.push("/dashboard?context=Projects")}
+          cancel={() => void router.back()}
         />
       </main>
     );
