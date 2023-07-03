@@ -92,9 +92,6 @@ const DownloadProjectDetails = () => {
       date.getMonth() + 1
     }-${date.getDate()}-${date.getFullYear()}`;
 
-    // console.log(json);
-    // console.log(dateString);
-
     const ws = utils.json_to_sheet(json);
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, "Data");

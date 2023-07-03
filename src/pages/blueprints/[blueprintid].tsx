@@ -5,25 +5,20 @@ import Head from "next/head";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 import { useRouter } from "next/router";
-import Link from "next/link";
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
-  ArrowsPointingOutIcon,
   CloudArrowUpIcon,
   DocumentTextIcon,
   EllipsisHorizontalIcon,
   IdentificationIcon,
-  PaperAirplaneIcon,
   PresentationChartBarIcon,
   TrashIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
-
-// import * as Tooltip from "@radix-ui/react-tooltip";
 
 import {
   useBlueprintStore,

@@ -12,11 +12,11 @@ import { useEffect, useState } from "react";
 
 // const websocketConnection =
 //   "wss://s9267.nyc1.piesocket.com/v3/1?api_key=j4wp6LYQnmMVL4QYvIWBCQ6q7Bw2qp8q3p56Pfg3";
-const websocketConnection1 = "ws://localhost:1234";
+// const websocketConnection1 = "ws://localhost:1234";
 const roomName = "my-roomname";
 
 const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
-const localWebRTCConnection = "ws://localhost:4444";
+// const localWebRTCConnection = "ws://localhost:4444";
 
 type yjsWsProviderProps = {
   status: string;
@@ -32,13 +32,13 @@ const YjsPage: NextPage = () => {
     const ydoc = new Y.Doc();
 
     const wsProvider = new WebsocketProvider(
-      websocketConnection1,
+      liveWebRTCConnection,
       roomName,
       ydoc
     );
 
     const webrtcProvider = new WebrtcProvider(roomName, ydoc, {
-      signaling: [localWebRTCConnection ],
+      signaling: [liveWebRTCConnection],
       password: "password",
     });
 
