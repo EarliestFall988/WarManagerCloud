@@ -10,62 +10,62 @@ import { utils, writeFileXLSX, } from "xlsx";
 
 type DealType = {
     id: number;
-    creator_user_id: {
-        id: number;
-        name: string;
-        email: string;
-        has_pic: number;
-        pic_hash: string;
-        active_flag: boolean;
-        value: number;
-    };
-    user_id: {
-        id: number;
-        name: string;
-        email: string;
-        has_pic: number;
-        pic_hash: string;
-        active_flag: boolean;
-        value: number;
-    };
-    person_id: {
-        active_flag: boolean;
-        name: string;
-        email: [
-            {
-                label: string;
-                value: string;
-                primary: boolean;
-            }
-        ];
-        phone: [
-            {
-                label: string;
-                value: string;
-                primary: boolean;
-            }
-        ];
-        value: number;
-    };
-    org_id: {
-        name: string;
-        people_count: number;
-        owner_id: number;
-        address: string;
-        active_flag: boolean;
-        cc_email: string;
-        value: number;
-    };
-    stage_id: number;
+    // creator_user_id: {
+    //     id: number;
+    //     name: string;
+    //     email: string;
+    //     has_pic: number;
+    //     pic_hash: string;
+    //     active_flag: boolean;
+    //     value: number;
+    // };
+    // user_id: {
+    //     id: number;
+    //     name: string;
+    //     email: string;
+    //     has_pic: number;
+    //     pic_hash: string;
+    //     active_flag: boolean;
+    //     value: number;
+    // };
+    // person_id: {
+    //     active_flag: boolean;
+    //     name: string;
+    //     email: [
+    //         {
+    //             label: string;
+    //             value: string;
+    //             primary: boolean;
+    //         }
+    //     ];
+    //     phone: [
+    //         {
+    //             label: string;
+    //             value: string;
+    //             primary: boolean;
+    //         }
+    //     ];
+    //     value: number;
+    // };
+    // org_id: {
+    //     name: string;
+    //     people_count: number;
+    //     owner_id: number;
+    //     address: string;
+    //     active_flag: boolean;
+    //     cc_email: string;
+    //     value: number;
+    // };
+    // stage_id: number;
     title: string;
     value: number;
-    currency: string;
+    // // currency: string;
     add_time: string;
-    update_time: string;
-    stage_change_time: string;
-    active: boolean;
-    deleted: boolean;
-    status: string;
+    // update_time: string;
+    // stage_change_time: string;
+    // active: boolean;
+    // deleted: boolean;
+    status: string; // <---crucial
     probability: number;
     next_activity_date: string;
     next_activity_time: string;
