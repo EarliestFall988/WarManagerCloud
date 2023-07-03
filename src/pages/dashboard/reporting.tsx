@@ -2,10 +2,12 @@ import type { NextPage } from "next";
 import { useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { DashboardMenu } from "~/components/dashboardMenu";
-import { LoadingPage } from "~/components/loading";
+import { LoadingPage, LoadingPage2 } from "~/components/loading";
 import { api } from "~/utils/api";
 
 import { utils, writeFileXLSX, } from "xlsx";
+import { useUser } from "@clerk/nextjs";
+import SignInModal from "~/components/signInPage";
 
 
 type DealType = {
@@ -114,6 +116,8 @@ type DealType = {
 const ReportingPage: NextPage = () => {
 
 
+    const { isSignedIn, isLoaded } = useUser();
+
     const { data, isLoading, isError } = api.reporting.getPipedriveDeals.useQuery();
 
     const handleDownloadPipedriveDeals = useCallback(() => {
@@ -144,8 +148,16 @@ const ReportingPage: NextPage = () => {
     }, [data])
 
 
+    if (!isLoaded) {
+        return <LoadingPage2 />
+    }
+
     if (isLoading) {
         return <LoadingPage />
+    }
+
+    if (!isSignedIn && isLoaded) {
+        return <SignInModal redirectUrl="/dashboard/reporting" />
     }
 
     if (isError) {

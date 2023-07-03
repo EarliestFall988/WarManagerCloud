@@ -329,6 +329,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
           save={SaveChanges}
           cancel={() => void router.back()}
           saving={mutation.isLoading}
+          deleting={isDeleting}
         />
         <div className="flex items-center justify-center">
           <div className="flex w-full flex-col items-center justify-center gap-4 p-2 sm:w-3/5">

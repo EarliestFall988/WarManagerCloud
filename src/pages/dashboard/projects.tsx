@@ -102,7 +102,7 @@ const ProjectsPage: NextPage = () => {
     }
 
     if (!isSignedIn && isLoaded) {
-        return <SignInModal redirectUrl="/dashboard/crew" />;
+        return <SignInModal redirectUrl="/dashboard/projects" />;
     }
 
     return (

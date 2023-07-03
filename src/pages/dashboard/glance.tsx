@@ -36,11 +36,14 @@ type PieChartCardProps = {
 };
 
 const PieChartCard: FC<PieChartCardProps> = ({ title, chart }) => {
+
+
     const [open, setOpen] = useState(true);
 
     const toggleOpen = () => {
         setOpen(!open);
     };
+
 
     return (
         <>
@@ -77,7 +80,7 @@ const GlancePage: NextPage = () => {
     }
 
     if (!isSignedIn && isLoaded) {
-        return <SignInModal redirectUrl="/dashboard/crew" />;
+        return <SignInModal redirectUrl="/dashboard/glance" />;
     }
 
     return (

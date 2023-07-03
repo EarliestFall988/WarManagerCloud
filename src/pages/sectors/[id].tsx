@@ -14,11 +14,16 @@ import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingSpinner } from "~/components/loading";
 import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
+import { ButtonCallToActionComponent, InputComponent, TextareaComponent } from "~/components/input";
 
 const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
   const [sectorName, setSectorName] = useState("");
   const [sectorCode, setSectorCode] = useState("");
   const [sectorNotes, setSectorNotes] = useState("");
+
+  const [sectorNameError, setSectorNameError] = useState("");
+  const [sectorCodeError, setSectorCodeError] = useState("");
+  const [sectorNotesError, setSectorNotesError] = useState("");
 
   const context = api.useContext();
 
@@ -36,19 +41,6 @@ const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
     },
   });
 
-//   const { mutate: deleteMutate, isLoading: isDeleting } = api.sectors.delete.useMutation({
-//     onSuccess: (data) => {
-//       toast.success(`${data.name} deleted successfully!`);
-//       setSectorName("");
-//       setSectorCode("");
-//       setSectorNotes("");
-//       void context.invalidate();
-//     },
-//     onError: (error) => {
-//       console.log(error);
-//       toast.error("there was an error deleting the sector");
-//     },
-//   });
 
   const { data } = api.sectors.getbyId.useQuery({
     id,
@@ -62,79 +54,67 @@ const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
     }
   }, [data]);
 
-  
 
-  const createNewSector = useCallback(
-    (name: string, code: string, notes: string, id: string) => {
-      mutate({ name, departmentCode: code, description: notes, id });
-    },
-    [mutate]
-  );
+  const createNewSector = useCallback((name: string, code: string, notes: string, id: string) => {
+
+    setSectorNameError("");
+    setSectorCodeError("");
+    setSectorNotesError("");
+
+    mutate({ name, departmentCode: code, description: notes, id });
+  }, [mutate]);
 
   return (
     <>
       <Head>
-        <title>New Sector - War Manager</title>
+        <title>New Sector | War Manager</title>
       </Head>
       <main className="min-h-[100vh] bg-zinc-900">
-        <NewItemPageHeader title="New Sector" context="blueprints" />
+        <NewItemPageHeader title="New Sector" save={() => { createNewSector(sectorName, sectorCode, sectorNotes, id) }} saving={isCreating} context="blueprints" />
         <SignedIn>
           <div className="m-auto w-full sm:w-2/3">
             <div className="flex h-full w-full flex-col items-center justify-center">
               <div className="w-full p-2">
-                <p className="py-1 text-lg">Name</p>
-                <input
-                  className="w-full rounded p-2 text-stone-800 outline-none"
-                  type="text"
-                  placeholder="Name"
+                <p className="py-1 text-lg font-semibold">Name</p>
+                <InputComponent
+                  error={sectorNameError}
                   value={sectorName}
-                  disabled={isCreating}
                   onChange={(e) => setSectorName(e.target.value)}
+                  placeholder="Name"
+                  disabled={isCreating}
                   autoFocus
                 />
               </div>
-              <div className="w-full p-2">
-                <p className="py-1 text-lg">Sector Code</p>
-                <input
-                  className="w-full rounded p-2 text-stone-800 outline-none"
-                  type="text"
-                  placeholder="sector code"
+              <div className="w-full p-2 ">
+                <p className="py-1 text-lg font-semibold">Sector Code</p>
+                <InputComponent
+                  error={sectorCodeError}
                   value={sectorCode}
-                  disabled={isCreating}
                   onChange={(e) => setSectorCode(e.target.value)}
-                />
-              </div>
-              <div className="w-full p-2">
-                <p className="py-1 text-lg">Notes</p>
-                <textarea
-                  className="h-24 w-full rounded p-2 text-stone-800 outline-none"
-                  placeholder="Talk about anything you want!"
-                  value={sectorNotes}
+                  placeholder="Sector Code"
                   disabled={isCreating}
-                  onChange={(e) => setSectorNotes(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      createNewSector(sectorName, sectorCode, sectorNotes, id);
-                    }
-                  }}
                 />
               </div>
               <div className="w-full p-2">
-                <button
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      createNewSector(sectorName, sectorCode, sectorNotes, id);
-                    }
-                  }}
+                <p className="py-1 text-lg font-semibold">Notes</p>
+                <TextareaComponent
+                  error={sectorNotesError}
+                  value={sectorNotes}
+                  onChange={(e) => setSectorNotes(e.target.value)}
+                  placeholder="Talk about anything you want!"
+                  disabled={isCreating}
+                />
+
+              </div>
+              <div className="w-full p-2 font-semibold">
+                <ButtonCallToActionComponent
                   onClick={() => {
                     createNewSector(sectorName, sectorCode, sectorNotes, id);
                   }}
-                  className="w-full rounded bg-gradient-to-r from-amber-700 to-red-700 p-2 text-center font-semibold"
+                  disabled={isCreating}
                 >
                   {isCreating ? <LoadingSpinner /> : <p>Create New Sector</p>}
-                </button>
+                </ButtonCallToActionComponent>
               </div>
             </div>
           </div>

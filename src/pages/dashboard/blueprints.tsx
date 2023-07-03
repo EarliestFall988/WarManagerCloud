@@ -49,7 +49,7 @@ const BlueprintsListPage: NextPage = () => {
   }
 
   if (!isSignedIn && isLoaded) {
-    return <SignInModal redirectUrl="/dashboard/crew" />;
+    return <SignInModal redirectUrl="/dashboard/blueprints" />;
   }
 
   return (
