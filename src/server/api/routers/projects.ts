@@ -279,22 +279,21 @@ export const projectsRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        name: z.string().min(3).max(255),
-        jobNumber: z.string().min(5).max(10),
-        notes: z.string().min(0).max(255),
-        description: z.string().min(0).max(255),
+        name: z.string({ required_error: "Every project must have a name." }).min(3, "The name must be more than 3 characters long.").max(255, "The name of the project must be less than 255 characters long."),
+        jobNumber: z.string({ required_error: "Every project must have a project number." }).min(5, "The project number must be more than 5 characters long.").max(10, "The project number must be less than 10 characters long."),
+        notes: z.string().min(0).max(255, "The notes section must be less than 255 characters.").optional(),
+        description: z.string().min(0).max(255, "The description must be less than 255 characters.").optional(),
         // tags: z.array(z.string()),
-
-        address: z.string().min(3).max(255),
-        city: z.string().min(2).max(255),
-        state: z.string().min(2).max(2),
+        address: z.string({ required_error: "The project address is required for each project." }).min(3, "The project address must be more than 3 characters long.").max(255, "The project address must be less than 255 characters long."),
+        city: z.string({ required_error: "The city is required for each project." }).min(2, "The project city name is too short.").max(255, "The city name must be less than 255 characters long."),
+        state: z.string({ required_error: "The state abbreviation (US) is required for each project." }).min(2, "The state abbreviation is too short.").max(2, "The state abbreviation is too long."),
         // zip: z.string().min(3).max(255),
         tags: z.array(z.string()),
-        estimatedManHours: z.number().min(0).max(1000000),
-        startDate: z.date(),
-        endDate: z.date(),
-        status: z.string().min(3).max(255),
-        percentComplete: z.number().min(0).max(100),
+        estimatedManHours: z.number({ required_error: "Estimated man hours is required." }).min(0).max(1000000, "The estimated man hours is too long."),
+        startDate: z.date({ required_error: "The start date is required." }),
+        endDate: z.date({ required_error: "The end date is required." }),
+        status: z.string({ required_error: "The project status is required." }).min(3, "The project status is too short.").max(255, "The project status must be less than 255 characters long."),
+        percentComplete: z.number({ required_error: "Percent completion status is required." }).min(0, "The percent complete must be a positive integer.").max(100, "The percent complete must be less than or equal to 100."),
       })
     )
     .mutation(async ({ ctx, input }) => {

@@ -28,7 +28,7 @@ type DealType = {
     //     active_flag: boolean;
     //     value: number;
     // };
-    // person_id: {
+    // person_id: { //customer information ???
     //     active_flag: boolean;
     //     name: string;
     //     email: [
@@ -61,8 +61,8 @@ type DealType = {
     value: number;
     // // currency: string;
     add_time: string;
-    // update_time: string;
-    // stage_change_time: string;
+    update_time: string;
+    stage_change_time: string;
     // active: boolean;
     // deleted: boolean;
     status: string; // <---crucial
@@ -75,11 +75,11 @@ type DealType = {
     lost_reason: string;
     visible_to: string;
     close_time: string;
-    pipeline_id: number;
-    won_time: string;
-    first_won_time: string;
-    lost_time: string;
-    products_count: number;
+    pipeline_id: number; //pull the stage from here...?
+    won_time: string; // need these??
+    first_won_time: string; // need these??
+    lost_time: string; // need these ??
+    products_count: number; // blank column here that pulls the first 10 characters from the left side of the data in the next column
     files_count: number;
     notes_count: number;
     followers_count: number;
@@ -94,7 +94,7 @@ type DealType = {
     last_outgoing_mail_time: string;
     label: number;
     stage_order_nr: number;
-    person_name: string;
+    person_name: string; // customer name ?? or owner name?
     org_name: string;
     next_activity_subject: string;
     next_activity_type: string;
@@ -128,13 +128,12 @@ const ReportingPage: NextPage = () => {
         // })
 
         const date = new Date();
-        const dateString = `${
-          date.getMonth() + 1
-        }-${date.getDate()}-${date.getFullYear()}`;
-    
+        const dateString = `${date.getMonth() + 1
+            }-${date.getDate()}-${date.getFullYear()}`;
+
         // console.log(json);
         // console.log(dateString);
-    
+
         const ws = utils.json_to_sheet(data?.data);
         const wb = utils.book_new();
         utils.book_append_sheet(wb, ws, "Data");

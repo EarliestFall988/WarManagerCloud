@@ -1,6 +1,5 @@
 import { ArrowDownTrayIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { type Project, type Tag } from "@prisma/client";
-import * as Dialog from "@radix-ui/react-dialog";
 import * as  DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as  Progress from "@radix-ui/react-progress";
 import { type NextPage } from "next";
