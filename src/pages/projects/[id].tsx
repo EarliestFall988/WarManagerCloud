@@ -10,7 +10,7 @@ import * as Slider from "@radix-ui/react-slider";
 import type { GetStaticProps, GetStaticPropsContext, NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
@@ -81,6 +81,30 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
   const projectContext = api.useContext().projects;
   const tagsContext = api.useContext().tags;
+
+  const { mutate, isLoading: isDeleting } = api.projects.delete.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.name} deleted successfully!`);
+      void projectContext.invalidate();
+      void tagsContext.invalidate();
+      void router.back();
+    },
+    onError: (e) => {
+      toast.error(e.message);
+    }
+  })
+
+  const deleteProject = useCallback(() => {
+
+    if (!project) {
+      toast.error("Something went wrong! Please try again later");
+      return;
+    }
+
+    mutate({
+      id: project.id
+    });
+  }, [mutate, project]);
 
   const mutation = api.projects.update.useMutation({
     onSuccess: (data) => {
@@ -310,35 +334,14 @@ const EditProjectPage = function ({ id }: { id: string }) {
           <div className="flex w-full flex-col items-center justify-center gap-4 p-2 sm:w-3/5">
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Name</h1>
-              {/* <input
-                className="w-full rounded p-2 text-zinc-800 outline-none"
-                type="text"
-                value={name}
-                disabled={false}
-                onChange={(e) => setName(e.target.value)}
-              /> */}
               <InputComponent autoFocus type="text" error={nameError} disabled={isLoading} value={name} onChange={(e) => { setName(e.currentTarget.value) }} />
             </div>
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Job Code</h1>
-              {/* <input
-                className="w-full rounded p-2 text-zinc-800 outline-none"
-                value={jobNumber}
-                type="text"
-                onChange={(e) => setJobNumber(e.target.value)}
-                disabled={false}
-              /> */}
               <InputComponent type={"text"} error={jobNumberError} disabled={isLoading} value={jobNumber} onChange={(e) => { setJobNumber(e.currentTarget.value) }} />
             </div>
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Description</h1>
-              {/* <input
-                className="w-full rounded p-2 text-zinc-800 outline-none"
-                value={description}
-                type="text"
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={false}
-              /> */}
               <InputComponent type={"text"} error={descriptionError} disabled={isLoading} value={description} onChange={(e) => { setDescription(e.currentTarget.value) }} />
             </div>
 
@@ -353,35 +356,14 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Address</h1>
-              {/* <input
-                className="w-full rounded p-2 text-zinc-800 outline-none"
-                value={address}
-                type="text"
-                onChange={(e) => setAddress(e.target.value)}
-                disabled={false}
-              /> */}
               <InputComponent error={addressError} disabled={isLoading} value={address} onChange={(e) => { setAddress(e.currentTarget.value) }} />
             </div>
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">City</h1>
-              {/* <input
-                className="w-full rounded p-2 text-zinc-800 outline-none"
-                value={city}
-                type="text"
-                onChange={(e) => setCity(e.target.value)}
-                disabled={false}
-              /> */}
               <InputComponent error={cityError} disabled={isLoading} value={city} onChange={(e) => { setCity(e.currentTarget.value) }} />
             </div>
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">State</h1>
-              {/* <input
-                className="w-full rounded p-2 text-zinc-800 outline-none"
-                value={state}
-                type="text"
-                onChange={(e) => setState(e.target.value)}
-                disabled={false}
-              /> */}
               <InputComponent error={stateError} disabled={isLoading} value={state} onChange={(e) => { setState(e.currentTarget.value) }} />
             </div>
 
@@ -389,48 +371,18 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Estimated Man Hours</h1>
-              {/* <input
-                className="w-full rounded p-2 text-zinc-800 outline-none"
-                value={manHours}
-                type="number"
-                onChange={(e) => setManHours(e.target.value)}
-                disabled={false}
-              /> */}
               <InputComponent error={manHoursError} disabled={isLoading} value={manHours} onChange={(e) => { setManHours(e.currentTarget.value) }} />
             </div>
-            {/* <div className="w-full p-2">
-              <h1 className="text-lg font-semibold">
-                Estimated Equipment Needs
-              </h1>
-              <EquipmentEditor />
-            </div> 
-
-            <div className="h-10"></div> */}
-
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Project Timeline</h1>
               <div className="flex items-center gap-4">
                 <div className="w-full">
                   <p className="px-2 italic text-zinc-300">Projected Start</p>
-                  {/* <input
-                    className="w-full rounded p-2 text-zinc-800 outline-none"
-                    value={startDate}
-                    type="date"
-                    onChange={(e) => setStartDate(e.target.value)}
-                    disabled={false}
-                  /> */}
                   <InputComponent error={startDateError} disabled={isLoading} value={startDate} onChange={(e) => { setStartDate(e.currentTarget.value) }} />
                 </div>
                 <ArrowRightIcon className="h-10 w-10 pt-5" />
                 <div className="w-full">
                   <p className="px-2 italic text-zinc-300">Projected End</p>
-                  {/* <input
-                    className="w-full rounded p-2 text-zinc-800  outline-none"
-                    value={endDate}
-                    type="date"
-                    onChange={(e) => setEndDate(e.target.value)}
-                    disabled={false}
-                  /> */}
                   <InputComponent error={endDateError} disabled={isLoading} value={endDate} onChange={(e) => { setEndDate(e.currentTarget.value) }} />
                 </div>
               </div>
@@ -486,29 +438,10 @@ const EditProjectPage = function ({ id }: { id: string }) {
 
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Notes/Concerns</h1>
-              {/* <textarea
-                className="w-full rounded p-2 text-zinc-800 outline-none"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                disabled={false}
-              /> */}
-              <TextareaComponent disabled={isLoading} value={notes} onChange={(e) => { setNotes(e.currentTarget.value) }} />
+              <TextareaComponent disabled={isLoading} error={notesError} value={notes} onChange={(e) => { setNotes(e.currentTarget.value) }} />
             </div>
 
             <div className="w-full p-2">
-              {/* <button
-                disabled={mutation.isLoading}
-                onClick={SaveChanges}
-                className="flex h-10 w-full items-center justify-center rounded bg-gradient-to-br from-amber-700 to-red-700 font-semibold text-white hover:from-amber-600 hover:to-red-600"
-              >
-                {mutation.isLoading ? (
-                  <LoadingSpinner />
-                ) : (
-                  <div className="flex gap-2">
-                    <p>Save</p> <CloudArrowUpIcon className="h-6 w-6" />
-                  </div>
-                )}
-              </button> */}
 
               <ButtonCallToActionComponent disabled={isLoading} onClick={SaveChanges} >
                 {mutation.isLoading ? (
@@ -520,7 +453,9 @@ const EditProjectPage = function ({ id }: { id: string }) {
                 )}
               </ButtonCallToActionComponent>
             </div>
-            <ButtonDeleteAction title="Delete Project?" description="Are you sure you want to delete this project? After deletion, the project cannot be recovered." disabled={isLoading} onClick={() => { }} />
+            <ButtonDeleteAction title="Delete Project?"
+              description="Are you sure you want to delete this project? After deletion, the project cannot be recovered."
+              disabled={isLoading} yes={deleteProject} loading={isDeleting} />
           </div>
         </div>
       </main>
