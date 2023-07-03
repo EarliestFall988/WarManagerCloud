@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon, ChartBarIcon, Cog6ToothIcon, DocumentIcon, NewspaperIcon, PlusIcon, TrashIcon, UserCircleIcon, UsersIcon, WrenchScrewdriverIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon, ChartBarIcon, Cog6ToothIcon, DocumentIcon, DocumentTextIcon, NewspaperIcon, PlusIcon, TrashIcon, UserCircleIcon, UsersIcon, WrenchScrewdriverIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import TooltipComponent from "./Tooltip";
 import { LogoComponent } from "./RibbonLogo";
 import { SignOutButton, UserButton, UserProfile, useUser } from "@clerk/nextjs";
@@ -284,6 +284,10 @@ export const DashboardMenu = () => {
             setContext("Activity");
         }
 
+        if (router.pathname === "/dashboard/reporting") {
+            setContext("Reporting");
+        }
+
     }, [router.pathname]);
 
     const { user } = useUser();
@@ -391,6 +395,23 @@ export const DashboardMenu = () => {
                         >
                             <WrenchScrewdriverIcon className="h-6 w-6" />
                             {toggleOpen && <p>Projects</p>}
+                        </button>
+                    </TooltipComponent>
+                    <TooltipComponent content="View reports and download xlsx documents" side="right">
+                        <button
+                            onClick={() => {
+                                setContext("Reporting");
+                                // void router.push("/dashboard?context=Projects");
+                                void router.push("/dashboard/reporting")
+                            }}
+                            className={`flex w-full gap-1 p-2 font-semibold ${toggleOpen ? "justify-start" : "justify-center"
+                                } items-center transition-all duration-200 ${context === "Reporting"
+                                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                                    : " border-b border-zinc-700 hover:bg-zinc-700"
+                                }`}
+                        >
+                            <DocumentTextIcon className="h-6 w-6" />
+                            {toggleOpen && <p>Reporting</p>}
                         </button>
                     </TooltipComponent>
                 </div>
@@ -562,6 +583,19 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                                             }`}
                                     >
                                         <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
+                                    </button>
+                                </Dialog.DialogClose>
+                                <Dialog.DialogClose asChild>
+                                    <button
+                                        onClick={() => {
+                                            void router.push("/dashboard/reporting")
+                                        }}
+                                        className={`w-full p-3 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Reporting"
+                                            ? "bg-amber-800 hover:bg-red-700"
+                                            : "border-b border-zinc-600 hover:bg-zinc-600 "
+                                            }`}
+                                    >
+                                        <DocumentTextIcon className="h-6 w-6 " /> Reporting
                                     </button>
                                 </Dialog.DialogClose>
                             </div>
