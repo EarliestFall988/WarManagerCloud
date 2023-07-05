@@ -218,9 +218,9 @@ export const reportingRouter = createTRPCRouter({
 
         let deals = await getDeals(cursor);
 
-        while (deals && deals.data && deals.data.length > 0 && cursor < 5) {
+        while (deals && deals.data && deals.data.length > 0 && cursor < 500) {
             // console.log(deals.data);
-            // console.log(deals.related_objects);
+            console.log(deals.related_objects);
 
             deals.data.map((deal) => {
                 const stageId = deal.stage_id
@@ -229,7 +229,7 @@ export const reportingRouter = createTRPCRouter({
                 if (stage) {
                     deal.stageName = stage.name;
                     deal.stage_pipelineName = stage.pipeline_name;
-                    // deal.stage_dealProbability = stage.deal_probability;
+                    deal.stage_dealProbability = stage.deal_probability;
                 }
 
             })
@@ -237,7 +237,7 @@ export const reportingRouter = createTRPCRouter({
             // console.log(deals.additional_data.pagination.start)
 
             allDeals.push(...deals.data);
-            cursor += 5;
+            cursor += 500;
             deals = await getDeals(cursor);
         }
 
@@ -278,10 +278,10 @@ const getDeals = async (cursor: number) => {
         throw new Error("Pipedrive API key not found");
     }
 
-    const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
-    const iso = new Date(dateTime).toISOString();
+    // const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
+    // const iso = new Date(dateTime).toISOString();
 
-    const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=5&api_token=${api_key}&start=${cursor}&sort=update_time DESC,add_time DESC,title ASC`
+    const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=50&api_token=${api_key}&start=${cursor}&sort=update_time DESC,add_time DESC,title ASC`
 
     const deals = await fetch(urlString, {
         method: "GET",
