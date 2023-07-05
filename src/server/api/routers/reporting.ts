@@ -207,22 +207,50 @@ export const reportingRouter = createTRPCRouter({
 
     getPipedriveDeals: privateProcedure.query(async ({ ctx }) => {
 
-        if (api_key === undefined) {
-            throw new Error("Pipedrive API key not found");
+
+        const allDeals = [];
+        let cursor = 0;
+
+
+        let deals = await getDeals(cursor);
+
+        while (deals && deals.data && deals.data.length > 0 && cursor <  100) {
+
+            // console.log(deals.data);
+            // console.log(deals.additional_data.pagination.more_items_in_collection)
+            console.log(deals.additional_data.pagination.start)
+
+            allDeals.push(...deals.data);
+            cursor += 500;
+            deals = await getDeals(cursor);
         }
 
-        const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
-        const iso = new Date(dateTime).toISOString();
+        return allDeals;
 
-        const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=500&api_token=${api_key}&sort=update_time`
-
-        const deals = await fetch(urlString, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        }).then((res) => res.json()) as dealResponse;
-
-        return deals;
     }),
 })
+
+
+const getDeals = async (cursor: number) => {
+
+    if (api_key === undefined) {
+        throw new Error("Pipedrive API key not found");
+    }
+
+    const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
+    const iso = new Date(dateTime).toISOString();
+
+    const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=500&api_token=${api_key}&start=${cursor}&sort=stage_change_time DESC,update_time DESC,add_time DESC,title ASC`
+
+    const deals = await fetch(urlString, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json()) as dealResponse;
+
+    // console.log(deals)
+
+    return deals;
+
+}

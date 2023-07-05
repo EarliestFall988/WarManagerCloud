@@ -289,7 +289,9 @@ const ReportingPage = () => {
     // console.log(json);
     // console.log(dateString);
 
-    const ws = utils.json_to_sheet(data?.data);
+    console.log("data", data);
+
+    const ws = utils.json_to_sheet(data);
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, "Data");
     writeFileXLSX(wb, `Deals ${dateString}.xlsx`);
