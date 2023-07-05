@@ -240,7 +240,7 @@ type DownloadPipeDriveDetails =
         StatusUpdateTime: string; //merge won and lost into status time
         StageUpdateTime: string;
         ActivitiesCompletedLastWeek: string; //probably not accurate, will need to check last changed date???
-        ActivitiesLeftToComplete: string; //probably not accurate, will need to check the due date
+        ActivitiesToCompleteThisWeek: string; //probably not accurate, will need to check the due date
     }
 
 
@@ -250,6 +250,7 @@ export const reportingRouter = createTRPCRouter({
 
 
         const dealCustomFields = await getDealCustomFields();
+        const activities = await getActivities();
 
         const allDeals = [] as DownloadPipeDriveDetails[];
         let cursor = 0;
@@ -257,7 +258,7 @@ export const reportingRouter = createTRPCRouter({
 
         let deals = await getDeals(cursor);
 
-        while (deals && deals.data && deals.data.length > 0 && cursor < 500) {
+        while (deals && deals.data && deals.data.length > 0 && cursor < 1000) {
             // console.log(deals.data);
             // console.log(deals.related_objects);
             // console.log(deals.related_objects.user);
@@ -294,6 +295,31 @@ export const reportingRouter = createTRPCRouter({
                 }
 
 
+                const activitiesForDeal = activities.data.filter((activity) => activity.deal_id != deal.id);
+                // console.log(activitiesForDeal);
+
+                let activitiesCompletedLastWeek = 0;
+                let activitiesLeftToComplete = 0;
+
+                activitiesForDeal.map((activity) => {
+                    const activityDueDate = new Date(activity.due_date);
+                    const activityCompletedDate = new Date(activity.marked_as_done_time);
+
+                    const today = new Date();
+
+                    const daysSinceActivityCompleted = Math.floor((today.getTime() - activityCompletedDate.getTime()) / (1000 * 3600 * 24));
+                    const daysSinceActivityDue = Math.floor((today.getTime() - activityDueDate.getTime()) / (1000 * 3600 * 24));
+
+                    if (daysSinceActivityCompleted <= 7) {
+                        activitiesCompletedLastWeek++;
+                    }
+
+                    if (daysSinceActivityDue <= 0) {
+                        activitiesLeftToComplete++;
+                    }
+                })
+
+
                 const pipeDriveDownloadDetails: DownloadPipeDriveDetails = {
                     id: deal.id,
                     owner: deal.owner_name,
@@ -305,8 +331,8 @@ export const reportingRouter = createTRPCRouter({
                     UpdateTime: deal.update_time,
                     StatusUpdateTime: lastStatusUpdateTime,
                     StageUpdateTime: deal.stage_change_time,
-                    ActivitiesCompletedLastWeek: "",
-                    ActivitiesLeftToComplete: "",
+                    ActivitiesCompletedLastWeek: activitiesCompletedLastWeek.toString(),
+                    ActivitiesToCompleteThisWeek: activitiesLeftToComplete.toString(), //probably not accurate, will need to check the due date
                 }
 
                 allDeals.push(pipeDriveDownloadDetails);
@@ -324,29 +350,48 @@ export const reportingRouter = createTRPCRouter({
 })
 
 
+type ActivitiesResponse = {
+    success: boolean;
+    data: [
+        {
+            id: number;
+            company_id: number;
+            user_id: number;
+            deal_id: number;
+            done: boolean;
+            type: string;
+            due_date: string;
+            due_time: string;
+            add_time: string;
+            typeName: string;
+            marked_as_done_time: string;
+        }
+    ];
+}
 
-// const getDealDetails = async (dealId: number) => {
 
-//     if (api_key === undefined) {
-//         throw new Error("Pipedrive API key not found");
-//     }
+const getActivities = async () => {
 
-//     // const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
-//     // const iso = new Date(dateTime).toISOString();
+    if (api_key === undefined) {
+        throw new Error("Pipedrive API key not found");
+    }
 
-//     const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals/${dealId}?api_token=${api_key}`
+    // const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
+    // const iso = new Date(dateTime).toISOString();
 
-//     const deals = await fetch(urlString, {
-//         method: "GET",
-//         headers: {
-//             "Content-Type": "application/json",
-//         },
-//     }).then((res) => res.json()) as dealResponse;
+    const urlString = `https://jrcoinc.pipedrive.com/api/v1/activities?api_token=${api_key}`
 
-//     // console.log(deals)
+    const activities = await fetch(urlString, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json()) as ActivitiesResponse;
 
-//     return deals;
-// }
+    // console.log(activities)
+
+    return activities;
+}
 
 
 type customFieldResponse = {
@@ -427,7 +472,7 @@ const getDeals = async (cursor: number) => {
     // const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
     // const iso = new Date(dateTime).toISOString();
 
-    const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=50&api_token=${api_key}&start=${cursor}&sort=update_time DESC,add_time DESC,title ASC`
+    const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=500&api_token=${api_key}&start=${cursor}&sort=update_time DESC,add_time DESC,title ASC`
 
     const deals = await fetch(urlString, {
         method: "GET",
