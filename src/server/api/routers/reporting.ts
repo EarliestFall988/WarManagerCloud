@@ -6,6 +6,24 @@ import { url } from "inspector";
 
 const api_key = env.PIPE_DRIVE_API_KEY;
 
+//need to pull year to date (update time???)
+//activities - what week it's due and what the type is. Also we need to know how many were done the previous week as well as the type (JR&Co and JR Roofing) status = done
+//activities: 2 Client care and prospecting per week
+
+
+//deal owner, primary and secondary estimator, deal status, deal stage, deal value,
+//anything where the status and stage was updated this year
+//pull the weekly activities and the weekly prospecting
+
+
+//Weekly proposed bids, Bid Proposed, (for both JR&Co and JR Roofing) Status open, lost and won
+
+//changes are the who
+//what did you propose for the bids, how many activities you've done
+//difference between weekly client and prospecting activities
+
+
+
 type dealResponse = {
     success: boolean;
     data: [
@@ -58,20 +76,20 @@ type dealResponse = {
                 value: number;
             };
             stage_id: number;
-            stageName: string;
-            stage_pipelineName: string;
-            stage_dealProbability: number;
+            stageName: string; //need stage name
+            stage_pipelineName: string; //need pipeline name
+            stage_dealProbability: number; // do not need deal probability
             title: string;
             value: number;
             currency: string;
-            add_time: string;
-            update_time: string;
-            stage_change_time: string;
+            add_time: string; // need this
+            update_time: string; // need this
+            stage_change_time: string; // keep this as well
             active: boolean;
             deleted: boolean;
-            status: string;
+            status: string; //Need Status
             probability: number;
-            next_activity_date: string;
+            next_activity_date: string; //Need Next Activity Date to determine how many per week (tasks) (specific client care and weekly prospecting)
             next_activity_time: string;
             next_activity_id: number;
             last_activity_id: number;
@@ -88,7 +106,7 @@ type dealResponse = {
             notes_count: number;
             followers_count: number;
             email_messages_count: number;
-            activities_count: number;
+            activities_count: number; //
             done_activities_count: number;
             undone_activities_count: number;
             reference_activities_count: number;
@@ -104,13 +122,15 @@ type dealResponse = {
             next_activity_type: string;
             next_activity_duration: string;
             next_activity_note: string;
-            formatted_value: string;
+            formatted_value: string; // need this one too
             weighted_value: number;
             formatted_weighted_value: string;
             weighted_value_currency: string;
-            rotten_time: string;
+            rotten_time: string; // need the owner name
             owner_name: string;
             cc_email: string;
+            "4ff3ab1c142d1f55cbe84472f5267619ef942265": number; //primary estimator
+            "7fb3d86d9d871f9fdbcf0920cf03903463b9b40e": number; //secondary estimator
             org_hidden: boolean;
             person_hidden: boolean;
         }
@@ -207,12 +227,31 @@ type dealResponse = {
 }
 
 
+type DownloadPipeDriveDetails =
+    {
+        id: number;
+        owner: string;
+        PrimaryEstimator: string;
+        SecondaryEstimator: string;
+        value: string; //format correctly
+        stage: string;
+        status: string;
+        UpdateTime: string;
+        StatusUpdateTime: string; //merge won and lost into status time
+        StageUpdateTime: string;
+        ActivitiesCompletedLastWeek: string; //probably not accurate, will need to check last changed date???
+        ActivitiesLeftToComplete: string; //probably not accurate, will need to check the due date
+    }
+
+
 export const reportingRouter = createTRPCRouter({
 
     getPipedriveDeals: privateProcedure.query(async ({ ctx }) => {
 
 
-        const allDeals = [];
+        const dealCustomFields = await getDealCustomFields();
+
+        const allDeals = [] as DownloadPipeDriveDetails[];
         let cursor = 0;
 
 
@@ -220,7 +259,12 @@ export const reportingRouter = createTRPCRouter({
 
         while (deals && deals.data && deals.data.length > 0 && cursor < 500) {
             // console.log(deals.data);
-            console.log(deals.related_objects);
+            // console.log(deals.related_objects);
+            // console.log(deals.related_objects.user);
+            // console.log(deals.related_objects.person);
+            // console.log(deals.related_objects.pipeline);
+            // console.log(deals.related_objects.organization);
+            // console.log(dea)
 
             deals.data.map((deal) => {
                 const stageId = deal.stage_id
@@ -232,11 +276,44 @@ export const reportingRouter = createTRPCRouter({
                     deal.stage_dealProbability = stage.deal_probability;
                 }
 
+                const lastStatusUpdateTime = deal.close_time || deal.won_time || deal.lost_time;
+
+                const primaryEstimatorId = deal["4ff3ab1c142d1f55cbe84472f5267619ef942265"];
+                const primaryEstimator = dealCustomFields.primaryEstimator?.options.filter((option) => option.id == primaryEstimatorId);
+                let primaryEstimatorName = "";
+                if (primaryEstimator && primaryEstimator.length > 0) {
+                    primaryEstimatorName = primaryEstimator !== undefined && primaryEstimator[0]?.label !== undefined ? primaryEstimator[0].label : "";
+                }
+
+
+                const secondaryEstimatorId = deal["7fb3d86d9d871f9fdbcf0920cf03903463b9b40e"];
+                const secondaryEstimator = dealCustomFields.secondaryEstimator?.options.filter((option) => option.id == secondaryEstimatorId);
+                let secondaryEstimatorName = "";
+                if (secondaryEstimator && secondaryEstimator.length > 0) {
+                    secondaryEstimatorName = secondaryEstimator !== undefined && secondaryEstimator[0]?.label !== undefined ? secondaryEstimator[0].label : "";
+                }
+
+
+                const pipeDriveDownloadDetails: DownloadPipeDriveDetails = {
+                    id: deal.id,
+                    owner: deal.owner_name,
+                    PrimaryEstimator: primaryEstimatorName,
+                    SecondaryEstimator: secondaryEstimatorName,
+                    value: deal.formatted_value,
+                    stage: deal.stageName,
+                    status: deal.status,
+                    UpdateTime: deal.update_time,
+                    StatusUpdateTime: lastStatusUpdateTime,
+                    StageUpdateTime: deal.stage_change_time,
+                    ActivitiesCompletedLastWeek: "",
+                    ActivitiesLeftToComplete: "",
+                }
+
+                allDeals.push(pipeDriveDownloadDetails);
             })
 
             // console.log(deals.additional_data.pagination.start)
 
-            allDeals.push(...deals.data);
             cursor += 500;
             deals = await getDeals(cursor);
         }
@@ -272,6 +349,75 @@ export const reportingRouter = createTRPCRouter({
 // }
 
 
+type customFieldResponse = {
+    success: boolean;
+    data: [
+        {
+            id: number;
+            key: string;
+            name: string;
+            order_nr: number;
+            field_type: string;
+            json_column_flag: boolean;
+            add_time: Date,
+            update_time: Date;
+            last_updated_by_user_id: number;
+            edit_flag: boolean,
+            details_visible_flag: boolean,
+            add_visible_flag: boolean,
+            important_flag: boolean,
+            bulk_edit_allowed: boolean;
+            filtering_allowed: boolean,
+            sortable_flag: boolean,
+            searchable_flag: boolean;
+            active_flag: boolean;
+            projects_detail_visible_flag: boolean;
+            show_in_pipelines: {
+                show_in_all: boolean;
+                pipeline_ids: []
+            },
+            options: [
+                {
+                    id: number;
+                    label: string;
+                },
+            ],
+            mandatory_flag: boolean;
+        }
+    ]
+}
+
+
+
+
+const getDealCustomFields = async () => {
+
+
+    if (api_key === undefined) {
+        throw new Error("Pipedrive API key not found");
+    }
+
+    // const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
+    // const iso = new Date(dateTime).toISOString();
+
+    const urlString = `https://jrcoinc.pipedrive.com/api/v1/dealFields?api_token=${api_key}`
+
+    const customFields = await fetch(urlString, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then((res) => res.json()) as customFieldResponse;
+
+    // console.log(deals)
+
+    const estimator1Data = customFields.data.find(x => x.key === "4ff3ab1c142d1f55cbe84472f5267619ef942265");
+    const estimator2Data = customFields.data.find(x => x.key === "7fb3d86d9d871f9fdbcf0920cf03903463b9b40e");
+
+    return { primaryEstimator: estimator1Data, secondaryEstimator: estimator2Data };
+}
+
+
 const getDeals = async (cursor: number) => {
 
     if (api_key === undefined) {
@@ -293,5 +439,4 @@ const getDeals = async (cursor: number) => {
     // console.log(deals)
 
     return deals;
-
 }
