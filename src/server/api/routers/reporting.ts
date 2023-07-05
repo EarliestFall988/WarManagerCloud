@@ -206,27 +206,6 @@ type dealResponse = {
     };
 }
 
-type DealsPerson = {
-    [key: string]: {
-        active_flag: boolean;
-        name: string;
-        email: [
-            {
-                label: string;
-                value: string;
-                primary: boolean;
-            }
-        ];
-        phone: [
-            {
-                label: string;
-                value: string;
-                primary: boolean;
-            }
-        ];
-        value: number;
-    };
-};
 
 export const reportingRouter = createTRPCRouter({
 
@@ -239,7 +218,7 @@ export const reportingRouter = createTRPCRouter({
 
         let deals = await getDeals(cursor);
 
-        while (deals && deals.data && deals.data.length > 0 && cursor < 100) {
+        while (deals && deals.data && deals.data.length > 0 && cursor < 50) {
             // console.log(deals.data);
             console.log(deals.related_objects);
 
@@ -250,7 +229,7 @@ export const reportingRouter = createTRPCRouter({
                 if (stage) {
                     deal.stageName = stage.name;
                     deal.stage_pipelineName = stage.pipeline_name;
-                    deal.stage_dealProbability = stage.deal_probability;
+                    // deal.stage_dealProbability = stage.deal_probability;
                 }
 
             })
@@ -258,7 +237,7 @@ export const reportingRouter = createTRPCRouter({
             // console.log(deals.additional_data.pagination.start)
 
             allDeals.push(...deals.data);
-            cursor += 100;
+            cursor += 50;
             deals = await getDeals(cursor);
         }
 
@@ -302,7 +281,7 @@ const getDeals = async (cursor: number) => {
     const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
     const iso = new Date(dateTime).toISOString();
 
-    const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=100&api_token=${api_key}&start=${cursor}&sort=update_time DESC,add_time DESC,title ASC`
+    const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=50&api_token=${api_key}&start=${cursor}&sort=update_time DESC,add_time DESC,title ASC`
 
     const deals = await fetch(urlString, {
         method: "GET",

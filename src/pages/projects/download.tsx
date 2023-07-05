@@ -61,6 +61,9 @@ type DealType = {
   //     value: number;
   // };
   // stage_id: number;
+  stageName: string;
+  stage_pipelineName: string;
+  stage_dealProbability: number;
   title: string;
   value: number;
   // // currency: string;
@@ -190,6 +193,8 @@ const DownloadProjectDetails = () => {
         notes_or_concerns: project.notes,
       };
     });
+
+    console.log(json);
 
     const date = new Date();
     const dateString = `${date.getMonth() + 1
