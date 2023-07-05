@@ -261,7 +261,7 @@ export const reportingRouter = createTRPCRouter({
 
         let finishedDownloading = false;
 
-        while (deals && deals.data && deals.data.length > 0 && !finishedDownloading) {
+        while (deals && deals.data && deals.data.length > 0 && !finishedDownloading && cursor < 500) {
 
 
             if (deals.data[0].update_time < beginningOfTheYearDate.toISOString()) {
