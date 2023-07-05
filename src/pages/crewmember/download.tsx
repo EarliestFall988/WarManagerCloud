@@ -10,6 +10,7 @@ import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
 import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 
+
 // interface President {
 //   Name: string;
 //   Index: number;
@@ -91,9 +92,8 @@ const DownloadCrewDetails = () => {
     });
 
     const date = new Date();
-    const dateString = `${
-      date.getMonth() + 1
-    }-${date.getDate()}-${date.getFullYear()}`;
+    const dateString = `${date.getMonth() + 1
+      }-${date.getDate()}-${date.getFullYear()}`;
 
     // console.log(json);
     // console.log(dateString);

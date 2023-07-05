@@ -1,7 +1,7 @@
-import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon, ChartBarIcon, Cog6ToothIcon, DocumentIcon, DocumentTextIcon, NewspaperIcon, PlusIcon, TrashIcon, UserCircleIcon, UsersIcon, WrenchScrewdriverIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon,  Cog6ToothIcon, DocumentIcon, NewspaperIcon, PlusIcon, TrashIcon, UserCircleIcon, UsersIcon, WrenchScrewdriverIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import TooltipComponent from "./Tooltip";
 import { LogoComponent } from "./RibbonLogo";
-import { SignOutButton, UserButton, UserProfile, useUser } from "@clerk/nextjs";
+import { SignOutButton, UserButton,  useUser } from "@clerk/nextjs";
 import { type FunctionComponent, useState, type ReactNode, useMemo } from "react";
 import { type NextRouter, useRouter } from "next/router";
 import { api } from "~/utils/api";
@@ -397,7 +397,7 @@ export const DashboardMenu = () => {
                             {toggleOpen && <p>Projects</p>}
                         </button>
                     </TooltipComponent>
-                    <TooltipComponent content="View reports and download xlsx documents" side="right">
+                    {/* <TooltipComponent content="View reports and download xlsx documents" side="right">
                         <button
                             onClick={() => {
                                 setContext("Reporting");
@@ -413,7 +413,7 @@ export const DashboardMenu = () => {
                             <DocumentTextIcon className="h-6 w-6" />
                             {toggleOpen && <p>Reporting</p>}
                         </button>
-                    </TooltipComponent>
+                    </TooltipComponent> */}
                 </div>
                 <div
                     className={`flex w-full flex-col ${toggleOpen ? "" : "items-center justify-center"
@@ -585,7 +585,7 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                                         <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
                                     </button>
                                 </Dialog.DialogClose>
-                                <Dialog.DialogClose asChild>
+                                {/* <Dialog.DialogClose asChild>
                                     <button
                                         onClick={() => {
                                             void router.push("/dashboard/reporting")
@@ -597,7 +597,7 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                                     >
                                         <DocumentTextIcon className="h-6 w-6 " /> Reporting
                                     </button>
-                                </Dialog.DialogClose>
+                                </Dialog.DialogClose> */}
                             </div>
                         </div>
                     </Dialog.Content>

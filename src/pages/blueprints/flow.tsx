@@ -1,9 +1,10 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
   ReactFlowProvider,
+  applyNodeChanges,
   useReactFlow,
 } from "reactflow";
 import {
@@ -23,6 +24,9 @@ import crewNode from "~/components/crewNode";
 import projectNode from "~/components/projectNode";
 import noteNode from "~/components/noteNode";
 import { api } from "~/utils/api";
+import * as Y from "yjs";
+import { WebsocketProvider } from "y-websocket";
+import { WebrtcProvider } from "y-webrtc";
 
 export type flowState = {
   nodes: Node[];
@@ -46,6 +50,14 @@ const nodeTypes = {
   noteNode,
 };
 
+type yjsWsProviderProps = {
+  status: string;
+};
+
+
+
+const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
+
 const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore(
     selector,
@@ -54,12 +66,100 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
 
   // console.log("nodes", nodes);
 
+  const roomName = blueprintId;
+
   const { data: crewData } = api.crewMembers.getAll.useQuery();
   const { data: projectData } = api.projects.getAll.useQuery();
   const { data: noteData } = api.notes.getAll.useQuery({});
 
+  const [ydoc, setYdoc] = useState<Y.Doc | null>(null);
+  // const [text, setText] = useState("");
+  const [ws, setws] = useState<WebsocketProvider | null>(null);
+  const [wrtc, setwrtc] = useState<WebrtcProvider | null>(null);
+
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
   const reactFlowInstance = useReactFlow();
+
+  useEffect(() => {
+    const ydoc = new Y.Doc();
+
+    const wsProvider = new WebsocketProvider(
+      liveWebRTCConnection,
+      roomName,
+      ydoc
+    );
+
+    const webrtcProvider = new WebrtcProvider(roomName, ydoc, {
+      signaling: [liveWebRTCConnection],
+      password: "password",
+    });
+
+    wsProvider.on("status", (event: yjsWsProviderProps) => {
+      console.log(event.status); // logs "connected" or "disconnected"
+    });
+
+    setwrtc(webrtcProvider);
+
+    wsProvider.on("sync", (isSynced: yjsWsProviderProps) => {
+      console.log(isSynced); // logs "true" or "false"
+
+      if (isSynced) {
+        const text = ydoc?.getText("text").toJSON();
+        // console.log('text', text)
+        // setText(text || "");
+      }
+    });
+
+    webrtcProvider.on("sync", (isSynced: yjsWsProviderProps) => {
+      console.log("web rtc synced: ", isSynced); // logs "true" or "false"
+    });
+
+    ydoc.on("update", (_update: Uint8Array) => { // update: Uint8Array
+      // console.log('update', update)
+      const text = ydoc?.getText("nodes").toJSON();
+      // console.log('text', text)
+      // setText(text || "");
+
+      // const nodes = JSON.parse(text || "[]");
+    });
+
+    setYdoc(ydoc);
+    setws(wsProvider);
+
+    return () => {
+      wsProvider.disconnect();
+      ydoc.destroy();
+    };
+  }, []);
+
+
+
+
+  useEffect(() => {
+
+    const text = JSON.stringify(nodes);
+
+    if (!ydoc) return;
+
+    Y.transact(ydoc, () => {
+      ydoc?.getText("nodes").delete(0, ydoc?.getText("nodes").length);
+      ydoc?.getText("nodes").insert(0, text);
+    });
+
+    useStore.setState((state) => ({
+      ...state,
+      nodes: [...state.nodes],
+    }));
+
+  }, [ydoc, nodes, edges, onNodesChange, onEdgesChange, onConnect]);
+
+
+  // const update = (text: string) => {
+  //   // console.log('updateText', text)
+  //   if (!ydoc) return;
+
+  //   setText(text);
+  // };
 
   // console.log("flow instance", reactFlowInstance);
 
@@ -113,7 +213,7 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
         // console.log("note", note)
 
         if (!note) return;
-        blockResult.data = {...note, blueprintId};
+        blockResult.data = { ...note, blueprintId };
 
         // console.log(blockResult);
       }

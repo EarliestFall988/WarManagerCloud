@@ -437,7 +437,7 @@ const BlueprintPage: NextPage = () => {
       </SignedIn>
       <SignedOut>
         <Head>
-          <title>You are not signed in - War Manager</title>
+          <title>You are not signed in | War Manager</title>
           <link rel="icon" href="/favicon.ico" />
         </Head>
         <SignInModal redirectUrl={`/dashboard`} />

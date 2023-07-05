@@ -211,7 +211,10 @@ export const reportingRouter = createTRPCRouter({
             throw new Error("Pipedrive API key not found");
         }
 
-        const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=200&api_token=${api_key}`
+        const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
+        const iso = new Date(dateTime).toISOString();
+
+        const urlString = `https://jrcoinc.pipedrive.com/api/v1/deals?limit=500&api_token=${api_key}&sort=update_time`
 
         const deals = await fetch(urlString, {
             method: "GET",
