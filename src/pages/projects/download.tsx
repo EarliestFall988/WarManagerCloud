@@ -294,7 +294,7 @@ const ReportingPage = () => {
     // console.log(json);
     // console.log(dateString);
 
-    console.log("data", data);
+    // console.log("data", data);
 
     const ws = utils.json_to_sheet(data);
     const wb = utils.book_new();
