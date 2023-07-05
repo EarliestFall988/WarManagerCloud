@@ -263,9 +263,9 @@ export const reportingRouter = createTRPCRouter({
 
         while (deals && deals.data && deals.data.length > 0 && !finishedDownloading) {
 
-           
 
-            if(deals.data[0].update_time < beginningOfTheYearDate.toISOString()) {
+
+            if (deals.data[0].update_time < beginningOfTheYearDate.toISOString()) {
                 finishedDownloading = true;
                 break;
             }
@@ -342,8 +342,8 @@ export const reportingRouter = createTRPCRouter({
                     UpdateTime: deal.update_time,
                     StatusUpdateTime: lastStatusUpdateTime,
                     StageUpdateTime: deal.stage_change_time,
-                    ActivitiesCompletedLastWeek: deal.done_activities_count, //activitiesCompletedLastWeek.toString(),
-                    ActivitiesToCompleteThisWeek: deal.undone_activities_count, //activitiesLeftToComplete.toString(), //probably not accurate, will need to check the due date
+                    ActivitiesCompletedLastWeek: activitiesCompletedLastWeek,
+                    ActivitiesToCompleteThisWeek: activitiesLeftToComplete, //probably not accurate, will need to check the due date
                 }
 
                 allDeals.push(pipeDriveDownloadDetails);
@@ -390,7 +390,13 @@ const getActivities = async () => {
     // const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
     // const iso = new Date(dateTime).toISOString();
 
-    const urlString = `https://jrcoinc.pipedrive.com/api/v1/activities?api_token=${api_key}`
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+
+    const urlString = `https://jrcoinc.pipedrive.com/api/v1/activities?api_token=${api_key}&user_id=0&start_date=${lastWeek.toISOString()}&end_date=${nextWeek.toISOString()}`
 
     const activities = await fetch(urlString, {
         method: "GET",
