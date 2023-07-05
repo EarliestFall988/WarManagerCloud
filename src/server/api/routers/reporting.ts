@@ -1,7 +1,5 @@
 import { env } from "process";
 import { createTRPCRouter, privateProcedure } from "../trpc";
-import { api } from "~/utils/api";
-import { url } from "inspector";
 
 
 const api_key = env.PIPE_DRIVE_API_KEY;
@@ -239,8 +237,8 @@ type DownloadPipeDriveDetails =
         UpdateTime: string;
         StatusUpdateTime: string; //merge won and lost into status time
         StageUpdateTime: string;
-        ActivitiesCompletedLastWeek: string; //probably not accurate, will need to check last changed date???
-        ActivitiesToCompleteThisWeek: string; //probably not accurate, will need to check the due date
+        ActivitiesCompletedLastWeek: number; //probably not accurate, will need to check last changed date???
+        ActivitiesToCompleteThisWeek: number; //probably not accurate, will need to check the due date
     }
 
 
@@ -255,10 +253,23 @@ export const reportingRouter = createTRPCRouter({
         const allDeals = [] as DownloadPipeDriveDetails[];
         let cursor = 0;
 
+        const beginningOfTheYearDate = new Date();
+        beginningOfTheYearDate.setMonth(0, 1);
+
 
         let deals = await getDeals(cursor);
 
-        while (deals && deals.data && deals.data.length > 0 && cursor < 1000) {
+        let finishedDownloading = false;
+
+        while (deals && deals.data && deals.data.length > 0 && !finishedDownloading) {
+
+           
+
+            if(deals.data[0].update_time < beginningOfTheYearDate.toISOString()) {
+                finishedDownloading = true;
+                break;
+            }
+
             // console.log(deals.data);
             // console.log(deals.related_objects);
             // console.log(deals.related_objects.user);
@@ -331,8 +342,8 @@ export const reportingRouter = createTRPCRouter({
                     UpdateTime: deal.update_time,
                     StatusUpdateTime: lastStatusUpdateTime,
                     StageUpdateTime: deal.stage_change_time,
-                    ActivitiesCompletedLastWeek: activitiesCompletedLastWeek.toString(),
-                    ActivitiesToCompleteThisWeek: activitiesLeftToComplete.toString(), //probably not accurate, will need to check the due date
+                    ActivitiesCompletedLastWeek: deal.done_activities_count, //activitiesCompletedLastWeek.toString(),
+                    ActivitiesToCompleteThisWeek: deal.undone_activities_count, //activitiesLeftToComplete.toString(), //probably not accurate, will need to check the due date
                 }
 
                 allDeals.push(pipeDriveDownloadDetails);
@@ -344,8 +355,8 @@ export const reportingRouter = createTRPCRouter({
             deals = await getDeals(cursor);
         }
 
+        allDeals.filter((deal) => deal.UpdateTime > beginningOfTheYearDate.toISOString());
         return allDeals;
-
     }),
 })
 
