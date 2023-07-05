@@ -1,5 +1,6 @@
 import { env } from "process";
 import { createTRPCRouter, privateProcedure } from "../trpc";
+import { debug } from "console";
 
 
 const api_key = env.PIPE_DRIVE_API_KEY;
@@ -238,7 +239,6 @@ type DownloadPipeDriveDetails =
         StatusUpdateTime: string; //merge won and lost into status time
         StageUpdateTime: string;
         ActivitiesCompletedLastWeek: number; //probably not accurate, will need to check last changed date???
-        ActivitiesToCompleteThisWeek: number; //probably not accurate, will need to check the due date
     }
 
 
@@ -262,7 +262,6 @@ export const reportingRouter = createTRPCRouter({
         let finishedDownloading = false;
 
         while (deals && deals.data && deals.data.length > 0 && !finishedDownloading) {
-
 
 
             if (deals.data[0].update_time < beginningOfTheYearDate.toISOString()) {
@@ -305,29 +304,37 @@ export const reportingRouter = createTRPCRouter({
                     secondaryEstimatorName = secondaryEstimator !== undefined && secondaryEstimator[0]?.label !== undefined ? secondaryEstimator[0].label : "";
                 }
 
-
-                const activitiesForDeal = activities.data.filter((activity) => activity.deal_id != deal.id);
-                // console.log(activitiesForDeal);
+                const activitiesForDeal = activities.filter((activity) => activity.deal_id == deal.id);
 
                 let activitiesCompletedLastWeek = 0;
-                let activitiesLeftToComplete = 0;
 
                 activitiesForDeal.map((activity) => {
-                    const activityDueDate = new Date(activity.due_date);
-                    const activityCompletedDate = new Date(activity.marked_as_done_time);
 
-                    const today = new Date();
+                    // console.log("activity marked as due date", activity.);
+                    // const activityCompletedDate = new Date(activity.update_time);
 
-                    const daysSinceActivityCompleted = Math.floor((today.getTime() - activityCompletedDate.getTime()) / (1000 * 3600 * 24));
-                    const daysSinceActivityDue = Math.floor((today.getTime() - activityDueDate.getTime()) / (1000 * 3600 * 24));
+                    // console.log("activity completed date", activityCompletedDate);
 
-                    if (daysSinceActivityCompleted <= 7) {
+                    // const today = new Date();
+                    // const sundayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() - 7);
+                    // const mondayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() - 1);
+
+                    // console.log(sundayOfWeek);
+                    // console.log(mondayOfWeek);
+
+                    // if (activityCompletedDate < sundayOfWeek && activityCompletedDate > mondayOfWeek) {
+                    //     activitiesCompletedLastWeek++;
+                    // }
+
+                    // if (activityDueDate < mondayOfWeek && activityDueDate > sundayOfWeek) {
+                    //     activitiesLeftToComplete++;
+                    // }
+
+                    console.log(activity.done);
+
+                    if (activity.update_time && activity.done == true)
                         activitiesCompletedLastWeek++;
-                    }
 
-                    if (daysSinceActivityDue <= 0) {
-                        activitiesLeftToComplete++;
-                    }
                 })
 
 
@@ -343,19 +350,16 @@ export const reportingRouter = createTRPCRouter({
                     StatusUpdateTime: lastStatusUpdateTime,
                     StageUpdateTime: deal.stage_change_time,
                     ActivitiesCompletedLastWeek: activitiesCompletedLastWeek,
-                    ActivitiesToCompleteThisWeek: activitiesLeftToComplete, //probably not accurate, will need to check the due date
                 }
 
-                allDeals.push(pipeDriveDownloadDetails);
+                if (deal.update_time > beginningOfTheYearDate.toISOString())
+                    allDeals.push(pipeDriveDownloadDetails);
             })
-
-            // console.log(deals.additional_data.pagination.start)
 
             cursor += 500;
             deals = await getDeals(cursor);
         }
 
-        allDeals.filter((deal) => deal.UpdateTime > beginningOfTheYearDate.toISOString());
         return allDeals;
     }),
 })
@@ -376,8 +380,17 @@ type ActivitiesResponse = {
             add_time: string;
             typeName: string;
             marked_as_done_time: string;
+            update_time: Date;
         }
     ];
+    additional_data: {
+        pagination: {
+            start: number;
+            limit: number;
+            more_items_in_collection: boolean;
+            next_start: number;
+        }
+    }
 }
 
 
@@ -390,24 +403,47 @@ const getActivities = async () => {
     // const dateTime = new Date().setUTCMonth(new Date().getUTCMonth() - 1);
     // const iso = new Date(dateTime).toISOString();
 
-    const lastWeek = new Date();
-    lastWeek.setDate(lastWeek.getDate() - 7);
+    const today = new Date();
 
-    const nextWeek = new Date();
-    nextWeek.setDate(nextWeek.getDate() + 7);
+    const sundayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() - 7);
+    const mondayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() - 1);
 
-    const urlString = `https://jrcoinc.pipedrive.com/api/v1/activities?api_token=${api_key}&user_id=0&start_date=${lastWeek.toISOString()}&end_date=${nextWeek.toISOString()}`
 
-    const activities = await fetch(urlString, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    }).then((res) => res.json()) as ActivitiesResponse;
+    console.log(sundayOfWeek);
+    console.log(mondayOfWeek);
 
-    // console.log(activities)
+    // const lastWeek = new Date();
+    // lastWeek.setDate(sundayOfWeek);
 
-    return activities;
+    // const nextWeek = new Date();
+    // nextWeek.setDate(mondayOfWeek);
+
+
+    let fetchActivities = true;
+
+    const activitiesList = [];
+
+
+    while (fetchActivities) {
+
+        const urlString = `https://jrcoinc.pipedrive.com/api/v1/activities?api_token=${api_key}&user_id=0&start_date=${sundayOfWeek.toISOString()}&end_date=${mondayOfWeek.toISOString()}&start=${activitiesList.length}`
+
+        const activities = await fetch(urlString, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }).then((res) => res.json()) as ActivitiesResponse;
+
+        activitiesList.push(...activities.data);
+
+        if (activities.additional_data.pagination.next_start == null) {
+            fetchActivities = false;
+            break;
+        }
+    }
+
+    return activitiesList;
 }
 
 
@@ -448,9 +484,6 @@ type customFieldResponse = {
         }
     ]
 }
-
-
-
 
 const getDealCustomFields = async () => {
 
