@@ -26,129 +26,147 @@ export default async function ChannelAuthHandler(
   res: NextApiResponse<DownloadPipeDriveDetails[] | string>
 ) {
 
+
   if (req.method == "GET") {
 
-    try {
-      const dealCustomFields = await getDealCustomFields();
-      const activities = await getActivities();
+    const data = await fetch("https://pipedrivedealpullfunction.azurewebsites.net/api/piperivehttppull", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        api_key: "b760e078c537e5cc7351cd9f56a788e5f74c7ea0",
+        company_domain: "jrcoinc",
+        token: "9a8eae53-c7bf-4eb1-92a7-68e0e7883fc1"
+      })
+    }).then((res) => res.json()) as DownloadPipeDriveDetails[];
 
-      const allDeals = [] as DownloadPipeDriveDetails[];
-      let cursor = 0;
-
-      const beginningOfTheYearDate = new Date();
-      beginningOfTheYearDate.setMonth(0, 1);
-
-
-      let deals = await getDeals(cursor);
-
-      let finishedDownloading = false;
-
-      while (deals && deals.data && deals.data.length > 0 && !finishedDownloading) {
-
-
-        if (deals.data[0].update_time < beginningOfTheYearDate.toISOString()) {
-          finishedDownloading = true;
-          break;
-        }
-
-        // console.log(deals.data);
-        // console.log(deals.related_objects);
-        // console.log(deals.related_objects.user);
-        // console.log(deals.related_objects.person);
-        // console.log(deals.related_objects.pipeline);
-        // console.log(deals.related_objects.organization);
-        // console.log(dea)
-
-        deals.data.map((deal) => {
-          const stageId = deal.stage_id
-          const stage = deals.related_objects.stage[stageId]
-
-          if (stage) {
-            deal.stageName = stage.name;
-            deal.stage_pipelineName = stage.pipeline_name;
-            deal.stage_dealProbability = stage.deal_probability;
-          }
-
-          const lastStatusUpdateTime = deal.close_time || deal.won_time || deal.lost_time;
-
-          const primaryEstimatorId = deal["4ff3ab1c142d1f55cbe84472f5267619ef942265"];
-          const primaryEstimator = dealCustomFields.primaryEstimator?.options.filter((option) => option.id == primaryEstimatorId);
-          let primaryEstimatorName = "";
-          if (primaryEstimator && primaryEstimator.length > 0) {
-            primaryEstimatorName = primaryEstimator !== undefined && primaryEstimator[0]?.label !== undefined ? primaryEstimator[0].label : "";
-          }
-
-
-          const secondaryEstimatorId = deal["7fb3d86d9d871f9fdbcf0920cf03903463b9b40e"];
-          const secondaryEstimator = dealCustomFields.secondaryEstimator?.options.filter((option) => option.id == secondaryEstimatorId);
-          let secondaryEstimatorName = "";
-          if (secondaryEstimator && secondaryEstimator.length > 0) {
-            secondaryEstimatorName = secondaryEstimator !== undefined && secondaryEstimator[0]?.label !== undefined ? secondaryEstimator[0].label : "";
-          }
-
-          const activitiesForDeal = activities.filter((activity) => activity.deal_id == deal.id);
-
-          let activitiesCompletedLastWeek = 0;
-
-          activitiesForDeal.map((activity) => {
-
-            // console.log("activity marked as due date", activity.);
-            // const activityCompletedDate = new Date(activity.update_time);
-
-            // console.log("activity completed date", activityCompletedDate);
-
-            // const today = new Date();
-            // const sundayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() - 7);
-            // const mondayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() - 1);
-
-            // console.log(sundayOfWeek);
-            // console.log(mondayOfWeek);
-
-            // if (activityCompletedDate < sundayOfWeek && activityCompletedDate > mondayOfWeek) {
-            //     activitiesCompletedLastWeek++;
-            // }
-
-            // if (activityDueDate < mondayOfWeek && activityDueDate > sundayOfWeek) {
-            //     activitiesLeftToComplete++;
-            // }
-
-            // console.log(activity.done);
-
-            if (activity.update_time && activity.done == true)
-              activitiesCompletedLastWeek++;
-          })
-
-
-          const pipeDriveDownloadDetails: DownloadPipeDriveDetails = {
-            id: deal.id,
-            owner: deal.owner_name,
-            PrimaryEstimator: primaryEstimatorName,
-            SecondaryEstimator: secondaryEstimatorName,
-            value: deal.formatted_value,
-            stage: deal.stageName,
-            status: deal.status,
-            UpdateTime: deal.update_time,
-            StatusUpdateTime: lastStatusUpdateTime,
-            StageUpdateTime: deal.stage_change_time,
-            ActivitiesCompletedLastWeek: activitiesCompletedLastWeek,
-          }
-
-          if (deal.update_time > beginningOfTheYearDate.toISOString())
-            allDeals.push(pipeDriveDownloadDetails);
-        })
-
-        cursor += 500;
-        deals = await getDeals(cursor);
-      }
-
-      return res.send(allDeals);
-    } catch (error) {
-      res.status(500).send((error as Error).message);
-    }
+    res.status(200).json(data);
   }
-  else {
-    res.status(405).send("Method not allowed");
-  }
+
+  // if (req.method == "GET") {
+
+  //   try {
+  //     const dealCustomFields = await getDealCustomFields();
+  //     const activities = await getActivities();
+
+  //     const allDeals = [] as DownloadPipeDriveDetails[];
+  //     let cursor = 0;
+
+  //     const beginningOfTheYearDate = new Date();
+  //     beginningOfTheYearDate.setMonth(0, 1);
+
+
+  //     let deals = await getDeals(cursor);
+
+  //     let finishedDownloading = false;
+
+  //     while (deals && deals.data && deals.data.length > 0 && !finishedDownloading && cursor < 500) {
+
+
+  //       if (deals.data[0].update_time < beginningOfTheYearDate.toISOString()) {
+  //         finishedDownloading = true;
+  //         break;
+  //       }
+
+  //       // console.log(deals.data);
+  //       // console.log(deals.related_objects);
+  //       // console.log(deals.related_objects.user);
+  //       // console.log(deals.related_objects.person);
+  //       // console.log(deals.related_objects.pipeline);
+  //       // console.log(deals.related_objects.organization);
+  //       // console.log(dea)
+
+  //       deals.data.map((deal) => {
+  //         const stageId = deal.stage_id
+  //         const stage = deals.related_objects.stage[stageId]
+
+  //         if (stage) {
+  //           deal.stageName = stage.name;
+  //           deal.stage_pipelineName = stage.pipeline_name;
+  //           deal.stage_dealProbability = stage.deal_probability;
+  //         }
+
+  //         const lastStatusUpdateTime = deal.close_time || deal.won_time || deal.lost_time;
+
+  //         const primaryEstimatorId = deal["4ff3ab1c142d1f55cbe84472f5267619ef942265"];
+  //         const primaryEstimator = dealCustomFields.primaryEstimator?.options.filter((option) => option.id == primaryEstimatorId);
+  //         let primaryEstimatorName = "";
+  //         if (primaryEstimator && primaryEstimator.length > 0) {
+  //           primaryEstimatorName = primaryEstimator !== undefined && primaryEstimator[0]?.label !== undefined ? primaryEstimator[0].label : "";
+  //         }
+
+
+  //         const secondaryEstimatorId = deal["7fb3d86d9d871f9fdbcf0920cf03903463b9b40e"];
+  //         const secondaryEstimator = dealCustomFields.secondaryEstimator?.options.filter((option) => option.id == secondaryEstimatorId);
+  //         let secondaryEstimatorName = "";
+  //         if (secondaryEstimator && secondaryEstimator.length > 0) {
+  //           secondaryEstimatorName = secondaryEstimator !== undefined && secondaryEstimator[0]?.label !== undefined ? secondaryEstimator[0].label : "";
+  //         }
+
+  //         const activitiesForDeal = activities.filter((activity) => activity.deal_id == deal.id);
+
+  //         let activitiesCompletedLastWeek = 0;
+
+  //         activitiesForDeal.map((activity) => {
+
+  //           // console.log("activity marked as due date", activity.);
+  //           // const activityCompletedDate = new Date(activity.update_time);
+
+  //           // console.log("activity completed date", activityCompletedDate);
+
+  //           // const today = new Date();
+  //           // const sundayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() - 7);
+  //           // const mondayOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() - 1);
+
+  //           // console.log(sundayOfWeek);
+  //           // console.log(mondayOfWeek);
+
+  //           // if (activityCompletedDate < sundayOfWeek && activityCompletedDate > mondayOfWeek) {
+  //           //     activitiesCompletedLastWeek++;
+  //           // }
+
+  //           // if (activityDueDate < mondayOfWeek && activityDueDate > sundayOfWeek) {
+  //           //     activitiesLeftToComplete++;
+  //           // }
+
+  //           // console.log(activity.done);
+
+  //           if (activity.update_time && activity.done == true)
+  //             activitiesCompletedLastWeek++;
+  //         })
+
+
+  //         const pipeDriveDownloadDetails: DownloadPipeDriveDetails = {
+  //           id: deal.id,
+  //           owner: deal.owner_name,
+  //           PrimaryEstimator: primaryEstimatorName,
+  //           SecondaryEstimator: secondaryEstimatorName,
+  //           value: deal.formatted_value,
+  //           stage: deal.stageName,
+  //           status: deal.status,
+  //           UpdateTime: deal.update_time,
+  //           StatusUpdateTime: lastStatusUpdateTime,
+  //           StageUpdateTime: deal.stage_change_time,
+  //           ActivitiesCompletedLastWeek: activitiesCompletedLastWeek,
+  //         }
+
+  //         if (deal.update_time > beginningOfTheYearDate.toISOString())
+  //           allDeals.push(pipeDriveDownloadDetails);
+  //       })
+
+  //       cursor += 500;
+  //       deals = await getDeals(cursor);
+  //     }
+
+  //     return res.send(allDeals);
+  //   } catch (error) {
+  //     res.status(500).send((error as Error).message);
+  //   }
+  // }
+  // else {
+  //   res.status(405).send("Method not allowed");
+  // }
 }
 
 
