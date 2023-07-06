@@ -288,57 +288,98 @@ const ReportingPage = () => {
 
   const { isSignedIn, isLoaded } = useUser();
 
-  const { data, isLoading, isError } = api.reporting.getPipedriveDeals.useQuery();
+  // const { data, isLoading, isError } = api.reporting.getPipedriveDeals.useQuery();
 
   const handleDownloadPipedriveDeals = useCallback(() => {
 
-    if (!data) {
-      toast.error("No data to download");
-      return;
-    }
-
-    // data?.data.forEach((deal: DealType) => {
-    //     console.log(deal);
-    // })
-
-    const date = new Date();
-    const dateString = `${date.getMonth() + 1
-      }-${date.getDate()}-${date.getFullYear()}`;
-
-    // console.log(json);
-    // console.log(dateString);
-
-    // console.log("data", data);
 
 
+    const data = fetch("/api/pipedrive/data", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((res) => res.json()).then((data: DealType[]) => {
+      console.log(data);
+
+      if (!data) {
+        toast.error("No data to download");
+        return;
+      }
+
+      // data?.data.forEach((deal: DealType) => {
+      //     console.log(deal);
+      // })
+
+      const date = new Date();
+      const dateString = `${date.getMonth() + 1
+        }-${date.getDate()}-${date.getFullYear()}`;
+
+      // console.log(json);
+      // console.log(dateString);
+
+      // console.log("data", data);
 
 
 
-    const ws = utils.json_to_sheet(data);
-    const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, "Data");
-    writeFileXLSX(wb, `Deals ${dateString}.xlsx`);
+      const ws = utils.json_to_sheet(data);
+      const wb = utils.book_new();
+      utils.book_append_sheet(wb, ws, "Data");
+      writeFileXLSX(wb, `Deals ${dateString}.xlsx`);
 
-    toast.success("Downloaded data");
 
-  }, [data])
+      // toast.success("Downloading data");
+    })
+
+    void toast.promise(data, {
+      loading: "Talking to Pipe Drive...",
+      success: "Downloading xlsx file",
+      error: "Error. Try again later.",
+    }, {
+      success: {
+        duration: 7000,
+        icon: "🔥",
+      },
+    });
+
+    // if (!data) {
+    //   toast.error("No data to download");
+    //   return;
+    // }
+
+    // // data?.data.forEach((deal: DealType) => {
+    // //     console.log(deal);
+    // // })
+
+    // const date = new Date();
+    // const dateString = `${date.getMonth() + 1
+    //   }-${date.getDate()}-${date.getFullYear()}`;
+
+    // // console.log(json);
+    // // console.log(dateString);
+
+    // // console.log("data", data);
+
+
+
+  }, [])
 
 
   if (!isLoaded) {
     return <LoadingPage2 />
   }
 
-  if (isLoading) {
-    return <LoadingPage />
-  }
+  // if (isLoading) {
+  //   return <LoadingPage />
+  // }
 
   if (!isSignedIn && isLoaded) {
-    return <SignInModal redirectUrl="/dashboard/reporting" />
+    return <SignInModal redirectUrl="/projects/download" />
   }
 
-  if (isError) {
-    return <div>error</div>
-  }
+  // if (isError) {
+  //   return <div>error</div>
+  // }
 
   return (
     <>
