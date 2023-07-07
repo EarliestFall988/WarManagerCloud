@@ -325,7 +325,7 @@ const ReportingPage = () => {
       const ws = utils.json_to_sheet(data);
       const wb = utils.book_new();
       utils.book_append_sheet(wb, ws, "Data");
-      writeFileXLSX(wb, `Deals ${dateString}.xlsx`);
+      writeFileXLSX(wb, `Deals Year To Date ${dateString}.xlsx`);
 
 
       // toast.success("Downloading data");
@@ -377,7 +377,7 @@ const ReportingPage = () => {
       const ws = utils.json_to_sheet(data);
       const wb = utils.book_new();
       utils.book_append_sheet(wb, ws, "Data");
-      writeFileXLSX(wb, `Deals ${dateString}.xlsx`);
+      writeFileXLSX(wb, `Weekly Deals in Bid Phase ${dateString}.xlsx`);
 
 
       // toast.success("Downloading data");

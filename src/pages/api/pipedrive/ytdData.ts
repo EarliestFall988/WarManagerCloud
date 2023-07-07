@@ -30,11 +30,11 @@ type DownloadPipeDriveDetails =
 const PipeDriveYTDDealsEdgeFunction = async (req: NextApiRequest) => {
 
     if (azure_function_url === undefined || azure_function_url === "") {
-        return NextResponse.json({ error: "azure_function_url is undefined" })
+        return NextResponse.json({ error: "there was an internal service error. Code: Beach." })
     }
 
     if (req.method != "GET") {
-        return NextResponse.json({ error: "method is not a GET" })
+        return NextResponse.json({ error: "there was an internal service error. Code: Meerkat." })
     }
 
     const data = await fetch(azure_function_url, {
