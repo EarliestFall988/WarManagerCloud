@@ -1,9 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 import { env } from "process";
 
 const api_key = env.PIPE_DRIVE_API_KEY;
 
-
+export const config = {
+  runtime: 'edge',
+}
 
 type DownloadPipeDriveDetails =
   {
@@ -22,8 +25,7 @@ type DownloadPipeDriveDetails =
 
 
 export default async function ChannelAuthHandler(
-  req: NextApiRequest,
-  res: NextApiResponse<DownloadPipeDriveDetails[] | string>
+  req: NextApiRequest
 ) {
 
 
@@ -39,9 +41,9 @@ export default async function ChannelAuthHandler(
         company_domain: "jrcoinc",
         token: "9a8eae53-c7bf-4eb1-92a7-68e0e7883fc1"
       })
-    }).then((res) => res.json()) as DownloadPipeDriveDetails[];
-
-    res.status(200).json(data);
+    }).then((res) => res.json()).catch(e => console.log(e)) as DownloadPipeDriveDetails[];
+    
+    return NextResponse.json(data);
   }
 
   // if (req.method == "GET") {
