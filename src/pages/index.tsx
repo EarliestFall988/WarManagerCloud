@@ -160,8 +160,8 @@ const HomePage: NextPage = () => {
         <title>War Manager Landing Page</title>
       </Head>
       <div className="fixed left-0 top-0 -z-20 h-full w-full bg-bhall bg-cover bg-top" />
-      <main className="min-h-[100vh] overflow-x-hidden bg-zinc-800/80">
-        <div className="h-[90vh] w-full">
+      <main className="min-h-[100vh] overflow-x-hidden bg-zinc-800/30">
+        <div className="h-[90vh] w-full bg-gradient-to-t from-zinc-900">
           <div className="flex items-center justify-between p-2">
             <LogoComponentLarge />
             {/* <p className="hidden font-semibold text-zinc-200 sm:text-3xl md:block">
@@ -228,14 +228,15 @@ const HomePage: NextPage = () => {
             </SignedOut>
           </div>
         </div>
-        <div className="h-[50vh] border-t border-zinc-700 bg-zinc-900 bg-center p-2">
+        <div className="h-[50vh] bg-zinc-900 bg-center p-2">
           <h2 className="border-b border-zinc-700 py-1 text-3xl font-bold tracking-tight text-white sm:py-3 sm:text-4xl lg:py-5 lg:text-[2rem] xl:text-[3rem]">
             Features
           </h2>
           <div className="flex flex-col gap-4 py-5 text-lg font-semibold text-zinc-300">
             <p>
               {">"}{" "}
-              {"Create and send visual labor 'Blueprint' plans with ease."}
+              {/* {"Create and share visual labor 'Blueprint' plans with ease."} */}
+              {"Develop and visualize complex labor plans with ease."}
             </p>
             <p>
               {" "}
@@ -255,6 +256,17 @@ const HomePage: NextPage = () => {
         </SignUpButton> */}
         </div>
       </main>
+      <footer
+        className="bg-zinc-900 text-center lg:text-left">
+        <div className="p-4 text-center text-zinc-700 dark:text-zinc-200">
+          © {new Date(Date.now()).getFullYear()} Copyright: {" "}
+          <a
+            className="text-zinc-800 dark:text-zinc-400"
+            href="https://jrcousa.com/"
+          >JR&Co Roofing Contractors LLC.</a
+          >
+        </div>
+      </footer>
     </>
   );
 };

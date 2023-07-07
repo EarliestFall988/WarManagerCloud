@@ -3,13 +3,11 @@ import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import TooltipComponent from "~/components/Tooltip";
 import SignInModal from "~/components/signInPage";
 
-const NotFoundPage: NextPage = () => {
 
-  const router = useRouter();
+const NotFoundPage: NextPage = () => {
 
   return (
     <>
@@ -49,18 +47,21 @@ const NotFoundPage: NextPage = () => {
           <meta property="og:image" content="https://war-manager-website.vercel.app/_nuxt/img/sunset-plane.dc8de7b.jpg" />
 
         </Head>
-        <main className="flex min-h-[100vh] w-full flex-col items-center justify-center bg-black select-none">
-          <div className="p-2">
-            <div className="tracking tight text-[3rem] md:text-[4rem]">
-              Hmmm...
-            </div>
-            <div className="border-b border-zinc-800 font-semibold text-amber-700">
-              {"What you're looking for isn't here. "}
+        <div className="bg-bhall fixed w-full h-[100vh] -z-10" />
+        <main className="flex min-h-[100vh] w-full flex-col items-center justify-center bg-black/90 select-none">
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex gap-2 items-center justify-center border-b border-zinc-700">
+              <div className="py-2">
+                <div className="font-semibold text-zinc-300">
+                  {"What you are looking for isn't here. "}
+                </div>
+              </div>
             </div>
             <div className="flex w-full items-center justify-start gap-4 py-2">
               <TooltipComponent content="Back" side="bottom">
                 <button onClick={() => {
-                  void router.back();
+                  if (window !== undefined)
+                    window.history.go(-2);
                 }} className="text-md rounded-sm bg-zinc-800 p-2 transition-all duration-100 hover:bg-zinc-700">
                   <ArrowLeftIcon className="h-6 w-6" />
                 </button>

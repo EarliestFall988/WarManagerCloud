@@ -7,10 +7,12 @@ import { api } from "~/utils/api";
 
 import dayjs from "dayjs";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
-import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
+import { ArrowDownCircleIcon, CloudArrowDownIcon } from "@heroicons/react/24/solid";
 import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 import { toast } from "react-hot-toast";
+import Image from "next/image";
+import TooltipComponent from "~/components/Tooltip";
 
 type DealType = {
   id: number;
@@ -213,7 +215,7 @@ const DownloadProjectDetails = () => {
       {data && (
         <>
           <button
-            className=" flex w-full items-center justify-center gap-1 rounded bg-gradient-to-r from-amber-700 to-red-700 p-2"
+            className=" flex w-full items-center justify-center gap-1 rounded bg-amber-700 hover:bg-amber-600 focus:bg-amber-600 duration-100 transition-all p-2"
             onClick={DownloadAllCrewDetails}
           >
             Download
@@ -290,11 +292,9 @@ const ReportingPage = () => {
 
   // const { data, isLoading, isError } = api.reporting.getPipedriveDeals.useQuery();
 
-  const handleDownloadPipedriveDeals = useCallback(() => {
+  const DownloadDealsYTD = useCallback(() => {
 
-
-
-    const data = fetch("/api/pipedrive/data", {
+    const data = fetch("/api/pipedrive/ytdData", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -342,27 +342,62 @@ const ReportingPage = () => {
       },
     });
 
-    // if (!data) {
-    //   toast.error("No data to download");
-    //   return;
-    // }
+  }, [])
 
-    // // data?.data.forEach((deal: DealType) => {
-    // //     console.log(deal);
-    // // })
+  const DownloadWeeklyBids = useCallback(() => {
 
-    // const date = new Date();
-    // const dateString = `${date.getMonth() + 1
-    //   }-${date.getDate()}-${date.getFullYear()}`;
+    const data = fetch("/api/pipedrive/weeklybids", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then((res) => res.json()).then((data: DealType[]) => {
+      console.log(data);
 
-    // // console.log(json);
-    // // console.log(dateString);
+      if (!data) {
+        toast.error("No data to download");
+        return;
+      }
 
-    // // console.log("data", data);
+      // data?.data.forEach((deal: DealType) => {
+      //     console.log(deal);
+      // })
+
+      const date = new Date();
+      const dateString = `${date.getMonth() + 1
+        }-${date.getDate()}-${date.getFullYear()}`;
+
+      // console.log(json);
+      // console.log(dateString);
+
+      // console.log("data", data);
 
 
+
+      const ws = utils.json_to_sheet(data);
+      const wb = utils.book_new();
+      utils.book_append_sheet(wb, ws, "Data");
+      writeFileXLSX(wb, `Deals ${dateString}.xlsx`);
+
+
+      // toast.success("Downloading data");
+    })
+
+    void toast.promise(data, {
+      loading: "Talking to Pipe Drive...",
+      success: "Downloading xlsx file",
+      error: "Error. Try again later.",
+    }, {
+      success: {
+        duration: 7000,
+        icon: "🔥",
+      },
+    });
 
   }, [])
+
+
+  const lastSunday = dayjs().day(-7).format("MM/DD/YYYY");
 
 
   if (!isLoaded) {
@@ -389,10 +424,22 @@ const ReportingPage = () => {
           <p className="text-md tracking-tight">This is the reporting page</p>
         </div>
         <div className="flex flex-col md:items-start gap-2 justify-center w-full h-full bg-zinc-800 p-2 rounded-sm border border-zinc-700">
-          <h2 className="text-xl font-semibold">Pipe Drive</h2>
-          <button onClick={handleDownloadPipedriveDeals} className="p-2 rounded bg-amber-700 hover:bg-amber-600 focus:bg-amber-600 duration-100 transition-all hover:scale-105">{"Download Data (XLSX)"}</button>
+          <h2 className="text-xl font-semibold">Pulling Data From Pipe Drive</h2>
+          <div className="flex gap-2 flex-wrap">
+            <TooltipComponent content={`Download all deals from 1/1/${new Date(Date.now()).getFullYear()} to today (${new Date(Date.now()).toLocaleDateString()}).`} side="bottom">
+              <button onClick={DownloadDealsYTD} className="p-2 flex items-center justify-center rounded bg-amber-700 hover:bg-amber-600 focus:bg-amber-600 duration-100 transition-all">
+                <CloudArrowDownIcon className="h-5 w-5 mr-2" />  <p>{"Download Deals Year To Date (.xlsx)"}</p>
+              </button>
+
+            </TooltipComponent>
+            <TooltipComponent content={`Download all deals in the bid stage since last sunday (${lastSunday}).`} side="bottom">
+              <button onClick={DownloadWeeklyBids} className="p-2 flex items-center justify-center rounded bg-zinc-700 hover:bg-zinc-600 focus:bg-zinc-600 duration-100 transition-all">
+                <CloudArrowDownIcon className="h-5 w-5 mr-2" />  <p>{"Download Weekly Bid Deals (.xlsx)"}</p>
+              </button>
+            </TooltipComponent>
+          </div>
         </div>
-      </div>
+      </div >
     </>
   )
 }
