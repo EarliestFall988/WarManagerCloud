@@ -244,7 +244,7 @@ const CrewMemberItem: FC<{ crewMember: CrewMember, tags: Tag[], removeCrewMember
                             <PhoneIcon className="h-5 w-5 text-zinc-200 " />
                             Copy Phone
                         </DropdownMenu.Item>
-                        <DialogComponent title={"Are you sure you want to delete is crew member?"} description="This crew member can not be recovered after you delete them." yes={() => { removeCrewMember(crewMember.id); }} trigger={
+                        <DialogComponent title={"Are you sure you want to delete this crew member?"} description="If you click yes, this crew member cannot be recovered." yes={() => { removeCrewMember(crewMember.id); }} trigger={
                             <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
                                 <TrashIcon className="h-4 w-4 text-white" />
                                 Delete

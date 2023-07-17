@@ -3,6 +3,9 @@ import { createTRPCRouter, privateProcedure } from "../trpc";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
+import { clerkClient } from "@clerk/nextjs";
+import { type Blueprint } from "@prisma/client";
+import filterUserForClient from "~/server/helpers/filterUserForClient";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -13,6 +16,45 @@ const ratelimit = new Ratelimit({
   redis: redis,
   limiter: Ratelimit.slidingWindow(10, "1 m"),
 });
+
+const addUserToBlueprints = async (blueprints: Blueprint[]) => {
+  const users = await clerkClient.users
+    .getUserList()
+    .then((users) => {
+      return users;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
+  if (!users)
+    return blueprints.map((blueprint) => {
+      return {
+        ...blueprint,
+        user: null,
+      };
+    });
+
+  const usersWithLinks = blueprints.map((blueprint) => {
+    const user = users.find((user) => {
+      return user.id === blueprint.authorId;
+    });
+
+    if (!user) {
+      return {
+        ...blueprint,
+        user: null,
+      };
+    }
+
+    return {
+      ...blueprint,
+      user: filterUserForClient(user),
+    };
+  });
+
+  return usersWithLinks;
+};
 
 export const blueprintsRouter = createTRPCRouter({
   getAll: privateProcedure.query(async ({ ctx }) => {
@@ -40,7 +82,7 @@ export const blueprintsRouter = createTRPCRouter({
             updatedAt: "desc",
           },
         });
-        return blueprints;
+        return addUserToBlueprints(blueprints);
       }
 
       const blueprints = await ctx.prisma.blueprint.findMany({
@@ -55,7 +97,7 @@ export const blueprintsRouter = createTRPCRouter({
         },
       });
 
-      return blueprints;
+      return addUserToBlueprints(blueprints);
     }),
 
   getOneById: privateProcedure
@@ -131,6 +173,32 @@ export const blueprintsRouter = createTRPCRouter({
 
       return blueprint;
     }),
+
+  setBlueprintPined: privateProcedure.input(z.object({ blueprintId: z.string(), isPinned: z.boolean() })).mutation(async ({ ctx, input }) => {
+
+    const authorId = ctx.currentUser;
+
+    const { success } = await ratelimit.limit(authorId);
+
+    if (!success) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: "You have exceeded the rate limit, try again in a minute",
+      });
+    }
+
+    const blueprint = await ctx.prisma.blueprint.update({
+      where: {
+        id: input.blueprintId,
+      },
+      data: {
+        pinned: input.isPinned,
+      },
+    });
+
+    return blueprint;
+
+  }),
 
   updateDetails: privateProcedure
     .input(

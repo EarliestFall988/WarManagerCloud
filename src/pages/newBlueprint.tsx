@@ -117,7 +117,9 @@ const NewBlueprintPage: NextPage = () => {
             {isCreating ? <LoadingSpinner /> : <p>Create Blueprint</p>}
           </button> */}
 
-          <ButtonCallToActionComponent disabled={isCreating}
+          <ButtonCallToActionComponent
+            disabled={isCreating}
+            disableToolTip={true}
             onClick={() => save()} >
             {isCreating ? <LoadingSpinner /> : <p>Create Blueprint</p>}
           </ButtonCallToActionComponent>

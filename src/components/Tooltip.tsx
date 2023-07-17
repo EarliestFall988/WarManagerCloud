@@ -5,13 +5,27 @@ type Props = {
   content: string;
   children: ReactNode;
   side: "top" | "right" | "bottom" | "left";
+  disableToolTipIfNoContent?: boolean;
 };
 
 const TooltipComponent: FunctionComponent<Props> = (props) => {
 
+  if (!props.content && props.disableToolTipIfNoContent) return (
+    <div>
+      {props.children}
+    </div>)
 
-  if (!props.content) return (<div />)
-  
+  if (!props.content) {
+
+    console.error("tooltip error: no content")
+
+    return (
+      <div>
+        {props.children}
+      </div>
+    );
+  }
+
   return (
     <Tooltip.Provider delayDuration={0}>
       <Tooltip.Root>

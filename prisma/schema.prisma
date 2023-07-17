@@ -132,6 +132,7 @@ model Blueprint {
 
   name        String @db.VarChar(255)
   description String @db.VarChar(255)
+  pinned      Boolean? @default(false)
 
   data String @db.Text
 

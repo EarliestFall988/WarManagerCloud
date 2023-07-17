@@ -107,10 +107,10 @@ export const TextareaComponent: React.FC<{ value: string, error?: string, placeh
 }
 
 
-export const ButtonCallToActionComponent: React.FC<{ disabled: boolean, onClick: () => void, className?: string, children: React.ReactNode }> = ({ disabled, onClick, className, children }) => {
+export const ButtonCallToActionComponent: React.FC<{ disabled: boolean, disableToolTip?: boolean, onClick: () => void, className?: string, children: React.ReactNode }> = ({ disabled, onClick, className, children, disableToolTip }) => {
     return (
         <div>
-            <TooltipComponent content={`Submit changes for everyone else to see.`} side="top">
+            <TooltipComponent disableToolTipIfNoContent={disableToolTip} content={!disableToolTip ? `Submit changes for everyone else to see.` : ""} side="top">
                 <button
                     disabled={disabled}
                     onClick={() => onClick()}
