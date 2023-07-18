@@ -16,6 +16,7 @@ import { toast } from "react-hot-toast";
 import { type DropdownTagType } from "~/components/TagDropdown";
 import Select, { type MultiValue } from "react-select";
 import { InputComponent } from "~/components/input";
+import TooltipComponent from "~/components/Tooltip";
 dayjs.extend(relativeTime);
 
 const RecentActivityPage: NextPage = () => {
@@ -35,7 +36,7 @@ const RecentActivityPage: NextPage = () => {
   // const [pageSize, setPageSize] = useState<number>(10);
   // const [sort, setSort] = useState<string>("createdAt:DESC");
 
-  const { data, isLoading: loadingData, isError: errorLoadingData  } = api.logs.Search.useQuery({
+  const { data, isLoading: loadingData, isError: errorLoadingData } = api.logs.Search.useQuery({
     filter: filter.map((f) => f.value),
     search,
   });
@@ -52,7 +53,7 @@ const RecentActivityPage: NextPage = () => {
     <main className="flex min-h-[100vh] bg-zinc-900">
       <DashboardMenu />
       <div className="w-full">
-        <div className="fixed top-0 z-20 w-full md:w-[94%] lg:w-[96%] p-2 bg-zinc-900/80 backdrop-blur">
+        <div className="fixed top-0 z-10 w-full md:w-[94%] lg:w-[96%] p-2 bg-zinc-900/80 backdrop-blur">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl p-2 font-semibold select-none">Activity Timeline</h1>
             <div className="block lg:hidden">
@@ -114,14 +115,18 @@ const FilterAndSearch: React.FC<{ visible: boolean, onFilter: (tags: DropdownTag
 
   return (
     <>
-      <div className="flex justify-between flex-wrap lg:flex-nowrap gap-2 lg:gap-11" >
+      <div className="flex justify-between flex-wrap lg:hidden lg:flex-nowrap gap-2 lg:gap-11" >
         {visible && (
           <>
-            <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity, Category, or User" />
+            <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity" />
+            {/* <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Category" />
+            <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By User" /> */}
           </>)}
       </div>
       <div className="justify-between hidden lg:flex flex-wrap lg:flex-nowrap gap-2 lg:gap-11" >
-        <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity, Category, or User" />
+        <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity" />
+        {/* <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Category" />
+        <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By User" /> */}
       </div>
     </>
   )
@@ -163,40 +168,35 @@ export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], pl
 
     const baseTags = [
       {
-        value: "moderate",
+        value: "severity:moderate",
         label: "Moderate Severity",
         color: "gray",
       },
       {
-        value: "critical",
+        value: "severity:critical",
         label: "Critical Severity",
         color: "gray",
       },
       {
-        value: "info",
+        value: "severity:info",
         label: "Info Severity",
         color: "gray",
       },
       {
-        value: "blueprint",
+        value: "category:blueprint",
         label: "Blueprints",
         color: "gray",
       },
       {
-        value: "crew",
+        value: "category:crew",
         label: "Crew Members",
         color: "gray",
       },
       {
-        value: "project",
+        value: "category:project",
         label: "Projects",
         color: "gray",
-      },
-      {
-        value: "other",
-        label: "Other",
-        color: "gray",
-      },
+      }
     ] as DropdownTagType[];
 
     setAllTags(baseTags);
@@ -209,7 +209,7 @@ export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], pl
 
         if (email) {
           baseTags.push({
-            value: user.User.id,
+            value: `user:${user.User.id}`,
             label: email,
             color: "gray",
           });
@@ -254,8 +254,19 @@ export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], pl
   )
 }
 
+type activityListItemType = {
+  action: string;
+  description: string;
+  severity: string;
+  profileURl: string;
+  category: string;
+  name: string;
+  author: string;
+  link: string;
+  actionTime: Date;
+}
 
-const ActivityListItem: React.FC<{ action: string, description: string, severity: string, profileURl: string, category: string, name: string, author: string, link: string, actionTime: Date }> = ({ action, severity, profileURl, description, name, author, link, actionTime }) => {
+const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, profileURl, description, name, author, link, actionTime }) => {
 
   const Copy = (url: string) => {
     void window.navigator.clipboard.writeText(url);
@@ -264,54 +275,56 @@ const ActivityListItem: React.FC<{ action: string, description: string, severity
 
   return (
 
-    <div className={`border-b border-zinc-700 ${severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""} pt-1 rounded-sm`}>
-      <div className="flex flex-col justify-center items-center p-2 rounded-sm select-none">
-        <div className="flex gap-2 items-start w-full">
-          <Image src={profileURl} className="h-12 w-12 rounded-full" width={64} height={64} alt={`${author}'s profile picture`} />
-          <div className="flex flex-col">
-            <div className="pb-2">
-              <div className="flex gap-2">
-                <p className="text-sm text-zinc-500">{author}</p>
-                <p className="text-sm text-zinc-500" >|</p>
-                <p className="text-sm text-zinc-500">{dayjs(actionTime).fromNow()}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                {
-                  severity === "critical" && (
-                    <div className="flex gap-1 items-center flex-col">
-                      <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
-                    </div>
-                  )
-                }
-                {
-                  severity === "moderate" && (
-                    <div className="flex gap-1 items-center flex-col">
-                      <MegaphoneIcon className="h-4 w-4 text-blue-500" />
-                    </div>
-                  )
-                }
-                <p className="text-lg font-semibold pb-1">{name}</p>
-              </div>
-              <p className="text-sm">{description}</p>
+    <div className={`border-b border-zinc-700 ${severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""} p-2 `}>
+
+      <div className="flex gap-2 items-start justify-start w-full">
+        <Image src={profileURl} className="h-12 w-12 rounded-full" width={64} height={64} alt={`${author}'s profile picture`} />
+        <div className="flex flex-col">
+          <div className="pb-2">
+            <div className="flex gap-2">
+              <p className="text-sm text-zinc-500">{author}</p>
+              <p className="text-sm text-zinc-500" >|</p>
+              <p className="text-sm text-zinc-500">{dayjs(actionTime).fromNow()}</p>
             </div>
-            <div className="flex justify-start gap-2 -mx-2">
+            <div className="flex items-center justify-start gap-1">
+              <p className="text-lg font-semibold pb-1">{name}</p>
               {
-                action === "url" && (
-                  <Link href={link} passHref className="flex gap-1 items-center cursor-pointer rounded p-2 hover:bg-zinc-800 duration-100 transition-all">
-                    <p className="text-sm text-zinc-200">View</p>
-                    <ArrowUpRightIcon className="h-4 w-4 text-zinc-400" />
-                  </Link>
+                severity === "critical" && (
+                  <div className="flex gap-1 items-center">
+                    <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
+                    <p className="text-xs text-yellow-500">Critical</p>
+                  </div>
                 )
               }
               {
-                <button onClick={() => {
-                  Copy(author)
-                }} className="flex gap-1 items-center cursor-pointer rounded p-2 hover:bg-zinc-800 duration-100 transition-all">
-                  <p className="text-sm text-zinc-200">Copy Email</p>
-                  <Square2StackIcon className="h-4 w-4 text-zinc-400" />
-                </button>
+                severity === "moderate" && (
+                  <div className="flex gap-1 items-center">
+                    <MegaphoneIcon className="h-4 w-4 text-blue-300" />
+                    <p className="text-xs text-blue-300">Moderate</p>
+                  </div>
+                )
               }
-              {/* {
+            </div>
+            <p className="text-sm">{description}</p>
+          </div>
+          <div className="flex justify-start gap-2 -mx-2">
+            {
+              action === "url" && (
+                <Link href={link} passHref className="flex gap-1 items-center cursor-pointer rounded p-2 hover:bg-zinc-800 duration-100 transition-all">
+                  <p className="text-sm text-zinc-200">View</p>
+                  <ArrowUpRightIcon className="h-4 w-4 text-zinc-400" />
+                </Link>
+              )
+            }
+            {
+              <button onClick={() => {
+                Copy(author)
+              }} className="flex gap-1 items-center cursor-pointer rounded p-2 hover:bg-zinc-800 duration-100 transition-all">
+                <p className="text-sm text-zinc-200">Copy Email</p>
+                <Square2StackIcon className="h-4 w-4 text-zinc-400" />
+              </button>
+            }
+            {/* {
                 action === "url" && (
                   <Link href={link} passHref className="flex gap-1 items-center cursor-pointer rounded p-2 bg-zinc-800 hover:bg-amber-700">
                     <p className="text-sm text-zinc-200">Comment</p>
@@ -327,11 +340,10 @@ const ActivityListItem: React.FC<{ action: string, description: string, severity
                   </Link>
                 )
               } */}
-            </div>
           </div>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 

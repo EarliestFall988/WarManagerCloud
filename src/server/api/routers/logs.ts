@@ -4,9 +4,10 @@ import { createTRPCRouter, privateProcedure } from "../trpc";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
-import type { Log } from "@prisma/client";
+import { Prisma, type Log } from "@prisma/client";
 import { clerkClient } from "@clerk/nextjs";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
+import { use } from "react";
 
 const redis = new Redis({
     url: "https://us1-merry-snake-32728.upstash.io",
@@ -90,188 +91,96 @@ export const logsRouter = createTRPCRouter({
             return addUserToLogs(allLogs);
         }
 
-        // const users = await clerkClient.users
-        //     .getUserList()
-        //     .then((users) => {
-        //         return users;
-        //     }).catch((err) => {
-        //         console.log(err);
-        //     });
+        const severity = input.filter.filter((f) => {
+            const split = f.split(":");
+            if (split[0] === "severity") {
+                return true;
+            }
 
-        // if (!users)
-        //     return [];
+            return false;
+        });
 
-        // const userEmailandId = [] as { email: string, id: string }[];
+        const category = input.filter.filter((f) => {
+            const split = f.split(":");
+            if (split[0] === "category") {
+                return true;
+            }
 
-        // users.forEach((user) => {
+            return false;
+        });
 
-        //     const result = input.filter.find((email) => {
-        //         if (user?.emailAddresses[0]?.emailAddress === email) {
-        //             return true;
-        //         }
+        const user = input.filter.filter((f) => {
+            const split = f.split(":");
+            if (split[0] === "user") {
+                return true;
+            }
 
-        //         return false;
-        //     });
+            return false;
+        });
 
-        //     if (result && user?.emailAddresses[0]?.emailAddress) {
-        //         userEmailandId.push({
-        //             email: user?.emailAddresses[0]?.emailAddress,
-        //             id: user.id
-        //         });
-        //     }
-        // });
+        severity.forEach((s, i) => {
+            const split = s.split(":");
+            if (severity[i] !== undefined && split[1] !== undefined)
+                severity[i] = split[1];
+        });
 
-        // console.log("userEmailandId", userEmailandId);
+        category.forEach((s, i) => {
+            const split = s.split(":");
+            if (category[i] !== undefined && split[1] !== undefined)
+                category[i] = split[1];
+        });
 
-        if (input.search.length > 0 && input.filter.length > 0) {
-            const allLogs = await ctx.prisma.log.findMany({
-                where: {
-                    AND: [
-                        {
-                            OR: [
+        user.forEach((s, i) => {
+            const split = s.split(":");
+            if (user[i] !== undefined && split[1] !== undefined)
+                user[i] = split[1];
+        });
 
-                                {
-                                    severity: {
-                                        in: input.filter,
-                                    }
-                                },
-                                {
-                                    category: {
-                                        in: input.filter,
-                                    }
-                                },
-                                {
-                                    authorId: {
-                                        in: input.filter,
-                                    }
-                                },
-                            ],
-                        },
-                        {
-                            OR: [
-                                {
-                                    name: {
-                                        contains: input.search,
-                                    },
-                                },
-                                {
-                                    description: {
-                                        contains: input.search,
-                                    },
-                                },
-                                {
-                                    url: {
-                                        contains: input.search,
-                                    },
-                                },
-                                {
-                                    action: {
-                                        contains: input.search,
-                                    },
-                                },
-                                {
-                                    category: {
-                                        contains: input.search,
-                                    },
-                                },
-                                {
-                                    severity: {
-                                        contains: input.search,
-                                    },
-                                },
-                            ],
-                        }
-                    ],
-                },
-                take: 100,
-                orderBy: {
-                    createdAt: "desc"
-                }
-            });
 
-            return addUserToLogs(allLogs);
+        const filters: Prisma.LogWhereInput = {};
+
+        if (severity.length > 0) {
+            filters.severity = {
+                in: severity
+            }
         }
-        if (input.search.length == 0 && input.filter.length > 0) {
-
-            // console.log("fetching data", input.filter);
-
-            const allLogs = await ctx.prisma.log.findMany({
-                where: {
-                    OR: [
-                        {
-                            severity: {
-                                in: input.filter,
-                            }
-                        },
-                        {
-                            category: {
-                                in: input.filter,
-                            }
-                        },
-                        {
-                            authorId: {
-                                in: input.filter,
-                            }
-                        }
-                    ],
-                },
-                take: 100,
-                orderBy: {
-                    createdAt: "desc"
-                }
-            });
-
-            return addUserToLogs(allLogs);
+        if (category.length > 0) {
+            filters.category = {
+                in: category
+            }
+        }
+        if (user.length > 0) {
+            filters.authorId = {
+                in: user
+            }
         }
 
-        if (input.search.length > 0 && input.filter.length == 0) {
-
-            const allLogs = await ctx.prisma.log.findMany({
-                where: {
-
-                    OR: [
-                        {
-                            name: {
-                                contains: input.search,
-                            },
-                        },
-                        {
-                            description: {
-                                contains: input.search,
-                            },
-                        },
-                        {
-                            url: {
-                                contains: input.search,
-                            },
-                        },
-                        {
-                            action: {
-                                contains: input.search,
-                            },
-                        },
-                        {
-                            category: {
-                                contains: input.search,
-                            },
-                        },
-                        {
-                            severity: {
-                                contains: input.search,
-                            },
-                        },
-                    ],
+        if (input.search.length > 0) {
+            filters.OR = [
+                {
+                    name: {
+                        contains: input.search,
+                    },
                 },
-                take: 100,
-                orderBy: {
-                    createdAt: "desc"
-                }
-            });
-
-            return addUserToLogs(allLogs);
+                {
+                    description: {
+                        contains: input.search,
+                    },
+                },
+            ]
         }
+
+
+        const allLogs = await ctx.prisma.log.findMany({
+            where: filters,
+            take: 100,
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+        return addUserToLogs(allLogs);
     }),
-
 
     create: privateProcedure.input(z.object({
         name: z.string(),
