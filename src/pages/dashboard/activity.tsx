@@ -1,9 +1,9 @@
 import { useUser } from "@clerk/nextjs";
-import { ArrowUpRightIcon, CakeIcon, ExclamationTriangleIcon, Square2StackIcon } from "@heroicons/react/24/solid";
+import { ArrowUpRightIcon, ExclamationTriangleIcon, FunnelIcon, MegaphoneIcon, SparklesIcon, Square2StackIcon } from "@heroicons/react/24/solid";
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { DashboardMenu } from "~/components/dashboardMenu";
 
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
@@ -15,67 +15,30 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { toast } from "react-hot-toast";
 import { type DropdownTagType } from "~/components/TagDropdown";
 import Select, { type MultiValue } from "react-select";
+import { InputComponent } from "~/components/input";
 dayjs.extend(relativeTime);
-
-// const SchedulesContainer = () => {
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const {
-//     data: links,
-//     isLoading,
-//     isError,
-//   } = api.schedules.getByName.useQuery({ name: searchTerm });
-
-//   return (
-//     <>
-//       <Head>
-//         <title>Recent Activity | War Manager</title>
-//       </Head>
-//       <div className="flex h-[50vh] w-full flex-col gap-1 rounded border border-zinc-700 p-3 mx-auto">
-//         <h1 className="text-2xl font-semibold">Schedules</h1>
-//         <input
-//           type="search"
-//           value={searchTerm}
-//           onChange={(e) => setSearchTerm(e.target.value)}
-//           placeholder="search schedules"
-//           className="w-full rounded bg-zinc-800 p-2 outline-none ring-1 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-700 focus:ring-amber-700 sm:w-3/5"
-//         />
-//         <div className="border-t border-zinc-700">
-//           {isLoading ? (
-//             <div className="flex h-full w-full items-center justify-center p-4">
-//               <LoadingSpinner />
-//             </div>
-//           ) : isError ? (
-//             <p>Error Loading Schedules</p>
-//           ) : (
-//             <div className="flex flex-col gap-2">
-//               <div className="flex flex-col gap-2">
-//                 {links?.length === 0 ? (
-//                   <div className="flex h-full w-full items-center justify-center p-4">
-//                     <p className="text-lg italic text-zinc-400">
-//                       No Schedules Found
-//                     </p>
-//                   </div>
-//                 ) : (
-//                   links?.map((link) => {
-//                     return <ScheduleItem key={link.id} data={link} />;
-//                   })
-//                 )}
-//               </div>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </>
-//   );
-// };
 
 const RecentActivityPage: NextPage = () => {
 
 
   const { isSignedIn, isLoaded } = useUser();
 
-  const { data, isLoading: loadingData, isError: errorLoadingData } = api.logs.getAll.useQuery();
+  const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
 
+  const toggleFilter = useCallback(() => {
+    setIsFilterVisible((prev) => !prev);
+  }, []);
+
+  const [filter, setFilter] = useState<DropdownTagType[]>([]);
+  const [search, setSearch] = useState<string>("");
+  // const [page, setPage] = useState<number>(1);
+  // const [pageSize, setPageSize] = useState<number>(10);
+  // const [sort, setSort] = useState<string>("createdAt:DESC");
+
+  const { data, isLoading: loadingData, isError: errorLoadingData  } = api.logs.Search.useQuery({
+    filter: filter.map((f) => f.value),
+    search,
+  });
 
   if (!isLoaded) {
     return <LoadingPage2 />;
@@ -90,91 +53,87 @@ const RecentActivityPage: NextPage = () => {
       <DashboardMenu />
       <div className="w-full">
         <div className="fixed top-0 z-20 w-full md:w-[94%] lg:w-[96%] p-2 bg-zinc-900/80 backdrop-blur">
-          <h1 className="text-2xl p-2 font-semibold select-none">Activity Timeline</h1>
-          {/* <InputComponent placeholder="search" autoFocus disabled={false} onChange={(e) => console.log(e)} value="" /> */}
-          <MultiSelectDropdown allTags={tags} onSetTags={(e) => console.log(e)} selectedTags={[{
-            value: "all",
-            label: "All",
-            color: "gray",
-          }]} />
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl p-2 font-semibold select-none">Activity Timeline</h1>
+            <div className="block lg:hidden">
+              <button
+                onClick={toggleFilter}
+              >
+                <FunnelIcon className="h-6 w-6 text-zinc-400" />
+              </button>
+            </div>
+          </div>
+          <div>
+            <InputComponent placeholder="search" autoFocus onChange={(e) => setSearch(e.currentTarget.value)} value={search} disabled={false} />
+            <FilterAndSearch visible={isFilterVisible} onFilter={setFilter} />
+          </div>
         </div>
 
-        <div className="h-36" />
+
         {loadingData && (
           <div className="flex h-full w-full items-center justify-center p-4">
             <LoadingSpinner />
           </div>
         )}
-        {!loadingData && !errorLoadingData && (
-          <div className="sm:w-full lg:w-[50vw] flex flex-col border-t border-x rounded-sm border-zinc-700 m-auto">
+        {!loadingData && !errorLoadingData && data && data?.length > 0 && (
+          <>
+            <div className="lg:h-48 h-32" />
+            <div className="sm:w-full lg:w-[50vw] flex flex-col border-t border-x rounded-sm border-zinc-700 m-auto">
 
-            {data.length > 0 && data?.map((log) => {
-              return <ActivityListItem key={log.id} severity={log.severity} profileURl={log.user?.profilePicture || ""} description={log.description} category={log.category} name={log.name} author={log.user?.email || "unknown"} link={log.url} action={log.action} actionTime={log.updatedAt || log.createdAt} />
-            })}
-            {
-              data.length === 0 && (
-                <div className="flex h-full w-full items-center justify-center p-4 text-zinc-400 gap-2 select-none">
-                  <p className="text-lg italic text-zinc-400 select-none">
-                    No Activity Found
-                  </p>
-                  <CakeIcon className="h-8 w-8" />
-                </div>
-              )
-            }
+              {data.length > 0 && data?.map((log) => {
+                return <ActivityListItem key={log.id} severity={log.severity} profileURl={log.user?.profilePicture || ""} description={log.description} category={log.category} name={log.name} author={log.user?.email || "unknown"} link={log.url} action={log.action} actionTime={log.updatedAt || log.createdAt} />
+              })}
+            </div>
+            <div className="flex items-center justify-center p-5 text-zinc-600 select-none">End of Timeline</div>
+            <div className="h-36" />
+          </>
+        )}
+        {data?.length === 0 && !loadingData && (
+          <div className="flex h-full w-full items-center justify-center p-4 text-zinc-400 gap-2 select-none">
+            <p className="text-lg text-zinc-300 select-none">
+              No Activity Found
+            </p>
+            <SparklesIcon className="h-6 w-6" />
           </div>
         )}
-        <div className="flex items-center justify-center p-5 text-zinc-600 select-none">End of Timeline</div>
-        <div className="h-36" />
+        {
+          errorLoadingData && (
+            <div className="flex h-full w-full items-center justify-center p-4 text-red-500 gap-2 select-none">
+              <p className="text-lg font-semibold text-red-400 select-none">
+                Error Loading Activity
+              </p>
+              <ExclamationTriangleIcon className="h-6 w-6 rotate-6" />
+            </div>
+          )}
       </div>
-
     </main>
   );
 };
 
-const tags = [
-  {
-    value: "all",
-    label: "All",
-    color: "gray",
-  },
-  {
-    value: "moderate",
-    label: "Moderate Severity",
-    color: "gray",
-  },
-  {
-    value: "critical",
-    label: "Critical Severity",
-    color: "gray",
-  },
-  {
-    value: "info",
-    label: "Info Severity",
-    color: "gray",
-  },
-  {
-    value: "blueprint",
-    label: "Blueprints",
-    color: "gray",
-  },
-  {
-    value: "crew",
-    label: "Crew Members",
-    color: "gray",
-  },
-  {
-    value: "project",
-    label: "Projects",
-    color: "gray",
-  },
-  {
-    value: "other",
-    label: "Other",
-    color: "gray",
-  },
-] as DropdownTagType[];
+const FilterAndSearch: React.FC<{ visible: boolean, onFilter: (tags: DropdownTagType[]) => void }> = ({ visible, onFilter }) => {
 
-export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], placeholder?: string, allTags: DropdownTagType[], onSetTags: (tags: DropdownTagType[]) => void }> = ({ selectedTags, allTags, onSetTags, placeholder }) => {
+  return (
+    <>
+      <div className="flex justify-between flex-wrap lg:flex-nowrap gap-2 lg:gap-11" >
+        {visible && (
+          <>
+            <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity, Category, or User" />
+          </>)}
+      </div>
+      <div className="justify-between hidden lg:flex flex-wrap lg:flex-nowrap gap-2 lg:gap-11" >
+        <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity, Category, or User" />
+      </div>
+    </>
+  )
+}
+
+export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], placeholder?: string, onSetTags: (tags: DropdownTagType[]) => void }> = ({ selectedTags, onSetTags, placeholder }) => {
+
+
+  const [allTags, setAllTags] = useState<DropdownTagType[]>([]);
+
+  const { data: users, isLoading: loadingUsers, isError: errorLoadingUsers } = api.users.getAllUsers.useQuery();
+
 
   const onChange = useCallback((e: MultiValue<{
     value: string;
@@ -199,13 +158,76 @@ export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], pl
   }, [allTags, onSetTags]);
 
 
+
+  useMemo(() => {
+
+    const baseTags = [
+      {
+        value: "moderate",
+        label: "Moderate Severity",
+        color: "gray",
+      },
+      {
+        value: "critical",
+        label: "Critical Severity",
+        color: "gray",
+      },
+      {
+        value: "info",
+        label: "Info Severity",
+        color: "gray",
+      },
+      {
+        value: "blueprint",
+        label: "Blueprints",
+        color: "gray",
+      },
+      {
+        value: "crew",
+        label: "Crew Members",
+        color: "gray",
+      },
+      {
+        value: "project",
+        label: "Projects",
+        color: "gray",
+      },
+      {
+        value: "other",
+        label: "Other",
+        color: "gray",
+      },
+    ] as DropdownTagType[];
+
+    setAllTags(baseTags);
+
+    if (users != null && !loadingUsers && !errorLoadingUsers) {
+
+      users.forEach((user) => {
+
+        const email = user?.User?.emailAddresses[0]?.emailAddress;
+
+        if (email) {
+          baseTags.push({
+            value: user.User.id,
+            label: email,
+            color: "gray",
+          });
+        }
+      });
+    }
+
+    setAllTags(baseTags);
+  }, [users, loadingUsers, errorLoadingUsers])
+
+
   return (
     <Select
       closeMenuOnSelect={false}
       defaultValue={selectedTags}
       isMulti
       name="currentTags"
-      options={tags}
+      options={allTags}
       classNamePrefix="select"
       className="w-full ring-2 ring-zinc-700 rounded outline-none hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800 text-zinc-300"
       onChange={(e) => { onChange(e) }}
@@ -257,8 +279,14 @@ const ActivityListItem: React.FC<{ action: string, description: string, severity
                 {
                   severity === "critical" && (
                     <div className="flex gap-1 items-center flex-col">
-                      <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500" />
-                      {/* <p className="text-sm text-red-500/60"> {severity}</p> */}
+                      <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
+                    </div>
+                  )
+                }
+                {
+                  severity === "moderate" && (
+                    <div className="flex gap-1 items-center flex-col">
+                      <MegaphoneIcon className="h-4 w-4 text-blue-500" />
                     </div>
                   )
                 }
