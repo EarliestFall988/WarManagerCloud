@@ -316,6 +316,7 @@ const ProjectsPage: NextPage = () => {
                     </div>
                 )}
             </div>
+            <div className="h-44" />
         </main>
     );
 };

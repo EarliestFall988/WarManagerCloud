@@ -3,9 +3,9 @@ import { ArrowUpRightIcon, CakeIcon, ExclamationTriangleIcon, Square2StackIcon }
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useCallback } from "react";
 import { DashboardMenu } from "~/components/dashboardMenu";
-import { InputComponent } from "~/components/input";
+
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
 import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
@@ -13,6 +13,8 @@ import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { toast } from "react-hot-toast";
+import { type DropdownTagType } from "~/components/TagDropdown";
+import Select, { type MultiValue } from "react-select";
 dayjs.extend(relativeTime);
 
 // const SchedulesContainer = () => {
@@ -74,6 +76,7 @@ const RecentActivityPage: NextPage = () => {
 
   const { data, isLoading: loadingData, isError: errorLoadingData } = api.logs.getAll.useQuery();
 
+
   if (!isLoaded) {
     return <LoadingPage2 />;
   }
@@ -86,50 +89,149 @@ const RecentActivityPage: NextPage = () => {
     <main className="flex min-h-[100vh] bg-zinc-900">
       <DashboardMenu />
       <div className="w-full">
-        <div className="fixed top-0 z-20 w-full bg-zinc-800/70 backdrop-blur">
+        <div className="fixed top-0 z-20 w-full md:w-[94%] lg:w-[96%] p-2 bg-zinc-900/80 backdrop-blur">
           <h1 className="text-2xl p-2 font-semibold select-none">Activity Timeline</h1>
-          <div className="p-2">
-            <InputComponent placeholder="search" autoFocus disabled={false} onChange={(e) => console.log(e)} value="" />
-            <div>
-              filters go here...
-            </div>
-          </div>
+          {/* <InputComponent placeholder="search" autoFocus disabled={false} onChange={(e) => console.log(e)} value="" /> */}
+          <MultiSelectDropdown allTags={tags} onSetTags={(e) => console.log(e)} selectedTags={[{
+            value: "all",
+            label: "All",
+            color: "gray",
+          }]} />
         </div>
-        <div className="h-[100vh] overflow-y-auto">
-          <div className="h-36" />
-          {loadingData && (
-            <div className="flex h-full w-full items-center justify-center p-4">
-              <LoadingSpinner />
-            </div>
-          )}
-          {!loadingData && !errorLoadingData && (
-            <div className="sm:w-full lg:w-[50vw] flex flex-col gap-2 border-t border-x rounded-sm border-zinc-700 m-auto">
 
-              {data.length > 0 && data?.map((log) => {
-                return <ActivityListItem key={log.id} severity={log.severity} profileURl={log.user?.profilePicture || ""} description={log.description} category={log.category} name={log.name} author={log.user?.email || "unknown"} link={log.url} action={log.action} actionTime={log.updatedAt || log.createdAt} />
-              })}
-              {
-                data.length === 0 && (
-                  <div className="flex h-full w-full items-center justify-center p-4 text-zinc-400 gap-2 select-none">
-                    <p className="text-lg italic text-zinc-400">
-                      No Activity Found
-                    </p>
-                    <CakeIcon className="h-8 w-8" />
-                  </div>
-                )
-              }
-              {/* <ActivityListItem name="name" author="howelltaylor195@gmail.com" link="link" action="updated title" actionTime={Date.now().toString()} />
-            <ActivityListItem name="name" author="howelltaylor195@gmail.com" link="link" action="updated title" actionTime={Date.now().toString()} />
-            <ActivityListItem name="name" author="howelltaylor195@gmail.com" link="link" action="updated title" actionTime={Date.now().toString()} /> */}
-            </div>
-          )}
-          <div className="flex items-center justify-center p-5 text-zinc-600">End of Timeline</div>
-          <div className="h-36" />
-        </div>
+        <div className="h-36" />
+        {loadingData && (
+          <div className="flex h-full w-full items-center justify-center p-4">
+            <LoadingSpinner />
+          </div>
+        )}
+        {!loadingData && !errorLoadingData && (
+          <div className="sm:w-full lg:w-[50vw] flex flex-col border-t border-x rounded-sm border-zinc-700 m-auto">
+
+            {data.length > 0 && data?.map((log) => {
+              return <ActivityListItem key={log.id} severity={log.severity} profileURl={log.user?.profilePicture || ""} description={log.description} category={log.category} name={log.name} author={log.user?.email || "unknown"} link={log.url} action={log.action} actionTime={log.updatedAt || log.createdAt} />
+            })}
+            {
+              data.length === 0 && (
+                <div className="flex h-full w-full items-center justify-center p-4 text-zinc-400 gap-2 select-none">
+                  <p className="text-lg italic text-zinc-400 select-none">
+                    No Activity Found
+                  </p>
+                  <CakeIcon className="h-8 w-8" />
+                </div>
+              )
+            }
+          </div>
+        )}
+        <div className="flex items-center justify-center p-5 text-zinc-600 select-none">End of Timeline</div>
+        <div className="h-36" />
       </div>
+
     </main>
   );
 };
+
+const tags = [
+  {
+    value: "all",
+    label: "All",
+    color: "gray",
+  },
+  {
+    value: "moderate",
+    label: "Moderate Severity",
+    color: "gray",
+  },
+  {
+    value: "critical",
+    label: "Critical Severity",
+    color: "gray",
+  },
+  {
+    value: "info",
+    label: "Info Severity",
+    color: "gray",
+  },
+  {
+    value: "blueprint",
+    label: "Blueprints",
+    color: "gray",
+  },
+  {
+    value: "crew",
+    label: "Crew Members",
+    color: "gray",
+  },
+  {
+    value: "project",
+    label: "Projects",
+    color: "gray",
+  },
+  {
+    value: "other",
+    label: "Other",
+    color: "gray",
+  },
+] as DropdownTagType[];
+
+export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], placeholder?: string, allTags: DropdownTagType[], onSetTags: (tags: DropdownTagType[]) => void }> = ({ selectedTags, allTags, onSetTags, placeholder }) => {
+
+  const onChange = useCallback((e: MultiValue<{
+    value: string;
+    label: string;
+    color: string;
+  }>) => {
+
+    const tags = [] as DropdownTagType[]
+
+    if (!allTags) return;
+
+    e.forEach((tg) => {
+      const tag = allTags.find((t) => t.value === tg.value);
+
+      if (tag) {
+        tags.push(tag);
+      }
+    });
+
+    onSetTags(tags);
+
+  }, [allTags, onSetTags]);
+
+
+  return (
+    <Select
+      closeMenuOnSelect={false}
+      defaultValue={selectedTags}
+      isMulti
+      name="currentTags"
+      options={tags}
+      classNamePrefix="select"
+      className="w-full ring-2 ring-zinc-700 rounded outline-none hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800 text-zinc-300"
+      onChange={(e) => { onChange(e) }}
+      unstyled
+      placeholder={placeholder || "add..."}
+      classNames={{
+        valueContainer(props) {
+          return `flex flex-wrap p-2 bg-zinc-800 rounded-l focus:bg-red-500 gap-1 ${props.selectProps.classNamePrefix ? props.selectProps.classNamePrefix + "-value-container" : ""}`;
+        },
+        multiValue() {
+          return `text-zinc-300 border border-zinc-300 px-2 rounded-xl px-1 flex items-center text-sm`;
+        },
+        container({ isFocused }) {
+          return `w-full bg-zinc-800 rounded ${isFocused ? "ring-2 ring-amber-700" : "hover:ring-zinc-600 hover:ring-2"} `;
+        },
+        menuList() {
+          return `bg-zinc-900 rounded text-zinc-200 p-1 border-2 border-zinc-500`;
+        },
+        option() {
+          return `hover:bg-zinc-700 hover:text-zinc-100 cursor-pointer rounded p-2 md:p-1`;
+        }
+      }}
+    />
+  )
+}
+
 
 const ActivityListItem: React.FC<{ action: string, description: string, severity: string, profileURl: string, category: string, name: string, author: string, link: string, actionTime: Date }> = ({ action, severity, profileURl, description, name, author, link, actionTime }) => {
 
@@ -140,7 +242,7 @@ const ActivityListItem: React.FC<{ action: string, description: string, severity
 
   return (
 
-    <div className={`border-b border-zinc-700 ${severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""} rounded-sm`}>
+    <div className={`border-b border-zinc-700 ${severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""} pt-1 rounded-sm`}>
       <div className="flex flex-col justify-center items-center p-2 rounded-sm select-none">
         <div className="flex gap-2 items-start w-full">
           <Image src={profileURl} className="h-12 w-12 rounded-full" width={64} height={64} alt={`${author}'s profile picture`} />
@@ -200,7 +302,6 @@ const ActivityListItem: React.FC<{ action: string, description: string, severity
             </div>
           </div>
         </div>
-
       </div>
     </div>
   )

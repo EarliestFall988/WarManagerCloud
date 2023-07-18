@@ -8,8 +8,14 @@ import Link from "next/link";
 import { TagIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import * as Popover from '@radix-ui/react-popover';
 
-let tags = [] as { value: string; label: string, color: string }[];
-let selectedTags = [] as { value: string; label: string, color: string }[];
+export type DropdownTagType = {
+    value: string;
+    label: string;
+    color: string;
+}
+
+let tags = [] as DropdownTagType[];
+let selectedTags = [] as DropdownTagType[];
 
 export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projects" | "crews" | "blueprints", onSetTags: (tags: Tag[]) => void }> = ({ savedTags, type, onSetTags }) => {
 
@@ -98,16 +104,16 @@ export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projec
                     valueContainer(props) {
                         return `flex flex-wrap p-2 bg-zinc-800 rounded-l focus:bg-red-500 gap-1 ${props.selectProps.classNamePrefix ? props.selectProps.classNamePrefix + "-value-container" : ""}`;
                     },
-                    multiValue({ data }) {
+                    multiValue() {
                         return `text-zinc-300 border border-zinc-300 px-2 rounded-xl px-1 flex items-center text-sm`;
                     },
                     container({ isFocused }) {
                         return `w-full bg-zinc-800 rounded ${isFocused ? "ring-2 ring-amber-700" : "hover:ring-zinc-600 hover:ring-2"} `;
                     },
-                    menuList(props) {
+                    menuList() {
                         return `bg-zinc-900 rounded text-zinc-200 p-1 border-2 border-zinc-500`;
                     },
-                    option({ data }) {
+                    option() {
                         return `hover:bg-zinc-700 hover:text-zinc-100 cursor-pointer rounded p-2 md:p-1`;
                     }
                 }}
@@ -140,4 +146,3 @@ export const TagsPopover: React.FC<{ savedTags: Tag[], type: "projects" | "crews
         </Popover.Root>
     );
 }
-

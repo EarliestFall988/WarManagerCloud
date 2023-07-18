@@ -128,9 +128,12 @@ const CrewMembersPage: NextPage = () => {
                     ) : (
                         <div ref={animationParent} className="flex flex-col items-start justify-start gap-1 border-t border-zinc-700 p-2 text-gray-100">
                             {crewData.length > 0 &&
+
                                 crewData?.map((crewMember) => (
                                     <CrewMemberItem crewMember={crewMember} tags={crewMember.tags} key={crewMember.id} removeCrewMember={(e) => { removeCrewMember(e) }} />
                                 ))}
+
+
                             {crewData.length === 0 && (
                                 <div className="flex w-full flex-col items-center justify-center gap-2">
                                     <p className="text-xl font-bold text-zinc-300">
@@ -146,6 +149,7 @@ const CrewMembersPage: NextPage = () => {
                             )}
                         </div>
                     )}
+                    <div className="h-44" />
                 </div>
             </main>
         </>
