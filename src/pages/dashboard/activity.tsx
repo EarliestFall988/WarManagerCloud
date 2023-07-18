@@ -1,10 +1,9 @@
 import { useUser } from "@clerk/nextjs";
-import { ArrowLeftOnRectangleIcon, ArrowUpOnSquareIcon, ArrowUpRightIcon, CakeIcon, ChatBubbleBottomCenterIcon, ExclamationCircleIcon, HeartIcon, LinkIcon, Square2StackIcon } from "@heroicons/react/24/solid";
+import { ArrowUpRightIcon, CakeIcon, ExclamationTriangleIcon, Square2StackIcon } from "@heroicons/react/24/solid";
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import TooltipComponent from "~/components/Tooltip";
 import { DashboardMenu } from "~/components/dashboardMenu";
 import { InputComponent } from "~/components/input";
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
@@ -132,7 +131,7 @@ const RecentActivityPage: NextPage = () => {
   );
 };
 
-const ActivityListItem: React.FC<{ action: string, description: string, severity: string, profileURl: string, category: string, name: string, author: string, link: string, actionTime: Date }> = ({ action, severity, profileURl, category, description, name, author, link, actionTime }) => {
+const ActivityListItem: React.FC<{ action: string, description: string, severity: string, profileURl: string, category: string, name: string, author: string, link: string, actionTime: Date }> = ({ action, severity, profileURl, description, name, author, link, actionTime }) => {
 
   const Copy = (url: string) => {
     void window.navigator.clipboard.writeText(url);
@@ -156,7 +155,7 @@ const ActivityListItem: React.FC<{ action: string, description: string, severity
                 {
                   severity === "critical" && (
                     <div className="flex gap-1 items-center flex-col">
-                      <ExclamationCircleIcon className="h-6 w-6 text-red-700" />
+                      <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500" />
                       {/* <p className="text-sm text-red-500/60"> {severity}</p> */}
                     </div>
                   )
@@ -165,7 +164,7 @@ const ActivityListItem: React.FC<{ action: string, description: string, severity
               </div>
               <p className="text-sm">{description}</p>
             </div>
-            <div className="flex justify-start gap-2">
+            <div className="flex justify-start gap-2 -mx-2">
               {
                 action === "url" && (
                   <Link href={link} passHref className="flex gap-1 items-center cursor-pointer rounded p-2 hover:bg-zinc-800 duration-100 transition-all">

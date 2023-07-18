@@ -378,7 +378,7 @@ export const blueprintsRouter = createTRPCRouter({
           category: "blueprint",
           name: `Deleted \"${blueprint.name}\"`,
           authorId: authorId,
-          url: `/blueprints/${blueprint.id}`,
+          url: `/#`,
           description: `Blueprint \"${blueprint.name}\" was deleted by ${email}`,
           severity: "critical",
         }
