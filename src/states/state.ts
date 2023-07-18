@@ -100,6 +100,7 @@ const useBlueprintStore = create<BlueprintState>((set) => ({
     createdAt: new Date(),
     updatedAt: new Date(),
     authorId: "",
+    pinned: false,
   },
 
   isLoading: true,

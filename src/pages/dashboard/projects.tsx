@@ -323,7 +323,6 @@ const ProjectsPage: NextPage = () => {
 
 const ProjectProgress: React.FC<{ project: Project; index: number }> = ({
     project,
-    index,
 }) => {
     const [progress, setProgress] = useState(0);
 
