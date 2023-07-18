@@ -131,6 +131,17 @@ export const blueprintsRouter = createTRPCRouter({
         });
       }
 
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
       const blueprint = await ctx.prisma.blueprint.create({
         data: {
           name: input.name,
@@ -139,6 +150,18 @@ export const blueprintsRouter = createTRPCRouter({
           data: "{}",
         },
       });
+
+      await ctx.prisma.log.create({
+        data: {
+          action: "url",
+          category: "blueprint",
+          name: "Created New Blueprint",
+          authorId: authorId,
+          url: `/blueprints/${blueprint.id}`,
+          description: `Blueprint \"${blueprint.name}\" was created by ${email}`,
+          severity: "moderate",
+        }
+      })
 
       return blueprint;
     }),
@@ -162,6 +185,17 @@ export const blueprintsRouter = createTRPCRouter({
         });
       }
 
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
       const blueprint = await ctx.prisma.blueprint.update({
         where: {
           id: input.blueprintId,
@@ -170,6 +204,18 @@ export const blueprintsRouter = createTRPCRouter({
           data: input.flowInstanceData,
         },
       });
+
+      await ctx.prisma.log.create({
+        data: {
+          action: "url",
+          category: "blueprint",
+          name: `Edited \"${blueprint.name}\"`,
+          authorId: authorId,
+          url: `/blueprints/${blueprint.id}`,
+          description: `${email} made some changes to \"${blueprint.name}\" `,
+          severity: "moderate",
+        }
+      })
 
       return blueprint;
     }),
@@ -187,6 +233,18 @@ export const blueprintsRouter = createTRPCRouter({
       });
     }
 
+    const user = await clerkClient.users.getUser(authorId);
+
+    const email = user?.emailAddresses[0]?.emailAddress;
+
+    if (!user || !email || user.banned) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You are not authorized to perform this action",
+      });
+    }
+
+
     const blueprint = await ctx.prisma.blueprint.update({
       where: {
         id: input.blueprintId,
@@ -196,8 +254,19 @@ export const blueprintsRouter = createTRPCRouter({
       },
     });
 
-    return blueprint;
+    await ctx.prisma.log.create({
+      data: {
+        action: "url",
+        category: "blueprint",
+        name: `${input.isPinned ? "Pinned" : "Unpinned"} \"${blueprint.name}\"`,
+        authorId: authorId,
+        url: `/blueprints/${blueprint.id}`,
+        description: `${email} ${input.isPinned ? "Pinned" : "Unpinned"} "${blueprint.name}" from their War Manager Dashboard.`,
+        severity: "info",
+      }
+    })
 
+    return blueprint;
   }),
 
   updateDetails: privateProcedure
@@ -220,6 +289,34 @@ export const blueprintsRouter = createTRPCRouter({
         });
       }
 
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
+      const beforeBlueprint = await ctx.prisma.blueprint.findUnique({
+        where: {
+          id: input.blueprintId,
+        },
+      });
+
+
+      if (!beforeBlueprint) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Blueprint not found",
+        });
+      }
+
+      const name = beforeBlueprint.name;
+      const description = beforeBlueprint.description;
+
       const blueprint = await ctx.prisma.blueprint.update({
         where: {
           id: input.blueprintId,
@@ -230,6 +327,17 @@ export const blueprintsRouter = createTRPCRouter({
         },
       });
 
+      await ctx.prisma.log.create({
+        data: {
+          action: "url",
+          category: "blueprint",
+          name: `Updated \"${blueprint.name}\" Details`,
+          authorId: authorId,
+          url: `/blueprints/${blueprint.id}`,
+          description: `Blueprint ${blueprint.name === name ? "" : ` name: from \"${name}\" to \"${blueprint.name}\" `} ${description === blueprint.description ? "" : ` description: from \"${description}\" to \"${blueprint.description}\"`}`,
+          severity: "moderate",
+        }
+      })
       return blueprint;
     }),
 
@@ -247,11 +355,34 @@ export const blueprintsRouter = createTRPCRouter({
         });
       }
 
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
       const blueprint = await ctx.prisma.blueprint.delete({
         where: {
           id: input.blueprintId,
         },
       });
+
+      await ctx.prisma.log.create({
+        data: {
+          action: "url",
+          category: "blueprint",
+          name: `Deleted \"${blueprint.name}\"`,
+          authorId: authorId,
+          url: `/blueprints/${blueprint.id}`,
+          description: `Blueprint \"${blueprint.name}\" was deleted by ${email}`,
+          severity: "critical",
+        }
+      })
 
       return blueprint;
     }),

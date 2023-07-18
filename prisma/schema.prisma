@@ -130,8 +130,8 @@ model Blueprint {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
+  name        String   @db.VarChar(255)
+  description String   @db.VarChar(255)
   pinned      Boolean? @default(false)
 
   data String @db.Text
@@ -189,8 +189,10 @@ model Log {
 
   name        String @db.VarChar(255)
   description String @db.VarChar(255)
-
-  data String @db.Text
+  url         String @db.VarChar(255)
+  action      String @db.VarChar(255)
+  category    String @db.VarChar(255)
+  severity    String @db.VarChar(255)
 
   authorId String
 
@@ -301,12 +303,11 @@ model Tag {
   backgroundColor String @db.VarChar(255)
   type            String @db.VarChar(255) //crews, projects, or blueprints?
 
-  authorId     String
+  authorId String
 
-  CrewMembers  CrewMember[]
-  projects     Project[]
-  blueprints    Blueprint[]
-
+  CrewMembers CrewMember[]
+  projects    Project[]
+  blueprints  Blueprint[]
 
   @@index([authorId])
 }

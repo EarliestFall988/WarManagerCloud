@@ -1,4 +1,4 @@
-import { ArrowUpRightIcon, Square2StackIcon } from "@heroicons/react/24/solid"
+import { Square2StackIcon } from "@heroicons/react/24/solid"
 import Image from "next/image"
 import Link from "next/link"
 import { toast } from "react-hot-toast";

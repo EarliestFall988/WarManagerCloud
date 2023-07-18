@@ -130,7 +130,6 @@ const CrewMembersPage: NextPage = () => {
                             {crewData.length > 0 &&
                                 crewData?.map((crewMember) => (
                                     <CrewMemberItem crewMember={crewMember} tags={crewMember.tags} key={crewMember.id} removeCrewMember={(e) => { removeCrewMember(e) }} />
-                                    // <div>test</div>
                                 ))}
                             {crewData.length === 0 && (
                                 <div className="flex w-full flex-col items-center justify-center gap-2">

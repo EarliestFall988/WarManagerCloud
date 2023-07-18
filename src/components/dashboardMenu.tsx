@@ -21,7 +21,7 @@ const SettingsButton: FunctionComponent<Props> = (props) => {
     return (
         <Dialog.Root>
             <TooltipComponent content="Settings" side="left">
-                <Dialog.Trigger className="flex items-center justify-start gap-2 border-b border-zinc-700 p-2 text-white hover:bg-zinc-700 ">
+                <Dialog.Trigger className="flex items-center justify-start gap-2 border-b border-zinc-700 p-2 text-white hover:bg-zinc-700 select-none">
                     <Cog6ToothIcon className="h-7 w-7 text-zinc-200" />
                     {props.menuOpen && <p> Settings</p>}
                 </Dialog.Trigger>
@@ -216,7 +216,7 @@ const SectorsView = () => {
 
 const Settings = () => {
     return (
-        <div className="flex flex-col gap-2 rounded">
+        <div className="flex flex-col gap-2 rounded select-none">
             <Tabs.Root defaultValue="tab1">
                 <Tabs.List
                     className="border-mauve6 flex shrink-0 border-b"
@@ -309,8 +309,8 @@ export const DashboardMenu = () => {
                 }}
                 className={`hidden h-screen z-30 w-12 flex-col items-start justify-between overflow-x-clip border-r bg-zinc-800/90 border-zinc-700 backdrop-blur transition-all duration-75 hover:w-1/6 hover:shadow-xl md:fixed md:flex`}
             >
-                <div className="flex w-full flex-col items-center justify-start">
-                    <TooltipComponent content="View Recent Activity" side="right">
+                <div className="flex w-full flex-col items-center justify-start select-none">
+                    <TooltipComponent content="See it all in context" side="right">
                         <button
                             onClick={() => {
                                 // void router.push("/dashboard?context=Projects");
@@ -323,7 +323,7 @@ export const DashboardMenu = () => {
                                 }`}
                         >
                             <NewspaperIcon className="h-6 w-6" />
-                            {toggleOpen && <p>Recent Activity</p>}
+                            {toggleOpen && <p>Hub</p>}
                         </button>
                     </TooltipComponent>
                     {/* <TooltipComponent
@@ -416,7 +416,7 @@ export const DashboardMenu = () => {
                     </TooltipComponent> */}
                 </div>
                 <div
-                    className={`flex w-full flex-col ${toggleOpen ? "" : "items-center justify-center"
+                    className={`flex w-full flex-col ${toggleOpen ? "" : "items-center justify-center select-none"
                         } truncate whitespace-nowrap`}
                 >
                     <SettingsButton menuOpen={toggleOpen}>
@@ -425,7 +425,7 @@ export const DashboardMenu = () => {
                     <TooltipComponent content="Landing Page" side="right">
                         <div className="border-b border-zinc-700">
                             <Link
-                                className="flex gap-2 p-2 transition-all duration-200 hover:bg-zinc-700"
+                                className="flex gap-2 p-2 transition-all duration-200 hover:bg-zinc-700 select-none"
                                 href="/"
                             >
                                 <LogoComponent />
@@ -441,10 +441,10 @@ export const DashboardMenu = () => {
                                 {toggleOpen && (
                                     <>
                                         <div className="flex flex-col md:w-4/6 xl:w-5/6 ">
-                                            <p className="w-full truncate font-semibold md:text-sm">
+                                            <p className="w-full truncate font-semibold md:text-sm select-none">
                                                 {user?.fullName}
                                             </p>
-                                            <p className="w-full truncate text-sm text-zinc-400 md:text-xs">
+                                            <p className="w-full truncate text-sm text-zinc-400 md:text-xs select-none">
                                                 {user?.primaryEmailAddress?.emailAddress}
                                             </p>
                                         </div>
@@ -540,7 +540,7 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                                             }`}
                                     >
                                         <NewspaperIcon className="h-6 w-6" />
-                                        Recent Activity
+                                        Hub
                                     </button>
                                 </Dialog.DialogClose>
 

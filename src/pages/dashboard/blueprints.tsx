@@ -52,8 +52,6 @@ const BlueprintsListPage: NextPage = () => {
     return data?.filter((blueprint) => blueprint.pinned) || [];
   }
 
-
-
   if (!isLoaded) {
     return <LoadingPage2 />;
   }
@@ -108,7 +106,7 @@ const BlueprintsListPage: NextPage = () => {
 
 
               <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100">
-                {!blueprintSearchTerm && (
+                {!blueprintSearchTerm && getPinnedBlueprints().length > 0 && (
                   <div className="flex flex-col gap-1 p-2">
                     <div className="flex w-full items-center justify-between gap-1">
                       <p className="text-lg font-bold text-zinc-300">Pinned Blueprints</p>
