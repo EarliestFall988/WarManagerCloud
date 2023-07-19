@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/nextjs";
-import { ArrowLongUpIcon, ArrowPathRoundedSquareIcon, ArrowUpRightIcon, ExclamationTriangleIcon, FunnelIcon, MegaphoneIcon, SparklesIcon, Square2StackIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, ArrowLongUpIcon, ArrowPathRoundedSquareIcon, ArrowUpRightIcon, ExclamationTriangleIcon, FunnelIcon, MegaphoneIcon, SparklesIcon, Square2StackIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,6 +19,9 @@ import { InputComponent } from "~/components/input";
 import { useRouter } from "next/router";
 import TooltipComponent from "~/components/Tooltip";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { utils, writeFileXLSX } from "xlsx";
+
+
 dayjs.extend(relativeTime);
 
 const RecentActivityPage: NextPage = () => {
@@ -26,7 +29,6 @@ const RecentActivityPage: NextPage = () => {
 
   const { isSignedIn, isLoaded } = useUser();
 
-  const router = useRouter();
 
   const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
   const [isClearFilters, setClearfilters] = useState<boolean>(false);
@@ -49,6 +51,44 @@ const RecentActivityPage: NextPage = () => {
   });
 
   const [animationParent] = useAutoAnimate();
+
+
+  const DownloadLogXLSX = React.useCallback(() => {
+
+    if (!data) return;
+
+    const json = data.map((log) => {
+
+      let link = log.url;
+
+      if (log.action == "url") {
+        link = window.location.protocol + "//" + window.location.host + log.url;
+      }
+
+      return {
+        Id: log.id,
+        Name: log.name,
+        Description: log.description,
+        "Time (UTC)": log.updatedAt,
+        Category: log.category,
+        Severity: log.severity,
+        Action: log.action,
+        Data: JSON.stringify(log.data) || "{}",
+        Link: link,
+        user: log.user?.email || "<unknown>",
+      }
+    });
+
+    console.log(json);
+
+    const ws = utils.json_to_sheet(json);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Logs");
+
+    const date = new Date().toUTCString();
+
+    writeFileXLSX(wb, `Activity Logs ${date}.xlsx`);
+  }, [data]);
 
   if (!isLoaded) {
     return <LoadingPage2 />;
@@ -89,6 +129,14 @@ const RecentActivityPage: NextPage = () => {
                   onClick={refresh}
                 >
                   <ArrowPathRoundedSquareIcon className="h-6 w-6" />
+                </button>
+              </TooltipComponent>
+              <TooltipComponent content="Download Logs (with selected filters)" side="bottom">
+                <button
+                  className="flex gap-2 p-1 rounded bg-zinc-800 text-200"
+                  onClick={DownloadLogXLSX}
+                >
+                  <ArrowDownTrayIcon className="h-6 w-6" />
                 </button>
               </TooltipComponent>
               <div className="block lg:hidden">

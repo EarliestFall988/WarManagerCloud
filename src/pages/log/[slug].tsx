@@ -11,9 +11,7 @@ import SignInModal from "~/components/signInPage";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 import React from "react";
-
 import { utils, writeFileXLSX } from "xlsx";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
 import autoAnimate from "@formkit/auto-animate";
 
 const LogPage: NextPage<{ id: string }> = ({ id }) => {
@@ -51,10 +49,13 @@ const LogPage: NextPage<{ id: string }> = ({ id }) => {
         const ws = utils.json_to_sheet([json]);
         const wb = utils.book_new();
         utils.book_append_sheet(wb, ws, "Data");
-        writeFileXLSX(wb, `Log \"${data.name}\".xlsx`);
+
+        const date = new Date().toUTCString();
+
+        writeFileXLSX(wb, `Log\"${data.name}\" ${date} .xlsx`);
     }, [data]);
 
-    
+
     const parent = React.useRef(null);
 
     React.useEffect(() => {
