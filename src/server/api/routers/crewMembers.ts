@@ -7,7 +7,6 @@ import { TRPCError } from "@trpc/server";
 
 import isMobilePhone from "validator/lib/isMobilePhone";
 import { clerkClient } from "@clerk/nextjs";
-import { id } from "lib0/function";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -378,7 +377,7 @@ await ctx.prisma.log.create({
   data: {
     name: `Updated Crew Member ${crewMember.name}`,
     action: "url",
-    url: `/crew/${crewMember.id}`,
+    url: `/crewmember/${crewMember.id}`,
     authorId: authorId,
     category: "crew",
     description: `${changes} ${changes == 1 ? "change" : "changes"}: \n${result}`,
@@ -469,7 +468,7 @@ create: privateProcedure
     await ctx.prisma.log.create({
       data: {
         action: "url",
-        category: "blueprint",
+        category: "crew",
         name: `Created new Crew Member \"${input.name}\"`,
         authorId: authorId,
         url: `/crewmember/${crewMember.id}`,
@@ -515,7 +514,7 @@ create: privateProcedure
       await ctx.prisma.log.create({
         data: {
           action: "none",
-          category: "blueprint",
+          category: "crew",
           name: `Deleted Crew Member \"${crewMember.name}\"`,
           authorId: authorId,
           url: `/#`,

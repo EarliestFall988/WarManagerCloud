@@ -1,4 +1,4 @@
-import { ArrowDownTrayIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, ArrowLongUpIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { type Project, type Tag } from "@prisma/client";
 import * as  DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as  Progress from "@radix-ui/react-progress";
@@ -105,6 +105,10 @@ const ProjectsPage: NextPage = () => {
         return <SignInModal redirectUrl="/dashboard/projects" />;
     }
 
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     return (
         <main className="flex min-h-[100vh] bg-zinc-900">
             <DashboardMenu />
@@ -162,90 +166,91 @@ const ProjectsPage: NextPage = () => {
                         </div>
                     )) ||
                     (data && data?.length > 0 && (
-                        <div className="w-full overflow-y-auto overflow-x-hidden ">
-                            <div ref={animateParent} className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
-                                {data?.map((project, index) => (
-                                    <div
-                                        key={project.id}
-                                        className="w-full select-none rounded-sm bg-zinc-700 hover:bg-zinc-600"
-                                    >
-                                        <div className="md:1/2 flex items-center gap-1 ">
-                                            {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}
-                                            <Link
-                                                href={`/projects/${project.id}`}
-                                                passHref
-                                                className="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
-                                            >
-                                                <div className="lg:w-1/2">
-                                                    <div className="flex w-full items-center justify-start gap-1 overflow-clip">
-                                                        <p className="whitespace-nowrap text-sm font-normal text-zinc-300">
-                                                            {project.jobNumber}
-                                                        </p>
-                                                        <p className="truncate text-ellipsis ">
-                                                            {project.name}
-                                                        </p>
-                                                        {project.tags.length > 0 && (
-                                                            <div className="flex flex-wrap gap-1">
-                                                                {project.tags.map((tag) => (
-                                                                    <TagBubble
-                                                                        tag={tag}
-                                                                        key={tag.id}
-                                                                        style="text-xs"
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
-                                                        <div className="flex items-center justify-start gap-1 overflow-clip text-xs">
-                                                            {/* <MapPinIcon className="h-4 w-4" /> */}
-                                                            <p className="block max-w-[7rem] truncate text-left text-sm font-normal italic tracking-tight">
-                                                                {project.city.trim()}
-                                                                {project.state.trim() && `, ${project.state}`}
+                        <>
+                            <div className="w-full overflow-y-auto overflow-x-hidden ">
+                                <div ref={animateParent} className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
+                                    {data?.map((project, index) => (
+                                        <div
+                                            key={project.id}
+                                            className="w-full select-none rounded-sm bg-zinc-700 hover:bg-zinc-600"
+                                        >
+                                            <div className="md:1/2 flex items-center gap-1 ">
+                                                {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}
+                                                <Link
+                                                    href={`/projects/${project.id}`}
+                                                    passHref
+                                                    className="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
+                                                >
+                                                    <div className="lg:w-1/2">
+                                                        <div className="flex w-full items-center justify-start gap-1 overflow-clip">
+                                                            <p className="whitespace-nowrap text-sm font-normal text-zinc-300">
+                                                                {project.jobNumber}
                                                             </p>
+                                                            <p className="truncate text-ellipsis ">
+                                                                {project.name}
+                                                            </p>
+                                                            {project.tags.length > 0 && (
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {project.tags.map((tag) => (
+                                                                        <TagBubble
+                                                                            tag={tag}
+                                                                            key={tag.id}
+                                                                            style="text-xs"
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        {project.city && project.state && project.status && <p>·</p>}
-                                                        <p className="text-sm">{project.status}</p>
+                                                        <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
+                                                            <div className="flex items-center justify-start gap-1 overflow-clip text-xs">
+                                                                {/* <MapPinIcon className="h-4 w-4" /> */}
+                                                                <p className="block max-w-[7rem] truncate text-left text-sm font-normal italic tracking-tight">
+                                                                    {project.city.trim()}
+                                                                    {project.state.trim() && `, ${project.state}`}
+                                                                </p>
+                                                            </div>
+                                                            {project.city && project.state && project.status && <p>·</p>}
+                                                            <p className="text-sm">{project.status}</p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="hidden overflow-clip text-center font-thin flex-shrink  max-w-[30%] lg:flex">
-                                                    <p className="w-full truncate text-ellipsis text-center">
-                                                        {project.description}
-                                                    </p>
-                                                </div>
-                                                <div className="flex-shrink text-right items-center justify-end gap-1">
-                                                    <p className="hidden text-xs text-zinc-400 md:block">
-                                                        {dayjs(project.updatedAt).fromNow()}
-                                                    </p>
-                                                </div>
-                                            </Link>
-                                            <DropdownMenu.Root>
-                                                <DropdownMenu.Trigger asChild>
-                                                    <button className="p-1">
-                                                        <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
-                                                    </button>
-                                                </DropdownMenu.Trigger>
-                                                <DropdownMenu.Portal>
-                                                    <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-500 bg-black/60 p-3 py-2 drop-shadow-lg backdrop-blur ">
-                                                        <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-500" />
-                                                        <DropdownMenu.Item
-                                                            className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
-                                                            onSelect={() => {
-                                                                copyAddress(
-                                                                    project.address +
-                                                                    " " +
-                                                                    project.city +
-                                                                    " " +
-                                                                    project.state +
-                                                                    " " +
-                                                                    project.zip
-                                                                );
-                                                            }}
-                                                        >
-                                                            <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
-                                                            Copy Address
-                                                        </DropdownMenu.Item>
-                                                        {/* <Dialog.Root>
+                                                    <div className="hidden overflow-clip text-center font-thin flex-shrink  max-w-[30%] lg:flex">
+                                                        <p className="w-full truncate text-ellipsis text-center">
+                                                            {project.description}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex-shrink text-right items-center justify-end gap-1">
+                                                        <p className="hidden text-xs text-zinc-400 md:block">
+                                                            {dayjs(project.updatedAt).fromNow()}
+                                                        </p>
+                                                    </div>
+                                                </Link>
+                                                <DropdownMenu.Root>
+                                                    <DropdownMenu.Trigger asChild>
+                                                        <button className="p-1">
+                                                            <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
+                                                        </button>
+                                                    </DropdownMenu.Trigger>
+                                                    <DropdownMenu.Portal>
+                                                        <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-500 bg-black/60 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                                                            <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-500" />
+                                                            <DropdownMenu.Item
+                                                                className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
+                                                                onSelect={() => {
+                                                                    copyAddress(
+                                                                        project.address +
+                                                                        " " +
+                                                                        project.city +
+                                                                        " " +
+                                                                        project.state +
+                                                                        " " +
+                                                                        project.zip
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
+                                                                Copy Address
+                                                            </DropdownMenu.Item>
+                                                            {/* <Dialog.Root>
                                                             <Dialog.Trigger asChild>
                                                                 <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
                                                                     <TrashIcon className="h-5 w-5 text-white" />
@@ -285,22 +290,29 @@ const ProjectsPage: NextPage = () => {
                                                             </Dialog.Portal>
                                                         </Dialog.Root> */}
 
-                                                        <DialogComponent title="Delete Project?" description="Are you sure you want to delete the project? After deletion it cannot be recovered." yes={() => { deleteJob(project.id); }} trigger={
-                                                            <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
-                                                                <TrashIcon className="h-5 w-5 text-white" />
-                                                                Delete
-                                                            </button>
-                                                        } />
+                                                            <DialogComponent title="Delete Project?" description="Are you sure you want to delete the project? After deletion it cannot be recovered." yes={() => { deleteJob(project.id); }} trigger={
+                                                                <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
+                                                                    <TrashIcon className="h-5 w-5 text-white" />
+                                                                    Delete
+                                                                </button>
+                                                            } />
 
-                                                    </DropdownMenu.Content>
-                                                </DropdownMenu.Portal>
-                                            </DropdownMenu.Root>
+                                                        </DropdownMenu.Content>
+                                                    </DropdownMenu.Portal>
+                                                </DropdownMenu.Root>
+                                            </div>
+                                            <ProjectProgress project={project} index={index} />
                                         </div>
-                                        <ProjectProgress project={project} index={index} />
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                            <div className="h-20"></div>
+                            <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
+                                <p>Back To Top</p>
+                                <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
+                            </button>
+                            <div className="h-20" />
+                        </>
                     ))}
                 {data?.length === 0 && (
                     <div className="flex flex-col items-center justify-center gap-4">

@@ -1,4 +1,4 @@
-import { ArrowDownTrayIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, PhoneIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, ArrowLongUpIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, PhoneIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { type CrewMember, type Tag } from "@prisma/client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { type NextPage } from "next"
@@ -80,6 +80,10 @@ const CrewMembersPage: NextPage = () => {
         return <SignInModal redirectUrl="/dashboard/reporting" />;
     }
 
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     return (
         <>
             <Head>
@@ -126,30 +130,38 @@ const CrewMembersPage: NextPage = () => {
                             <p className="italic text-red-500">could not load data</p>
                         </div>
                     ) : (
-                        <div ref={animationParent} className="flex flex-col items-start justify-start gap-1 border-t border-zinc-700 p-2 text-gray-100">
-                            {crewData.length > 0 &&
+                        <>
+                            <div ref={animationParent} className="flex flex-col items-start justify-start gap-1 border-t border-zinc-700 p-2 text-gray-100">
+                                {crewData.length > 0 &&
 
-                                crewData?.map((crewMember) => (
-                                    <CrewMemberItem crewMember={crewMember} tags={crewMember.tags} key={crewMember.id} removeCrewMember={(e) => { removeCrewMember(e) }} />
-                                ))}
+                                    crewData?.map((crewMember) => (
+                                        <CrewMemberItem crewMember={crewMember} tags={crewMember.tags} key={crewMember.id} removeCrewMember={(e) => { removeCrewMember(e) }} />
+                                    ))}
 
 
-                            {crewData.length === 0 && (
-                                <div className="flex w-full flex-col items-center justify-center gap-2">
-                                    <p className="text-xl font-bold text-zinc-300">
-                                        No Crew Members matching your search
-                                    </p>
-                                    <Link
-                                        href="/newCrewMember"
-                                        className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
-                                    >
-                                        Create one now.
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
+                                {crewData.length === 0 && (
+                                    <div className="flex w-full flex-col items-center justify-center gap-2">
+                                        <p className="text-xl font-bold text-zinc-300">
+                                            No Crew Members matching your search
+                                        </p>
+                                        <Link
+                                            href="/newCrewMember"
+                                            className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
+                                        >
+                                            Create one now.
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="h-20"></div>
+                            <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
+                                <p>Back To Top</p>
+                                <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
+                            </button>
+                            <div className="h-20" />
+                        </>
                     )}
-                    <div className="h-44" />
                 </div>
             </main>
         </>

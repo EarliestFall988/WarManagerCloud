@@ -4,10 +4,9 @@ import { createTRPCRouter, privateProcedure } from "../trpc";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
-import { Prisma, type Log } from "@prisma/client";
+import type { Prisma, Log } from "@prisma/client";
 import { clerkClient } from "@clerk/nextjs";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
-import { use } from "react";
 
 const redis = new Redis({
     url: "https://us1-merry-snake-32728.upstash.io",
@@ -72,6 +71,46 @@ export const logsRouter = createTRPCRouter({
 
         return addUserToLogs(allLogs);
     }),
+
+    getById: privateProcedure.input(z.object({
+        id: z.string(),
+    })).query(async ({ ctx, input }) => {
+
+        const log = await ctx.prisma.log.findUnique({
+            where: {
+                id: input.id,
+            }
+        });
+
+        if (!log) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Log not found",
+            });
+        }
+
+        const user = await clerkClient.users
+            .getUser(log.authorId)
+            .then((user) => {
+                return user;
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+
+        if (!user) {
+            return {
+                ...log,
+                user: null,
+            };
+        }
+
+        return {
+            ...log, 
+            user: filterUserForClient(user),
+        };
+    }),
+    
 
     Search: privateProcedure.input(z.object({
         search: z.string(),

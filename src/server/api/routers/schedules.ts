@@ -147,6 +147,15 @@ export const schedulesRouter = createTRPCRouter({
         });
       }
 
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
       const retrieveLink = await CreateSchedule(
         input.title || "",
         user.emailAddresses[0].emailAddress || "n/a",
@@ -162,6 +171,17 @@ export const schedulesRouter = createTRPCRouter({
         },
       });
 
+      await ctx.prisma.log.create({
+        data: {
+          name: `Created New Schedule`,
+          action: "external url",
+          url: `${retrieveLink}`,
+          authorId: authorId,
+          category: "schedule",
+          description: `${input.notes || "<no description>"}`,
+          severity: "moderate",
+        }
+      });
       return schedule;
     }),
 });

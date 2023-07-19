@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/nextjs";
-import { ArrowUpRightIcon, ExclamationTriangleIcon, FunnelIcon, MegaphoneIcon, SparklesIcon, Square2StackIcon } from "@heroicons/react/24/solid";
+import { ArrowLongUpIcon, ArrowPathRoundedSquareIcon, ArrowUpRightIcon, ExclamationTriangleIcon, FunnelIcon, MegaphoneIcon, SparklesIcon, Square2StackIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,6 +16,8 @@ import { toast } from "react-hot-toast";
 import { type DropdownTagType } from "~/components/TagDropdown";
 import Select, { type MultiValue } from "react-select";
 import { InputComponent } from "~/components/input";
+import { useRouter } from "next/router";
+import TooltipComponent from "~/components/Tooltip";
 dayjs.extend(relativeTime);
 
 const RecentActivityPage: NextPage = () => {
@@ -23,7 +25,10 @@ const RecentActivityPage: NextPage = () => {
 
   const { isSignedIn, isLoaded } = useUser();
 
+  const router = useRouter();
+
   const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
+  const [isClearFilters, setClearfilters] = useState<boolean>(false);
 
   const toggleFilter = useCallback(() => {
     setIsFilterVisible((prev) => !prev);
@@ -34,6 +39,8 @@ const RecentActivityPage: NextPage = () => {
   // const [page, setPage] = useState<number>(1);
   // const [pageSize, setPageSize] = useState<number>(10);
   // const [sort, setSort] = useState<string>("createdAt:DESC");
+
+  const context = api.useContext().logs;
 
   const { data, isLoading: loadingData, isError: errorLoadingData } = api.logs.Search.useQuery({
     filter: filter.map((f) => f.value),
@@ -48,6 +55,23 @@ const RecentActivityPage: NextPage = () => {
     return <SignInModal redirectUrl="/dashboard/activity" />;
   }
 
+  const clear = () => {
+    setFilter([]);
+    setSearch("");
+    setClearfilters(true);
+  }
+
+  const refresh = () => {
+    void context.invalidate();
+  }
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
   return (
     <main className="flex min-h-[100vh] bg-zinc-900">
       <DashboardMenu />
@@ -55,17 +79,28 @@ const RecentActivityPage: NextPage = () => {
         <div className="fixed top-0 z-10 w-full md:w-[94%] lg:w-[96%] p-2 bg-zinc-900/80 backdrop-blur">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl p-2 font-semibold select-none">Activity Timeline</h1>
-            <div className="block lg:hidden">
-              <button
-                onClick={toggleFilter}
-              >
-                <FunnelIcon className="h-6 w-6 text-zinc-400" />
-              </button>
+            <div className="flex gap-2">
+              <TooltipComponent content="Refresh" side="bottom">
+                <button
+                  className="flex gap-2 p-1 rounded bg-zinc-800 text-200"
+                  onClick={refresh}
+                >
+                  <ArrowPathRoundedSquareIcon className="h-6 w-6" />
+                </button>
+              </TooltipComponent>
+              <div className="block lg:hidden">
+                <button
+                  className="flex gap-2 p-1 rounded bg-zinc-800 text-200"
+                  onClick={toggleFilter}
+                >
+                  <FunnelIcon className="h-6 w-6" />
+                </button>
+              </div>
             </div>
           </div>
           <div>
             <InputComponent placeholder="search" autoFocus onChange={(e) => setSearch(e.currentTarget.value)} value={search} disabled={false} />
-            <FilterAndSearch visible={isFilterVisible} onFilter={setFilter} />
+            <FilterAndSearch setClearFilters={() => { setClearfilters(false); }} onClose={() => { setIsFilterVisible(false) }} clearFilters={isClearFilters} visible={isFilterVisible} onFilter={setFilter} />
           </div>
         </div>
 
@@ -78,22 +113,53 @@ const RecentActivityPage: NextPage = () => {
         {!loadingData && !errorLoadingData && data && data?.length > 0 && (
           <>
             <div className="lg:h-48 h-32" />
+            <div className="m-auto sm:w-full lg:w-[50vw] flex items-center justify-end p-2">
+              <TooltipComponent content="Refresh" side="top">
+                <button
+                  className="flex gap-2 p-1 rounded text-zinc-500 transition-all duration-100 hover:text-zinc-300 hover:scale-110"
+                  onClick={refresh}
+                >
+                  <ArrowPathRoundedSquareIcon className="h-6 w-6" />
+                </button>
+              </TooltipComponent>
+            </div>
             <div className="sm:w-full lg:w-[50vw] flex flex-col border-t border-x rounded-sm border-zinc-700 m-auto">
-
               {data.length > 0 && data?.map((log) => {
-                return <ActivityListItem key={log.id} severity={log.severity} profileURl={log.user?.profilePicture || ""} description={log.description} category={log.category} name={log.name} author={log.user?.email || "unknown"} link={log.url} action={log.action} actionTime={log.updatedAt || log.createdAt} />
+
+                return <ActivityListItem key={log.id} id={log.id} severity={log.severity} profileURl={log.user?.profilePicture || ""} description={log.description} category={log.category} name={log.name} author={log.user?.email || "unknown"} link={log.url} action={log.action} actionTime={log.updatedAt || log.createdAt} />
               })}
             </div>
-            <div className="flex items-center justify-center p-5 text-zinc-600 select-none">End of Timeline</div>
+            <div className="flex flex-col items-center justify-center gap-4 p-5 text-zinc-600 select-none">
+              <p>End of Timeline</p>
+              <TooltipComponent content="Scroll To Top" side="top">
+                <button
+                  className="flex gap-2 p-1 rounded text-zinc-500 transition-all duration-100 hover:text-zinc-300 hover:scale-110"
+                  onClick={scrollToTop}
+                >
+                  <ArrowLongUpIcon className="h-6 w-6" />
+                </button>
+              </TooltipComponent>
+            </div>
             <div className="h-36" />
           </>
         )}
         {data?.length === 0 && !loadingData && (
           <div className="flex h-full w-full items-center justify-center p-4 text-zinc-400 gap-2 select-none">
-            <p className="text-lg text-zinc-300 select-none">
-              No Activity Found
-            </p>
-            <SparklesIcon className="h-6 w-6" />
+            <div className={`flex gap-2 ${filter.length > 0 || search.trim().length > 0 ? "border-r p-2 border-zinc-600" : ""}`}>
+              <p className="text-lg text-zinc-300 select-none">
+                No Activity Found
+              </p>
+              <SparklesIcon className="h-6 w-6" />
+            </div>
+            {
+              (filter.length > 0 || search.trim().length > 0) && (
+                <>
+                  <button onClick={clear} className="text-zinc-500 hover:text-amber-400 transition-colors duration-200 ease-in-out">
+                    Clear
+                  </button>
+                </>
+              )
+            }
           </div>
         )}
         {
@@ -110,31 +176,31 @@ const RecentActivityPage: NextPage = () => {
   );
 };
 
-const FilterAndSearch: React.FC<{ visible: boolean, onFilter: (tags: DropdownTagType[]) => void }> = ({ visible, onFilter }) => {
+const FilterAndSearch: React.FC<{ visible: boolean, clearFilters: boolean, setClearFilters: () => void, onClose: () => void, onFilter: (tags: DropdownTagType[]) => void }> = ({ visible, onClose, setClearFilters, clearFilters, onFilter }) => {
 
   return (
     <>
-      <div className="flex justify-between flex-wrap lg:hidden lg:flex-nowrap gap-2 lg:gap-11" >
+      <div className={`flex justify-between flex-wrap lg:hidden lg:flex-nowrap gap-2 lg:gap-11 ${visible ? "p-1 bg-zinc-800 border border-zinc-500" : ""} rounded`} >
         {visible && (
           <>
-            <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity" />
-            {/* <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Category" />
-            <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By User" /> */}
+            <MultiSelectDropdown setclearFilters={setClearFilters} clearFilters={clearFilters} onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity, Category, and User" />
+            <button onClick={onClose} className="flex items-center justify-center gap-2 w-full bg-red-900/30 rounded p-1">
+              <XMarkIcon className="h-6 w-6 text-red-400" />
+            </button>
           </>)}
       </div>
       <div className="justify-between hidden lg:flex flex-wrap lg:flex-nowrap gap-2 lg:gap-11" >
-        <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity" />
-        {/* <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Category" />
-        <MultiSelectDropdown onSetTags={onFilter} selectedTags={[]} placeholder="Filter By User" /> */}
+        <MultiSelectDropdown setclearFilters={setClearFilters} clearFilters={clearFilters} onSetTags={onFilter} selectedTags={[]} placeholder="Filter By Log Severity" />
       </div>
     </>
   )
 }
 
-export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], placeholder?: string, onSetTags: (tags: DropdownTagType[]) => void }> = ({ selectedTags, onSetTags, placeholder }) => {
+export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], setclearFilters: () => void, placeholder?: string, clearFilters: boolean, onSetTags: (tags: DropdownTagType[]) => void }> = ({ selectedTags, setclearFilters, clearFilters, onSetTags, placeholder }) => {
 
 
   const [allTags, setAllTags] = useState<DropdownTagType[]>([]);
+  const [currentTags, setCurrentTags] = useState<DropdownTagType[]>([]);
 
   const { data: users, isLoading: loadingUsers, isError: errorLoadingUsers } = api.users.getAllUsers.useQuery();
 
@@ -158,8 +224,11 @@ export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], pl
     });
 
     onSetTags(tags);
+    setCurrentTags(tags);
 
-  }, [allTags, onSetTags]);
+    setclearFilters();
+
+  }, [allTags, onSetTags, setclearFilters]);
 
 
 
@@ -195,6 +264,11 @@ export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], pl
         value: "category:project",
         label: "Projects",
         color: "gray",
+      },
+      {
+        value: "category:schedule",
+        label: "Schedules",
+        color: "gray",
       }
     ] as DropdownTagType[];
 
@@ -220,6 +294,12 @@ export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], pl
   }, [users, loadingUsers, errorLoadingUsers])
 
 
+  useMemo(() => {
+    if (clearFilters) {
+      onChange([]);
+    }
+  }, [clearFilters, onChange])
+
   return (
     <Select
       closeMenuOnSelect={false}
@@ -227,6 +307,7 @@ export const MultiSelectDropdown: React.FC<{ selectedTags: DropdownTagType[], pl
       isMulti
       name="currentTags"
       options={allTags}
+      value={currentTags}
       classNamePrefix="select"
       className="w-full ring-2 ring-zinc-700 rounded outline-none hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800 text-zinc-300"
       onChange={(e) => { onChange(e) }}
@@ -263,28 +344,33 @@ type activityListItemType = {
   author: string;
   link: string;
   actionTime: Date;
+  id: string;
 }
 
-const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, profileURl, description, name, author, link, actionTime }) => {
+const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, profileURl, description, name, author, link, actionTime, id }) => {
 
   const Copy = (url: string) => {
     void window.navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard");
   };
 
+  const router = useRouter();
+
   return (
 
     <div className={`border-b border-zinc-700 ${severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""} p-2 `}>
 
-      <div className="flex gap-2 items-start justify-start w-full">
+      <Link href={`/log/${id}`} className="flex gap-2 items-start justify-start w-full cursor-pointer">
         <Image src={profileURl} className="h-12 w-12 rounded-full select-none" width={64} height={64} alt={`${author}'s profile picture`} />
         <div className="flex flex-col truncate">
           <div className="pb-2 truncate">
-            <div className="flex gap-2">
+            <div className="flex gap-2 pl-1">
               <p className="text-sm text-zinc-500">{author}</p>
               <p className="text-sm text-zinc-500" >|</p>
               <p className="text-sm text-zinc-500">{dayjs(actionTime).fromNow()}</p>
             </div>
+            {/* <div className="hover:bg-zinc-800 rounded p-1"> */}
+            {/* <Link href={`/log/${id}`} className="cursor-pointer"> */}
             <div className="flex items-center justify-start gap-1">
               <p className="text-lg font-semibold pb-1">{name}</p>
               {
@@ -305,23 +391,44 @@ const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, pr
               }
             </div>
             <p className="text-sm w-full whitespace-pre-wrap">{description}</p>
+            {/* </Link> */}
+            {/* </div> */}
           </div>
-          <div className="flex justify-start gap-2 -mx-2 select-none">
+          <div className="flex justify-start gap-2 select-none">
             {
-              action === "url" && (
-                <Link href={link} passHref className="flex gap-1 items-center cursor-pointer rounded p-2 hover:bg-zinc-800 duration-100 transition-all">
+              (action === "url" || action === "external url") && (
+                <button onClick={(e) => {
+                  void router.push(link);
+                  e.preventDefault();
+                }}
+
+                  className="flex gap-1 items-center cursor-pointer rounded p-1 hover:bg-zinc-800 duration-100 transition-all">
                   <p className="text-sm text-zinc-200">View</p>
                   <ArrowUpRightIcon className="h-4 w-4 text-zinc-400" />
-                </Link>
+                </button>
               )
             }
             {
-              <button onClick={() => {
-                Copy(author)
-              }} className="flex gap-1 items-center cursor-pointer rounded p-2 hover:bg-zinc-800 duration-100 transition-all">
-                <p className="text-sm text-zinc-200">Copy Email</p>
+              <button onClick={(e) => {
+                Copy(author);
+                e.preventDefault();
+              }}
+
+                className="flex gap-1 items-center cursor-pointer rounded p-1 hover:bg-zinc-800 duration-100 transition-all">
+                <p className="text-sm text-zinc-200">{"Copy Author's Email"}</p>
                 <Square2StackIcon className="h-4 w-4 text-zinc-400" />
               </button>
+            }
+            {
+              action === "external url" && (
+                <button onClick={(e) => {
+                  Copy(link);
+                  e.preventDefault();
+                }} className="flex gap-1 items-center cursor-pointer rounded p-1 hover:bg-zinc-800 duration-100 transition-all">
+                  <p className="text-sm text-zinc-200">Copy Link</p>
+                  <Square2StackIcon className="h-4 w-4 text-zinc-400" />
+                </button>
+              )
             }
             {/* {
                 action === "url" && (
@@ -341,7 +448,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, pr
               } */}
           </div>
         </div>
-      </div>
+      </Link>
     </div >
   )
 }
