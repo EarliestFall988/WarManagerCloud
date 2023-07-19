@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/nextjs";
-import { ArrowLongUpIcon, ArrowUpRightIcon, Square2StackIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, ArrowLongUpIcon, ArrowUpRightIcon, ChevronDownIcon, Square2StackIcon } from "@heroicons/react/24/solid";
 import type { GetStaticProps, GetStaticPropsContext, NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,12 +10,18 @@ import { LoadingPage, LoadingPage2 } from "~/components/loading";
 import SignInModal from "~/components/signInPage";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
+import React from "react";
+
+import { utils, writeFileXLSX } from "xlsx";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import autoAnimate from "@formkit/auto-animate";
 
 const LogPage: NextPage<{ id: string }> = ({ id }) => {
 
     console.log("LogPage", id);
 
     const { user, isSignedIn } = useUser();
+    const [showRawData, setShowRawData] = React.useState(false);
 
     const { data, isLoading, isError } = api.logs.getById.useQuery({ id });
 
@@ -28,6 +34,34 @@ const LogPage: NextPage<{ id: string }> = ({ id }) => {
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
+
+    const DownloadLogXLSX = React.useCallback(() => {
+
+        if (!data) return;
+
+        const json = {
+            Id: data.id,
+            Name: data.name,
+            Description: data.description,
+            "Time (UTC)": data.updatedAt,
+            Category: data.category,
+            Severity: data.severity,
+        }
+
+        const ws = utils.json_to_sheet([json]);
+        const wb = utils.book_new();
+        utils.book_append_sheet(wb, ws, "Data");
+        writeFileXLSX(wb, `Log \"${data.name}\".xlsx`);
+    }, [data]);
+
+    
+    const parent = React.useRef(null);
+
+    React.useEffect(() => {
+        if (!showRawData) scrollToTop();
+        parent.current && autoAnimate(parent.current, { duration: 500, easing: "ease-in-out" });
+    }, [showRawData]);
+
 
     if (!user) {
         return (
@@ -58,7 +92,9 @@ const LogPage: NextPage<{ id: string }> = ({ id }) => {
         )
     }
 
-    console.log(data.action);
+    const toggleShowRawData = () => {
+        setShowRawData(!showRawData);
+    }
 
     return (
         <div className="min-h-[100vh] bg-zinc-900">
@@ -93,7 +129,7 @@ const LogPage: NextPage<{ id: string }> = ({ id }) => {
                                         </button>
                                     </TooltipComponent>
                                 </div>
-                                <div className="w-full p-1 bg-zinc-800 rounded">
+                                <div className="w-full p-1 bg-zinc-800 rounded overflow-x-auto">
                                     <Link href={data.url} target="none" className="text-amber-600 cursor-pointer">{data.url}</Link>
                                 </div>
                             </div>
@@ -136,52 +172,67 @@ const LogPage: NextPage<{ id: string }> = ({ id }) => {
                         }
                     </div>
                     <div className="p-4" />
-                    <p className="m-2 text-2xl font-semibold border-b w-full border-zinc-700">Raw Data</p>
-                    <div className="p-2 overflow-x-auto">
-                        <div className="flex gap-1 items-center w-full justify-between">
-                            <p className="text-xl pb-1">{"Table"}</p>
-                            {/* <TooltipComponent content="Copy link to clipboard" side={"top"} >
-                                <button onClick={() => Copy(`${data.name},${data.description},${data.updatedAt.toUTCString()},${data.category},${data.severity}`)} className="cursor-pointer">
-                                    <Square2StackIcon className="w-6 h-6 text-zinc-400 hover:text-zinc-200" />
-                                </button>
-                            </TooltipComponent> */}
-                        </div>
-                        <table className="p-2 bg-zinc-800 rounded w-full peer-odd:bg-zinc-200">
-                            <tr className="border-b border-zinc-600">
-                                <th className="p-1 bg-zinc-700 rounded-tl">Name</th>
-                                <th className="p-1 bg-zinc-700">Description</th>
-                                <th className="p-1 bg-zinc-700">Time (UTC)</th>
-                                <th className="p-1 bg-zinc-700">Category</th>
-                                <th className="p-1 bg-zinc-700 rounded-tr">Severity</th>
-                            </tr>
-                            <tr className="">
-                                <td className="p-1  border-r border-zinc-600">{data.name}</td>
-                                <td className="p-1  border-r border-zinc-600">{data.description}</td>
-                                <td className="p-1  border-r border-zinc-600 ">{data.updatedAt.toUTCString()}</td>
-                                <td className="p-1  border-r border-zinc-600">{data.category}</td>
-                                <td className="p-1">{data.severity}</td>
-                            </tr>
-                        </table>
+
+                    <div>
+                        <button onClick={toggleShowRawData} className="flex gap-2 transition-all duration-300 items-center text-zinc-500 hover:bg-zinc-700 hover:text-zinc-100 p-1 rounded">
+                            <p>Stuff For Nerds</p>
+                            <ChevronDownIcon className={`w-4 h-4 transition-all duration-300 ${showRawData ? "rotate-180" : ""}`} />
+                        </button>
                     </div>
-                    <div className="p-2">
-                        <div className="flex gap-1 items-center w-full justify-between">
-                            <p className="text-xl pb-1">JSON</p>
-                            <TooltipComponent content="Copy JSON to clipboard" side={"top"} >
-                                <button onClick={() => Copy(JSON.stringify(data))} className="cursor-pointer">
-                                    <Square2StackIcon className="w-6 h-6 text-zinc-400 hover:text-zinc-200" />
-                                </button>
-                            </TooltipComponent>
-                        </div>
-                        <div className="overflow-x-auto w-full bg-zinc-800 rounded">
-                            <p className="w-full p-1 whitespace-pre-wrap">{JSON.stringify(data, null, "\t")}</p>
-                        </div>
+                    <div ref={parent}>
+                        {showRawData && (
+                            <>
+                                <p className="m-2 text-2xl font-semibold border-b w-full border-zinc-700">Raw Data</p>
+                                <div className="p-2 overflow-x-auto">
+                                    <div className="flex gap-1 items-center w-full justify-between">
+                                        <p className="text-xl pb-1">{"Table"}</p>
+                                        <TooltipComponent content="Download .xlsx" side={"top"} >
+                                            <button onClick={DownloadLogXLSX} className="cursor-pointer">
+                                                <ArrowDownTrayIcon className="w-6 h-6 text-zinc-400 hover:text-zinc-200" />
+                                            </button>
+                                        </TooltipComponent>
+                                    </div>
+                                    <table className="p-2 bg-zinc-800 rounded w-full peer-odd:bg-zinc-200">
+                                        <tr className="border-b border-zinc-600">
+                                            <th className="p-1 bg-zinc-700 rounded-tl">Id</th>
+                                            <th className="p-1 bg-zinc-700">Name</th>
+                                            <th className="p-1 bg-zinc-700">Description</th>
+                                            <th className="p-1 bg-zinc-700">Time (UTC)</th>
+                                            <th className="p-1 bg-zinc-700">Category</th>
+                                            <th className="p-1 bg-zinc-700 rounded-tr">Severity</th>
+                                        </tr>
+                                        <tr className="">
+                                            <td className="p-1  border-r border-zinc-600">{data.id}</td>
+                                            <td className="p-1  border-r border-zinc-600">{data.name}</td>
+                                            <td className="p-1  border-r border-zinc-600">{data.description}</td>
+                                            <td className="p-1  border-r border-zinc-600 ">{data.updatedAt.toUTCString()}</td>
+                                            <td className="p-1  border-r border-zinc-600">{data.category}</td>
+                                            <td className="p-1">{data.severity}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div className="p-2">
+                                    <div className="flex gap-1 items-center w-full justify-between">
+                                        <p className="text-xl pb-1">JSON</p>
+                                        <TooltipComponent content="Copy JSON to clipboard" side={"top"} >
+                                            <button onClick={() => Copy(JSON.stringify(data))} className="cursor-pointer">
+                                                <Square2StackIcon className="w-6 h-6 text-zinc-400 hover:text-zinc-200" />
+                                            </button>
+                                        </TooltipComponent>
+                                    </div>
+                                    <div className="overflow-x-auto w-full bg-zinc-800 rounded">
+                                        <p className="w-full p-1 whitespace-pre-wrap">{JSON.stringify(data, null, "\t")}</p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                        <div className="h-20"></div>
+                        <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
+                            <p>Back To Top</p>
+                            <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
+                        </button>
+                        <div className="h-20" />
                     </div>
-                    <div className="h-20"></div>
-                    <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
-                        <p>Back To Top</p>
-                        <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
-                    </button>
-                    <div className="h-20" />
                 </div>
             </div>
         </div>

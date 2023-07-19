@@ -18,6 +18,7 @@ import Select, { type MultiValue } from "react-select";
 import { InputComponent } from "~/components/input";
 import { useRouter } from "next/router";
 import TooltipComponent from "~/components/Tooltip";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 dayjs.extend(relativeTime);
 
 const RecentActivityPage: NextPage = () => {
@@ -46,6 +47,8 @@ const RecentActivityPage: NextPage = () => {
     filter: filter.map((f) => f.value),
     search,
   });
+
+  const [animationParent] = useAutoAnimate();
 
   if (!isLoaded) {
     return <LoadingPage2 />;
@@ -78,7 +81,7 @@ const RecentActivityPage: NextPage = () => {
       <div className="w-full">
         <div className="fixed top-0 z-10 w-full md:w-[94%] lg:w-[96%] p-2 bg-zinc-900/80 backdrop-blur">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl p-2 font-semibold select-none">Activity Timeline</h1>
+            <h1 className="text-2xl p-2 font-semibold select-none">Timeline</h1>
             <div className="flex gap-2">
               <TooltipComponent content="Refresh" side="bottom">
                 <button
@@ -123,9 +126,8 @@ const RecentActivityPage: NextPage = () => {
                 </button>
               </TooltipComponent>
             </div>
-            <div className="sm:w-full lg:w-[50vw] flex flex-col border-t border-x rounded-sm border-zinc-700 m-auto">
+            <div ref={animationParent} className="sm:w-full lg:w-[50vw] flex flex-col border-t border-x rounded-sm border-zinc-700 m-auto">
               {data.length > 0 && data?.map((log) => {
-
                 return <ActivityListItem key={log.id} id={log.id} severity={log.severity} profileURl={log.user?.profilePicture || ""} description={log.description} category={log.category} name={log.name} author={log.user?.email || "unknown"} link={log.url} action={log.action} actionTime={log.updatedAt || log.createdAt} />
               })}
             </div>

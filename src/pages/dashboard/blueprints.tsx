@@ -1,4 +1,4 @@
-import { ArrowPathIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FlagIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowLongUpIcon, ArrowPathIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FlagIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import type { NextPage } from "next";
 import Link from "next/link";
@@ -61,6 +61,10 @@ const BlueprintsListPage: NextPage = () => {
   }
 
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
 
   return (
     <>
@@ -103,14 +107,15 @@ const BlueprintsListPage: NextPage = () => {
             </div>
           ) : (
             data.length > 0 && (
-              <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100 select-none">
-                {!blueprintSearchTerm && getPinnedBlueprints().length > 0 && (
-                  <div className="flex flex-col gap-1 p-2">
-                    <div className="flex w-full items-center justify-between gap-1">
-                      <p className="text-lg font-bold text-zinc-300">Pinned Blueprints</p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-lg font-bold text-zinc-300">{getPinnedBlueprints().length} Pinned</p>
-                        {/* {getPinnedBlueprints().length > 0 && (
+              <>
+                <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100 select-none">
+                  {!blueprintSearchTerm && getPinnedBlueprints().length > 0 && (
+                    <div className="flex flex-col gap-1 p-2">
+                      <div className="flex w-full items-center justify-between gap-1">
+                        <p className="text-lg font-bold text-zinc-300">Pinned Blueprints</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-lg font-bold text-zinc-300">{getPinnedBlueprints().length} Pinned</p>
+                          {/* {getPinnedBlueprints().length > 0 && (
                         <div className="flex gap-1">
                           <TooltipComponent content="Unpin All" side="bottom">
                             <button
@@ -125,25 +130,32 @@ const BlueprintsListPage: NextPage = () => {
                           </TooltipComponent>
                         </div>
                       )} */}
+                        </div>
                       </div>
+
+                      {getPinnedBlueprints().length > 0 && (
+                        <div className="flex flex-col gap-1">
+                          {getPinnedBlueprints().map((blueprint) => (
+                            <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
+                          ))}
+                        </div>
+                      )}
                     </div>
+                  )}
 
-                    {getPinnedBlueprints().length > 0 && (
-                      <div className="flex flex-col gap-1">
-                        {getPinnedBlueprints().map((blueprint) => (
-                          <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
-                        ))}
-                      </div>
-                    )}
+                  <div className="p-2 gap-1 flex flex-col">
+                    {data?.map((blueprint) => (
+                      <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
+                    ))}
                   </div>
-                )}
-
-                <div className="p-2 gap-1 flex flex-col">
-                  {data?.map((blueprint) => (
-                    <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
-                  ))}
                 </div>
-              </div>
+                <div className="h-20"></div>
+                <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
+                  <p>Back To Top</p>
+                  <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
+                </button>
+                <div className="h-20" />
+              </>
             )
           )}
           {data?.length === 0 && (
@@ -205,13 +217,13 @@ const BlueprintListItem: React.FC<{ id: string, pinned: boolean, name: string, d
       >
         <div className="w-3/2 tracking-tight md:w-3/5">
           <div className="flex gap-1 items-center justify-start">
-            { pinned && (
-                <div className="flex items-center justify-start gap-1">
-                  <TooltipComponent content="Pinned" side="bottom">
-                    <FlagIcon className="h-3 w-3 text-amber-500" />
-                  </TooltipComponent>
-                </div>
-              )}
+            {pinned && (
+              <div className="flex items-center justify-start gap-1">
+                <TooltipComponent content="Pinned" side="bottom">
+                  <FlagIcon className="h-3 w-3 text-amber-500" />
+                </TooltipComponent>
+              </div>
+            )}
             <h2 className="truncate text-left text-lg font-semibold tracking-tight">
               {name}
             </h2>
