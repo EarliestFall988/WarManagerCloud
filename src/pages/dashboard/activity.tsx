@@ -16,7 +16,6 @@ import { toast } from "react-hot-toast";
 import { type DropdownTagType } from "~/components/TagDropdown";
 import Select, { type MultiValue } from "react-select";
 import { InputComponent } from "~/components/input";
-import TooltipComponent from "~/components/Tooltip";
 dayjs.extend(relativeTime);
 
 const RecentActivityPage: NextPage = () => {
@@ -278,9 +277,9 @@ const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, pr
     <div className={`border-b border-zinc-700 ${severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""} p-2 `}>
 
       <div className="flex gap-2 items-start justify-start w-full">
-        <Image src={profileURl} className="h-12 w-12 rounded-full" width={64} height={64} alt={`${author}'s profile picture`} />
-        <div className="flex flex-col">
-          <div className="pb-2">
+        <Image src={profileURl} className="h-12 w-12 rounded-full select-none" width={64} height={64} alt={`${author}'s profile picture`} />
+        <div className="flex flex-col truncate">
+          <div className="pb-2 truncate">
             <div className="flex gap-2">
               <p className="text-sm text-zinc-500">{author}</p>
               <p className="text-sm text-zinc-500" >|</p>
@@ -291,23 +290,23 @@ const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, pr
               {
                 severity === "critical" && (
                   <div className="flex gap-1 items-center">
-                    <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
-                    <p className="text-xs text-yellow-500">Critical</p>
+                    <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500 select-none" />
+                    <p className="text-xs text-yellow-500 select-none">Critical</p>
                   </div>
                 )
               }
               {
                 severity === "moderate" && (
-                  <div className="flex gap-1 items-center">
+                  <div className="flex gap-1 items-center select-none">
                     <MegaphoneIcon className="h-4 w-4 text-blue-300" />
                     <p className="text-xs text-blue-300">Moderate</p>
                   </div>
                 )
               }
             </div>
-            <p className="text-sm">{description}</p>
+            <p className="text-sm w-full whitespace-pre-wrap">{description}</p>
           </div>
-          <div className="flex justify-start gap-2 -mx-2">
+          <div className="flex justify-start gap-2 -mx-2 select-none">
             {
               action === "url" && (
                 <Link href={link} passHref className="flex gap-1 items-center cursor-pointer rounded p-2 hover:bg-zinc-800 duration-100 transition-all">

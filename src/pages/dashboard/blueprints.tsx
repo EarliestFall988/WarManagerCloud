@@ -103,9 +103,7 @@ const BlueprintsListPage: NextPage = () => {
             </div>
           ) : (
             data.length > 0 && (
-
-
-              <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100">
+              <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100 select-none">
                 {!blueprintSearchTerm && getPinnedBlueprints().length > 0 && (
                   <div className="flex flex-col gap-1 p-2">
                     <div className="flex w-full items-center justify-between gap-1">
@@ -198,7 +196,7 @@ const BlueprintListItem: React.FC<{ id: string, pinned: boolean, name: string, d
   return (
     <div
       key={id}
-      className="flex w-full items-center justify-between gap-1 rounded-sm bg-zinc-700  hover:bg-zinc-600 transition-all duration-100 "
+      className="flex w-full items-center justify-between gap-1 rounded-sm bg-zinc-700  hover:bg-zinc-600 transition-all duration-100 select-none"
     >
       <Link
         href={`/blueprints/${id}`}
