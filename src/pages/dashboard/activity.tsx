@@ -361,21 +361,40 @@ const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, pr
     <div className={`border-b border-zinc-700 ${severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""} p-2 `}>
 
       <Link href={`/log/${id}`} className="flex gap-2 items-start justify-start w-full cursor-pointer">
-        <Image src={profileURl} className="h-12 w-12 rounded-full select-none" width={64} height={64} alt={`${author}'s profile picture`} />
+        <div className="hidden md:block">
+          <Image src={profileURl} className="h-12 w-12 flex-shrink-0 rounded-full select-none" width={32} height={32} alt={`${author}'s profile picture`} />
+        </div>
+        <div className="block flex-shrink-0 md:hidden">
+          <Image src={profileURl} className="h-10 w-10 rounded-full select-none" width={32} height={32} alt={`${author}'s profile picture`} />
+        </div>
         <div className="flex flex-col truncate">
           <div className="pb-2 truncate">
-            <div className="flex gap-2 pl-1">
+            <div className="flex gap-2 items-center">
+              {
+                (severity === "critical" || severity === "moderate") && (
+
+                  <div className="block md:hidden">
+                    {
+                      severity === "critical" && (
+                        <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500 select-none" />
+                      )
+                    }
+                    {
+                      severity === "moderate" && (
+                        <MegaphoneIcon className="h-4 w-4 text-blue-300" />
+                      )
+                    }
+                  </div>
+                )}
               <p className="text-sm text-zinc-500">{author}</p>
               <p className="text-sm text-zinc-500" >|</p>
               <p className="text-sm text-zinc-500">{dayjs(actionTime).fromNow()}</p>
             </div>
-            {/* <div className="hover:bg-zinc-800 rounded p-1"> */}
-            {/* <Link href={`/log/${id}`} className="cursor-pointer"> */}
             <div className="flex items-center justify-start gap-1">
               <p className="text-lg font-semibold pb-1">{name}</p>
               {
                 severity === "critical" && (
-                  <div className="flex gap-1 items-center">
+                  <div className="hidden md:flex gap-1 items-center">
                     <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500 select-none" />
                     <p className="text-xs text-yellow-500 select-none">Critical</p>
                   </div>
@@ -383,7 +402,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, pr
               }
               {
                 severity === "moderate" && (
-                  <div className="flex gap-1 items-center select-none">
+                  <div className="hidden md:flex gap-1 items-center select-none">
                     <MegaphoneIcon className="h-4 w-4 text-blue-300" />
                     <p className="text-xs text-blue-300">Moderate</p>
                   </div>
@@ -391,8 +410,6 @@ const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, pr
               }
             </div>
             <p className="text-sm w-full whitespace-pre-wrap">{description}</p>
-            {/* </Link> */}
-            {/* </div> */}
           </div>
           <div className="flex justify-start gap-2 select-none">
             {

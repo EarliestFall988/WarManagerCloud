@@ -137,7 +137,7 @@ const LogPage: NextPage<{ id: string }> = ({ id }) => {
                     </div>
                     <div className="p-4" />
                     <p className="m-2 text-2xl font-semibold border-b w-full border-zinc-700">Raw Data</p>
-                    <div className="p-2">
+                    <div className="p-2 overflow-x-auto">
                         <div className="flex gap-1 items-center w-full justify-between">
                             <p className="text-xl pb-1">{"Table"}</p>
                             {/* <TooltipComponent content="Copy link to clipboard" side={"top"} >
@@ -172,7 +172,9 @@ const LogPage: NextPage<{ id: string }> = ({ id }) => {
                                 </button>
                             </TooltipComponent>
                         </div>
-                        <p className="w-full p-1 bg-zinc-800 rounded whitespace-pre-wrap">{JSON.stringify(data, null, "\t")}</p>
+                        <div className="overflow-x-auto w-full bg-zinc-800 rounded">
+                            <p className="w-full p-1 whitespace-pre-wrap">{JSON.stringify(data, null, "\t")}</p>
+                        </div>
                     </div>
                     <div className="h-20"></div>
                     <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
