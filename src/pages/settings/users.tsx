@@ -43,9 +43,10 @@ const UsersSettingsPage: NextPage = () => {
                                 <div className="flex flex-col">
                                     <p className="text-lg text-zinc-200 font-semibold">{user.User.emailAddresses[0]?.emailAddress}</p>
                                     <p className="text-sm text-zinc-400">{user.User.firstName} {user.User.lastName}</p>
+                                    <p className="text-sm text-zinc-300 block md:hidden"><span className="text-xs text-zinc-500">Last Signed In:</span> {convertToTime(user.User.lastSignInAt || 0)}</p>
                                 </div>
                             </div>
-                            <div>
+                            <div className="hidden md:block">
                                 <p className="text-sm text-zinc-300"><span className="text-xs text-zinc-500">Last Signed In:</span> {convertToTime(user.User.lastSignInAt || 0)}</p>
                             </div>
                         </div>
