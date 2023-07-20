@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import Image from "next/image";
 import { SKCubeSpinner } from "~/components/loading";
 import SettingsLayout from "~/components/settingsSideMenu";
@@ -39,7 +39,7 @@ const UsersSettingsPage: NextPage = () => {
                     data?.map((user) => (
                         <div key={user.User.id} className="text-left flex items-center justify-between border-zinc-700 border-b p-2 mb-2">
                             <div className="flex p-1 gap-2 items-center">
-                                <Image src={user.User.profileImageUrl} width={50} height={50} className="rounded-full" alt={`${user.User.firstName} ${user.User.lastName}'s profile picture`} />
+                                <Image src={user.User.profileImageUrl} width={50} height={50} className="rounded-full" alt={`${user.User.firstName || ""} ${user.User.lastName || ""}'s profile picture`} />
                                 <div className="flex flex-col">
                                     <p className="text-lg text-zinc-200 font-semibold">{user.User.emailAddresses[0]?.emailAddress}</p>
                                     <p className="text-sm text-zinc-400">{user.User.firstName} {user.User.lastName}</p>

@@ -1,12 +1,16 @@
 import { useUser } from "@clerk/nextjs";
 import { type Tag } from "@prisma/client";
-import { TRPCClientError } from "@trpc/client";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 
 import { toast } from "react-hot-toast";
-import { ButtonCallToActionComponent, InputComponent, PhoneEmailComponent, TextareaComponent } from "~/components/input";
+import {
+  ButtonCallToActionComponent,
+  InputComponent,
+  PhoneEmailComponent,
+  TextareaComponent,
+} from "~/components/input";
 import { LoadingSpinner } from "~/components/loading";
 
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
@@ -14,9 +18,7 @@ import SignInModal from "~/components/signInPage";
 import { TagsMultiselectDropdown } from "~/components/TagDropdown";
 import { api } from "~/utils/api";
 
-
 const NewCrewMemberPage: NextPage = () => {
-
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -38,7 +40,6 @@ const NewCrewMemberPage: NextPage = () => {
   const [burdenError, setBurdenError] = useState("");
   const [ratingError, setRatingError] = useState("");
 
-
   // const canTravel = travel === "Yes";
   const wageNumber = parseFloat(wage);
   const burdenNumber = parseFloat(burden);
@@ -58,17 +59,17 @@ const NewCrewMemberPage: NextPage = () => {
       if (!errorMessage) {
         toast.error(e.message);
         return;
-      }
-      else {
-        toast.error("There were a few errors, please check the form and try again.")
+      } else {
+        toast.error(
+          "There were a few errors, please check the form and try again."
+        );
       }
 
       for (const key in errorMessage) {
         // toast.error(errorMessage?[key][0] || "there was an api error");
-        const keyMessage = errorMessage[key]
+        const keyMessage = errorMessage[key];
 
         if (keyMessage) {
-
           const message = keyMessage[0] || "";
 
           switch (key) {
@@ -99,8 +100,7 @@ const NewCrewMemberPage: NextPage = () => {
             default:
               break;
           }
-        }
-        else {
+        } else {
           toast.error("Something went wrong! Please try again later");
         }
       }
@@ -109,10 +109,7 @@ const NewCrewMemberPage: NextPage = () => {
 
   const { isLoaded, isSignedIn } = useUser();
 
-
-
   const save = useCallback(() => {
-
     setNameError("");
 
     setNotesError("");
@@ -128,7 +125,6 @@ const NewCrewMemberPage: NextPage = () => {
 
     setRatingError("");
 
-
     const getTagsStringArray = () => {
       const tagsStringArray = [] as string[];
       tags.forEach((tag) => {
@@ -139,7 +135,7 @@ const NewCrewMemberPage: NextPage = () => {
 
     toast.loading("Saving", { duration: 1000 });
 
-    console.log("phone", phone)
+    console.log("phone", phone);
 
     mutate({
       name,
@@ -152,8 +148,18 @@ const NewCrewMemberPage: NextPage = () => {
       rating: ratingNumber,
       tags: getTagsStringArray(),
     });
-  }, [name, notes, position, phone, email, wageNumber, burdenNumber, ratingNumber, mutate, tags]);
-
+  }, [
+    name,
+    notes,
+    position,
+    phone,
+    email,
+    wageNumber,
+    burdenNumber,
+    ratingNumber,
+    mutate,
+    tags,
+  ]);
 
   //redirect if the user is not found
   if (!isSignedIn && isLoaded) {
@@ -162,16 +168,32 @@ const NewCrewMemberPage: NextPage = () => {
 
   return (
     <main className="min-h-[100vh] bg-zinc-900">
-      <NewItemPageHeader title={` ${name ? name : "New Crew Member"}`} save={() => { save() }} saving={isCreating} cancel={() => void router.back()} />
+      <NewItemPageHeader
+        title={` ${name ? name : "New Crew Member"}`}
+        save={() => {
+          save();
+        }}
+        saving={isCreating}
+        cancel={() => void router.back()}
+      />
       <div className="m-auto flex flex-col md:w-1/2">
         <div className="w-full p-2">
           <p className="py-1 text-lg">Full Name</p>
-          <InputComponent error={nameError} value={name} onChange={(e) => { setName(e.currentTarget.value) }} placeholder="Name" disabled={isCreating} autoFocus />
+          <InputComponent
+            error={nameError}
+            value={name}
+            onChange={(e) => {
+              setName(e.currentTarget.value);
+            }}
+            placeholder="Name"
+            disabled={isCreating}
+            autoFocus
+          />
         </div>
         <div className="w-full p-2">
           <p className="py-1 text-lg">Position</p>
           <select
-            className="w-full ring-2 ring-zinc-700 rounded p-2 outline-none text-zinc-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800"
+            className="w-full rounded bg-zinc-800 p-2 text-zinc-200 outline-none ring-2 ring-zinc-700 transition-all duration-100 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 focus:ring-2 focus:ring-amber-700"
             placeholder="Name"
             value={position}
             disabled={isCreating}
@@ -187,51 +209,108 @@ const NewCrewMemberPage: NextPage = () => {
             <option value="Subcontractor">Subcontractor</option>
             <option value="Other">Other</option>
           </select>
+          <p className="py-2 text-red-500">{positionError}</p>
         </div>
         <div className="w-full p-2">
           <p className="py-1 text-lg font-semibold">Tags</p>
-          <TagsMultiselectDropdown type={"crews"} savedTags={tags} onSetTags={setTags} />
-        </ div>
+          <TagsMultiselectDropdown
+            type={"crews"}
+            savedTags={tags}
+            onSetTags={setTags}
+          />
+        </div>
         <div className="p-2" />
         <div className="w-full p-2">
           <p className="py-1 text-lg">Phone Number</p>
 
-          <PhoneEmailComponent value={phone} error={phoneError} onChange={(e) => { setPhone(e.currentTarget.value) }} type="tel" disabled={isCreating} />
+          <PhoneEmailComponent
+            value={phone}
+            error={phoneError}
+            onChange={(e) => {
+              setPhone(e.currentTarget.value);
+            }}
+            type="tel"
+            disabled={isCreating}
+          />
         </div>
         <div className="w-full p-2">
           <p className="py-1 text-lg">Email</p>
 
-          <PhoneEmailComponent value={email} error={emailError} onChange={(e) => { setEmail(e.currentTarget.value) }} type="email" disabled={isCreating} />
+          <PhoneEmailComponent
+            value={email}
+            error={emailError}
+            onChange={(e) => {
+              setEmail(e.currentTarget.value);
+            }}
+            type="email"
+            disabled={isCreating}
+          />
         </div>
         <div className="w-full p-2" />
 
         <div className="w-full p-2">
           <p className="py-1 text-lg">Wage</p>
 
-          <InputComponent error={wageError} type="number" value={wage} onChange={(e) => { setWage(e.currentTarget.value) }} placeholder="0.00" disabled={isCreating} />
+          <InputComponent
+            error={wageError}
+            type="number"
+            value={wage}
+            onChange={(e) => {
+              setWage(e.currentTarget.value);
+            }}
+            placeholder="0.00"
+            disabled={isCreating}
+          />
         </div>
 
         <div className="w-full p-2">
           <p className="py-1 text-lg">Burden</p>
 
-          <InputComponent error={burdenError} type="number" value={burden} onChange={(e) => { setBurden(e.currentTarget.value) }} placeholder="0.00" disabled={isCreating} />
+          <InputComponent
+            error={burdenError}
+            type="number"
+            value={burden}
+            onChange={(e) => {
+              setBurden(e.currentTarget.value);
+            }}
+            placeholder="0.00"
+            disabled={isCreating}
+          />
         </div>
         <div className="w-full p-2" />
         <div className="w-full p-2">
           <p className="py-1 text-lg">Rating</p>
 
-          <InputComponent error={ratingError} type="number" value={rating} onChange={(e) => { setRating(e.currentTarget.value) }} placeholder="0.00" disabled={isCreating} />
-
+          <InputComponent
+            error={ratingError}
+            type="number"
+            value={rating}
+            onChange={(e) => {
+              setRating(e.currentTarget.value);
+            }}
+            placeholder="0.00"
+            disabled={isCreating}
+          />
         </div>
         <div className="w-full p-2">
           <p className="py-1 text-lg">Notes</p>
 
-          <TextareaComponent error={notesError} value={notes} onChange={(e) => { setNotes(e.currentTarget.value) }} placeholder="Talk about anything - can this crew member operate a specific machine? Do they have a specific skill? can they speak a specific language or travel?" disabled={isCreating} />
+          <TextareaComponent
+            error={notesError}
+            value={notes}
+            onChange={(e) => {
+              setNotes(e.currentTarget.value);
+            }}
+            placeholder="Talk about anything - can this crew member operate a specific machine? Do they have a specific skill? can they speak a specific language or travel?"
+            disabled={isCreating}
+          />
         </div>
         <div className="w-full p-2" />
         <div className="w-full p-2">
-          <ButtonCallToActionComponent disabled={isCreating}
-            onClick={() => save()} >
+          <ButtonCallToActionComponent
+            disabled={isCreating}
+            onClick={() => save()}
+          >
             {isCreating ? <LoadingSpinner /> : <p>Create New Crew Member</p>}
           </ButtonCallToActionComponent>
         </div>
