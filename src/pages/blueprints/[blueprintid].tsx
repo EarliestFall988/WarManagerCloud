@@ -26,7 +26,11 @@ import {
   DeleteSelected,
   type IFlowInstance,
 } from "../../states/state";
-import { LoadingPage, LoadingPage2, LoadingSpinner } from "~/components/loading";
+import {
+  LoadingPage,
+  LoadingPage2,
+  LoadingSpinner,
+} from "~/components/loading";
 import {
   CrewList,
   ExportBlueprint,
@@ -97,7 +101,6 @@ const selector = (state: flowState) => ({
 //   }
 
 const BlueprintGUI = () => {
-
   const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
 
@@ -217,7 +220,6 @@ const BlueprintGUI = () => {
 
   const blueprint = useBlueprintStore.getState().blueprintInstance;
 
-
   if (!isLoaded || !blueprintId) {
     return <LoadingPage2 />;
   }
@@ -254,7 +256,11 @@ const BlueprintGUI = () => {
               <button
                 className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
                 onClick={() => {
-                  router.back();
+                  if (history.length > 0) router.back();
+                  else
+                    void router.push(
+                      `/dashboard/blueprints`
+                    );
                 }}
               >
                 <ArrowLeftIcon className="h-6 w-6" />
@@ -272,12 +278,17 @@ const BlueprintGUI = () => {
           <div className="flex w-1/2 items-center justify-end gap-1 sm:w-1/3 sm:gap-2">
             {blueprint.id && (
               <>
-                <TooltipComponent content="Share blueprint with other project managers" side="bottom">
+                <TooltipComponent
+                  content="Share blueprint with other project managers"
+                  side="bottom"
+                >
                   <button
                     disabled={isSaving}
-                    className="rounded flex bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
+                    className="flex rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
                     onClick={() => {
-                      void navigator.clipboard.writeText(`${window.location.href}`);
+                      void navigator.clipboard.writeText(
+                        `${window.location.href}`
+                      );
                       toast.success("Copied blueprint link to clipboard");
                     }}
                   >
@@ -314,8 +325,9 @@ const BlueprintGUI = () => {
             <>
               <FlowWithProvider blueprintId={blueprintId} />
               <div
-                className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700/80 drop-shadow-lg backdrop-blur-md transition-all duration-75 sm:gap-1 sm:p-1 ${toggle == "" ? "w-12" : " w-full md:w-[50vw] lg:w-[40vw]"
-                  }`}
+                className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700/80 drop-shadow-lg backdrop-blur-md transition-all duration-75 sm:gap-1 sm:p-1 ${
+                  toggle == "" ? "w-12" : " w-full md:w-[50vw] lg:w-[40vw]"
+                }`}
               >
                 <div className="w-full overflow-y-auto overflow-x-hidden ">
                   {toggle === "GetLink" && <ExportBlueprint />}
@@ -338,10 +350,11 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="Projects" side="left">
                     <button
                       onClick={() => ToggleMenu("Project")}
-                      className={`btn-add  z-20 rounded ${toggle == "Project"
-                        ? "bg-amber-800 hover:bg-amber-700"
-                        : "bg-zinc-600 hover:bg-zinc-500"
-                        }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${
+                        toggle == "Project"
+                          ? "bg-amber-800 hover:bg-amber-700"
+                          : "bg-zinc-600 hover:bg-zinc-500"
+                      }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <WrenchScrewdriverIcon className="h-6 w-6" />
                     </button>
@@ -349,10 +362,11 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="Crew Members" side="left">
                     <button
                       onClick={() => ToggleMenu("Employee")}
-                      className={`btn-add  z-20 rounded ${toggle == "Employee"
-                        ? "bg-amber-800 hover:bg-amber-700"
-                        : "bg-zinc-600 hover:bg-zinc-500"
-                        }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${
+                        toggle == "Employee"
+                          ? "bg-amber-800 hover:bg-amber-700"
+                          : "bg-zinc-600 hover:bg-zinc-500"
+                      }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <IdentificationIcon className="h-6 w-6" />
                     </button>
@@ -361,10 +375,11 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="Schedules" side="left">
                     <button
                       onClick={() => ToggleMenu("GetLink")}
-                      className={`btn-add  z-20 rounded ${toggle == "GetLink"
-                        ? "bg-amber-800 hover:bg-amber-700"
-                        : "bg-zinc-600 hover:bg-zinc-500"
-                        }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${
+                        toggle == "GetLink"
+                          ? "bg-amber-800 hover:bg-amber-700"
+                          : "bg-zinc-600 hover:bg-zinc-500"
+                      }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <DocumentTextIcon className="h-6 w-6" />
                     </button>
@@ -372,10 +387,11 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="Blueprint Stats" side="left">
                     <button
                       onClick={() => ToggleMenu("Stats")}
-                      className={`btn-add  z-20 rounded ${toggle == "Stats"
-                        ? "bg-amber-800 hover:bg-amber-700"
-                        : "bg-zinc-600 hover:bg-zinc-500"
-                        }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${
+                        toggle == "Stats"
+                          ? "bg-amber-800 hover:bg-amber-700"
+                          : "bg-zinc-600 hover:bg-zinc-500"
+                      }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <PresentationChartBarIcon className="h-6 w-6" />
                     </button>
@@ -384,10 +400,11 @@ const BlueprintGUI = () => {
                   <TooltipComponent content="More" side="left">
                     <button
                       onClick={() => ToggleMenu("More")}
-                      className={`btn-add  z-20 rounded ${toggle == "More"
-                        ? "bg-amber-800 hover:bg-amber-700"
-                        : "bg-zinc-600 hover:bg-zinc-500"
-                        }  p-2 py-4 hover:scale-105  sm:py-2`}
+                      className={`btn-add  z-20 rounded ${
+                        toggle == "More"
+                          ? "bg-amber-800 hover:bg-amber-700"
+                          : "bg-zinc-600 hover:bg-zinc-500"
+                      }  p-2 py-4 hover:scale-105  sm:py-2`}
                     >
                       <EllipsisHorizontalIcon className="h-6 w-6" />
                     </button>

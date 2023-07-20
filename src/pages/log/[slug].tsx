@@ -99,7 +99,7 @@ const LogPage: NextPage<{ id: string }> = ({ id }) => {
 
     return (
         <div className="min-h-[100vh] bg-zinc-900">
-            <NewItemPageHeader title={data.name} />
+            <NewItemPageHeader title={data.name} context={'activity'} />
             <div className="flex items-center justify-center w-full">
                 <div className="flex flex-col w-full lg:w-[50vw]">
                     <div className="p-2">
