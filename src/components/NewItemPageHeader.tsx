@@ -13,6 +13,25 @@ export const NewItemPageHeader: React.FC<{
 }> = ({ title, save, cancel, deleting, saving, context }) => {
   const router = useRouter();
 
+  const back = () => {
+
+    if (cancel !== undefined) {
+      cancel();
+    }
+
+    if (history.length > 1) {
+      router.back();
+      return;
+    }
+
+    if (context) {
+      void router.push(`/dashboard/${context}`); // if context exists
+      return;
+    }
+
+    void router.push("/dashboard/activity"); //default to activity
+  };
+
   return (
     <>
       <div className="fixed top-0 z-20 flex w-full select-none items-center justify-between border-b border-zinc-700 bg-zinc-800/90 p-2 text-center text-lg font-semibold shadow-lg backdrop-blur-md">
@@ -21,14 +40,7 @@ export const NewItemPageHeader: React.FC<{
             disabled={saving}
             className="rounded p-2 hover:bg-zinc-600 disabled:text-zinc-400"
             onClick={() => {
-              if (cancel !== undefined) {
-                cancel();
-              } else {
-                if (history.length > 0) router.back();
-                else if (context != null)
-                  void router.push(`/dashboard/${context}`);
-                else void router.push(`/dashboard/activity`);
-              }
+              back();
             }}
           >
             <ArrowLeftIcon className="h-6 w-6" />

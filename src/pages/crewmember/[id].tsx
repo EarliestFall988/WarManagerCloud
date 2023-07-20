@@ -235,7 +235,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="min-h-screen bg-zinc-900">
-        <NewItemPageHeader title={`${data.name} `} context={'crew'} save={save} saving={mutation.isLoading || isLoading} deleting={deletingCrew} cancel={() => void router.back()} />
+        <NewItemPageHeader title={`${data.name} `} context={'crew'} save={save} saving={mutation.isLoading || isLoading} deleting={deletingCrew} />
         <div className="flex items-center justify-center">
           <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-3/5">
             <div className="w-full p-2">

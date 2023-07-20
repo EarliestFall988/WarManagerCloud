@@ -327,7 +327,6 @@ const EditProjectPage = function ({ id }: { id: string }) {
         <NewItemPageHeader
           title={`${project?.name} (Project)`}
           save={SaveChanges}
-          cancel={() => void router.back()}
           saving={mutation.isLoading}
           deleting={isDeleting}
           context={'projects'}
