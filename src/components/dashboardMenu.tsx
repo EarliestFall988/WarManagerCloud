@@ -1,7 +1,7 @@
-import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon,  Cog6ToothIcon, DocumentIcon, NewspaperIcon, PlusIcon, TrashIcon, UserCircleIcon, UsersIcon, WrenchScrewdriverIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, ArrowRightOnRectangleIcon, Bars3Icon, Cog6ToothIcon, Cog8ToothIcon, DocumentIcon, NewspaperIcon, PlusIcon, TrashIcon, UserCircleIcon, UsersIcon, WrenchScrewdriverIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import TooltipComponent from "./Tooltip";
 import { LogoComponent } from "./RibbonLogo";
-import { SignOutButton, UserButton,  useUser } from "@clerk/nextjs";
+import { SignOutButton, UserButton, useUser } from "@clerk/nextjs";
 import { type FunctionComponent, useState, type ReactNode, useMemo } from "react";
 import { type NextRouter, useRouter } from "next/router";
 import { api } from "~/utils/api";
@@ -11,6 +11,7 @@ import Link from "next/link";
 import { LoadingSpinner } from "./loading";
 import * as Tabs from "@radix-ui/react-tabs";
 import Image from "next/image";
+import { interval } from "lib0/eventloop";
 
 type Props = {
     menuOpen?: boolean;
@@ -260,6 +261,7 @@ export const DashboardMenu = () => {
     const [context, setContext] = useState("Blueprints");
 
     const [toggleOpen, setToggleOpen] = useState(false);
+    const [over, setOver] = useState(false);
 
     const router = useRouter();
 
@@ -292,8 +294,19 @@ export const DashboardMenu = () => {
 
     const { user } = useUser();
 
+
     const setToggle = (open: boolean) => {
-        setToggleOpen(open);
+
+        if (open) {
+            setTimeout(function () {
+                if (over) {
+                    setToggleOpen(true);
+                }
+            }, 1000);
+        }
+        else {
+            setToggleOpen(false);
+        }
     };
 
     return (
@@ -301,13 +314,15 @@ export const DashboardMenu = () => {
             <div className="md:w-12"></div>
 
             <div
-                onMouseEnter={() => {
-                    setToggle(true);
-                }}
-                onMouseLeave={() => {
-                    setToggle(false);
-                }}
-                className={`hidden h-screen z-30 w-12 flex-col items-start justify-between overflow-x-clip border-r bg-zinc-800/90 border-zinc-700 backdrop-blur transition-all duration-75 hover:w-1/6 hover:shadow-xl md:fixed md:flex`}
+                // onMouseEnter={() => {
+                //     setToggle(true);
+                //     setOver(true);
+                // }}
+                // onMouseLeave={() => {
+                //     setOver(false);
+                //     setToggle(false);
+                // }}
+                className={`hidden h-screen z-30 w-12 flex-col items-start justify-between overflow-x-clip border-r bg-zinc-800/90 border-zinc-700 backdrop-blur transition-all duration-75 ${toggleOpen ? "hover:w-1/6 hover:shadow-xl" : ""}  md:fixed md:flex`}
             >
                 <div className="flex w-full flex-col items-center justify-start select-none">
                     <TooltipComponent content="See it all in context" side="right">
@@ -419,9 +434,26 @@ export const DashboardMenu = () => {
                     className={`flex w-full flex-col ${toggleOpen ? "" : "items-center justify-center select-none"
                         } truncate whitespace-nowrap`}
                 >
-                    <SettingsButton menuOpen={toggleOpen}>
+                    {/* <SettingsButton menuOpen={toggleOpen}>
                         <Settings />
-                    </SettingsButton>
+                    </SettingsButton> */}
+                    <TooltipComponent content="Settings" side="right">
+                        <button
+                            onClick={() => {
+                                setContext("Settings");
+                                // void router.push("/dashboard?context=Projects");
+                                void router.push("/settings/sectors")
+                            }}
+                            className={`flex w-full gap-1 p-2 font-semibold ${toggleOpen ? "justify-start" : "justify-center"
+                                } items-center transition-all duration-200 ${context === "Settings"
+                                    ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                                    : " border-b border-zinc-700 hover:bg-zinc-700"
+                                }`}
+                        >
+                            <Cog8ToothIcon className="h-6 w-6" />
+                            {toggleOpen && <p>Settings</p>}
+                        </button>
+                    </TooltipComponent>
                     <TooltipComponent content="Landing Page" side="right">
                         <div className="border-b border-zinc-700">
                             <Link
@@ -583,6 +615,16 @@ const MobileMenu: React.FC<{ context: string, router: NextRouter }> = ({ context
                                             }`}
                                     >
                                         <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
+                                    </button>
+                                </Dialog.DialogClose>
+                                <Dialog.DialogClose asChild>
+                                    <button
+                                        onClick={() => {
+                                            void router.push("/settings/sectors")
+                                        }}
+                                        className={`w-full p-3 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2`}
+                                    >
+                                        <Cog8ToothIcon className="h-6 w-6 " /> Settings
                                     </button>
                                 </Dialog.DialogClose>
                                 {/* <Dialog.DialogClose asChild>

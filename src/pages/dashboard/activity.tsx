@@ -412,7 +412,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({ action, severity, pr
 
       <Link href={`/log/${id}`} className="flex gap-2 items-start justify-start w-full cursor-pointer">
         <div className="hidden md:block">
-          <Image src={profileURl} className="h-12 w-12 flex-shrink-0 rounded-full select-none" width={32} height={32} alt={`${author}'s profile picture`} />
+          <Image src={profileURl} className="h-12 w-12 flex-shrink-0 rounded-full select-none" width={48} height={48} alt={`${author}'s profile picture`} />
         </div>
         <div className="block flex-shrink-0 md:hidden">
           <Image src={profileURl} className="h-10 w-10 rounded-full select-none" width={32} height={32} alt={`${author}'s profile picture`} />
