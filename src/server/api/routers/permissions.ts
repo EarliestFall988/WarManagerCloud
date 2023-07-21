@@ -6,7 +6,6 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { clerkClient } from "@clerk/nextjs";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
 import { type Permissions } from "@prisma/client";
-import { add } from "lib0/indexeddb";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -60,12 +59,15 @@ const addUserToPermissions = async (permission: Permissions[]) => {
 export const permissionsRouter = createTRPCRouter({
   getAllPermissions: privateProcedure.query(async ({ ctx }) => {
     const permissions = await ctx.prisma.permissions.findMany({
+      include: {
+        keywords: true,
+      },
       take: 100,
       orderBy: {
         name: "asc",
       },
     });
-    return addUserToPermissions(permissions);
+    return permissions;
   }),
 
   getPermissionWithId: privateProcedure
@@ -76,6 +78,9 @@ export const permissionsRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const permission = await ctx.prisma.permissions.findUnique({
+        include: {
+          keywords: true,
+        },
         where: {
           id: input.id,
         },
@@ -99,6 +104,10 @@ export const permissionsRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const permissions = await ctx.prisma.permissions.findMany({
+        include:
+        {
+          keywords: true,
+        },
         where: {
           OR: [
             {
@@ -111,17 +120,12 @@ export const permissionsRouter = createTRPCRouter({
                 contains: input.searchTerm,
               },
             },
-            {
-              keywords: {
-                contains: input.searchTerm,
-              },
-            },
           ],
         },
         take: 100,
       });
 
-      return addUserToPermissions(permissions);
+      return permissions;
     }),
 
   createPermission: privateProcedure
@@ -144,14 +148,7 @@ export const permissionsRouter = createTRPCRouter({
             "The length of the description must be shorter than 250 characters"
           )
           .optional(),
-        keywords: z
-          .object({
-            value: z.number(),
-            label: z.string(),
-            color: z.string(),
-          })
-          .array()
-          .min(1, "You must include at least one keyword"),
+        keywords: z.string().array().min(1, "you must have at least one keyword"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -166,12 +163,20 @@ export const permissionsRouter = createTRPCRouter({
         });
       }
 
+
       const permissions = await ctx.prisma.permissions.create({
+        include: {
+          keywords: true,
+        },
         data: {
           name: input.name,
           description: input.description || "",
           authorId,
-          keywords: JSON.stringify(input.keywords),
+          keywords: {
+            connect: input.keywords.map((keyword) => ({
+              id: keyword,
+            })),
+          }
         },
       });
 
@@ -199,8 +204,6 @@ export const permissionsRouter = createTRPCRouter({
         });
       }
 
-      const keywords = JSON.stringify(input.keywords);
-
       const permissions = await ctx.prisma.permissions.update({
         where: {
           id: input.id,
@@ -208,7 +211,6 @@ export const permissionsRouter = createTRPCRouter({
         data: {
           name: input.name,
           description: input.description,
-          keywords,
           authorId,
         },
       });

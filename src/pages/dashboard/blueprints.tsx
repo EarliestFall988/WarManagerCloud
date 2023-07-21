@@ -4,7 +4,7 @@ import type { NextPage } from "next";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import TooltipComponent from "~/components/Tooltip";
-import { LoadingHeader, LoadingPage2 } from "~/components/loading";
+import { LoadingHeader, LoadingPage2, LoadingSpinner } from "~/components/loading";
 import { api } from "~/utils/api";
 
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -15,11 +15,14 @@ import Head from "next/head";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { DialogComponent } from "~/components/dialog";
 import { toast } from "react-hot-toast";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 dayjs.extend(relativeTime);
 
 const BlueprintsListPage: NextPage = () => {
   const { isSignedIn, isLoaded } = useUser();
+
+  const [animationParent] = useAutoAnimate();
 
   const [blueprintSearchTerm, setBlueprintSearchTerm] = useState("");
 
@@ -93,29 +96,29 @@ const BlueprintsListPage: NextPage = () => {
               </Link>
             </TooltipComponent>
           </div>
-
-          {loadingBlueprints ? (
-            <LoadingHeader
-              loading={loadingBlueprints}
-              title="Loading Blueprints"
-            />
-          ) : loadingBlueprintsError || !data ? (
-            <div className="flex w-full items-center justify-center">
-              <p className="text-lg italic text-red-500">
-                Could not load blueprints
-              </p>
-            </div>
-          ) : (
-            data.length > 0 && (
-              <>
-                <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100 select-none">
-                  {!blueprintSearchTerm && getPinnedBlueprints().length > 0 && (
-                    <div className="flex flex-col gap-1 p-2">
-                      <div className="flex w-full items-center justify-between gap-1">
-                        <p className="text-lg font-bold text-zinc-300">Pinned Blueprints</p>
-                        <div className="flex items-center gap-2">
-                          <p className="text-lg font-bold text-zinc-300">{getPinnedBlueprints().length} Pinned</p>
-                          {/* {getPinnedBlueprints().length > 0 && (
+          <div ref={animationParent} className="w-full h-full" >
+            {loadingBlueprints ? (
+              <div className="h-[100vh] w-full flex flex-col gap-2 justify-center items-center">
+                <LoadingSpinner />
+                <p className="text-zinc-600 font-semibold">Loading Blueprints</p>
+              </div>
+            ) : loadingBlueprintsError || !data ? (
+              <div className="flex w-full items-center justify-center">
+                <p className="text-lg italic text-red-500">
+                  Could not load blueprints
+                </p>
+              </div>
+            ) : (
+              data.length > 0 && (
+                <>
+                  <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100 select-none">
+                    {!blueprintSearchTerm && getPinnedBlueprints().length > 0 && (
+                      <div className="flex flex-col gap-1 p-2">
+                        <div className="flex w-full items-center justify-between gap-1">
+                          <p className="text-lg font-bold text-zinc-300">Pinned Blueprints</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-lg font-bold text-zinc-300">{getPinnedBlueprints().length} Pinned</p>
+                            {/* {getPinnedBlueprints().length > 0 && (
                         <div className="flex gap-1">
                           <TooltipComponent content="Unpin All" side="bottom">
                             <button
@@ -130,41 +133,42 @@ const BlueprintsListPage: NextPage = () => {
                           </TooltipComponent>
                         </div>
                       )} */}
+                          </div>
                         </div>
+
+                        {getPinnedBlueprints().length > 0 && (
+                          <div className="flex flex-col gap-1">
+                            {getPinnedBlueprints().map((blueprint) => (
+                              <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
+                            ))}
+                          </div>
+                        )}
                       </div>
+                    )}
 
-                      {getPinnedBlueprints().length > 0 && (
-                        <div className="flex flex-col gap-1">
-                          {getPinnedBlueprints().map((blueprint) => (
-                            <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
-                          ))}
-                        </div>
-                      )}
+                    <div className="p-2 gap-1 flex flex-col">
+                      {data?.map((blueprint) => (
+                        <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
+                      ))}
                     </div>
-                  )}
-
-                  <div className="p-2 gap-1 flex flex-col">
-                    {data?.map((blueprint) => (
-                      <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
-                    ))}
                   </div>
-                </div>
-                <div className="h-20"></div>
-                <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
-                  <p>Back To Top</p>
-                  <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
-                </button>
-                <div className="h-20" />
-              </>
-            )
-          )}
-          {data?.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-2">
-              <p className="text-xl font-bold text-zinc-300">
-                No Blueprints matching your search {`'${blueprintSearchTerm}'`}
-              </p>
-            </div>
-          )}
+                  <div className="h-20"></div>
+                  <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
+                    <p>Back To Top</p>
+                    <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
+                  </button>
+                  <div className="h-20" />
+                </>
+              )
+            )}
+            {data?.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-2">
+                <p className="text-xl font-bold text-zinc-300">
+                  No Blueprints matching your search {`'${blueprintSearchTerm}'`}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

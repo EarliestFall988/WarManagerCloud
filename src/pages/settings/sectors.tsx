@@ -62,7 +62,7 @@ const SectorsSettingsPage: NextPage = () => {
                     <TooltipComponent content="Add Sector" side="right">
                         <Link
                             href="/sectors/new"
-                            className="rounded bg-amber-700 p-2 transition-all duration-100 hover:scale-105 hover:bg-amber-600"
+                            className="rounded p-2 transition-all duration-100 hover:scale-105 hover:bg-zinc-700"
                         >
                             <PlusIcon className="h-6 w-6 text-zinc-100" />
                         </Link>

@@ -19,7 +19,7 @@ import { toast } from "react-hot-toast";
 import { TagBubble } from "~/components/TagComponent";
 import { TagsPopover } from "~/components/TagDropdown";
 import { SimpleDropDown } from "~/components/dropdown";
-import { LoadingHeader, LoadingPage2 } from "~/components/loading";
+import { LoadingHeader, LoadingPage2, LoadingSpinner } from "~/components/loading";
 import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -127,19 +127,21 @@ const CrewMembersPage: NextPage = () => {
               <CrewMemberLinks className="flex gap-1" />
             </SimpleDropDown>
           </div>
-
-          {isLoading ? (
-            <LoadingHeader loading={isLoading} title="Loading Crew Members" />
-          ) : loadingCrewError || !crewData ? (
-            <div className="flex w-full flex-col items-center justify-center gap-2 rounded p-2">
-              <p className="italic text-red-500">could not load data</p>
-            </div>
-          ) : (
-            <>
-              <div
-                ref={animationParent}
-                className="flex flex-col items-start justify-start gap-1 border-t border-zinc-700 p-2 text-gray-100"
-              >
+          <div
+            ref={animationParent}
+            className="flex flex-col items-start justify-start gap-1 border-t border-zinc-700 p-2 text-gray-100"
+          >
+            {isLoading ? (
+              <div className="flex flex-col gap-2 w-full h-[100vh] justify-center items-center">
+                <LoadingSpinner />
+                <p className="text-zinc-600 font-semibold" >Loading Crew Members</p>
+              </div>
+            ) : loadingCrewError || !crewData ? (
+              <div className="flex w-full flex-col items-center justify-center gap-2 rounded p-2">
+                <p className="italic text-red-500">could not load data</p>
+              </div>
+            ) : (
+              <>
                 {crewData.length > 0 &&
                   crewData?.map((crewMember) => (
                     <CrewMemberItem
@@ -165,19 +167,20 @@ const CrewMembersPage: NextPage = () => {
                     </Link>
                   </div>
                 )}
-              </div>
 
-              <div className="h-20"></div>
-              <button
-                onClick={scrollToTop}
-                className="flex w-full items-center justify-center gap-2"
-              >
-                <p>Back To Top</p>
-                <ArrowLongUpIcon className="h-5 w-5 text-zinc-400 hover:text-zinc-200" />
-              </button>
-              <div className="h-20" />
-            </>
-          )}
+
+                <div className="h-20"></div>
+                <button
+                  onClick={scrollToTop}
+                  className="flex w-full items-center justify-center gap-2"
+                >
+                  <p>Back To Top</p>
+                  <ArrowLongUpIcon className="h-5 w-5 text-zinc-400 hover:text-zinc-200" />
+                </button>
+                <div className="h-20" />
+              </>
+            )}
+          </div>
         </div>
       </main>
     </>
@@ -251,8 +254,8 @@ const CrewMemberItem: FC<{
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
-          <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-700 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
-            <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-700" />
+          <DropdownMenu.Content className="TooltipContent rounded border border-zinc-500 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
+            <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-500" />
 
             <div className="hidden md:block">
               <DropdownMenu.Item
@@ -277,17 +280,17 @@ const CrewMemberItem: FC<{
               </DropdownMenu.Item>
               <DropdownMenu.Item asChild className="select-none">
                 <button
-                  className="flex w-full items-center justify-start gap-2 border-b border-zinc-600 px-1 py-2 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
+                  className="flex w-full items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
                   onClick={(e) => {
                     e.preventDefault();
                     copy(
                       `${window.location.origin}/crewmember/${crewMember.id}`,
-                      `User Link `
+                      `Crew Member Link `
                     );
                   }}
                 >
                   <LinkIcon className="h-5 w-5 text-zinc-200 " />
-                  Share User
+                  Share Crew Member
                 </button>
               </DropdownMenu.Item>
             </div>
@@ -317,12 +320,12 @@ const CrewMemberItem: FC<{
                     e.preventDefault();
                     copy(
                       `${window.location.origin}/crewmember/${crewMember.id}`,
-                      `User Link `
+                      `Crew Member Link `
                     );
                   }}
                 >
                   <LinkIcon className="h-5 w-5 text-zinc-200 " />
-                  Share User
+                  Share Crew Member
                 </button>
               </DropdownMenu.Item>
             </div>

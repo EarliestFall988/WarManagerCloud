@@ -32,7 +32,7 @@ const TooltipComponent: FunctionComponent<Props> = (props) => {
         <Tooltip.Trigger asChild>{props.children}</Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content
-            className="TooltipContent text-semibold z-30 rounded-md bg-black/60 p-2 text-white drop-shadow-lg backdrop-blur-sm border border-zinc-500"
+            className="TooltipContent hidden md:block text-semibold z-30 rounded-md bg-black/60 p-2 text-white drop-shadow-lg backdrop-blur-sm border border-zinc-500"
             side={props.side}
             sideOffset={5}
           >

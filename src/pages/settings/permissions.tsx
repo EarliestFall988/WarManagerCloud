@@ -10,7 +10,7 @@ import SettingsLayout from "~/components/settingsSideMenu";
 import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
-import { InputComponent } from "~/components/input";
+import { ButtonDeleteAction, InputComponent } from "~/components/input";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import Select from "react-select";
 import { type DropdownTagType } from "~/components/TagDropdown";
@@ -18,14 +18,21 @@ import { type MultiValue } from "react-select";
 import { toast } from "react-hot-toast";
 import autoAnimate from "@formkit/auto-animate";
 import TooltipComponent from "~/components/Tooltip";
+import type { PermissionKey, Permissions } from "@prisma/client";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const PermissionsSettingsPage: NextPage = () => {
-  const { user, isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [animationParent] = useAutoAnimate();
 
   const { data, isLoading, isError } =
-    api.permissions.getAllPermissions.useQuery();
-
-  console.log("data", data);
+    api.permissions.searchPermissions.useQuery(
+      {
+        searchTerm,
+      }
+    );
 
   if (!isLoaded) {
     return <LoadingPage2 />;
@@ -45,67 +52,92 @@ const PermissionsSettingsPage: NextPage = () => {
     );
   }
 
-  const keywords = (data: string) => {
-    return JSON.parse(data) as DropdownTagType[];
-  };
+
 
   return (
     <SettingsLayout>
       <div className="min-h-[30vh]">
-        <div className="flex items-center justify-between rounded bg-zinc-700 pl-1 font-semibold text-zinc-200">
-          {isLoading && <LoadingSpinner />}
-          {!isLoading && data && data.length === 0 && (
-            <p>No permissions found</p>
-          )}
-          {!isLoading && data && data.length > 0 && (
-            <p>Permissions found: {data.length}</p>
-          )}
-          <NewPermissionsModal />
+        <div className="flex items-center gap-2 justify-between border-b border-zinc-700 pb-2 font-semibold text-zinc-200">
+          <input type="text" autoFocus placeholder="Search Permissions" value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); }} className="p-2 rounded bg-zinc-700 border border-zinc-500 text-zinc-200 hover:ring-1 hover:ring-amber-600 focus:ring-2 focus:ring-amber-600 w-full duration-100 transition-all outline-none" />
+          <PermissionsModal newPermission={true} className="rounded p-2 hover:bg-zinc-600" >
+            <PlusIcon className="h-6 w-6 text-zinc-100" />
+          </PermissionsModal>
         </div>
-        {data?.map((permission) => (
-          <div
-            key={permission.id}
-            className="mb-2 flex select-none items-center justify-between border-b border-zinc-700 p-2"
-          >
-            <div className="flex w-full items-center justify-between gap-2 p-1">
-              <div className="flex flex-col">
-                <div className="flex flex-wrap items-center justify-start gap-1">
-                  <p className="text-lg font-semibold text-zinc-200">
-                    {permission.name}
-                  </p>
-                  {keywords(permission.keywords).map((keyword) => (
-                    <div
-                      key={keyword.value}
-                      className={`rounded border ${keyword.color} flex items-center whitespace-nowrap rounded-xl px-2 text-xs`}
-                    >
-                      {keyword.label}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-1">
-                  <p className="text-sm text-zinc-400">
-                    {permission.description || "<no description>"}
-                  </p>
-                  <p className="text-sm text-zinc-400">{"|"}</p>
-                  <p className="text-sm text-zinc-400">
-                    {permission.user?.email || "<no user>"}
-                  </p>
-                </div>
+        <div ref={animationParent}>
+          {data?.map((permission) => (
+            <PermissionsListItem key={permission.id} permission={permission} keywords={permission.keywords} />
+          ))}
+          {
+            data?.length === 0 && (
+              <div className="flex h-[30vh] items-center justify-center  text-zinc-500">
+                <p>No permissions found</p>
               </div>
-              <div>
-                <p className="hidden text-sm font-semibold text-zinc-300 md:block">
-                  {permission.updatedAt.toDateString()}
-                </p>
+            )}
+          {
+            isLoading && (
+              <div className="flex h-[30vh] items-center justify-center">
+                <LoadingSpinner />
               </div>
-            </div>
-          </div>
-        ))}
+            )
+          }
+        </div>
       </div>
     </SettingsLayout>
   );
 };
 
-const NewPermissionsModal = () => {
+
+const PermissionsListItem: React.FC<{ permission: Permissions, keywords?: PermissionKey[] }> = ({ permission, keywords }) => {
+
+  return (
+    <PermissionsModal newPermission={false} className="w-full" permissionData={permission} keywordData={keywords} >
+      <div
+        key={permission.id}
+        className="mb-2 flex select-none items-center justify-between border-b border-zinc-700 p-2"
+      >
+        <div className="flex w-full items-center justify-between gap-2 p-1">
+          <div className="flex flex-col">
+            <div className="flex flex-wrap items-center justify-start gap-1">
+
+              <p className="text-lg font-semibold text-zinc-200">
+                {permission.name}
+              </p>
+              {
+                keywords?.map((keyword) => (
+                  <div
+                    key={keyword.id}
+                    className={`rounded border ${keyword.color} flex items-center whitespace-nowrap rounded-xl px-2 text-xs`}
+                  >
+                    {keyword.name}
+                  </div>
+                ))
+              }
+            </div>
+            <div className="flex gap-1">
+              <p className="text-sm text-zinc-400">
+                {permission.description || "<no description>"}
+              </p>
+            </div>
+
+          </div>
+          <div>
+            <p className="hidden text-sm text-zinc-300 md:block">
+              {permission.updatedAt.toDateString()}
+            </p>
+          </div>
+        </div>
+      </div>
+    </PermissionsModal>
+  )
+}
+
+type errorMessageType = {
+  [x: string]: string[] | undefined;
+  [x: number]: string[] | undefined;
+  [x: symbol]: string[] | undefined;
+} | undefined
+
+const PermissionsModal: React.FC<{ newPermission: boolean, children: React.ReactNode, className: string, permissionData?: Permissions, keywordData?: PermissionKey[] }> = ({ newPermission, children, className, permissionData, keywordData }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [keywords, setKeywords] = useState<DropdownTagType[]>([]);
@@ -117,6 +149,34 @@ const NewPermissionsModal = () => {
   const [keywordError, setKeywordError] = useState("");
 
   const permissionsContext = api.useContext().permissions;
+
+  const handleError = useCallback((errorMessage: errorMessageType) => {
+
+    for (const key in errorMessage) {
+      // toast.error(errorMessage?[key][0] || "there was an api error");
+      const keyMessage = errorMessage[key];
+
+      if (keyMessage) {
+        const message = keyMessage[0] || "";
+
+        switch (key) {
+          case "name":
+            setNameError(message);
+            break;
+          case "description":
+            setDescriptionError(message);
+            break;
+          case "keywords":
+            setKeywordError(message);
+          default:
+            // toast.error(message);
+            break;
+        }
+      } else {
+        toast.error("Something went wrong! Please try again later");
+      }
+    }
+  }, []);
 
   const { mutate, isLoading: isSaving } =
     api.permissions.createPermission.useMutation({
@@ -137,32 +197,76 @@ const NewPermissionsModal = () => {
           );
         }
 
-        for (const key in errorMessage) {
-          // toast.error(errorMessage?[key][0] || "there was an api error");
-          const keyMessage = errorMessage[key];
-
-          if (keyMessage) {
-            const message = keyMessage[0] || "";
-
-            switch (key) {
-              case "name":
-                setNameError(message);
-                break;
-              case "description":
-                setDescriptionError(message);
-                break;
-              case "keywords":
-                setKeywordError(message);
-              default:
-                // toast.error(message);
-                break;
-            }
-          } else {
-            toast.error("Something went wrong! Please try again later");
-          }
-        }
+        handleError(errorMessage);
       },
     });
+
+  const { mutate: update, isLoading: isUpdating } =
+    api.permissions.updatePermission.useMutation({
+      onSuccess: () => {
+        toast.success("Permission created successfully");
+        setDialogOpen(false);
+        void permissionsContext.invalidate();
+      },
+      onError: (e) => {
+        const errorMessage = e.shape?.data?.zodError?.fieldErrors;
+
+        if (!errorMessage) {
+          toast.error(e.message);
+          return;
+        } else {
+          toast.error(
+            "There were a few errors, please check the form and try again."
+          );
+        }
+
+        handleError(errorMessage);
+      },
+    });
+
+  const { mutate: deletePermission, isLoading: isDeleting } =
+    api.permissions.deletePermissions.useMutation({
+      onSuccess: () => {
+        toast.success("Permission deleted successfully");
+        setDialogOpen(false);
+        void permissionsContext.invalidate();
+      }
+    });
+
+
+  const deletePermissionCallback = useCallback(() => {
+
+    if (permissionData) {
+      deletePermission({
+        id: permissionData?.id
+      });
+    }
+
+  }, [deletePermission, permissionData]);
+
+  useEffect(() => {
+
+    if (permissionData && keywordData && !newPermission) {
+      setName(permissionData.name);
+      setDescription(permissionData.description);
+
+      const newKeywords = keywordData?.map((keyword) => ({
+        value: keyword.id,
+        label: keyword.name,
+        color: keyword.color,
+      })) as DropdownTagType[];
+
+      console.log(newKeywords);
+
+      setKeywords(newKeywords);
+    }
+    else {
+      setName("");
+      setDescription("");
+      setKeywords([]);
+    }
+
+  }, []);
 
   const parent = useRef(null);
 
@@ -170,14 +274,8 @@ const NewPermissionsModal = () => {
     parent.current && autoAnimate(parent.current, { duration: 200 });
   }, []);
 
-  const SaveChanges = useCallback(() => {
-    const data = keywords.map((keyword) => {
-      return {
-        value: parseInt(keyword.value),
-        color: keyword.color,
-        label: keyword.label,
-      };
-    });
+  const SaveChanges = useCallback((newPermission: boolean) => {
+    const data = keywords.map((keyword) => keyword.value);
 
     console.log(name);
 
@@ -185,12 +283,24 @@ const NewPermissionsModal = () => {
     setDescriptionError("");
     setKeywordError("");
 
-    mutate({
-      name,
-      description,
-      keywords: data,
-    });
-  }, [mutate, name, description, keywords]);
+    if (newPermission) {
+      mutate({
+        name,
+        description,
+        keywords: data,
+      });
+    } else {
+
+      if (permissionData !== null && permissionData !== undefined) {
+        update({
+          id: permissionData.id,
+          name,
+          description,
+          keywords: data,
+        });
+      }
+    }
+  }, [mutate, name, description, keywords, update, permissionData]);
 
   return (
     <Dialog.Root open={dialogOpen}>
@@ -199,21 +309,27 @@ const NewPermissionsModal = () => {
           onClick={() => {
             setDialogOpen(true);
           }}
-          className="rounded p-2 hover:bg-zinc-600"
+          className={className}
         >
-          <PlusIcon className="h-6 w-6 text-zinc-100" />
+          {children}
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 top-0 z-30 backdrop-blur-sm data-[state=open]:animate-overlayDrawerShow md:bg-black/10" />
+        <button className="cursor-default"
+          onClick={() => {
+            setDialogOpen(false);
+          }}
+        >
+          <Dialog.Overlay className="fixed inset-0 top-0 z-30 backdrop-blur-sm data-[state=open]:animate-overlayDrawerShow md:bg-black/10" />
+        </button>
         {/* <div className="fixed top-0 data-[state=open]:animate-contentShow inset-0 z-30 flex items-center justify-center"> */}
         <Dialog.Content className="fixed right-[-50%] top-[50%] z-30 h-[100vh] w-[100vw] translate-x-[-50%] translate-y-[-50%] rounded-lg  border-l border-zinc-700 bg-zinc-900 p-4 focus:outline-none data-[state=open]:animate-slide lg:right-[-25%] lg:w-[50vw]">
           <div ref={parent}>
-            {!isSaving && (
+            {!(isSaving || isUpdating || isDeleting) && (
               <div>
                 <div className="flex items-center justify-between">
                   <Dialog.Title className="select-none text-2xl font-semibold text-zinc-200">
-                    Create New Permission
+                    {newPermission ? "Create New Permission" : "Edit Permission"}
                   </Dialog.Title>
                   {/* <Dialog.Description className="text-md select-none tracking-tight text-white"></Dialog.Description> */}
                   <div className="flex justify-end gap-2">
@@ -289,16 +405,22 @@ const NewPermissionsModal = () => {
                     side="left"
                   >
                     <div
-                      className={`${
-                        keywordError
-                          ? "rounded border-b-2 border-red-500 pb-[2px]"
-                          : ""
-                      }`}
+                      className={`${keywordError
+                        ? "rounded border-b-2 border-red-500 pb-[2px]"
+                        : ""
+                        }`}
                     >
                       <KeywordsMultiSelect
                         OnSetKeywords={(e) => {
                           setKeywords(e);
                         }}
+                        newKeywords={
+                          keywordData?.map((keyword) => ({
+                            value: keyword.id,
+                            label: keyword.name,
+                            color: keyword.color,
+                          })) as DropdownTagType[]
+                        }
                       />
                     </div>
                   </TooltipComponent>
@@ -307,11 +429,11 @@ const NewPermissionsModal = () => {
                 <div className="flex gap-2 p-2">
                   <button
                     onClick={() => {
-                      SaveChanges();
+                      SaveChanges(newPermission);
                     }}
                     className="rounded bg-amber-800 p-2 text-zinc-100 transition-all duration-100 hover:bg-amber-700"
                   >
-                    Create Permission
+                    {newPermission ? "Create" : "Save Changes"}
                   </button>
                   <Dialog.Close asChild>
                     <button
@@ -324,10 +446,15 @@ const NewPermissionsModal = () => {
                     </button>
                   </Dialog.Close>
                 </div>
+                {
+                  !newPermission && (
+                    <ButtonDeleteAction title="Delete Permission" yes={() => { deletePermissionCallback(); }} description="Are you sure you want to delete this permission?" disabled={false} loading={false} />
+                  )
+                }
               </div>
             )}
-            {isSaving && (
-              <div className="flex h-full w-full items-center justify-center">
+            {(isSaving || isUpdating || isDeleting) && (
+              <div className="flex h-[100vh] w-full items-center justify-center">
                 <LoadingSpinner />
               </div>
             )}
@@ -340,59 +467,31 @@ const NewPermissionsModal = () => {
 
 const KeywordsMultiSelect: React.FC<{
   OnSetKeywords: (e: DropdownTagType[]) => void;
-}> = ({ OnSetKeywords }) => {
+  newKeywords?: DropdownTagType[];
+}> = ({ OnSetKeywords, newKeywords }) => {
   const [currentTags, setCurrentTags] = useState<DropdownTagType[]>([]);
   const [allTags, setAllTags] = useState<DropdownTagType[]>([]);
 
-  useMemo(() => {
-    setAllTags([
-      {
-        value: "1",
-        label: "View/Edit/Delete Crews",
-        color: "border-green-500 text-green-500",
-      },
-      {
-        value: "2",
-        label: "View/Edit/Delete Blueprints",
-        color: "border-purple-500 text-purple-500",
-      },
-      {
-        value: "3",
-        label: "View/Edit/Delete Projects",
-        color: "border-red-500 text-red-500",
-      },
-      {
-        value: "4",
-        label: "Download Data",
-        color: "border-orange-500 text-orange-500",
-      },
-      {
-        value: "5",
-        label: "View/Edit/Delete Users",
-        color: "border-sky-500 text-sky-500",
-      },
-      {
-        value: "6",
-        label: "Beta Tester 🧪",
-        color: "border-yellow-500 text-yellow-500",
-      },
-      {
-        value: "7",
-        label: "Mostly Office Work 👨🏻‍💻",
-        color: "border-zinc-300 text-zinc-300 ",
-      },
-      {
-        value: "8",
-        label: "Mostly Field Work 🏃",
-        color: "border-orange-500 text-orange-500",
-      },
-      {
-        value: "9",
-        label: "Executive Level Access",
-        color: "border-teal-500 text-cyan-300",
-      },
-    ]);
+  const { data, isLoading, isError } = api.permissionsKeys.getAllKeys.useQuery();
+
+  useEffect(() => {
+
+    if (newKeywords) {
+      setCurrentTags(newKeywords);
+    }
+
   }, []);
+
+  useMemo(() => {
+    if (data) {
+      setAllTags(data.map((tag) => ({
+        value: tag.id,
+        label: tag.name,
+        color: tag.color,
+      })) as DropdownTagType[]);
+    }
+  }, [data]);
+
 
   const onChange = useCallback(
     (
@@ -420,46 +519,50 @@ const KeywordsMultiSelect: React.FC<{
   );
 
   return (
-    <Select
-      closeMenuOnSelect={false}
-      defaultValue={currentTags}
-      isMulti
-      name="currentTags"
-      options={allTags}
-      value={currentTags}
-      classNamePrefix="select"
-      className="w-full rounded bg-zinc-800 text-zinc-300 outline-none ring-2 ring-zinc-700 transition-all duration-100 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 focus:ring-2 focus:ring-amber-700"
-      onChange={(e) => {
-        onChange(e);
-      }}
-      unstyled
-      placeholder={"Add Keywords..."}
-      classNames={{
-        valueContainer(props) {
-          return `flex flex-wrap p-2 bg-zinc-800 rounded-l focus:bg-red-500 gap-1 ${
-            props.selectProps.classNamePrefix
-              ? props.selectProps.classNamePrefix + "-value-container"
-              : ""
-          }`;
-        },
-        multiValue(props) {
-          return `border ${props.data.color} px-2 rounded-xl px-1 flex items-center text-sm`;
-        },
-        container({ isFocused }) {
-          return `w-full bg-zinc-800 rounded ${
-            isFocused
-              ? "ring-2 ring-amber-700"
-              : "hover:ring-zinc-600 hover:ring-2"
-          } `;
-        },
-        menuList() {
-          return `bg-zinc-900 rounded text-zinc-200 p-1 border-2 border-zinc-500`;
-        },
-        option(props) {
-          return `hover:bg-zinc-800 ${props.data.color} hover:text-zinc-100 cursor-pointer rounded p-2 md:p-1`;
-        },
-      }}
-    />
+    <>
+      {!isError && (
+        <Select
+          closeMenuOnSelect={false}
+          defaultValue={newKeywords || []}
+          isMulti
+          name="currentTags"
+          options={allTags}
+          value={currentTags}
+          classNamePrefix="select"
+          className="w-full rounded bg-zinc-800 text-zinc-300 outline-none ring-2 ring-zinc-700 transition-all duration-100 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 focus:ring-2 focus:ring-amber-700"
+          onChange={(e) => {
+            onChange(e);
+          }}
+          loadingMessage={() => "Loading..."}
+          isLoading={isLoading}
+          unstyled
+          placeholder={"Add Keywords..."}
+          classNames={{
+            valueContainer(props) {
+              return `flex flex-wrap p-2 bg-zinc-800 rounded-l focus:bg-red-500 gap-1 ${props.selectProps.classNamePrefix
+                ? props.selectProps.classNamePrefix + "-value-container"
+                : ""
+                }`;
+            },
+            multiValue() {
+              return `border px-2 rounded-xl px-1 flex items-center text-sm`;
+            },
+            container({ isFocused }) {
+              return `w-full bg-zinc-800 rounded ${isFocused
+                ? "ring-2 ring-amber-700"
+                : "hover:ring-zinc-600 hover:ring-2"
+                } `;
+            },
+            menuList() {
+              return `bg-zinc-900 rounded text-zinc-200 p-1 border-2 border-zinc-500`;
+            },
+            option() {
+              return `hover:bg-zinc-800 hover:text-zinc-100 cursor-pointer rounded p-2 md:p-1`;
+            },
+          }}
+        />
+      )}
+    </>
   );
 };
 

@@ -10,7 +10,7 @@ import { TagBubble } from "~/components/TagComponent";
 import { TagsPopover } from "~/components/TagDropdown";
 import TooltipComponent from "~/components/Tooltip";
 import { SimpleDropDown } from "~/components/dropdown";
-import { LoadingHeader, LoadingPage2 } from "~/components/loading";
+import { LoadingHeader, LoadingPage2, LoadingSpinner } from "~/components/loading";
 import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -154,21 +154,25 @@ const ProjectsPage: NextPage = () => {
                         </div>
                     </SimpleDropDown>
                 </div>
+                <div className="w-full overflow-y-auto overflow-x-hidden ">
+                    <div ref={animateParent} className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
+                        {(isLoading && (
+                            // <LoadingHeader loading={isLoading} title={"Loading Projects"} />
+                            <div className="h-[100vh] w-full flex flex-col gap-2 justify-center items-center">
+                                <LoadingSpinner />
+                                <p className="text-zinc-600 font-semibold">Loading Projects</p>
+                            </div>
+                        )) ||
+                            (isError && (
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                    <p className="text-xl font-bold text-zinc-300">
+                                        Error Loading Projects
+                                    </p>
+                                </div>
+                            )) ||
+                            (data && data?.length > 0 && (
+                                <>
 
-                {(isLoading && (
-                    <LoadingHeader loading={isLoading} title={"Loading Projects"} />
-                )) ||
-                    (isError && (
-                        <div className="flex flex-col items-center justify-center gap-2">
-                            <p className="text-xl font-bold text-zinc-300">
-                                Error Loading Projects
-                            </p>
-                        </div>
-                    )) ||
-                    (data && data?.length > 0 && (
-                        <>
-                            <div className="w-full overflow-y-auto overflow-x-hidden ">
-                                <div ref={animateParent} className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
                                     {data?.map((project, index) => (
                                         <div
                                             key={project.id}
@@ -304,29 +308,29 @@ const ProjectsPage: NextPage = () => {
                                             <ProjectProgress project={project} index={index} />
                                         </div>
                                     ))}
-                                </div>
+                                    <div className="h-20"></div>
+                                    <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
+                                        <p>Back To Top</p>
+                                        <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
+                                    </button>
+                                    <div className="h-20" />
+                                </>
+                            ))}
+                        {data?.length === 0 && (
+                            <div className="flex flex-col items-center justify-center gap-4">
+                                <p className="text-center text-2xl font-bold text-zinc-300">
+                                    {`You don't have any projects with the name '${projectSearchTerm}' yet. `}
+                                </p>
+                                <Link
+                                    href="/newproject"
+                                    className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
+                                >
+                                    Create one now.
+                                </Link>
                             </div>
-                            <div className="h-20"></div>
-                            <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
-                                <p>Back To Top</p>
-                                <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
-                            </button>
-                            <div className="h-20" />
-                        </>
-                    ))}
-                {data?.length === 0 && (
-                    <div className="flex flex-col items-center justify-center gap-4">
-                        <p className="text-center text-2xl font-bold text-zinc-300">
-                            {`You don't have any projects with the name '${projectSearchTerm}' yet. `}
-                        </p>
-                        <Link
-                            href="/newproject"
-                            className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
-                        >
-                            Create one now.
-                        </Link>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
             <div className="h-44" />
         </main>

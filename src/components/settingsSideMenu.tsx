@@ -17,6 +17,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useUser } from "@clerk/nextjs";
 import { LoadingPage2 } from "./loading";
 import SignInModal from "./signInPage";
+import Head from "next/head";
 
 const SettingsLayout: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -31,13 +32,13 @@ const SettingsLayout: React.FC<{ children: React.ReactNode }> = ({
     setShowMenu(!showMenu);
   };
 
-  const convertToBreadcrumb = (path: string) => {
+  const convertToBreadcrumb = (path: string, character: string) => {
     const pathArray = path.split("/");
     let breadcrumb = "";
     pathArray.forEach((element, index) => {
       if (index > 0) {
         breadcrumb +=
-          element.charAt(0).toUpperCase() + element.slice(1) + " > ";
+          element.charAt(0).toUpperCase() + element.slice(1) + ` ${character} `;
       }
     });
     return breadcrumb.substring(0, breadcrumb.length - 3);
@@ -50,32 +51,38 @@ const SettingsLayout: React.FC<{ children: React.ReactNode }> = ({
   }
 
   return (
-    <main className="flex min-h-[100vh] justify-between bg-zinc-900">
-      <SettingsMenu showMenu={showMenu} />
-      <div
-        className={`${
-          showMenu ? "w-full lg:w-5/6" : "w-full"
-        } p-2 transition-all duration-200`}
-      >
-        <div className="flex select-none items-center justify-start gap-2 pb-1">
-          <button
-            onClick={toggleShowMenu}
-            className="hidden rounded bg-zinc-800 p-2 transition-all duration-100 hover:bg-zinc-700 lg:block"
-          >
-            {showMenu ? (
-              <ChevronLeftIcon className="h-5 w-5" />
-            ) : (
-              <Bars3Icon className="h-5 w-5" />
-            )}
-          </button>
-          <MobileMenu />
-          <p className="pb-1 text-lg font-semibold">
-            {convertToBreadcrumb(router.pathname)}
-          </p>
+    <>
+      <Head>
+        <title>{convertToBreadcrumb(router.pathname, " - ")} | War Manager</title>
+        <meta name="description" content="Settings page" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <main className="flex min-h-[100vh] justify-between bg-zinc-900">
+        <SettingsMenu showMenu={showMenu} />
+        <div
+          className={`${showMenu ? "w-full lg:w-5/6" : "w-full"
+            } p-2 transition-all duration-200`}
+        >
+          <div className="flex select-none items-center justify-start gap-2 pb-1">
+            <button
+              onClick={toggleShowMenu}
+              className="hidden rounded bg-zinc-800 p-2 transition-all duration-100 hover:bg-zinc-700 lg:block"
+            >
+              {showMenu ? (
+                <ChevronLeftIcon className="h-5 w-5" />
+              ) : (
+                <Bars3Icon className="h-5 w-5" />
+              )}
+            </button>
+            <MobileMenu />
+            <p className="pb-1 text-lg font-semibold">
+              {convertToBreadcrumb(router.pathname, " > ")}
+            </p>
+          </div>
+          <div className="rounded bg-zinc-800 p-2">{children}</div>
         </div>
-        <div className="rounded bg-zinc-800 p-2">{children}</div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 };
 

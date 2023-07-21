@@ -187,13 +187,13 @@ model Log {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
-  url         String @db.VarChar(255)
-  action      String @db.VarChar(255)
-  category    String @db.VarChar(255)
-  severity    String @db.VarChar(255)
-  data        Json?  @db.Json
+  name        String  @db.VarChar(255)
+  description String  @db.VarChar(255)
+  url         String  @db.VarChar(255)
+  action      String  @db.VarChar(255)
+  category    String  @db.VarChar(255)
+  severity    String  @db.VarChar(255)
+  data        String? @db.VarChar(255)
 
   authorId String
 
@@ -272,11 +272,26 @@ model Permissions {
 
   name        String @db.VarChar(255)
   description String @db.VarChar(255)
-  keywords    String @db.VarChar(255)
+  keywords    PermissionKey[]
 
   authorId   String
   users      User[]
   blueprints Blueprint[]
+
+  @@index([authorId])
+}
+
+model PermissionKey {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String @db.VarChar(255)
+  description String @db.VarChar(255)
+  color       String @db.VarChar(255)
+  Permissions Permissions[]
+
+  authorId String
 
   @@index([authorId])
 }
