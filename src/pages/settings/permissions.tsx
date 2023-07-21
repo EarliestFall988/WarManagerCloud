@@ -309,7 +309,7 @@ const PermissionsModal: React.FC<{ newPermission: boolean, children: React.React
           onClick={() => {
             setDialogOpen(true);
           }}
-          className={`-z-30 ${className}`}
+          className={className}
         >
           {children}
         </button>
