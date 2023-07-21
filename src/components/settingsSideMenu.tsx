@@ -60,7 +60,7 @@ const SettingsLayout: React.FC<{ children: React.ReactNode }> = ({
         <div className="flex select-none items-center justify-start gap-2 pb-1">
           <button
             onClick={toggleShowMenu}
-            className="hidden rounded bg-zinc-800 p-2 lg:block"
+            className="hidden rounded bg-zinc-800 p-2 transition-all duration-100 hover:bg-zinc-700 lg:block"
           >
             {showMenu ? (
               <ChevronLeftIcon className="h-5 w-5" />
@@ -257,7 +257,7 @@ const MenuLink: React.FC<{
     <div className="w-full cursor-pointer select-none justify-center gap-2 border-b border-zinc-700 p-2 font-semibold transition-all duration-100 hover:bg-amber-700">
       <Link
         href={`${link}`}
-        className="flex w-full h-full items-center justify-start gap-2"
+        className="flex h-full w-full items-center justify-start gap-2"
       >
         <div className="h-4 w-4" />
         {children}
