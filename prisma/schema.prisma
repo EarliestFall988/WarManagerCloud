@@ -272,7 +272,7 @@ model Permissions {
 
   name        String @db.VarChar(255)
   description String @db.VarChar(255)
-  keywords    Json  @db.Json
+  keywords    String @db.VarChar(255)
 
   authorId   String
   users      User[]
