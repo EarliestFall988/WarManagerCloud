@@ -105,9 +105,9 @@ const MobileMenu = () => {
             <Bars3Icon className="h-5 w-5" />
           </button>
         </Dialog.Trigger>
-        <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
+        <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur z-50" />
 
-        <Dialog.Content className="fade-y-long TooltipContent fixed inset-0 bottom-10 m-auto flex h-[60%] w-[70vw] flex-col items-start justify-between rounded-xl border border-zinc-900 bg-zinc-900">
+        <Dialog.Content className="menu-mobile-appear TooltipContent z-50 fixed inset-0 bottom-10 m-auto flex h-[60%] w-[70vw] flex-col items-start justify-between rounded-xl border border-zinc-900 bg-zinc-900">
           <div className="w-full">
             <Dialog.DialogClose asChild>
               <button

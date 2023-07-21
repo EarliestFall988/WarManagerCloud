@@ -114,7 +114,7 @@ const PermissionsListItem: React.FC<{ permission: Permissions, keywords?: Permis
               }
             </div>
             <div className="flex gap-1">
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-zinc-400 text-left">
                 {permission.description || "<no description>"}
               </p>
             </div>
@@ -309,7 +309,7 @@ const PermissionsModal: React.FC<{ newPermission: boolean, children: React.React
           onClick={() => {
             setDialogOpen(true);
           }}
-          className={className}
+          className={`-z-30 ${className}`}
         >
           {children}
         </button>

@@ -35,6 +35,7 @@ export default {
         overlayDrawerShow: 'drawerShadowShow 250ms cubic-bezier(0.16, 1, 0.3, 1)',
         contentShow: 'contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)',
         slide: 'slide 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+        fade: 'slide 250ms cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },
