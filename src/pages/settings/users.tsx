@@ -1,3 +1,4 @@
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { NextPage } from "next";
 import Image from "next/image";
 import { SKCubeSpinner } from "~/components/loading";
@@ -5,9 +6,12 @@ import SettingsLayout from "~/components/settingsSideMenu";
 import { api } from "~/utils/api";
 
 
+
 const UsersSettingsPage: NextPage = () => {
 
     const { data, isError, isLoading } = api.users.getAllUsers.useQuery();
+
+    const [animationParent] = useAutoAnimate();
 
     if (isError) {
         return (
@@ -29,7 +33,7 @@ const UsersSettingsPage: NextPage = () => {
 
     return (
         <SettingsLayout>
-            <div className="min-h-[50vh]">
+            <div ref={animationParent} className="min-h-[50vh]">
                 {isLoading && (
                     <div className="h-[30vh] flex items-center font-semibold tracking-tight justify-center">
                         <SKCubeSpinner />

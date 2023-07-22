@@ -10,6 +10,39 @@ type UserType = {
   metaData: PUser | undefined;
 };
 
+const isValidUser = (user?: User) => {
+  if (!user) {
+    return false;
+  }
+
+  const email = user?.emailAddresses[0]?.emailAddress;
+
+  if (email) {
+    //emails used for early connection testing and development, not included with the company and should not be included in the user list
+    if (email === "greentractorland@gmail.com") {
+      return false;
+    }
+
+    if (email === "howellkyle213@gmail.com") {
+      return false;
+    }
+
+    if (email === "khelizabeths3@gmail.com") {
+      return false;
+    }
+
+    if (email === "tnbnpmvx2r@privaterelay.appleid.com") {
+      return false;
+    }
+
+    if (email === "howelltaylor195@gmail.com") {
+      return false;
+    }
+
+    return true;
+  }
+};
+
 export const usersRouter = createTRPCRouter({
   getAllUsers: privateProcedure.query(async ({ ctx }) => {
     const userMetaData = await ctx.prisma.user.findMany();
@@ -29,29 +62,8 @@ export const usersRouter = createTRPCRouter({
             continue;
           }
 
-          const email = user?.emailAddresses[0]?.emailAddress;
-
-          if (email) {
-            //emails used for early connection testing and development, not included with the company and should not be included in the user list
-            if (email === "greentractorland@gmail.com") {
-              continue;
-            }
-
-            if (email === "howellkyle213@gmail.com") {
-              continue;
-            }
-
-            if (email === "khelizabeths3@gmail.com") {
-              continue;
-            }
-
-            if (email === "tnbnpmvx2r@privaterelay.appleid.com") {
-              continue;
-            }
-
-            if (email === "howelltaylor195@gmail.com") {
-              continue;
-            }
+          if (!isValidUser(user)) {
+            continue;
           }
 
           const data = {
@@ -71,20 +83,35 @@ export const usersRouter = createTRPCRouter({
     return result;
   }),
 
-//   createUser: privateProcedure
-//     .input(
-//       z.object({
-//         clerkId: z.string(),
-//         role: z.string(),
-//       })
-//     )
-//     .mutation(async ({ ctx, input }) => {
+  getUserByClerkId: privateProcedure
+    .input(
+      z.object({
+        clerkId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const user = await clerkClient.users.getUser(input.clerkId);
 
-//         const newUser = ctx.prisma.user.create({
-//             data: {
-//                 clerkId: input.clerkId,
-//             }
-//         })
+      const userMetaData = await ctx.prisma.user.findUnique({
+        where: {
+          clerkId: input.clerkId,
+        },
+      });
 
-//     }),
+      if (!user) {
+        return null;
+      }
+
+      if (!isValidUser(user)) {
+        return null;
+      }
+
+      const data = {
+        User: user,
+        metaData: userMetaData,
+      };
+
+      return data;
+    }),
+
 });

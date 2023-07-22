@@ -106,7 +106,7 @@ const PermissionsListItem: React.FC<{ permission: Permissions, keywords?: Permis
                 keywords?.map((keyword) => (
                   <div
                     key={keyword.id}
-                    className={`rounded border ${keyword.color} flex items-center whitespace-nowrap rounded-xl px-2 text-xs`}
+                    className={`border flex items-center whitespace-nowrap rounded-xl px-2 text-xs`}
                   >
                     {keyword.name}
                   </div>

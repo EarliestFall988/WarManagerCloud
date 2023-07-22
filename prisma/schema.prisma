@@ -300,14 +300,16 @@ model User {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  permissionsId String
 
   clerkId     String        @unique @db.VarChar(255)
-  permissions Permissions[]
+  permissions Permissions   @relation(fields: [permissionsId], references: [id])
   role        String        @db.VarChar(255)
 
   authorId String
 
   @@index([authorId])
+  @@index([permissionsId])
 }
 
 model Tag {
