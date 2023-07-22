@@ -3,12 +3,12 @@ import { Doc } from 'yjs';
 // between multiple clients. Other providers are available.
 // You can find a list here: https://docs.yjs.dev/ecosystem/connection-provider
 import { WebrtcProvider } from 'y-webrtc';
-import { IndexeddbPersistence } from 'y-indexeddb';
+// import { IndexeddbPersistence } from 'y-indexeddb';
 
 const docName = 'some unique document name';
 
 const ydoc = new Doc();
 new WebrtcProvider(docName, ydoc);
-new IndexeddbPersistence(docName, ydoc);
+// new IndexeddbPersistence(docName, ydoc);
 
 export default ydoc;
