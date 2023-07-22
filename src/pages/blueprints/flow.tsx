@@ -3,6 +3,7 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
+  NodeMouseHandler,
   ReactFlowProvider,
   // applyNodeChanges,
   useReactFlow,
@@ -24,10 +25,11 @@ import crewNode from "~/components/crewNode";
 import projectNode from "~/components/projectNode";
 import noteNode from "~/components/noteNode";
 import { api } from "~/utils/api";
+import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
+import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
 // import * as Y from "yjs";
 // import { WebsocketProvider } from "y-websocket";
 // import { WebrtcProvider } from "y-webrtc";
-
 
 export type flowState = {
   nodes: Node[];
@@ -37,13 +39,13 @@ export type flowState = {
   onConnect: OnConnect;
 };
 
-const selector = (state: flowState) => ({
-  nodes: state.nodes,
-  edges: state.edges,
-  onNodesChange: state.onNodesChange,
-  onEdgesChange: state.onEdgesChange,
-  onConnect: state.onConnect,
-});
+// const selector = (state: flowState) => ({
+//   nodes: state.nodes,
+//   edges: state.edges,
+//   onNodesChange: state.onNodesChange,
+//   onEdgesChange: state.onEdgesChange,
+//   onConnect: state.onConnect,
+// });
 
 const nodeTypes = {
   crewNode,
@@ -55,15 +57,21 @@ const nodeTypes = {
 //   status: string;
 // };
 
-
+const proOptions = {
+  account: "paid-pro",
+  hideAttribution: true,
+};
 
 // const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
 
 const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore(
-    selector,
-    shallow
-  );
+  // const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore(
+  //   selector,
+  //   shallow
+  // );
+
+  const [nodes, onNodesChange] = useNodesStateSynced();
+  const [edges, onEdgesChange, onConnect] = useEdgesStateSynced();
 
   // console.log("nodes", nodes);
 
@@ -73,96 +81,10 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
   const { data: projectData } = api.projects.getAll.useQuery();
   const { data: noteData } = api.notes.getAll.useQuery({});
 
-  // const [ydoc, setYdoc] = useState<Y.Doc | null>(null);
-  // // const [text, setText] = useState("");
-  // const [ws, setws] = useState<WebsocketProvider | null>(null);
-  // const [wrtc, setwrtc] = useState<WebrtcProvider | null>(null);
-
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
   const reactFlowInstance = useReactFlow();
 
-  // useEffect(() => {
-  //   const ydoc = new Y.Doc();
-
-  //   const wsProvider = new WebsocketProvider(
-  //     liveWebRTCConnection,
-  //     roomName,
-  //     ydoc
-  //   );
-
-  //   const webrtcProvider = new WebrtcProvider(roomName, ydoc, {
-  //     signaling: [liveWebRTCConnection],
-  //     password: "password",
-  //   });
-
-  //   wsProvider.on("status", (event: yjsWsProviderProps) => {
-  //     console.log(event.status); // logs "connected" or "disconnected"
-  //   });
-
-  //   setwrtc(webrtcProvider);
-
-  //   wsProvider.on("sync", (isSynced: yjsWsProviderProps) => {
-  //     console.log(isSynced); // logs "true" or "false"
-
-  //     if (isSynced) {
-  //       const text = ydoc?.getText("text").toJSON();
-  //       // console.log('text', text)
-  //       // setText(text || "");
-  //     }
-  //   });
-
-  //   webrtcProvider.on("sync", (isSynced: yjsWsProviderProps) => {
-  //     console.log("web rtc synced: ", isSynced); // logs "true" or "false"
-  //   });
-
-  //   ydoc.on("update", (_update: Uint8Array) => { // update: Uint8Array
-  //     // console.log('update', update)
-  //     const text = ydoc?.getText("nodes").toJSON();
-  //     // console.log('text', text)
-  //     // setText(text || "");
-
-  //     // const nodes = JSON.parse(text || "[]");
-  //   });
-
-  //   setYdoc(ydoc);
-  //   setws(wsProvider);
-
-  //   return () => {
-  //     wsProvider.disconnect();
-  //     ydoc.destroy();
-  //   };
-  // }, []);
-
-
-
-  // useEffect(() => {
-
-  //   const text = JSON.stringify(nodes);
-
-  //   if (!ydoc) return;
-
-  //   Y.transact(ydoc, () => {
-  //     ydoc?.getText("nodes").delete(0, ydoc?.getText("nodes").length);
-  //     ydoc?.getText("nodes").insert(0, text);
-  //   });
-
-  //   
-
-  // });
-
-
-
-  // const update = (text: string) => {
-  //   // console.log('updateText', text)
-  //   if (!ydoc) return;
-
-  //   setText(text);
-  // };
-
-  // console.log("flow instance", reactFlowInstance);
-
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
@@ -182,7 +104,8 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
       const dataId = data.split("-")[1];
 
       const blockResult = {
-        type: type == "p" ? "projectNode" : (type == "c" ? "crewNode" : "noteNode"),
+        type:
+          type == "p" ? "projectNode" : type == "c" ? "crewNode" : "noteNode",
         data: {},
       };
 
@@ -202,11 +125,8 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
       }
 
       if (type == "n") {
-
         console.log("node", dataId);
-        const note = noteData?.find(
-          (note) => note.id == dataId
-        )
+        const note = noteData?.find((note) => note.id == dataId);
 
         // console.log("note", note)
 
@@ -237,16 +157,41 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
         data: blockResult.data,
       };
 
-      useStore.setState((state) => ({
-        ...state,
-        nodes: [...state.nodes, newNode],
-      }));
+      // useStore.setState((state) => ({
+      //   ...state,
+      //   nodes: [...state.nodes, newNode],
+      // }));
+
+      nodesMap.set(id, newNode);
+
     },
     [crewData, projectData, reactFlowInstance, noteData, blueprintId]
   );
 
+  // We are adding a blink effect on click that we remove after 3000ms again.
+  // This should help users to see that a node was clicked by another user.
+  const onNodeClick: NodeMouseHandler = useCallback((_, node) => {
+    const currentNode = nodesMap.get(node.id);
+    if (currentNode) {
+      nodesMap.set(node.id, {
+        ...currentNode,
+        className: "animate-blink",
+      });
+    }
+
+    window.setTimeout(() => {
+      const currentNode = nodesMap.get(node.id);
+      if (currentNode) {
+        nodesMap.set(node.id, {
+          ...currentNode,
+          className: undefined,
+        });
+      }
+    }, 3000);
+  }, []);
+
   return (
-    <div className="h-[100vh] w-full bg-zinc-800" ref={reactFlowWrapper}>
+    <div className="h-[100vh] w-full bg-zinc-800 " ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         nodeTypes={nodeTypes}
@@ -256,6 +201,8 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
         onDrop={onDrop}
         onDragOver={onDragOver}
         onConnect={onConnect}
+        onNodeClick={onNodeClick}
+        proOptions={proOptions}
         snapToGrid={true}
         snapGrid={[10, 10]}
         fitView
@@ -281,7 +228,9 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
   );
 };
 
-export const FlowWithProvider: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
+export const FlowWithProvider: React.FC<{ blueprintId: string }> = ({
+  blueprintId,
+}) => {
   return (
     <ReactFlowProvider>
       <Flow blueprintId={blueprintId} />
@@ -289,21 +238,18 @@ export const FlowWithProvider: React.FC<{ blueprintId: string }> = ({ blueprintI
   );
 };
 
-
 export default FlowWithProvider;
-
 
 // const FlowPage: NextPage = () => {
 
 //   const router = useRouter();
 
-
 //   useEffect(() => {
 
 //     void router.push(`/404`)
 
-//   }, [router]); 
-  
+//   }, [router]);
+
 //   return (
 //     <>
 //       <LoadingPage />
