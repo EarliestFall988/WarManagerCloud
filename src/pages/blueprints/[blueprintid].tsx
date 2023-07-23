@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { type flowState } from "../../flow/flow";
 import Head from "next/head";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
@@ -43,7 +43,6 @@ import { api } from "~/utils/api";
 
 import { shallow } from "zustand/shallow";
 import { toast } from "react-hot-toast";
-import FlowWithProvider from "../../flow/flow";
 import type { Blueprint } from "@prisma/client";
 import TooltipComponent from "~/components/Tooltip";
 import { Disconnect } from "~/flow/flowDocument";

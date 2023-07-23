@@ -1,9 +1,9 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
-  NodeMouseHandler,
+  type NodeMouseHandler,
   ReactFlowProvider,
   // applyNodeChanges,
   useReactFlow,
@@ -15,11 +15,8 @@ import {
   type OnEdgesChange,
   type OnConnect,
 } from "reactflow";
-import { shallow } from "zustand/shallow";
 
 import "reactflow/dist/style.css";
-
-import { useStore } from "../states/state";
 
 import crewNode from "~/components/crewNode";
 import projectNode from "~/components/projectNode";
@@ -28,10 +25,7 @@ import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
 import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
 import { setName } from "~/flow/flowDocument";
-import dynamic from "next/dynamic";
-// import * as Y from "yjs";
-// import { WebsocketProvider } from "y-websocket";
-// import { WebrtcProvider } from "y-webrtc";
+import { type IFlowInstance } from "~/states/state";
 
 export type flowState = {
   nodes: Node[];
@@ -89,6 +83,22 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
+
+  const { data } = api.blueprints.getOneById.useQuery({
+    blueprintId,
+  });
+
+  // useMemo(() => {
+  //   if (data == null) return;
+
+  //   const { nodes, edges } = JSON.parse(data.data) as IFlowInstance;
+
+  //   if (nodes == null) return;
+  //   if (edges == null) return;
+
+  //   // onNodesChange(nodes);
+  //   // onEdgesChange(edges);
+  // }, [data, onNodesChange, onEdgesChange]);
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
