@@ -27,6 +27,7 @@ import noteNode from "~/components/noteNode";
 import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
 import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
+import { setName } from "~/flow/flowDocument";
 // import * as Y from "yjs";
 // import { WebsocketProvider } from "y-websocket";
 // import { WebrtcProvider } from "y-webrtc";
@@ -70,12 +71,11 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
   //   shallow
   // );
 
+  const name = window.location.pathname.split("/")[2];
+  if (name != null) setName(name);
+
   const [nodes, onNodesChange] = useNodesStateSynced();
   const [edges, onEdgesChange, onConnect] = useEdgesStateSynced();
-
-  // console.log("nodes", nodes);
-
-  // const roomName = blueprintId;
 
   const { data: crewData } = api.crewMembers.getAll.useQuery();
   const { data: projectData } = api.projects.getAll.useQuery();
@@ -163,7 +163,6 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
       // }));
 
       nodesMap.set(id, newNode);
-
     },
     [crewData, projectData, reactFlowInstance, noteData, blueprintId]
   );

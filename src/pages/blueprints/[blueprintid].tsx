@@ -46,6 +46,7 @@ import { toast } from "react-hot-toast";
 import FlowWithProvider from "./flow";
 import type { Blueprint } from "@prisma/client";
 import TooltipComponent from "~/components/Tooltip";
+import { Disconnect } from "~/flow/flowDocument";
 
 const selector = (state: flowState) => ({
   nodes: state.nodes,
@@ -257,10 +258,9 @@ const BlueprintGUI = () => {
                 className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
                 onClick={() => {
                   if (history.length > 0) router.back();
-                  else
-                    void router.push(
-                      `/dashboard/blueprints`
-                    );
+                  else void router.push(`/dashboard/blueprints`);
+
+                  Disconnect();
                 }}
               >
                 <ArrowLeftIcon className="h-6 w-6" />

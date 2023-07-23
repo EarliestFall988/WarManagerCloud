@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 import {
   applyNodeChanges,
   type Edge,
@@ -8,18 +8,22 @@ import {
   type NodeChange,
   type NodeResetChange,
   type OnNodesChange,
-} from 'reactflow';
+} from "reactflow";
 
-import ydoc from './ydoc';
-import { edgesMap } from './useEdgesStateSynced';
+
+import { edgesMap } from "./useEdgesStateSynced";
+import Document from "./flowDocument";
 
 // We are using nodesMap as the one source of truth for the nodes.
 // This means that we are doing all changes to the nodes in the map object.
 // Whenever the map changes, we update the nodes state.
-export const nodesMap = ydoc.getMap<Node>('nodes');
 
-const isNodeAddChange = (change: NodeChange): change is NodeAddChange => change.type === 'add';
-const isNodeResetChange = (change: NodeChange): change is NodeResetChange => change.type === 'reset';
+export const nodesMap = Document.getMap<Node>("nodes");
+
+const isNodeAddChange = (change: NodeChange): change is NodeAddChange =>
+  change.type === "add";
+const isNodeResetChange = (change: NodeChange): change is NodeResetChange =>
+  change.type === "reset";
 
 function useNodesStateSynced(): [Node[], OnNodesChange] {
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -34,14 +38,17 @@ function useNodesStateSynced(): [Node[], OnNodesChange] {
       if (!isNodeAddChange(change) && !isNodeResetChange(change)) {
         const node = nextNodes.find((n) => n.id === change.id);
 
-        if (node && change.type !== 'remove') {
+        if (node && change.type !== "remove") {
           nodesMap.set(change.id, node);
-        } else if (change.type === 'remove') {
+        } else if (change.type === "remove") {
           const deletedNode = nodesMap.get(change.id);
           nodesMap.delete(change.id);
           // when a node is removed, we also need to remove the connected edges
           const edges = Array.from<Edge>(edgesMap.values()).map((e) => e);
-          const connectedEdges = getConnectedEdges(deletedNode ? [deletedNode] : [], edges);
+          const connectedEdges = getConnectedEdges(
+            deletedNode ? [deletedNode] : [],
+            edges
+          );
           connectedEdges.forEach((edge) => edgesMap.delete(edge.id));
         }
       }
