@@ -28,7 +28,7 @@ export const setName = (name: string) => {
   if (hasSetName) return;
 
   docName = name;
-  new IndexeddbPersistence(docName, ydoc);
+   new IndexeddbPersistence(docName, ydoc);
   wsProvider = new WebrtcProvider(docName, ydoc, providerOptions);
   wsProvider.on("synced", () => {
     synced = true;

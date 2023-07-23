@@ -11,11 +11,12 @@ import {
   type EdgeRemoveChange,
 } from "reactflow";
 
-import ydoc from "./ydoc";
+
+import Document from "./flowDocument";
 
 // Please see the comments in useNodesStateSynced.ts.
 // This is the same thing but for edges.
-export const edgesMap = ydoc.getMap<Edge>("edges");
+export const edgesMap = Document.getMap<Edge>("edges");
 
 const isEdgeAddChange = (change: EdgeChange): change is EdgeAddChange =>
   change.type === "add";

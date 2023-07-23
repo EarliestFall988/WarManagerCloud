@@ -10,9 +10,9 @@ import {
   type OnNodesChange,
 } from "reactflow";
 
-
 import { edgesMap } from "./useEdgesStateSynced";
 import Document from "./flowDocument";
+
 
 // We are using nodesMap as the one source of truth for the nodes.
 // This means that we are doing all changes to the nodes in the map object.

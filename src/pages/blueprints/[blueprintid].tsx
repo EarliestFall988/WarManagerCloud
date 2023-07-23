@@ -47,6 +47,7 @@ import FlowWithProvider from "./flow";
 import type { Blueprint } from "@prisma/client";
 import TooltipComponent from "~/components/Tooltip";
 import { Disconnect } from "~/flow/flowDocument";
+import dynamic from "next/dynamic";
 
 const selector = (state: flowState) => ({
   nodes: state.nodes,
@@ -229,6 +230,10 @@ const BlueprintGUI = () => {
     return <SignInModal redirectUrl={`/blueprints/${blueprintId}`} />;
   }
 
+  const BlueprintFlowProvider = dynamic(() => import("./flow"), {
+    ssr: false,
+  });
+
   return (
     <>
       <Head>
@@ -323,7 +328,8 @@ const BlueprintGUI = () => {
             <LoadingPage />
           ) : (
             <>
-              <FlowWithProvider blueprintId={blueprintId} />
+              {/* <FlowWithProvider blueprintId={blueprintId} /> */}
+              <BlueprintFlowProvider blueprintId={blueprintId} />
               <div
                 className={`absolute right-0 top-16 z-20 flex justify-end rounded bg-zinc-700/80 drop-shadow-lg backdrop-blur-md transition-all duration-75 sm:gap-1 sm:p-1 ${
                   toggle == "" ? "w-12" : " w-full md:w-[50vw] lg:w-[40vw]"
