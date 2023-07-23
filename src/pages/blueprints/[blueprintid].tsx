@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 import React, { useMemo } from "react";
-import { type flowState } from "./flow";
+import { type flowState } from "../../flow/flow";
 import Head from "next/head";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
@@ -43,7 +43,7 @@ import { api } from "~/utils/api";
 
 import { shallow } from "zustand/shallow";
 import { toast } from "react-hot-toast";
-import FlowWithProvider from "./flow";
+import FlowWithProvider from "../../flow/flow";
 import type { Blueprint } from "@prisma/client";
 import TooltipComponent from "~/components/Tooltip";
 import { Disconnect } from "~/flow/flowDocument";
@@ -230,7 +230,7 @@ const BlueprintGUI = () => {
     return <SignInModal redirectUrl={`/blueprints/${blueprintId}`} />;
   }
 
-  const BlueprintFlowProvider = dynamic(() => import("./flow"), {
+  const BlueprintFlowProvider = dynamic(() => import("../../flow/flow"), {
     ssr: false,
   });
 

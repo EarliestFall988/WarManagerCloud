@@ -19,7 +19,7 @@ import { shallow } from "zustand/shallow";
 
 import "reactflow/dist/style.css";
 
-import { useStore } from "../../states/state";
+import { useStore } from "../states/state";
 
 import crewNode from "~/components/crewNode";
 import projectNode from "~/components/projectNode";
@@ -28,6 +28,7 @@ import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
 import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
 import { setName } from "~/flow/flowDocument";
+import dynamic from "next/dynamic";
 // import * as Y from "yjs";
 // import { WebsocketProvider } from "y-websocket";
 // import { WebrtcProvider } from "y-webrtc";
