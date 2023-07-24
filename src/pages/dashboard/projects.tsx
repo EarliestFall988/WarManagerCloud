@@ -176,7 +176,7 @@ const ProjectsPage: NextPage = () => {
                                     {data?.map((project, index) => (
                                         <div
                                             key={project.id}
-                                            className="w-full select-none rounded-sm bg-zinc-700 hover:bg-zinc-600"
+                                            className="w-full select-none rounded-sm bg-zinc-700 hover:bg-zinc-600 transition-all duration-100"
                                         >
                                             <div className="md:1/2 flex items-center gap-1 ">
                                                 {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}

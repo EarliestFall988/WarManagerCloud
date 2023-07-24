@@ -111,7 +111,7 @@ const BlueprintsListPage: NextPage = () => {
             ) : (
               data.length > 0 && (
                 <>
-                  <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100 select-none">
+                  <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100 select-none transition-all duration-100">
                     {!blueprintSearchTerm && getPinnedBlueprints().length > 0 && (
                       <div className="flex flex-col gap-1 p-2">
                         <div className="flex w-full items-center justify-between gap-1">

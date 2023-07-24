@@ -4,6 +4,7 @@ import { Doc } from "yjs";
 // You can find a list here: https://docs.yjs.dev/ecosystem/connection-provider
 import { WebrtcProvider } from "y-webrtc";
 import { IndexeddbPersistence } from "y-indexeddb";
+import { toast } from "react-hot-toast";
 
 // const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
 // const password = "af15571d-4f1b-4df1-92d2-70824c7fa0cf";
@@ -12,7 +13,7 @@ import { IndexeddbPersistence } from "y-indexeddb";
 
 let docName = "some unique document name";
 
-const rootDoc = new Doc({ autoLoad: true });
+const rootDoc = new Doc();
 let subDoc = null as Doc | null;
 
 let hasSetName = false;
@@ -35,10 +36,19 @@ export const setName = (name: string) => {
     rootDoc.getMap().set(name, doc);
   }
 
+  toast.loading("Loading document", {duration: 1000});
+
   subDoc = doc as Doc;
+  if (!subDoc.isLoaded) {
+    void subDoc.whenLoaded.then(() => {
+      toast.success("Document loaded");
+    });
+
+    subDoc.load();
+  }
 
   wsProvider = new WebrtcProvider(name, subDoc, providerOptions);
-  provider = new IndexeddbPersistence(docName, subDoc);
+  provider = new IndexeddbPersistence(docName, rootDoc);
   hasSetName = true;
 };
 

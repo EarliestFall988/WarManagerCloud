@@ -199,13 +199,13 @@ const CrewMemberItem: FC<{
 
   return (
     <div
-      className="flex w-full cursor-pointer select-none rounded-sm bg-zinc-700 hover:bg-zinc-600"
+      className="flex w-full cursor-pointer select-none rounded-sm bg-zinc-700 hover:bg-zinc-600 transition-all duration-100"
       key={crewMember.id}
     >
       <Link
         href={`/crewmember/${crewMember.id}`}
         passHref
-        className="flex flex-grow items-center gap-1 overflow-x-clip rounded-sm p-1 transition-all duration-100 sm:justify-between"
+        className="flex flex-grow items-center gap-1 overflow-x-clip rounded-sm p-1 sm:justify-between"
       >
         {/* <UserCircleIcon className="hidden h-10 w-10 flex-1 text-zinc-300 md:block" /> */}
         <div className="flex flex-grow flex-col text-left text-white md:max-w-[40%] lg:w-1/3">

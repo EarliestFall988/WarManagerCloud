@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -25,7 +25,6 @@ import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
 import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
 import { setName } from "~/flow/flowDocument";
-import { type IFlowInstance } from "~/states/state";
 
 export type flowState = {
   nodes: Node[];
@@ -84,9 +83,9 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
     event.dataTransfer.dropEffect = "move";
   }, []);
 
-  const { data } = api.blueprints.getOneById.useQuery({
-    blueprintId,
-  });
+  // const { data } = api.blueprints.getOneById.useQuery({
+  //   blueprintId,
+  // });
 
   // useMemo(() => {
   //   if (data == null) return;
@@ -180,25 +179,25 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
 
   // We are adding a blink effect on click that we remove after 3000ms again.
   // This should help users to see that a node was clicked by another user.
-  const onNodeClick: NodeMouseHandler = useCallback((_, node) => {
-    const currentNode = nodesMap.get(node.id);
-    if (currentNode) {
-      nodesMap.set(node.id, {
-        ...currentNode,
-        className: "animate-blink",
-      });
-    }
+  // const onNodeClick: NodeMouseHandler = useCallback((_, node) => {
+  //   const currentNode = nodesMap.get(node.id);
+  //   if (currentNode) {
+  //     nodesMap.set(node.id, {
+  //       ...currentNode,
+  //       className: "animate-blink",
+  //     });
+  //   }
 
-    window.setTimeout(() => {
-      const currentNode = nodesMap.get(node.id);
-      if (currentNode) {
-        nodesMap.set(node.id, {
-          ...currentNode,
-          className: undefined,
-        });
-      }
-    }, 3000);
-  }, []);
+  //   window.setTimeout(() => {
+  //     const currentNode = nodesMap.get(node.id);
+  //     if (currentNode) {
+  //       nodesMap.set(node.id, {
+  //         ...currentNode,
+  //         className: undefined,
+  //       });
+  //     }
+  //   }, 3000);
+  // }, []);
 
   return (
     <div className="h-[100vh] w-full bg-zinc-800 " ref={reactFlowWrapper}>
@@ -211,7 +210,7 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
         onDrop={onDrop}
         onDragOver={onDragOver}
         onConnect={onConnect}
-        onNodeClick={onNodeClick}
+        // onNodeClick={onNodeClick}
         proOptions={proOptions}
         snapToGrid={true}
         snapGrid={[10, 10]}

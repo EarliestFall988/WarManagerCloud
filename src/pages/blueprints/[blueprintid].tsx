@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo } from "react";
 import { type flowState } from "../../flow/flow";
 import Head from "next/head";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";

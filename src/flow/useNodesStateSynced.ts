@@ -18,6 +18,7 @@ import Document from "./flowDocument";
 // This means that we are doing all changes to the nodes in the map object.
 // Whenever the map changes, we update the nodes state.
 
+
 export const nodesMap = Document.getMap<Node>("nodes");
 
 const isNodeAddChange = (change: NodeChange): change is NodeAddChange =>
