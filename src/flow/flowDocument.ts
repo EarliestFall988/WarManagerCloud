@@ -5,7 +5,6 @@ import { Doc } from "yjs";
 import { WebrtcProvider } from "y-webrtc";
 // import { IndexeddbPersistence } from "y-indexeddb";
 import { type Edge, type Node } from "reactflow";
-import { error } from "console";
 
 const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
 // const password = "af15571d-4f1b-4df1-92d2-70824c7fa0cf";

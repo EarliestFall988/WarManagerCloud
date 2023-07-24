@@ -11,7 +11,6 @@ import {
 } from "reactflow";
 
 import { edgesMap } from "./useEdgesStateSynced";
-import ydoc from "./ydoc";
 import getDoc from "./ydoc";
 // import getDoc, { isLoaded } from "./flowDocument";
 
