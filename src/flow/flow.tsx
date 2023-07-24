@@ -3,7 +3,6 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
-  type NodeMouseHandler,
   ReactFlowProvider,
   // applyNodeChanges,
   useReactFlow,
@@ -24,7 +23,9 @@ import noteNode from "~/components/noteNode";
 import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
 import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
-import { setName } from "~/flow/flowDocument";
+// import getDoc, { Init, isLoaded } from "./flowDocument";
+// import { LoadingSpinner } from "~/components/loading";
+// import { setName } from "~/flow/flowDocument";
 
 export type flowState = {
   nodes: Node[];
@@ -65,11 +66,11 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
   //   shallow
   // );
 
-  const name = window.location.pathname.split("/")[2];
-  if (name != null) setName(name);
+  // const name = window.location.pathname.split("/")[2];
+  // if (name != null) setName(name);
 
-  const [nodes, onNodesChange] = useNodesStateSynced();
-  const [edges, onEdgesChange, onConnect] = useEdgesStateSynced();
+  const [nodes, onNodesChange] = useNodesStateSynced(blueprintId);
+  const [edges, onEdgesChange, onConnect] = useEdgesStateSynced(blueprintId);
 
   const { data: crewData } = api.crewMembers.getAll.useQuery();
   const { data: projectData } = api.projects.getAll.useQuery();
@@ -82,6 +83,10 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
+
+  // React.useMemo(() => {
+  //   Init(blueprintId, [], []);
+  // }, [blueprintId]);
 
   // const { data } = api.blueprints.getOneById.useQuery({
   //   blueprintId,
@@ -172,7 +177,7 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
       //   nodes: [...state.nodes, newNode],
       // }));
 
-      nodesMap.set(id, newNode);
+      nodesMap(blueprintId).set(id, newNode);
     },
     [crewData, projectData, reactFlowInstance, noteData, blueprintId]
   );
@@ -198,18 +203,23 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
   //     }
   //   }, 3000);
   // }, []);
-
   return (
     <div className="h-[100vh] w-full bg-zinc-800 " ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         nodeTypes={nodeTypes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        // edges={edges}
+        onNodesChange={(e) => {
+          onNodesChange(e);
+        }}
+        // onEdgesChange={(e) => {
+        //   onEdgesChange(e);
+        // }}
         onDrop={onDrop}
         onDragOver={onDragOver}
-        onConnect={onConnect}
+        // onConnect={(e) => {
+        //   onConnect(e);
+        // }}
         // onNodeClick={onNodeClick}
         proOptions={proOptions}
         snapToGrid={true}

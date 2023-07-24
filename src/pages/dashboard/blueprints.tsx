@@ -4,7 +4,7 @@ import type { NextPage } from "next";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import TooltipComponent from "~/components/Tooltip";
-import { LoadingHeader, LoadingPage2, LoadingSpinner } from "~/components/loading";
+import { LoadingPage2, LoadingSpinner } from "~/components/loading";
 import { api } from "~/utils/api";
 
 import relativeTime from "dayjs/plugin/relativeTime";

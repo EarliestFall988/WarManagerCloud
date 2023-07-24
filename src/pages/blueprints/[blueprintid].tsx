@@ -233,6 +233,8 @@ const BlueprintGUI = () => {
     ssr: false,
   });
 
+  console.log("blueprint", blueprintId)
+
   return (
     <>
       <Head>
@@ -271,7 +273,7 @@ const BlueprintGUI = () => {
               </button>
             </TooltipComponent>
             <div className="max-w-1/2 truncate rounded p-1 text-center text-sm font-semibold tracking-tight text-zinc-200 md:text-lg">
-              <TooltipComponent content={blueprint.description} side="bottom">
+              <TooltipComponent content={blueprint.description} side="bottom" disableToolTipIfNoContent={true}>
                 <div className="py-1">
                   {blueprint.name ? blueprint.name : <LoadingSpinner />}
                 </div>
@@ -285,6 +287,7 @@ const BlueprintGUI = () => {
                 <TooltipComponent
                   content="Share blueprint with other project managers"
                   side="bottom"
+                  disableToolTipIfNoContent={true}
                 >
                   <button
                     disabled={isSaving}
@@ -299,7 +302,7 @@ const BlueprintGUI = () => {
                     <ArrowTopRightOnSquareIcon className="h-6 w-6" />
                   </button>
                 </TooltipComponent>
-                <TooltipComponent content="Save to Cloud" side="bottom">
+                <TooltipComponent content="Save to Cloud" side="bottom" disableToolTipIfNoContent={true}>
                   <button
                     disabled={isSaving}
                     className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
@@ -315,7 +318,11 @@ const BlueprintGUI = () => {
                 </TooltipComponent>
               </>
             )}
-            <TooltipComponent content="Account" side="bottom">
+            <TooltipComponent
+              content="Account"
+              side="bottom"
+              disableToolTipIfNoContent={true}
+            >
               <div className="flex items-center gap-2 rounded bg-zinc-600 p-1 hover:scale-105 hover:bg-zinc-500">
                 <UserButton />
               </div>

@@ -4,11 +4,26 @@ import { type User } from "@clerk/nextjs/server";
 import type { User as PUser } from "@prisma/client";
 
 import { z } from "zod";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+import { TRPCError } from "@trpc/server";
+import checkIfUserIsAdmin from "~/server/helpers/userIsAdmin";
 
 type UserType = {
   User: User;
   metaData: PUser | undefined;
 };
+
+
+const redis = new Redis({
+  url: "https://us1-merry-snake-32728.upstash.io",
+  token: "AX_sAdsdfsgODM5ZjExZGEtMmmVjNmE345445kGVmZTk5MzQ=",
+});
+
+const rateLimit = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(3, "1 m"),
+});
 
 const isValidUser = (user?: User) => {
   if (!user) {
@@ -47,6 +62,10 @@ export const usersRouter = createTRPCRouter({
   getAllUsers: privateProcedure.query(async ({ ctx }) => {
     const userMetaData = await ctx.prisma.user.findMany();
 
+    const authorId = ctx.currentUser;
+
+    await checkIfUserIsAdmin(authorId);
+
     const result = [] as UserType[];
 
     await clerkClient.users
@@ -82,36 +101,4 @@ export const usersRouter = createTRPCRouter({
 
     return result;
   }),
-
-  getUserByClerkId: privateProcedure
-    .input(
-      z.object({
-        clerkId: z.string(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      const user = await clerkClient.users.getUser(input.clerkId);
-
-      const userMetaData = await ctx.prisma.user.findUnique({
-        where: {
-          clerkId: input.clerkId,
-        },
-      });
-
-      if (!user) {
-        return null;
-      }
-
-      if (!isValidUser(user)) {
-        return null;
-      }
-
-      const data = {
-        User: user,
-        metaData: userMetaData,
-      };
-
-      return data;
-    }),
-
 });

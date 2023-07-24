@@ -6,6 +6,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { clerkClient } from "@clerk/nextjs";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
 import { type Permissions } from "@prisma/client";
+import checkIfUserIsAdmin from "~/server/helpers/userIsAdmin";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -56,8 +57,14 @@ const addUserToPermissions = async (permission: Permissions[]) => {
   return usersWithLinks;
 };
 
+
+
 export const permissionsRouter = createTRPCRouter({
   getAllPermissions: privateProcedure.query(async ({ ctx }) => {
+    const author = ctx.currentUser;
+
+    await checkIfUserIsAdmin(author);
+
     const permissions = await ctx.prisma.permissions.findMany({
       include: {
         keywords: true,
@@ -103,9 +110,14 @@ export const permissionsRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
+      const author = ctx.currentUser;
+
+      console.log("author", author);
+
+      await checkIfUserIsAdmin(author);
+
       const permissions = await ctx.prisma.permissions.findMany({
-        include:
-        {
+        include: {
           keywords: true,
         },
         where: {
@@ -148,11 +160,16 @@ export const permissionsRouter = createTRPCRouter({
             "The length of the description must be shorter than 250 characters"
           )
           .optional(),
-        keywords: z.string().array().min(1, "you must have at least one keyword"),
+        keywords: z
+          .string()
+          .array()
+          .min(1, "you must have at least one keyword"),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.currentUser;
+
+      await checkIfUserIsAdmin(authorId);
 
       const { success } = await rateLimit.limit(authorId);
 
@@ -162,7 +179,6 @@ export const permissionsRouter = createTRPCRouter({
           message: "You have exceeded the rate limit, try again in a minute",
         });
       }
-
 
       const permissions = await ctx.prisma.permissions.create({
         include: {
@@ -176,7 +192,7 @@ export const permissionsRouter = createTRPCRouter({
             connect: input.keywords.map((keyword) => ({
               id: keyword,
             })),
-          }
+          },
         },
       });
 
@@ -194,6 +210,8 @@ export const permissionsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.currentUser;
+
+      await checkIfUserIsAdmin(authorId);
 
       const { success } = await rateLimit.limit(authorId);
 
@@ -222,6 +240,8 @@ export const permissionsRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.currentUser;
+
+      await checkIfUserIsAdmin(authorId);
 
       const { success } = await rateLimit.limit(authorId);
 
