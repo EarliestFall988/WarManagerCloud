@@ -18,7 +18,7 @@ const HoverCardComponent: FC<Props> = (props) => {
       <HoverCard.Trigger asChild>{props.trigger}</HoverCard.Trigger>
       <HoverCard.Portal>
         <HoverCard.Content
-          className="HoverCardContent min-w-[15vw] max-w-[25vw] rounded border border-zinc-500 bg-black/60 text-zinc-200 shadow-lg drop-shadow-lg backdrop-blur"
+          className="HoverCardContent w-80 rounded border border-zinc-500 bg-black/60 text-zinc-200 shadow-lg drop-shadow-lg backdrop-blur"
           side="right"
         >
           {/* {props.editURL && (

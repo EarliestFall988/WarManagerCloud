@@ -1,6 +1,5 @@
 import {
   IdentificationIcon,
-  PaperAirplaneIcon,
   PhoneIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/solid";
@@ -36,7 +35,6 @@ interface crewNodeInput {
 const CrewNode = ({ data, selected }: crewNodeInput) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
-
   if (!data) return <>err</>;
 
   if (typeof selected !== "boolean") return <>err</>;
@@ -58,7 +56,7 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
   const wageNumber = Number(data.wage);
   const burdenNumber = Number(data.burden);
 
-  console.log("crew tags", data.tags);
+  // console.log("crew tags", data.tags);
 
   return (
     <>
@@ -70,7 +68,15 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
             {/* <Handle type="target" position={Position.Bottom} id={"fanfan"} /> */}
             <div className={theme}>
               <div className="h-10 w-32">
-                <button onPointerEnter={() =>{setMenuOpen(true)}} onPointerLeave={() =>{setMenuOpen(false)}} className="fixed bottom-0 right-0 z-10 h-3 w-3 -translate-x-1 -translate-y-1 text-white/20">
+                <button
+                  onPointerEnter={() => {
+                    setMenuOpen(true);
+                  }}
+                  onPointerLeave={() => {
+                    setMenuOpen(false);
+                  }}
+                  className="fixed bottom-0 right-0 z-10 h-3 w-3 -translate-x-1 -translate-y-1 text-white/20"
+                >
                   <UserCircleIcon />
                 </button>
                 <p className="text-[0.55rem]">{data.name}</p>
@@ -104,13 +110,24 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
           <div>
             <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
               <div className="flex items-center gap-3 pb-3">
-                <UserCircleIcon className="h-12 w-12" />
+                <div className="h-12 w-12">
+                  <UserCircleIcon className="h-12 w-12" />
+                </div>
                 <div className="flex flex-col">
                   <div>
                     <div className="text-lg font-semibold">{data.name}</div>
                     <div className="truncate text-ellipsis italic tracking-tight text-zinc-300">
                       {data.position}
                     </div>
+                  </div>
+                  <div className="max-h-[5rem] w-full">
+                    {data.tags && (
+                      <div className="flex w-full flex-wrap gap-1">
+                        {data.tags.map((tag) => (
+                          <TagBubble key={tag.id} tag={tag} style="text-xs" />
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     {data.email && (
@@ -133,15 +150,6 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
                           </span>{" "}
                           (none)
                         </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="max-h-[5rem] w-full">
-                    {data.tags && (
-                      <div className="flex w-[15vw] flex-wrap gap-1">
-                        {data.tags.map((tag) => (
-                          <TagBubble key={tag.id} tag={tag} style="text-xs" />
-                        ))}
                       </div>
                     )}
                   </div>
@@ -171,7 +179,7 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
                   <div className="flex items-center gap-2">
                     <div className="text-sm">
                       <span className="font-thin text-zinc-400">Joined</span>{" "}
-                      {created.toLocaleDateString()}
+                      {created ? created.toDateString() : "unknown"}
                     </div>
                   </div>
                 )}
@@ -179,23 +187,23 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
                 {data.lastReviewDate && (
                   <div className="text-sm">
                     <span className="font-thin text-zinc-400">Last Review</span>{" "}
-                    {lastReview.toLocaleDateString()}
+                    {lastReview ? lastReview.toDateString() : "unknown"}
                   </div>
                 )}
               </div>
               <div className="text-zinc-300">
-                {data.travel && data.travel === "true" && (
+                {/* {data.travel && data.travel === "true" && (
                   <div className="flex items-center gap-2">
                     <PaperAirplaneIcon className="h-4 w-4" />
                   </div>
-                )}
+                )} 
                 {!data.travel ||
                   (data.travel !== "true" && (
                     <div className="text-sm">
                       <span className="font-thin text-zinc-400">Travel?</span>{" "}
                       No
                     </div>
-                  ))}
+                  ))} */}
                 {wageNumber != 0 && (
                   <div className="flex items-center gap-2">
                     <div className="text-sm">

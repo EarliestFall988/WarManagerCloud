@@ -37,6 +37,27 @@ export const GetNodes = (id: string) => {
   return Array.from<Node>(nodesMap(id).values());
 };
 
+export const DeleteNode = (id: string, nodeId: string) => {
+
+  const deletedNode = nodesMap(id).get(nodeId);
+  nodesMap(id).delete(nodeId);
+
+  if (edgesMap === undefined) throw new Error("edgesMap is null");
+
+  // when a node is removed, we also need to remove the connected edges
+  const edges = Array.from<Edge>(edgesMap(id).values()).map((e) => e);
+  const connectedEdges = getConnectedEdges(
+    deletedNode ? [deletedNode] : [],
+    edges
+  );
+
+  connectedEdges.forEach((edge) => {
+    if (edgesMap == undefined) throw new Error("edgesMap is null");
+
+    edgesMap(id).delete(edge.id);
+  });
+}
+
 function useNodesStateSynced(id: string): [Node[], OnNodesChange] {
   const [nodes, setNodes] = useState<Node[]>([]);
 
@@ -58,23 +79,26 @@ function useNodesStateSynced(id: string): [Node[], OnNodesChange] {
           if (node && change.type !== "remove") {
             nodesMap(id).set(change.id, node);
           } else if (change.type === "remove") {
-            const deletedNode = nodesMap(id).get(change.id);
-            nodesMap(id).delete(change.id);
 
-            if (edgesMap === undefined) throw new Error("edgesMap is null");
+            DeleteNode(id, change.id);
 
-            // when a node is removed, we also need to remove the connected edges
-            const edges = Array.from<Edge>(edgesMap(id).values()).map((e) => e);
-            const connectedEdges = getConnectedEdges(
-              deletedNode ? [deletedNode] : [],
-              edges
-            );
+            // const deletedNode = nodesMap(id).get(change.id);
+            // nodesMap(id).delete(change.id);
 
-            connectedEdges.forEach((edge) => {
-              if (edgesMap == undefined) throw new Error("edgesMap is null");
+            // if (edgesMap === undefined) throw new Error("edgesMap is null");
 
-              edgesMap(id).delete(edge.id);
-            });
+            // // when a node is removed, we also need to remove the connected edges
+            // const edges = Array.from<Edge>(edgesMap(id).values()).map((e) => e);
+            // const connectedEdges = getConnectedEdges(
+            //   deletedNode ? [deletedNode] : [],
+            //   edges
+            // );
+
+            // connectedEdges.forEach((edge) => {
+            //   if (edgesMap == undefined) throw new Error("edgesMap is null");
+
+            //   edgesMap(id).delete(edge.id);
+            // });
           }
         }
       });

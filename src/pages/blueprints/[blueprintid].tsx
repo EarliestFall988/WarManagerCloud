@@ -19,9 +19,6 @@ import {
 } from "@heroicons/react/24/solid";
 
 import {
-  DeleteSelected,
-} from "../../states/state";
-import {
   LoadingPage,
   LoadingPage2,
   LoadingSpinner,
@@ -43,9 +40,8 @@ ArrowUturnLeftIcon;
 import dynamic from "next/dynamic";
 import { Disconnect, Redo, Undo } from "~/flow/ydoc";
 import { type Node } from "reactflow";
-import { GetNodes } from "~/flow/useNodesStateSynced";
+import { DeleteNode, GetNodes, nodesMap } from "~/flow/useNodesStateSynced";
 import { GetEdges } from "~/flow/useEdgesStateSynced";
-
 
 const BlueprintGUI = () => {
   const { isLoaded, isSignedIn } = useUser();
@@ -55,7 +51,7 @@ const BlueprintGUI = () => {
 
   const [nodes, setNodes] = useState<Node[]>([]);
 
-  const OnNodeDrop = useCallback(() => {
+  const OnFlowUpdate = useCallback(() => {
     if (!blueprintId) return;
 
     const nodes = GetNodes(blueprintId);
@@ -64,7 +60,6 @@ const BlueprintGUI = () => {
 
   const { mutate, isLoading: isSaving } = api.blueprints.save.useMutation({
     onSuccess: (data) => {
-
       toast.success(`${data.name} saved successfully`);
     },
 
@@ -92,7 +87,6 @@ const BlueprintGUI = () => {
 
     mutate({ blueprintId, flowInstanceData: flowInstance });
   }, [mutate, blueprintId]);
-
 
   const { data: blueprint } = api.blueprints.getOneById.useQuery({
     blueprintId: blueprintId || "",
@@ -150,7 +144,7 @@ const BlueprintGUI = () => {
               {/* <FlowWithProvider blueprintId={blueprintId} /> */}
               <BlueprintFlowProvider
                 blueprintId={blueprintId}
-                OnNodeDrop={OnNodeDrop}
+                OnNodeDrop={OnFlowUpdate}
               />
               <Panels nodes={nodes} blueprint={blueprint} />
             </>
@@ -158,7 +152,7 @@ const BlueprintGUI = () => {
             <LoadingPage />
           )}
         </div>
-        <ToolbarComponent />
+        <ToolbarComponent blueprintId={blueprintId} onFlowUpdate={OnFlowUpdate} />
       </main>
     </>
   );
@@ -358,7 +352,61 @@ const Panels: React.FC<{
   );
 };
 
-const ToolbarComponent = () => {
+const ToolbarComponent: React.FC<{ blueprintId?: string, onFlowUpdate: () => void }> = ({
+  blueprintId,
+  onFlowUpdate
+}) => {
+  const GetSelectedNode = () => {
+    if (!blueprintId) return;
+
+    let selectedNode: Node | undefined = undefined;
+
+    nodesMap(blueprintId).forEach((node) => {
+      if (node.selected) {
+        selectedNode = node;
+      }
+    });
+
+    return selectedNode;
+  };
+
+  const GoToDetails = () => {
+    if (!blueprintId) return;
+
+    const node = GetSelectedNode() as Node | undefined;
+
+    if (!node) return;
+
+    if (node.selected) {
+      if (node.type === "crewNode") {
+        const data = node.data as { id: string };
+        void window.open(`/crewmember/${data.id}`);
+        return;
+      }
+
+      if (node.type === "projectNode") {
+        const data = node.data as { id: string };
+        void window.open(`/projects/${data.id}`);
+        return;
+      }
+    }
+  };
+
+  const DeleteSelected = () => {
+    if (!blueprintId) return;
+
+    const node = GetSelectedNode() as Node | undefined;
+
+    console.log(node);
+
+    if (!node) return;
+
+    if (node.selected) {
+      DeleteNode(blueprintId, node.id);
+      onFlowUpdate();
+    }
+  };
+
   return (
     <div className="fixed left-0 top-16 flex flex-col justify-center gap-1 rounded bg-zinc-700 p-1 transition-all duration-100 ">
       <TooltipComponent content="Remove" side="right">
@@ -384,6 +432,14 @@ const ToolbarComponent = () => {
           onClick={() => Redo()}
         >
           <ArrowUturnRightIcon className="h-6 w-6" />
+        </button>
+      </TooltipComponent>
+      <TooltipComponent content="Details" side="right">
+        <button
+          className="rounded bg-zinc-600 bg-gradient-to-br p-2 py-4 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500 sm:py-2"
+          onClick={GoToDetails}
+        >
+          <EllipsisHorizontalIcon className="h-6 w-6" />
         </button>
       </TooltipComponent>
     </div>

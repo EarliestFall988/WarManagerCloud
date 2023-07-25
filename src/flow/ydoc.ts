@@ -28,7 +28,7 @@ export function Redo() {
 }
 
 export default function getDoc(name: string) {
-  console.log("fetching doc", name);
+  // console.log("fetching doc", name);
 
   let ydoc = rootDoc.getMap().get(name) as Doc;
 
