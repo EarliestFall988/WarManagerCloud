@@ -1,26 +1,27 @@
 import type { FC, ReactNode } from "react";
 
 import * as HoverCard from "@radix-ui/react-hover-card";
-import Link from "next/link";
-import { PencilSquareIcon } from "@heroicons/react/24/solid";
-import TooltipComponent from "./Tooltip";
+// import Link from "next/link";
+// import { PencilSquareIcon } from "@heroicons/react/24/solid";
+// import TooltipComponent from "./Tooltip";
 
 type Props = {
   content: ReactNode;
   trigger: ReactNode;
   editURL?: string;
+  isOpen?: boolean;
 };
 
 const HoverCardComponent: FC<Props> = (props) => {
   return (
-    <HoverCard.Root openDelay={400} closeDelay={0}>
+    <HoverCard.Root openDelay={400} closeDelay={0} open={props.isOpen}>
       <HoverCard.Trigger asChild>{props.trigger}</HoverCard.Trigger>
       <HoverCard.Portal>
         <HoverCard.Content
-          sideOffset={-10}
-          className="HoverCardContent max-w-[25vw] min-w-[15vw] rounded border border-zinc-500 bg-black/60 text-zinc-200 shadow-lg drop-shadow-lg backdrop-blur"
+          className="HoverCardContent min-w-[15vw] max-w-[25vw] rounded border border-zinc-500 bg-black/60 text-zinc-200 shadow-lg drop-shadow-lg backdrop-blur"
+          side="right"
         >
-          {props.editURL && (
+          {/* {props.editURL && (
             <div className="absolute flex w-full items-end justify-end p-1">
               <TooltipComponent content="Edit" side="right">
                 <Link
@@ -31,7 +32,7 @@ const HoverCardComponent: FC<Props> = (props) => {
                 </Link>
               </TooltipComponent>
             </div>
-          )}
+          )} */}
           <div className="p-2">{props.content}</div>
           <HoverCard.Arrow
             className="fill-current text-zinc-500 drop-shadow-lg"

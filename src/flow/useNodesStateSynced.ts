@@ -14,7 +14,6 @@ import { edgesMap } from "./useEdgesStateSynced";
 import getDoc from "./ydoc";
 // import getDoc, { isLoaded } from "./flowDocument";
 
-
 // We are using nodesMap as the one source of truth for the nodes.
 // This means that we are doing all changes to the nodes in the map object.
 // Whenever the map changes, we update the nodes state.
@@ -26,47 +25,62 @@ const isNodeAddChange = (change: NodeChange): change is NodeAddChange =>
 const isNodeResetChange = (change: NodeChange): change is NodeResetChange =>
   change.type === "reset";
 
+export const initNodeChanges = (id: string, nodes: Node[]) => {
+  nodesMap(id).clear();
+
+  nodes.forEach((node) => {
+    nodesMap(id).set(node.id, node);
+  });
+};
+
+export const GetNodes = (id: string) => {
+  return Array.from<Node>(nodesMap(id).values());
+};
+
 function useNodesStateSynced(id: string): [Node[], OnNodesChange] {
   const [nodes, setNodes] = useState<Node[]>([]);
 
   // The onNodesChange callback updates nodesMap.
   // When the changes are applied to the map, the observer will be triggered and updates the nodes state.
-  const onNodesChanges: OnNodesChange = useCallback((changes) => {
-    // if (!isLoaded() || !nodesMap) throw new Error("doc is null");
+  const onNodesChanges: OnNodesChange = useCallback(
+    (changes) => {
+      // if (!isLoaded() || !nodesMap) throw new Error("doc is null");
 
-    if (edgesMap === undefined) throw new Error("edgesMap is null");
+      if (edgesMap === undefined) throw new Error("edgesMap is null");
 
-    const nodes = Array.from<Node>(nodesMap(id).values());
+      const nodes = Array.from<Node>(nodesMap(id).values());
 
-    const nextNodes = applyNodeChanges(changes, nodes);
-    changes.forEach((change: NodeChange) => {
-      if (!isNodeAddChange(change) && !isNodeResetChange(change)) {
-        const node = nextNodes.find((n) => n.id === change.id);
+      const nextNodes = applyNodeChanges(changes, nodes);
+      changes.forEach((change: NodeChange) => {
+        if (!isNodeAddChange(change) && !isNodeResetChange(change)) {
+          const node = nextNodes.find((n) => n.id === change.id);
 
-        if (node && change.type !== "remove") {
-          nodesMap(id).set(change.id, node);
-        } else if (change.type === "remove") {
-          const deletedNode = nodesMap(id).get(change.id);
-          nodesMap(id).delete(change.id);
+          if (node && change.type !== "remove") {
+            nodesMap(id).set(change.id, node);
+          } else if (change.type === "remove") {
+            const deletedNode = nodesMap(id).get(change.id);
+            nodesMap(id).delete(change.id);
 
-          if (edgesMap === undefined) throw new Error("edgesMap is null");
+            if (edgesMap === undefined) throw new Error("edgesMap is null");
 
-          // when a node is removed, we also need to remove the connected edges
-          const edges = Array.from<Edge>(edgesMap(id).values()).map((e) => e);
-          const connectedEdges = getConnectedEdges(
-            deletedNode ? [deletedNode] : [],
-            edges
-          );
+            // when a node is removed, we also need to remove the connected edges
+            const edges = Array.from<Edge>(edgesMap(id).values()).map((e) => e);
+            const connectedEdges = getConnectedEdges(
+              deletedNode ? [deletedNode] : [],
+              edges
+            );
 
-          connectedEdges.forEach((edge) => {
-            if (edgesMap == undefined) throw new Error("edgesMap is null");
+            connectedEdges.forEach((edge) => {
+              if (edgesMap == undefined) throw new Error("edgesMap is null");
 
-            edgesMap(id).delete(edge.id);
-          });
+              edgesMap(id).delete(edge.id);
+            });
+          }
         }
-      }
-    });
-  }, [id]);
+      });
+    },
+    [id]
+  );
 
   // here we are observing the nodesMap and updating the nodes state whenever the map changes.
   useEffect(() => {

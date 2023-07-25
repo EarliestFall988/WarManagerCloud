@@ -3,6 +3,7 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
+  MiniMap,
   ReactFlowProvider,
   // applyNodeChanges,
   useReactFlow,
@@ -60,7 +61,7 @@ const proOptions = {
 
 // const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
 
-const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
+const Flow: React.FC<{ blueprintId: string, OnNodeDrop: () => void }> = ({ blueprintId, OnNodeDrop: FlowChange }) => {
   // const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore(
   //   selector,
   //   shallow
@@ -83,26 +84,6 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
-
-  // React.useMemo(() => {
-  //   Init(blueprintId, [], []);
-  // }, [blueprintId]);
-
-  // const { data } = api.blueprints.getOneById.useQuery({
-  //   blueprintId,
-  // });
-
-  // useMemo(() => {
-  //   if (data == null) return;
-
-  //   const { nodes, edges } = JSON.parse(data.data) as IFlowInstance;
-
-  //   if (nodes == null) return;
-  //   if (edges == null) return;
-
-  //   // onNodesChange(nodes);
-  //   // onEdgesChange(edges);
-  // }, [data, onNodesChange, onEdgesChange]);
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -178,48 +159,28 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
       // }));
 
       nodesMap(blueprintId).set(id, newNode);
+      FlowChange();
     },
-    [crewData, projectData, reactFlowInstance, noteData, blueprintId]
+    [crewData, projectData, reactFlowInstance, noteData, blueprintId, FlowChange]
   );
 
-  // We are adding a blink effect on click that we remove after 3000ms again.
-  // This should help users to see that a node was clicked by another user.
-  // const onNodeClick: NodeMouseHandler = useCallback((_, node) => {
-  //   const currentNode = nodesMap.get(node.id);
-  //   if (currentNode) {
-  //     nodesMap.set(node.id, {
-  //       ...currentNode,
-  //       className: "animate-blink",
-  //     });
-  //   }
-
-  //   window.setTimeout(() => {
-  //     const currentNode = nodesMap.get(node.id);
-  //     if (currentNode) {
-  //       nodesMap.set(node.id, {
-  //         ...currentNode,
-  //         className: undefined,
-  //       });
-  //     }
-  //   }, 3000);
-  // }, []);
   return (
     <div className="h-[100vh] w-full bg-zinc-800 " ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         nodeTypes={nodeTypes}
-        // edges={edges}
+        edges={edges}
         onNodesChange={(e) => {
           onNodesChange(e);
         }}
-        // onEdgesChange={(e) => {
-        //   onEdgesChange(e);
-        // }}
+        onEdgesChange={(e) => {
+          onEdgesChange(e);
+        }}
         onDrop={onDrop}
         onDragOver={onDragOver}
-        // onConnect={(e) => {
-        //   onConnect(e);
-        // }}
+        onConnect={(e) => {
+          onConnect(e);
+        }}
         // onNodeClick={onNodeClick}
         proOptions={proOptions}
         snapToGrid={true}
@@ -240,19 +201,22 @@ const Flow: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
           color="#444444"
           variant={BackgroundVariant.Lines}
         />
-        {/* <MiniMap /> */}
-        <Controls />
+        <div className="hidden md:block">
+          <MiniMap />
+          <Controls />
+        </div>
       </ReactFlow>
     </div>
   );
 };
 
-export const FlowWithProvider: React.FC<{ blueprintId: string }> = ({
+export const FlowWithProvider: React.FC<{ blueprintId: string, OnNodeDrop: () => void }> = ({
   blueprintId,
+  OnNodeDrop
 }) => {
   return (
     <ReactFlowProvider>
-      <Flow blueprintId={blueprintId} />
+      <Flow blueprintId={blueprintId} OnNodeDrop={OnNodeDrop} />
     </ReactFlowProvider>
   );
 };

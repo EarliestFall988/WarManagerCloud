@@ -12,6 +12,8 @@ import HoverCardComponent from "./HoverCard";
 import type { Tag } from "@prisma/client";
 import { TagBubble } from "./TagComponent";
 
+import { useState } from "react";
+
 interface crewNodeInput {
   data: {
     id: string;
@@ -32,12 +34,15 @@ interface crewNodeInput {
 }
 
 const CrewNode = ({ data, selected }: crewNodeInput) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+
   if (!data) return <>err</>;
 
   if (typeof selected !== "boolean") return <>err</>;
 
   let theme =
-    "flex h-full w-full rounded-sm bg-zinc-700 px-1 text-zinc-100 transition-all duration-100 hover:bg-zinc-600 cursor-move ";
+    "flex h-full w-full rounded-sm bg-zinc-700 px-1 text-zinc-100 transition-all duration-100 cursor-move ";
 
   if (data.position.includes("Foreman"))
     theme =
@@ -58,17 +63,32 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
   return (
     <>
       <HoverCardComponent
+        isOpen={menuOpen}
         editURL={`/crewmember/${data.id}`}
         trigger={
           <div className="h-full w-full">
             {/* <Handle type="target" position={Position.Bottom} id={"fanfan"} /> */}
             <div className={theme}>
-              <div className="h-8 w-28">
-                <UserCircleIcon className="fixed bottom-0 right-0 z-10 h-3 w-3 -translate-x-1 -translate-y-1 text-white/20" />
+              <div className="h-10 w-32">
+                <button onPointerEnter={() =>{setMenuOpen(true)}} onPointerLeave={() =>{setMenuOpen(false)}} className="fixed bottom-0 right-0 z-10 h-3 w-3 -translate-x-1 -translate-y-1 text-white/20">
+                  <UserCircleIcon />
+                </button>
                 <p className="text-[0.55rem]">{data.name}</p>
-                <p className="text-[0.5rem] tracking-tight text-white/70">
-                  {data.position}
-                </p>
+
+                {data.tags && (
+                  <div className="flex flex-wrap gap-[2px] rounded">
+                    <p className="text-[0.4rem] tracking-tight text-white/70">
+                      {data.position}
+                    </p>
+                    {data.tags.map((tag) => (
+                      <TagBubble
+                        key={tag.id}
+                        tag={tag}
+                        style="text-[0.3rem] bg-zinc-900"
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <NodeResizer

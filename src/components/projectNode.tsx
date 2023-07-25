@@ -5,6 +5,8 @@ import HoverCardComponent from "./HoverCard";
 import { type Tag } from "@prisma/client";
 import { TagBubble } from "./TagComponent";
 
+import { useState } from "react";
+
 interface IProjectInput {
   data: {
     id: string;
@@ -26,6 +28,8 @@ interface IProjectInput {
 }
 
 const ProjectNode = ({ data, selected }: IProjectInput) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   if (!data) return <>err</>;
 
   if (typeof selected !== "boolean") return <>err</>;
@@ -39,18 +43,42 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
   return (
     <>
       <HoverCardComponent
-      editURL={`/projects/${data.id}`}
+        isOpen={menuOpen}
+        editURL={`/projects/${data.id}`}
         trigger={
           <div className="h-full w-full">
-            <div className="flex h-full w-full cursor-move rounded-sm border-b-2 border-amber-700 bg-zinc-700 px-1 text-zinc-100 transition-all duration-100 hover:bg-zinc-600">
+            <div className="flex h-full w-full cursor-move rounded-sm bg-zinc-700 px-1 text-zinc-100 transition-all duration-100 hover:bg-zinc-600">
               <div className="h-full w-full">
-                <WrenchScrewdriverIcon className="fixed bottom-0 right-0 z-10 h-3 w-3 -translate-x-1 -translate-y-1 text-amber-600/40" />
+                <button
+                  onPointerEnter={() => {
+                    setMenuOpen(true);
+                  }}
+                  onPointerLeave={() => {
+                    setMenuOpen(false);
+                  }}
+                  className="fixed bottom-0 right-0 z-10 h-3 w-3 -translate-x-1 -translate-y-1 text-amber-600/40"
+                >
+                  <WrenchScrewdriverIcon />
+                </button>
                 <p className="z-30 w-full truncate text-[0.55rem]">
                   {data.name}
                 </p>
-                <p className="z-30 text-[0.5rem] italic tracking-tight text-white/70">
-                  {data.status}
-                </p>
+                {data.tags && (
+                  <div className="flex flex-wrap items-center justify-start gap-[2px] rounded">
+                    {data.city && data.state && (
+                      <p className="z-30 text-[0.45rem] italic tracking-tight text-white/70">
+                        {data.city}, {data.state}
+                      </p>
+                    )}
+                    {data.tags.map((tag) => (
+                      <TagBubble
+                        key={tag.id}
+                        tag={tag}
+                        style="text-[0.3rem] bg-zinc-900"
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -65,8 +93,8 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
         content={
           <div>
             <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-              <div className="flex justify-start items-center gap-3 ">
-                <div className="" >
+              <div className="flex items-center justify-start gap-3 ">
+                <div className="">
                   <WrenchScrewdriverIcon className="h-12 w-12" />
                 </div>
                 <div className="pb-2">
@@ -78,7 +106,7 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
                     </p>
                   </div>
                   {data.tags && (
-                    <div className="flex flex-wrap gap-1 w-[15vw]">
+                    <div className="flex w-[15vw] flex-wrap gap-1">
                       {data.tags.map((tag) => (
                         <TagBubble key={tag.id} tag={tag} style="text-xs" />
                       ))}
@@ -135,7 +163,6 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
             </div>
 
             <div className="border-t border-zinc-700 text-sm text-zinc-300">
-
               <p className="font-thin text-zinc-400">Comments/Concerns</p>
               <p>{data.description}</p>
             </div>
