@@ -6,6 +6,7 @@ type Props = {
   children: ReactNode;
   side: "top" | "right" | "bottom" | "left";
   disableToolTipIfNoContent?: boolean;
+  delayDuration?: number;
 };
 
 const TooltipComponent: FunctionComponent<Props> = (props) => {
@@ -27,7 +28,7 @@ const TooltipComponent: FunctionComponent<Props> = (props) => {
   }
 
   return (
-    <Tooltip.Provider delayDuration={0}>
+    <Tooltip.Provider delayDuration={props.delayDuration || 0}>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>{props.children}</Tooltip.Trigger>
         <Tooltip.Portal>

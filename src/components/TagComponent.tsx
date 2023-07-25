@@ -3,7 +3,7 @@ import TooltipComponent from "./Tooltip";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
 
-export const TagBubble: React.FC<{ tag: Tag, style?: string, children?: React.ReactNode }> = (props) => {
+export const TagBubble: React.FC<{ tag: Tag, style?: string, tooltipDelayDuration?: number, children?: React.ReactNode }> = (props) => {
 
     const tag = props.tag;
 
@@ -11,6 +11,7 @@ export const TagBubble: React.FC<{ tag: Tag, style?: string, children?: React.Re
         <TooltipComponent
             content={tag.description || "<no description>"}
             side="bottom"
+            delayDuration={props.tooltipDelayDuration}
         >
             <div
                 style={{

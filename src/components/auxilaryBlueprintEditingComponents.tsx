@@ -27,6 +27,7 @@ import { TagBubble } from "./TagComponent";
 import { ScheduleItem } from "./ScheduleItem";
 import { DialogComponent } from "./dialog";
 import { useRouter } from "next/router";
+import { GetNodes } from "~/flow/useNodesStateSynced";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -41,10 +42,9 @@ const onDragStart = (
 type filterProjectsProp = {
   nodes: Node[];
   data: (Project & { tags: Tag[] })[] | undefined;
-}
+};
 
 const FilterProjects = ({ nodes, data }: filterProjectsProp) => {
-
   return data?.filter((project) => {
     if (
       nodes.find((node) => {
@@ -62,7 +62,7 @@ const FilterProjects = ({ nodes, data }: filterProjectsProp) => {
   });
 };
 
-export const ProjectsList = (props: { nodes: Node[] }) => {
+export const ProjectsList = (props: { blueprintId: string }) => {
   useScript(
     "https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"
   );
@@ -82,6 +82,7 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
     name: search,
   });
 
+  const blueprintNodes = GetNodes(props.blueprintId);
 
   const draggable = !isError && !isLoading && data !== undefined;
 
@@ -89,11 +90,13 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
     if (nodeMode === "all" && !isLoadingProjects && !isErrorProjects) {
       return searchedProjects || ([] as (Project & { tags: Tag[] })[]);
     } else if (nodeMode === "notOnBlueprint") {
-      return FilterProjects({ nodes: props.nodes, data: searchedProjects });
+      return FilterProjects({ nodes: blueprintNodes, data: searchedProjects });
     } else if (nodeMode === "onlyOnBlueprint") {
-      const nodes = props.nodes.filter((node) => node.type === "projectNode");
+      const nodes = blueprintNodes.filter(
+        (node) => node.type === "projectNode"
+      );
 
-      console.log("props nodes", props.nodes);
+      console.log("props nodes", blueprintNodes);
 
       console.log("nodes", nodes);
 
@@ -146,8 +149,9 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           <TooltipComponent content="View All Projects" side={"top"}>
             <button
               onClick={() => setNodeMode("all")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${nodeMode === "all" ? "bg-zinc-600" : ""
-                }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
+                nodeMode === "all" ? "bg-zinc-600" : ""
+              }`}
             >
               <MagnifyingGlassIcon className="h-5 w-5" />
             </button>
@@ -158,8 +162,9 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           >
             <button
               onClick={() => setNodeMode("notOnBlueprint")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
-                }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
+                nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
+              }`}
             >
               <QueueListIcon className="h-5 w-5" />
             </button>
@@ -170,8 +175,9 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
           >
             <button
               onClick={() => setNodeMode("onlyOnBlueprint")}
-              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
-                }`}
+              className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
+                nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
+              }`}
             >
               <ListBulletIcon className="h-5 w-5" />
             </button>
@@ -205,13 +211,15 @@ export const ProjectsList = (props: { nodes: Node[] }) => {
                       {project.jobNumber}
                     </p>
 
-                    <div className="truncate flex flex-wrap justify-start items-center flex-grow gap-1 font-semibold text-md">
+                    <div className="text-md flex flex-grow flex-wrap items-center justify-start gap-1 truncate font-semibold">
                       {project.name}
-                      {
-                        project.tags.map((tag) => (
-                          <TagBubble key={tag.id} tag={tag} style={"text-xs font-normal"} />
-                        ))
-                      }
+                      {project.tags.map((tag) => (
+                        <TagBubble
+                          key={tag.id}
+                          tag={tag}
+                          style={"text-xs font-normal"}
+                        />
+                      ))}
                     </div>
 
                     <p className="truncate text-xs font-normal text-zinc-300">
@@ -268,7 +276,7 @@ const filterCrewMembers = (props: {
   return nodesNotInUse;
 };
 
-export const CrewList = (props: { nodes: Node[] }) => {
+export const CrewList = (props: { blueprintId: string }) => {
   useScript(
     "https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"
   );
@@ -285,14 +293,13 @@ export const CrewList = (props: { nodes: Node[] }) => {
       name: searchTerm,
     });
 
-
   let dataToUse = data;
 
   if (searchTerm) {
     dataToUse = searchResult;
   }
 
-  const currentNodes = props.nodes;
+  const currentNodes = GetNodes(props.blueprintId);
 
   if (nodeMode === "notOnBlueprint") {
     dataToUse = filterCrewMembers({ nodes: currentNodes, data: dataToUse });
@@ -351,8 +358,9 @@ export const CrewList = (props: { nodes: Node[] }) => {
             <TooltipComponent content="View All Crew Members" side={"top"}>
               <button
                 onClick={() => setNodeMode("all")}
-                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${nodeMode === "all" ? "bg-zinc-600" : ""
-                  }`}
+                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
+                  nodeMode === "all" ? "bg-zinc-600" : ""
+                }`}
               >
                 <MagnifyingGlassIcon className="h-5 w-5" />
               </button>
@@ -363,8 +371,9 @@ export const CrewList = (props: { nodes: Node[] }) => {
             >
               <button
                 onClick={() => setNodeMode("notOnBlueprint")}
-                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
-                  }`}
+                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
+                  nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
+                }`}
               >
                 <QueueListIcon className="h-5 w-5" />
               </button>
@@ -375,8 +384,9 @@ export const CrewList = (props: { nodes: Node[] }) => {
             >
               <button
                 onClick={() => setNodeMode("onlyOnBlueprint")}
-                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
-                  }`}
+                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
+                  nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
+                }`}
               >
                 <ListBulletIcon className="h-5 w-5" />
               </button>
@@ -413,7 +423,9 @@ export const CrewList = (props: { nodes: Node[] }) => {
                   onDragStart={(event) => onDragStart(event, "c-" + crew.id)}
                 >
                   <div className="max-w-[50%] truncate  ">
-                    <p className="truncate text-md font-semibold">{crew.name}</p>
+                    <p className="text-md truncate font-semibold">
+                      {crew.name}
+                    </p>
                     <p className="h-5 truncate text-xs font-normal text-zinc-300">
                       {crew.position}
                     </p>
@@ -602,11 +614,10 @@ interface IFlowInstance {
 
 export const Stats = (props: {
   blueprint: Blueprint;
-  currentNodes: Node[];
 }) => {
   const data = JSON.parse(props.blueprint?.data) as IFlowInstance;
 
-  const currentNodes = props.currentNodes;
+  const currentNodes = GetNodes(props.blueprint.id);
 
   if (data == null || data.nodes === undefined)
     return (
@@ -775,7 +786,6 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
   const router = useRouter();
 
   const { mutate, isLoading: isDeleting } = api.blueprints.delete.useMutation({
-
     onSuccess: () => {
       console.log("Blueprint Deleted");
       toast.success("Blueprint Deleted");
@@ -786,23 +796,22 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
     onError: (error) => {
       toast.error("Error Deleting Blueprint");
       console.log(error);
-    }
-  });
-
-  const { mutate: mutateUpdate, isLoading: isUpdating } = api.blueprints.updateDetails.useMutation({
-
-    onSuccess: () => {
-      console.log("Blueprint Updated");
-      toast.success("Blueprint Updated");
-      void context.invalidate();
     },
-
-    onError: (error) => {
-      toast.error("Error Updating Blueprint");
-      console.log(error);
-    }
-
   });
+
+  const { mutate: mutateUpdate, isLoading: isUpdating } =
+    api.blueprints.updateDetails.useMutation({
+      onSuccess: () => {
+        console.log("Blueprint Updated");
+        toast.success("Blueprint Updated");
+        void context.invalidate();
+      },
+
+      onError: (error) => {
+        toast.error("Error Updating Blueprint");
+        console.log(error);
+      },
+    });
 
   useScript(
     "https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"
@@ -820,22 +829,17 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
       name: blueprintName,
       description: blueprintDescription,
     });
-  }, [
-    blueprint.id,
-    blueprintName,
-    blueprintDescription,
-    mutateUpdate,
-  ]);
+  }, [blueprint.id, blueprintName, blueprintDescription, mutateUpdate]);
 
-  if (!blueprint) return <div></div>
+  if (!blueprint) return <div></div>;
 
   if (isDeleting || isUpdating) {
     return (
-      <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] flex flex-col items-center justify-center">
+      <div className="mr-1 flex h-[60vh] w-full flex-col items-center justify-center border-r border-zinc-600 sm:m-0 lg:h-[90vh]">
         <LoadingSpinner />
         {/* <p className="text-center">Deleting Blueprint</p> */}
       </div>
-    )
+    );
   }
 
   return (
@@ -844,13 +848,13 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
         <Tabs.Root className="w-full" defaultValue="tab1">
           <Tabs.List className="flex justify-around gap-2 pb-1">
             <Tabs.Trigger
-              className="flex w-full items-center justify-center gap-2 border-zinc-600 bg-zinc-700 rounded-t p-2 font-semibold border-b-2 data-[state=active]:border-amber-700"
+              className="flex w-full items-center justify-center gap-2 rounded-t border-b-2 border-zinc-600 bg-zinc-700 p-2 font-semibold data-[state=active]:border-amber-700"
               value="tab1"
             >
               <SparklesIcon className="h-6 w-6" /> More
             </Tabs.Trigger>
             <Tabs.Trigger
-              className="flex w-full items-center justify-center gap-2 border-zinc-600 bg-zinc-700 rounded-t font-semibold border-b-2 data-[state=active]:border-amber-700"
+              className="flex w-full items-center justify-center gap-2 rounded-t border-b-2 border-zinc-600 bg-zinc-700 font-semibold data-[state=active]:border-amber-700"
               value="tab2"
             >
               <Cog6ToothIcon className="h-6 w-6" /> Settings
@@ -858,9 +862,11 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
           </Tabs.List>
           <TabContent value="tab1">
             <div
-              className="flex select-none items-center justify-start border-b p-1 border-zinc-600 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
+              className="flex select-none items-center justify-start border-b border-zinc-600 p-1 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
               draggable={true}
-              onDragStart={(event) => onDragStart(event, "n-" + "cljg8hams0000lnh8pxfll9rf")}
+              onDragStart={(event) =>
+                onDragStart(event, "n-" + "cljg8hams0000lnh8pxfll9rf")
+              }
             >
               <div className="w-2/3 truncate">
                 <p className="truncate text-sm sm:text-lg">Sticky Note</p>
@@ -885,7 +891,7 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
             </div> */}
           </TabContent>
           <TabContent value="tab2">
-            <div className="flex w-2/3 flex-col gap-2 py-2 placeholder:text-zinc-700 placeholder:italic ">
+            <div className="flex w-2/3 flex-col gap-2 py-2 placeholder:italic placeholder:text-zinc-700 ">
               <div>
                 <p className="font-semibold">Title</p>
                 <input
@@ -896,7 +902,7 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
                   onChange={(e) => {
                     setBlueprintName(e.currentTarget.value);
                   }}
-                  className="w-full rounded p-1 text-zinc-700 hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600 outline-none"
+                  className="w-full rounded p-1 text-zinc-700 outline-none hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600"
                 />
               </div>
               <div>
@@ -908,33 +914,44 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
                   onChange={(e) => {
                     setBlueprintDescription(e.currentTarget.value);
                   }}
-                  className="w-full rounded p-1 text-zinc-700 hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600 outline-none"
+                  className="w-full rounded p-1 text-zinc-700 outline-none hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600"
                 />
               </div>
               <div className="py-2">
-                <button onClick={
-                  (e) => {
+                <button
+                  onClick={(e) => {
                     e.preventDefault();
                     UpdateBlueprint();
-                  }
-                } className="bg-zinc-500 w-full flex items-center justify-center p-1 hover:bg-amber-700 rounded gap-2">
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded bg-zinc-500 p-1 hover:bg-amber-700"
+                >
                   <CloudArrowUpIcon className="h-5 w-5" /> Save Details
                 </button>
               </div>
             </div>
             <div className="h-10 w-full border-t border-zinc-600 py-4 ">
-              <div className="w-full flex flex-col gap-2 rounded pr-1">
-                <p className="font-semibold text-lg">Danger Zone</p>
+              <div className="flex w-full flex-col gap-2 rounded pr-1">
+                <p className="text-lg font-semibold">Danger Zone</p>
 
-                <DialogComponent title="Delete Blueprint Forever?" description="Warning! You will not be able to recover the blueprint after you delete it."
-                  yes={() => { DeleteBlueprint() }} trigger={
+                <DialogComponent
+                  title="Delete Blueprint Forever?"
+                  description="Warning! You will not be able to recover the blueprint after you delete it."
+                  yes={() => {
+                    DeleteBlueprint();
+                  }}
+                  trigger={
                     <button className="transition-color flex w-full items-center justify-center gap-2 rounded-3xl bg-red-600 p-2 font-bold duration-100 hover:bg-red-500">
                       <TrashIcon className="h-5 w-5" />
                       Delete Blueprint Forever
                     </button>
-                  } />
+                  }
+                />
 
-                <p className="font-bold italic tracking-tight text-amber-600 text-center">{"Warning! you will not be able to recover the blueprint once it's deleted!"}</p>
+                <p className="text-center font-bold italic tracking-tight text-amber-600">
+                  {
+                    "Warning! you will not be able to recover the blueprint once it's deleted!"
+                  }
+                </p>
               </div>
             </div>
           </TabContent>

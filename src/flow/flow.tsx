@@ -61,7 +61,10 @@ const proOptions = {
 
 // const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
 
-const Flow: React.FC<{ blueprintId: string, OnNodeDrop: () => void }> = ({ blueprintId, OnNodeDrop: FlowChange }) => {
+const Flow: React.FC<{ blueprintId: string; OnNodeDrop?: () => void }> = ({
+  blueprintId,
+  OnNodeDrop: FlowChange,
+}) => {
   // const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore(
   //   selector,
   //   shallow
@@ -73,7 +76,7 @@ const Flow: React.FC<{ blueprintId: string, OnNodeDrop: () => void }> = ({ bluep
   const [nodes, onNodesChange] = useNodesStateSynced(blueprintId);
   const [edges, onEdgesChange, onConnect] = useEdgesStateSynced(blueprintId);
 
-  const { data: crewData } = api.crewMembers.getAll.useQuery();
+  const { data: crewData } = api.crewMembers.getAll.useQuery(); //could be inefficient to fetch all crew members and projects for every blueprint - TODO fix
   const { data: projectData } = api.projects.getAll.useQuery();
   const { data: noteData } = api.notes.getAll.useQuery({});
 
@@ -159,9 +162,16 @@ const Flow: React.FC<{ blueprintId: string, OnNodeDrop: () => void }> = ({ bluep
       // }));
 
       nodesMap(blueprintId).set(id, newNode);
-      FlowChange();
+      if (FlowChange) FlowChange();
     },
-    [crewData, projectData, reactFlowInstance, noteData, blueprintId, FlowChange]
+    [
+      crewData,
+      projectData,
+      reactFlowInstance,
+      noteData,
+      blueprintId,
+      FlowChange,
+    ]
   );
 
   return (
@@ -210,10 +220,10 @@ const Flow: React.FC<{ blueprintId: string, OnNodeDrop: () => void }> = ({ bluep
   );
 };
 
-export const FlowWithProvider: React.FC<{ blueprintId: string, OnNodeDrop: () => void }> = ({
-  blueprintId,
-  OnNodeDrop
-}) => {
+export const FlowWithProvider: React.FC<{
+  blueprintId: string;
+  OnNodeDrop: () => void;
+}> = ({ blueprintId, OnNodeDrop }) => {
   return (
     <ReactFlowProvider>
       <Flow blueprintId={blueprintId} OnNodeDrop={OnNodeDrop} />

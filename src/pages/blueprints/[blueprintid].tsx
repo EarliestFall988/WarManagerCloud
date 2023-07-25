@@ -49,15 +49,6 @@ const BlueprintGUI = () => {
 
   const blueprintId = (query.blueprintid as string) || undefined || null;
 
-  const [nodes, setNodes] = useState<Node[]>([]);
-
-  const OnFlowUpdate = useCallback(() => {
-    if (!blueprintId) return;
-
-    const nodes = GetNodes(blueprintId);
-    setNodes(nodes);
-  }, [blueprintId, setNodes]);
-
   const { mutate, isLoading: isSaving } = api.blueprints.save.useMutation({
     onSuccess: (data) => {
       toast.success(`${data.name} saved successfully`);
@@ -144,15 +135,15 @@ const BlueprintGUI = () => {
               {/* <FlowWithProvider blueprintId={blueprintId} /> */}
               <BlueprintFlowProvider
                 blueprintId={blueprintId}
-                OnNodeDrop={OnFlowUpdate}
+                OnNodeDrop={() => {console.log("")}}
               />
-              <Panels nodes={nodes} blueprint={blueprint} />
+              <Panels blueprint={blueprint} />
             </>
           ) : (
             <LoadingPage />
           )}
         </div>
-        <ToolbarComponent blueprintId={blueprintId} onFlowUpdate={OnFlowUpdate} />
+        <ToolbarComponent blueprintId={blueprintId} />
       </main>
     </>
   );
@@ -197,7 +188,7 @@ const Ribbon: React.FC<{
         {name && (
           <>
             <TooltipComponent
-              content="Share blueprint with other project managers"
+              content="Share blueprint with other managers (link)"
               side="bottom"
               disableToolTipIfNoContent={true}
             >
@@ -213,7 +204,7 @@ const Ribbon: React.FC<{
               </button>
             </TooltipComponent>
             <TooltipComponent
-              content="Save to Cloud"
+              content="Save changes to the Cloud"
               side="bottom"
               disableToolTipIfNoContent={true}
             >
@@ -247,9 +238,8 @@ const Ribbon: React.FC<{
 };
 
 const Panels: React.FC<{
-  nodes: Node[];
   blueprint?: Blueprint | null | undefined;
-}> = ({ nodes, blueprint }) => {
+}> = ({ blueprint }) => {
   const [toggle, setToggle] = useState("");
 
   const ToggleMenu = useCallback(
@@ -277,11 +267,9 @@ const Panels: React.FC<{
     >
       <div className="w-full overflow-y-auto overflow-x-hidden ">
         {toggle === "GetLink" && <ExportBlueprint />}
-        {toggle === "Project" && <ProjectsList nodes={nodes} />}
-        {toggle === "Employee" && <CrewList nodes={nodes} />}
-        {toggle === "Stats" && (
-          <Stats blueprint={blueprint} currentNodes={nodes} />
-        )}
+        {toggle === "Project" && <ProjectsList blueprintId={blueprint.id} />}
+        {toggle === "Employee" && <CrewList blueprintId={blueprint.id} />}
+        {toggle === "Stats" && <Stats blueprint={blueprint} />}
         {toggle == "More" && <More blueprint={blueprint} />}
       </div>
       <div className="flex flex-col items-end gap-1 p-1 sm:gap-1 sm:p-0">
@@ -352,10 +340,10 @@ const Panels: React.FC<{
   );
 };
 
-const ToolbarComponent: React.FC<{ blueprintId?: string, onFlowUpdate: () => void }> = ({
-  blueprintId,
-  onFlowUpdate
-}) => {
+const ToolbarComponent: React.FC<{
+  blueprintId?: string;
+  onFlowUpdate?: () => void;
+}> = ({ blueprintId, onFlowUpdate }) => {
   const GetSelectedNode = () => {
     if (!blueprintId) return;
 
@@ -403,7 +391,7 @@ const ToolbarComponent: React.FC<{ blueprintId?: string, onFlowUpdate: () => voi
 
     if (node.selected) {
       DeleteNode(blueprintId, node.id);
-      onFlowUpdate();
+      if (onFlowUpdate) onFlowUpdate();
     }
   };
 
