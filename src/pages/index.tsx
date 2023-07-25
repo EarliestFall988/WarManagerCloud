@@ -294,20 +294,29 @@ const HomePage: NextPage = () => {
               </div>
             </div>
           </div>
-          <div className="flex h-[20vh] flex-wrap items-center justify-around gap-4 rounded bg-amber-800 py-5 text-lg font-semibold text-zinc-300">
-            <div className="flex items-center justify-start gap-1 ">
-              <CheckIcon className="h-5 w-5" />
+          <div className="flex flex-wrap lg:h-[15vh] items-center justify-around gap-4 rounded bg-amber-800 py-5 text-lg font-semibold text-zinc-300">
+            <div className="flex items-center justify-start gap-1 p-2 md:p-0">
+              <div className="h-5 w-5">
+                <CheckIcon className="h-5 w-5" />
+              </div>
               <p className="p-2">No invasive and time consuming updates.</p>
             </div>
-            <div className="flex items-center justify-start gap-1">
-              <CheckIcon className="h-5 w-5" />
+            <div className="flex items-center justify-start gap-1 p-2 md:p-0">
+            <div className="h-5 w-5">
+                <CheckIcon className="h-5 w-5" />
+              </div>
               <p className="p-2">
                 Co-edit documents and collaborate with your team in real time.
               </p>
             </div>
-            <div className="flex items-center justify-start gap-1">
-              <CheckIcon className="h-5 w-5" />
-              <p className="p-2">Cloud technology lets you use War Manager from anywhere and on any device.</p>
+            <div className="flex items-center justify-start gap-1 p-2 md:p-0">
+            <div className="h-5 w-5">
+                <CheckIcon className="h-5 w-5" />
+              </div>
+              <p className="p-2">
+                Cloud technology lets you use War Manager from anywhere and on
+                any device.
+              </p>
             </div>
           </div>
         </div>
