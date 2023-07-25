@@ -307,7 +307,7 @@ const HomePage: NextPage = () => {
             </div>
             <div className="flex items-center justify-start gap-1">
               <CheckIcon className="h-5 w-5" />
-              <p className="p-2">Cloud technology let you use War Manager from anywhere and on any device.</p>
+              <p className="p-2">Cloud technology lets you use War Manager from anywhere and on any device.</p>
             </div>
           </div>
         </div>
