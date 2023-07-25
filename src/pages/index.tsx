@@ -8,7 +8,7 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
-import { ArrowRightIcon } from "@heroicons/react/24/solid";
+import { ArrowRightIcon, CheckIcon } from "@heroicons/react/24/solid";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
@@ -228,43 +228,100 @@ const HomePage: NextPage = () => {
             </SignedOut>
           </div>
         </div>
-        <div className="h-[50vh] bg-zinc-900 bg-center p-2">
-          <h2 className="border-b border-zinc-700 py-1 text-3xl font-bold tracking-tight text-white sm:py-3 sm:text-4xl lg:py-5 lg:text-[2rem] xl:text-[3rem]">
-            Features
-          </h2>
-          <div className="flex flex-col gap-4 py-5 text-lg font-semibold text-zinc-300">
-            <p>
-              {">"}{" "}
-              {/* {"Create and share visual labor 'Blueprint' plans with ease."} */}
-              {"Develop and visualize complex labor plans with ease."}
-            </p>
-            <p>
-              {" "}
-              {">"} Coordinate illustrated crew skills to meet project demands.
-            </p>
-            <p>
-              {">"} Up to date employee contacts, and relevant job information
-              on your mobile device.
-            </p>
-            <p>{">"} Easily download reports to Excel or Google sheets.</p>
-            <p> {">"} Enhanced communication between field and office teams.</p>
+        <div className="bg-zinc-900 bg-center p-2">
+          <div className="flex w-full gap-3">
+            <div className="w-2 bg-amber-700" />
+            <h3 className="text-3xl font-bold tracking-tight text-white sm:py-3 sm:text-4xl lg:py-5 lg:text-[2rem] xl:text-[3rem]">
+              Features
+            </h3>
           </div>
-          {/* <SignUpButton redirectUrl="/dashboard" mode="modal">
-          <div className="cursor-pointer rounded bg-gradient-to-br from-amber-600 to-red-700 p-2 font-semibold hover:scale-105">
-            Sign Up
+          <div className="my-10 flex w-full flex-wrap items-start justify-around gap-4 bg-zinc-900">
+            <div className="min-h-[30vh] w-full rounded bg-zinc-800 p-2 text-lg md:w-[40vw]">
+              <h4 className="w-full p-2 py-3 text-2xl font-semibold">
+                In The Office 🏢
+              </h4>
+              <div className="flex items-center justify-start gap-1">
+                <CheckIcon className="h-5 w-5" />
+                <p className="p-2">
+                  {/* {"Create and share visual labor 'Blueprint' plans with ease."} */}
+                  {"Develop and visualize complex labor plans with ease."}
+                </p>
+              </div>
+              <div className="flex items-center justify-start gap-1">
+                <CheckIcon className="h-5 w-5" />
+                <p className="p-2">
+                  Coordinate illustrated crew skills to meet project demands.
+                </p>
+              </div>
+              <div className="flex items-center justify-start gap-1">
+                <CheckIcon className="h-5 w-5" />
+                <p className="p-2">
+                  Easily download reports to Excel or Google sheets.
+                </p>
+              </div>
+              <div className="flex items-center justify-start gap-1">
+                <CheckIcon className="h-5 w-5" />
+                <p className="p-2">
+                  Enhanced communication between field and office teams.
+                </p>
+              </div>
+            </div>
+            <div className="min-h-[30vh] w-full rounded bg-zinc-800 p-2 text-lg md:w-[40vw]">
+              <h4 className="w-full p-2 text-2xl font-semibold">
+                In The Field 🛣️
+              </h4>
+              <div className="flex items-center justify-start gap-1">
+                <CheckIcon className="h-5 w-5" />
+                <p className="p-2">Up to date employee contacts</p>
+              </div>
+              <div className="flex items-center justify-start gap-1">
+                <CheckIcon className="h-5 w-5" />
+                <p className="p-2">
+                  Relevant job information on your mobile device.
+                </p>
+              </div>
+              <div className="flex items-center justify-start gap-1">
+                <CheckIcon className="h-5 w-5" />
+                <p className="p-2">
+                  Download app on your phone for fast access.
+                </p>
+              </div>
+              <div className="flex items-center justify-start gap-1">
+                <CheckIcon className="h-5 w-5" />
+                <p className="p-2">
+                  Enhanced communication between field and office teams.
+                </p>
+              </div>
+            </div>
           </div>
-        </SignUpButton> */}
+          <div className="flex h-[20vh] flex-wrap items-center justify-around gap-4 rounded bg-amber-800 py-5 text-lg font-semibold text-zinc-300">
+            <div className="flex items-center justify-start gap-1 ">
+              <CheckIcon className="h-5 w-5" />
+              <p className="p-2">No invasive and time consuming updates.</p>
+            </div>
+            <div className="flex items-center justify-start gap-1">
+              <CheckIcon className="h-5 w-5" />
+              <p className="p-2">
+                Co-edit documents and collaborate with your team in real time.
+              </p>
+            </div>
+            <div className="flex items-center justify-start gap-1">
+              <CheckIcon className="h-5 w-5" />
+              <p className="p-2">Cloud technology let you use War Manager from anywhere and on any device.</p>
+            </div>
+          </div>
         </div>
       </main>
-      <footer
-        className="bg-zinc-900 text-center lg:text-left">
+      <footer className="bg-zinc-900 text-center lg:text-left">
         <div className="p-4 text-center text-zinc-700 dark:text-zinc-200">
-          © {new Date(Date.now()).getFullYear()} Copyright: {" "}
+          © {new Date(Date.now()).getFullYear()} Copyright:{" "}
           <a
             className="text-zinc-800 dark:text-zinc-400"
             href="https://jrcousa.com/"
-          >JR&Co Roofing Contractors LLC.</a
           >
+            {" "}
+            JR&Co Roofing Contractors LLC.
+          </a>
         </div>
       </footer>
     </>
