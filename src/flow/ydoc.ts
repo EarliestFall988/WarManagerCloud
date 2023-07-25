@@ -3,7 +3,7 @@ import { Doc } from "yjs";
 // between multiple clients. Other providers are available.
 // You can find a list here: https://docs.yjs.dev/ecosystem/connection-provider
 import { WebrtcProvider } from "y-webrtc";
-// import { IndexeddbPersistence } from "y-indexeddb";
+import { IndexeddbPersistence } from "y-indexeddb";
 
 const docName = "document webrtc for war manager";
 const rootDoc = new Doc();
@@ -12,7 +12,7 @@ let currentName = null as string | null;
 
 let currentSubDoc = null as Doc | null;
 
-// new IndexeddbPersistence(docName, rootDoc);
+let indexdbProvider = null as IndexeddbPersistence | null;
 
 let provider = null as WebrtcProvider | null;
 
@@ -40,6 +40,8 @@ export default function getDoc(name: string) {
     signaling: ["wss://yjswebrtc.gigalixirapp.com/", "ws://localhost:4000/"],
   });
 
+  indexdbProvider = new IndexeddbPersistence(name, ydoc);
+
   ydoc.load();
 
   currentSubDoc = ydoc;
@@ -53,6 +55,9 @@ export const Disconnect = () => {
       currentSubDoc.destroy();
       currentSubDoc = null;
     }
+
+    void indexdbProvider?.destroy();
+    indexdbProvider = null;
 
     provider.disconnect();
     provider = null;
