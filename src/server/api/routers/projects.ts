@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
+import { clerkClient } from "@clerk/nextjs";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -39,9 +40,13 @@ export const projectsRouter = createTRPCRouter({
   }),
 
   search: privateProcedure
-    .input(z.object({ search: z.string().min(0).max(255), filter: z.array(z.string()) }))
+    .input(
+      z.object({
+        search: z.string().min(0).max(255),
+        filter: z.array(z.string()),
+      })
+    )
     .query(async ({ ctx, input }) => {
-
       if (input.search.length < 3 && input.filter.length === 0) {
         const projects = await ctx.prisma.project.findMany({
           take: 100,
@@ -71,7 +76,7 @@ export const projectsRouter = createTRPCRouter({
               some: {
                 id: {
                   in: input.filter,
-                }
+                },
               },
             },
           },
@@ -124,7 +129,7 @@ export const projectsRouter = createTRPCRouter({
                   some: {
                     id: {
                       in: input.filter,
-                    }
+                    },
                   },
                 },
               },
@@ -237,6 +242,17 @@ export const projectsRouter = createTRPCRouter({
         });
       }
 
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
       const project = await ctx.prisma.project.create({
         data: {
           authorId,
@@ -272,6 +288,18 @@ export const projectsRouter = createTRPCRouter({
         },
       });
 
+      await ctx.prisma.log.create({
+        data: {
+          action: "url",
+          category: "project",
+          name: `Created new Project \"${input.name}\"`,
+          authorId: authorId,
+          url: `/projects/${project.id}`,
+          description: `${email} created new project \"${input.name}\")`,
+          severity: "moderate",
+        },
+      });
+
       return project;
     }),
 
@@ -279,21 +307,69 @@ export const projectsRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        name: z.string({ required_error: "Every project must have a name." }).min(3, "The name must be more than 3 characters long.").max(255, "The name of the project must be less than 255 characters long."),
-        jobNumber: z.string({ required_error: "Every project must have a project number." }).min(5, "The project number must be more than 5 characters long.").max(10, "The project number must be less than 10 characters long."),
-        notes: z.string().min(0).max(255, "The notes section must be less than 255 characters.").optional(),
-        description: z.string().min(0).max(255, "The description must be less than 255 characters.").optional(),
+        name: z
+          .string({ required_error: "Every project must have a name." })
+          .min(3, "The name must be more than 3 characters long.")
+          .max(
+            255,
+            "The name of the project must be less than 255 characters long."
+          ),
+        jobNumber: z
+          .string({
+            required_error: "Every project must have a project number.",
+          })
+          .min(5, "The project number must be more than 5 characters long.")
+          .max(10, "The project number must be less than 10 characters long."),
+        notes: z
+          .string()
+          .min(0)
+          .max(255, "The notes section must be less than 255 characters.")
+          .optional(),
+        description: z
+          .string()
+          .min(0)
+          .max(255, "The description must be less than 255 characters.")
+          .optional(),
         // tags: z.array(z.string()),
-        address: z.string({ required_error: "The project address is required for each project." }).min(3, "The project address must be more than 3 characters long.").max(255, "The project address must be less than 255 characters long."),
-        city: z.string({ required_error: "The city is required for each project." }).min(2, "The project city name is too short.").max(255, "The city name must be less than 255 characters long."),
-        state: z.string({ required_error: "The state abbreviation (US) is required for each project." }).min(2, "The state abbreviation is too short.").max(2, "The state abbreviation is too long."),
+        address: z
+          .string({
+            required_error: "The project address is required for each project.",
+          })
+          .min(3, "The project address must be more than 3 characters long.")
+          .max(
+            255,
+            "The project address must be less than 255 characters long."
+          ),
+        city: z
+          .string({ required_error: "The city is required for each project." })
+          .min(2, "The project city name is too short.")
+          .max(255, "The city name must be less than 255 characters long."),
+        state: z
+          .string({
+            required_error:
+              "The state abbreviation (US) is required for each project.",
+          })
+          .min(2, "The state abbreviation is too short.")
+          .max(2, "The state abbreviation is too long."),
         // zip: z.string().min(3).max(255),
         tags: z.array(z.string()),
-        estimatedManHours: z.number({ required_error: "Estimated man hours is required." }).min(0).max(1000000, "The estimated man hours is too long."),
+        estimatedManHours: z
+          .number({ required_error: "Estimated man hours is required." })
+          .min(0)
+          .max(1000000, "The estimated man hours is too long."),
         startDate: z.date({ required_error: "The start date is required." }),
         endDate: z.date({ required_error: "The end date is required." }),
-        status: z.string({ required_error: "The project status is required." }).min(3, "The project status is too short.").max(255, "The project status must be less than 255 characters long."),
-        percentComplete: z.number({ required_error: "Percent completion status is required." }).min(0, "The percent complete must be a positive integer.").max(100, "The percent complete must be less than or equal to 100."),
+        status: z
+          .string({ required_error: "The project status is required." })
+          .min(3, "The project status is too short.")
+          .max(
+            255,
+            "The project status must be less than 255 characters long."
+          ),
+        percentComplete: z
+          .number({ required_error: "Percent completion status is required." })
+          .min(0, "The percent complete must be a positive integer.")
+          .max(100, "The percent complete must be less than or equal to 100."),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -307,6 +383,30 @@ export const projectsRouter = createTRPCRouter({
           message: "You have exceeded the rate limit, try again in a minute",
         });
       }
+
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
+      const oldProject = await ctx.prisma.project.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          tags: true,
+        },
+      });
+
+      const oldData = {
+        ...oldProject,
+      };
 
       const tagsToDisconnect = await ctx.prisma.project
         .findUnique({
@@ -336,7 +436,6 @@ export const projectsRouter = createTRPCRouter({
           status: input.status,
           percentComplete: input.percentComplete,
           tags: {
-
             disconnect: tagsToDisconnect?.map((tag) => ({
               id: tag.id,
             })),
@@ -345,10 +444,193 @@ export const projectsRouter = createTRPCRouter({
               id: tag,
             })),
           },
-        }
+        },
+        include: {
+          tags: true,
+        },
       });
 
-      console.log(project);
+      let updatedName = false;
+      let updatedDescription = false;
+      let updatedJobNumber = false;
+      let updatedAddress = false;
+      let updatedCity = false;
+      let updatedState = false;
+      let updatedZip = false;
+      let updatedNotes = false;
+      let updatedTotalManHours = false;
+      let updatedStartDate = false;
+      let updatedEndDate = false;
+      let updatedStatus = false;
+      let updatedPercentComplete = false;
+      let updatedTags = false;
+
+      if (oldData.name !== project.name) {
+        updatedName = true;
+      }
+
+      if (oldData.description !== project.description) {
+        updatedDescription = true;
+      }
+
+      if (oldData.jobNumber !== project.jobNumber) {
+        updatedJobNumber = true;
+      }
+
+      if (oldData.address !== project.address) {
+        updatedAddress = true;
+      }
+
+      if (oldData.city !== project.city) {
+        updatedCity = true;
+      }
+
+      if (oldData.state !== project.state) {
+        updatedState = true;
+      }
+
+      if (oldData.zip !== project.zip) {
+        updatedZip = true;
+      }
+
+      if (oldData.notes !== project.notes) {
+        updatedNotes = true;
+      }
+
+      if (oldData.TotalManHours !== project.TotalManHours) {
+        updatedTotalManHours = true;
+      }
+
+      if (oldData.startDate !== project.startDate) {
+        updatedStartDate = true;
+      }
+
+      if (oldData.endDate !== project.endDate) {
+        updatedEndDate = true;
+      }
+
+      if (oldData.status !== project.status) {
+        updatedStatus = true;
+      }
+
+      if (oldData.percentComplete !== project.percentComplete) {
+        updatedPercentComplete = true;
+      }
+
+      if (oldData.tags?.length !== project.tags?.length) {
+        updatedTags = true;
+      }
+
+      if (!updatedTags) {
+        if (
+          oldData.tags?.map((tag) => tag.id).join(", ") !==
+          project.tags?.map((tag) => tag.id).join(", ")
+        ) {
+          updatedTags = true;
+        }
+      }
+
+      const updatedFields = [] as string[];
+
+      if (updatedName) {
+        updatedFields.push(`Name: ${oldData.name || "no name"} -> ${project.name}\n`);
+      }
+
+      if (updatedDescription) {
+        updatedFields.push(
+          `Description: ${oldData.description || "no description"} -> ${project.description}\n`
+        );
+      }
+
+      if (updatedJobNumber) {
+        updatedFields.push(
+          `Job Number: ${oldData.jobNumber || "no job number"} -> ${project.jobNumber}\n`
+        );
+      }
+
+      if (updatedAddress) {
+        updatedFields.push(
+          `Address: ${oldData.address || "no address"} -> ${project.address}\n`
+        );
+      }
+
+      if (updatedCity) {
+        updatedFields.push(`City: ${oldData.city || "no city"} -> ${project.city}\n`);
+      }
+
+      if (updatedState) {
+        updatedFields.push(
+          `State: ${oldData.state || "no state"} -> ${project.state}\n`
+        );
+      }
+
+      if (updatedZip) {
+        updatedFields.push(`Zip: ${oldData.zip || "no zip"} -> ${project.zip}\n`);
+      }
+
+      if (updatedNotes) {
+        updatedFields.push(
+          `Notes: ${oldData.notes || "no notes"} -> ${project.notes}\n`
+        );
+      }
+
+      if (updatedTotalManHours) {
+        updatedFields.push(
+          `Total Man Hours: ${oldData.TotalManHours || 0} -> ${project.TotalManHours}\n`
+        );
+      }
+
+      if (updatedStartDate) {
+        updatedFields.push(
+          `Start Date: ${
+            oldData.startDate?.toDateString() || "no start date"
+          } -> ${project.startDate.toDateString()}\n`
+        );
+      }
+
+      if (updatedEndDate) {
+        updatedFields.push(
+          `End Date: ${
+            oldData.endDate?.toDateString() || "no end date"
+          } -> ${project.endDate.toDateString()}\n`
+        );
+      }
+
+      if (updatedStatus) {
+        updatedFields.push(
+          `Status: ${oldData.status || "no status"} -> ${project.status}\n`
+        );
+      }
+
+      if (updatedPercentComplete) {
+        updatedFields.push(
+          `Percent Complete: ${oldData.percentComplete || 0} -> ${project.percentComplete}\n`
+        );
+      }
+
+      if (updatedTags) {
+        updatedFields.push(
+          `Tags: ${
+            oldData.tags?.map((tag) => tag.name).join(", ") || "no tags"
+          } -> ${project.tags?.map((tag) => tag.name).join(", ")}\n`
+        );
+      }
+
+      const len = updatedFields.length;
+
+      await ctx.prisma.log.create({
+        data: {
+          action: "url",
+          category: "project",
+          name: `Updated Project \"${project.name}\"`,
+          authorId: authorId,
+          url: `/projects/${project.id}`,
+          description: `${len} ${
+            len == 1 ? "change" : "changes"
+          } made to project \"${project.name}\":\n ${updatedFields.join(" ")}`,
+          severity: "moderate",
+        },
+      });
 
       return project;
     }),
@@ -401,6 +683,17 @@ export const projectsRouter = createTRPCRouter({
 
       const { success } = await rateLimit.limit(authorId);
 
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
       if (!success) {
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
@@ -411,6 +704,18 @@ export const projectsRouter = createTRPCRouter({
       const project = await ctx.prisma.project.delete({
         where: {
           id: input.id,
+        },
+      });
+
+      await ctx.prisma.log.create({
+        data: {
+          action: "none",
+          category: "project",
+          name: `Deleted Project \"${project.name}\"`,
+          authorId: authorId,
+          url: `/#`,
+          description: `${email} deleted crew member \"${project.name}\"`,
+          severity: "critical",
         },
       });
 

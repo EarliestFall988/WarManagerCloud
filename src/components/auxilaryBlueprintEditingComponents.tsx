@@ -19,7 +19,6 @@ import {
 import useScript from "./dragDropTouchEventsHandling";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
-import Image from "next/image";
 import { GetListOfNodesSortedByColumn } from "~/states/state";
 import TooltipComponent from "./Tooltip";
 import * as Tabs from "@radix-ui/react-tabs";

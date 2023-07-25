@@ -4,7 +4,6 @@ import { NodeResizer } from "reactflow";
 import HoverCardComponent from "./HoverCard";
 import { TagBubble } from "./TagComponent";
 
-import { useState } from "react";
 import useLiveData from "~/flow/databank";
 import { LoadingSpinner } from "./loading";
 
@@ -30,15 +29,6 @@ interface IProjectInput {
 //     tags: Tag[];
 
 const ProjectNode = ({ data, selected }: IProjectInput) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [isOver, setIsOver] = useState(false);
-
-  const openDelay = () => {
-    setTimeout(() => {
-      console.log("isOver", isOver);
-      if (isOver) setMenuOpen(true);
-    }, 1000);
-  };
 
   const { projectData, isLoading } = useLiveData();
 

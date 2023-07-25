@@ -11,7 +11,6 @@ import HoverCardComponent from "./HoverCard";
 // import type { Tag } from "@prisma/client";
 import { TagBubble } from "./TagComponent";
 
-import { useState } from "react";
 import useLiveData from "~/flow/databank";
 import { LoadingSpinner } from "./loading";
 
@@ -36,7 +35,6 @@ interface crewNodeInput {
 //     tags: Tag[];
 
 const CrewNode = ({ data, selected }: crewNodeInput) => {
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const { crewData, isLoading } = useLiveData();
 
