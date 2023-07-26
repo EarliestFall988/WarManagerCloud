@@ -85,11 +85,6 @@ const MyApp: AppType = ({ Component, pageProps }) => {
               href="/icon.png"
               color="#27272a"
             />
-            <link
-              rel="manifest"
-              crossOrigin="use-credentials"
-              href="/manifest.json"
-            />
           </>
         )}
         {versionType == "DEV" && (
@@ -106,13 +101,13 @@ const MyApp: AppType = ({ Component, pageProps }) => {
               href="/static/WM Web Logo Development v1.png"
               color="#27272a"
             />
-            <link
-              rel="manifest"
-              crossOrigin="use-credentials"
-              href="/manifest_dev_branch.json"
-            />
           </>
         )}
+        <link
+          rel="manifest"
+          crossOrigin="use-credentials"
+          href="/manifest.json"
+        />
         <meta name="theme-color" content="#27272a" />
         {/* <link rel="apple-touch-icon" crossOrigin="use-credentials" href="logo.png" />
         <link rel="apple-touch-icon" crossOrigin="use-credentials" sizes="152x152" href="logo.png" />
