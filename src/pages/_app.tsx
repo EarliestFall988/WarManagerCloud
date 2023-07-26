@@ -103,11 +103,17 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             />
           </>
         )}
+        <link
+          rel="manifest"
+          crossOrigin="use-credentials"
+          href="/manifest.json"
+        />
         <meta name="theme-color" content="#27272a" />
         {/* <link rel="apple-touch-icon" crossOrigin="use-credentials" href="logo.png" />
         <link rel="apple-touch-icon" crossOrigin="use-credentials" sizes="152x152" href="logo.png" />
         <link rel="apple-touch-icon" crossOrigin="use-credentials" sizes="180x180" href="logo.png" />
         <link rel="apple-touch-icon" crossOrigin="use-credentials" sizes="167x167" href="logo.png" /> */}
+
         <link
           rel="manifest"
           crossOrigin="use-credentials"

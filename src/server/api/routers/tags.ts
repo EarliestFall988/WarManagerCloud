@@ -4,6 +4,9 @@ import { z } from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
+import { type Tag } from "@prisma/client";
+import { clerkClient } from "@clerk/nextjs";
+import filterUserForClient from "~/server/helpers/filterUserForClient";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -15,12 +18,51 @@ const rateLimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(3, "1 m"),
 });
 
+const addUserToTags = async (tags: Tag[]) => {
+  const users = await clerkClient.users
+    .getUserList()
+    .then((users) => {
+      return users;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
+  if (!users)
+    return tags.map((tag) => {
+      return {
+        ...tag,
+        user: null,
+      };
+    });
+
+  const usersWithLinks = tags.map((tag) => {
+    const user = users.find((user) => {
+      return user.id === tag.authorId;
+    });
+
+    if (!user) {
+      return {
+        ...tag,
+        user: null,
+      };
+    }
+
+    return {
+      ...tag,
+      user: filterUserForClient(user),
+    };
+  });
+
+  return usersWithLinks;
+};
+
 export const tagsRouter = createTRPCRouter({
   getAll: privateProcedure.query(async ({ ctx }) => {
     const tags = await ctx.prisma.tag.findMany({
       take: 100,
     });
-    return tags;
+    return addUserToTags(tags);
   }),
 
   search: privateProcedure
@@ -30,7 +72,7 @@ export const tagsRouter = createTRPCRouter({
         const tags = await ctx.prisma.tag.findMany({
           take: 100,
         });
-        return tags;
+        return await addUserToTags(tags);
       }
 
       const tags = await ctx.prisma.tag.findMany({
@@ -41,7 +83,10 @@ export const tagsRouter = createTRPCRouter({
         },
       });
 
-      return tags;
+      console.log("tags", tags);
+      const res = await addUserToTags(tags);
+      console.log("result", res);
+      return res;
     }),
 
   getTagsToAdd: privateProcedure
@@ -178,5 +223,27 @@ export const tagsRouter = createTRPCRouter({
       });
 
       return tag;
+    }),
+  delete: privateProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await rateLimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: " You have exceeded the rate limit.",
+        });
+      }
+
+      const result = ctx.prisma.tag.delete({
+        where: {
+          id: input.id,
+        },
+      });
+
+      return result;
     }),
 });
