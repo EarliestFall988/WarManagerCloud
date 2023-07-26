@@ -5,7 +5,6 @@ import {
   EllipsisVerticalIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
-  TagIcon,
   UserCircleIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
@@ -21,6 +20,7 @@ import { api } from "~/utils/api";
 import relativeTime from "dayjs/plugin/relativeTime";
 import type { Tag } from "@prisma/client";
 import { SimpleDropDown } from "~/components/dropdown";
+import { DialogComponent } from "~/components/dialog";
 dayjs.extend(relativeTime);
 
 const TagWizard: React.FC<{ editTag?: Tag }> = ({ editTag }) => {
@@ -99,80 +99,104 @@ const TagWizard: React.FC<{ editTag?: Tag }> = ({ editTag }) => {
     },
   });
 
-  const { mutate: update, isLoading: isUpdating } = api.tags.update.useMutation({
+  const { mutate: deleteTagMutation } = api.tags.delete.useMutation({
     onSuccess: () => {
-      toast.success("Tag created successfully!");
+      toast.success("Tag deleted successfully!");
 
       void context.invalidate();
-
-      setName("");
-      setType("");
-      setDescription("");
-      setColor(getRandomColor() || "#000000");
     },
-    onError: (error) => {
-      const zodErrors = error.shape?.data.zodError;
+    onError: () => {
+      toast.error("There was an error deleting the tag.");
 
-      if (!zodErrors) {
-        if (error.message === "A tag with this name already exists.") {
-          toast.error(
-            `A tag with the name '${name}' already exists for ${type}.`
-          );
-        } else {
-          toast.error("there was an error creating the tag");
-          console.log(error.message);
-        }
-
-        return;
-      }
-
-      const nameError = zodErrors.fieldErrors["name"];
-      console.log(nameError);
-
-      if (nameError && nameError[0]) {
-        setNameError(nameError[0]);
-        toast.error(nameError[0]);
-      }
-
-      const typeError = zodErrors.fieldErrors["type"];
-      console.log(typeError);
-
-      if (typeError && typeError[0]) {
-        setTypeError(typeError[0]);
-        toast.error(typeError[0]);
-      }
-
-      const colorError = zodErrors.fieldErrors["color"];
-      console.log(colorError);
-
-      if (colorError && colorError[0]) {
-        setColorError(colorError[0]);
-        toast.error(colorError[0]);
-      }
-
-      const descriptionError = zodErrors.fieldErrors["description"];
-      console.log(descriptionError);
-
-      if (descriptionError && descriptionError[0]) {
-        setDescriptionError(descriptionError[0]);
-        toast.error(descriptionError[0]);
-      }
-
-      toast.error("there was an error creating the tag");
+      void context.invalidate();
     },
   });
 
-  const loading = isSaving || isUpdating
+  const deleteTag = React.useCallback(
+    (tagId: string) => {
+      toast.loading("deleting tag", { duration: 1000 });
+
+      deleteTagMutation({
+        id: tagId,
+      });
+    },
+    [deleteTagMutation]
+  );
+
+  const { mutate: update, isLoading: isUpdating } = api.tags.update.useMutation(
+    {
+      onSuccess: () => {
+        toast.success("Tag created successfully!");
+
+        void context.invalidate();
+
+        setName("");
+        setType("");
+        setDescription("");
+        setColor(getRandomColor() || "#000000");
+      },
+      onError: (error) => {
+        const zodErrors = error.shape?.data.zodError;
+
+        if (!zodErrors) {
+          if (error.message === "A tag with this name already exists.") {
+            toast.error(
+              `A tag with the name '${name}' already exists for ${type}.`
+            );
+          } else {
+            toast.error("there was an error creating the tag");
+            console.log(error.message);
+          }
+
+          return;
+        }
+
+        const nameError = zodErrors.fieldErrors["name"];
+        console.log(nameError);
+
+        if (nameError && nameError[0]) {
+          setNameError(nameError[0]);
+          toast.error(nameError[0]);
+        }
+
+        const typeError = zodErrors.fieldErrors["type"];
+        console.log(typeError);
+
+        if (typeError && typeError[0]) {
+          setTypeError(typeError[0]);
+          toast.error(typeError[0]);
+        }
+
+        const colorError = zodErrors.fieldErrors["color"];
+        console.log(colorError);
+
+        if (colorError && colorError[0]) {
+          setColorError(colorError[0]);
+          toast.error(colorError[0]);
+        }
+
+        const descriptionError = zodErrors.fieldErrors["description"];
+        console.log(descriptionError);
+
+        if (descriptionError && descriptionError[0]) {
+          setDescriptionError(descriptionError[0]);
+          toast.error(descriptionError[0]);
+        }
+
+        toast.error("there was an error creating the tag");
+      },
+    }
+  );
+
+  const loading = isSaving || isUpdating;
 
   useMemo(() => {
-
     if (editTag) {
       setName(editTag.name);
       setType(editTag.type);
       setDescription(editTag.description);
       setColor(editTag.backgroundColor);
-    }
-    else {
+    } else {
       setName("");
       setType("");
       setDescription("");
@@ -194,10 +218,7 @@ const TagWizard: React.FC<{ editTag?: Tag }> = ({ editTag }) => {
     setColor(getRandomColor() || "#000000");
   };
 
-  console.log(type);
-
   const setTag = useCallback(() => {
-
     if (editTag) {
       toast.loading("updating tag", { duration: 1000 });
 
@@ -215,8 +236,7 @@ const TagWizard: React.FC<{ editTag?: Tag }> = ({ editTag }) => {
         description,
         color,
       });
-    }
-    else {
+    } else {
       toast.loading("creating tag", { duration: 1000 });
 
       setNameError(null);
@@ -247,7 +267,9 @@ const TagWizard: React.FC<{ editTag?: Tag }> = ({ editTag }) => {
 
   return (
     <div className="fade-y w-full border-b border-zinc-700 p-2">
-      <h2 className="py-2 text-2xl font-semibold select-none">{editTag ? "Edit Tag" : "Create New Tag"}</h2>
+      <h2 className="select-none py-2 text-2xl font-semibold">
+        {editTag ? "Edit Tag" : "Create New Tag"}
+      </h2>
       <div className="flex flex-wrap items-start justify-center gap-2    md:justify-start">
         <div className="flex w-full flex-col flex-wrap items-start justify-start gap-2 md:w-1/3">
           <div className="w-full">
@@ -334,39 +356,76 @@ const TagWizard: React.FC<{ editTag?: Tag }> = ({ editTag }) => {
             <p className="text-sm italic text-red-500"> {colorError || ""}</p>
           </div>
           <div className="flex h-full flex-col items-center justify-center gap-2 rounded border-zinc-700 p-2 md:border">
-            <h2 className="text-lg font-semibold select-none  " >Tag Preview</h2>
+            <h2 className="select-none text-lg font-semibold  ">Tag Preview</h2>
 
             <TooltipComponent
               content={description || "<no description>"}
               side="bottom"
             >
               <div>
-                <div className="select-none" ref={exampleTag}>{name || "example tag"}</div>
+                <div className="select-none" ref={exampleTag}>
+                  {name || "example tag"}
+                </div>
               </div>
             </TooltipComponent>
-            <p className="hidden text-sm italic text-zinc-400 md:block select-none">
+            <p className="hidden select-none text-sm italic text-zinc-400 md:block">
               tip: Hover over the tag to see the description.
             </p>
           </div>
         </div>
+      </div>
+      <div className="flex justify-between py-2">
         <button
           onClick={() => setTag()}
           disabled={loading}
-          className=" select-none flex w-full items-center justify-center gap-2 rounded bg-zinc-700 p-2 transition-all duration-100 hover:bg-amber-700 md:w-1/3"
+          className="flex w-full select-none items-center justify-center gap-2 rounded bg-zinc-700 p-2 transition-all duration-100 hover:bg-amber-700 md:w-1/3"
         >
           {loading ? (
             <LoadingSpinner />
           ) : (
             <div>
-              {!editTag && (<><p> Create Tag</p></>)}
-              {editTag && (<><p> Save </p></>)}
+              {!editTag && (
+                <>
+                  <p> Create Tag</p>
+                </>
+              )}
+              {editTag && (
+                <>
+                  <p> Save </p>
+                </>
+              )}
             </div>
           )}
-        </button>
+        </button>{" "}
+        {editTag && (
+          <DialogComponent
+            title="Are you sure you want to delete this tag?"
+            description="This action cannot be undone. All items with this tag will be untagged."
+            yes={() => {
+              deleteTag(editTag.id);
+            }}
+            trigger={
+              <button className="flex w-1/3 select-none items-center justify-center rounded bg-red-500 p-2">
+                Delete Tag
+              </button>
+            }
+          />
+        )}
       </div>
     </div>
   );
 };
+
+type TagType = {
+  user:
+    | {
+        id: string | undefined;
+        email: string | undefined;
+        profilePicture: string | undefined;
+      }
+    | undefined
+    | null;
+} & Tag;
 
 const TagsPage: NextPage = () => {
   const [newPanelOpen, setNewPanelOpen] = useState(false);
@@ -375,6 +434,8 @@ const TagsPage: NextPage = () => {
   const togglePanelOpen = useCallback(() => {
     setNewPanelOpen(!newPanelOpen);
   }, [newPanelOpen, setNewPanelOpen]);
+
+  const context = api.useContext().tags;
 
   const {
     data,
@@ -412,7 +473,7 @@ const TagsPage: NextPage = () => {
       </div>
       {newPanelOpen && <TagWizard />}
       <div className="p-2">
-        <h2 className="pb-2 text-2xl font-semibold select-none">Tags</h2>
+        <h2 className="select-none pb-2 text-2xl font-semibold">Tags</h2>
         {loading && (
           <div className="flex h-20 w-full items-center justify-center">
             <LoadingSpinner />
@@ -433,29 +494,33 @@ const TagsPage: NextPage = () => {
   );
 };
 
-const TagCard: React.FC<{ tag: Tag }> = ({ tag }) => {
+const TagCard: React.FC<{ tag: TagType }> = ({ tag }) => {
   return (
-    <div className="flex justify-between  gap-2 rounded border border-zinc-700 p-2 select-none">
+    <div className="flex select-none  justify-between gap-2 rounded border border-zinc-700 p-2">
       <div className="flex items-center justify-start gap-2">
-        <div className="flex items-center gap-2">
-          <TagIcon
-            className="h-8 w-8"
-            style={{ color: tag.backgroundColor || "#000" }}
-          />
-        </div>
+        <div className="flex items-center gap-2"></div>
         <div>
           <div className="flex items-center gap-2">
-            <div className="text-lg font-semibold">{tag.name}</div>
+            <div
+              className="-ml-2 rounded-full border-2 px-2 text-lg font-semibold"
+              style={{
+                color: tag.backgroundColor || "#000",
+                borderColor: tag.backgroundColor || "#000",
+              }}
+            >
+              {tag.name}
+            </div>
           </div>
+
           <div className="flex items-center gap-1">
             {tag.type && tag.type === "crews" && (
-              <UserCircleIcon className="h-6 w-6 text-zinc-300" />
+              <UserCircleIcon className={`h-6 w-6`} />
             )}
             {tag.type && tag.type === "projects" && (
-              <WrenchScrewdriverIcon className="h-6 w-6 text-zinc-300" />
+              <WrenchScrewdriverIcon className={`h-6 w-6`} />
             )}
             {tag.type && tag.type === "blueprints" && (
-              <DocumentIcon className="h-6 w-6 text-zinc-300" />
+              <DocumentIcon className={`h-6 w-6`} />
             )}
             {tag.description && tag.type && (
               <p className="text-sm text-zinc-300">•</p>
@@ -464,19 +529,25 @@ const TagCard: React.FC<{ tag: Tag }> = ({ tag }) => {
           </div>
         </div>
       </div>
+      <div className="flex items-center justify-center">
+        <p className="text-sm text-zinc-300"> {tag.user?.email}</p>
+      </div>
       <div className="flex gap-1">
         <div className="hidden items-center gap-1 md:flex">
           <p className="hidden text-sm text-zinc-300 md:block">
-            <span className="text-zinc-500 italic">updated</span> {dayjs(tag.updatedAt || tag.createdAt).fromNow()}
+            <span className="italic text-zinc-500">updated</span>{" "}
+            {dayjs(tag.updatedAt || tag.createdAt).fromNow()}
           </p>
           {/* <TagOptions /> */}
         </div>
 
-        <SimpleDropDown trigger={
-          <button className="flex items-center justify-center p-2">
-            <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
-          </button>
-        }>
+        <SimpleDropDown
+          trigger={
+            <button className="flex items-center justify-center p-2">
+              <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
+            </button>
+          }
+        >
           <TagOptions tag={tag} />
         </SimpleDropDown>
       </div>
@@ -486,7 +557,7 @@ const TagCard: React.FC<{ tag: Tag }> = ({ tag }) => {
 
 const TagOptions: React.FC<{ tag: Tag }> = ({ tag }) => {
   return (
-    <div className="flex flex-col justify-start items-start gap-1">
+    <div className="flex flex-col items-start justify-start gap-1">
       <TagWizard editTag={tag} />
       <TooltipComponent content="Delete tag" side="bottom">
         {/* <button className="rounded bg-zinc-700 p-2 hover:bg-amber-700">
