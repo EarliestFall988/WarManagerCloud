@@ -10,10 +10,26 @@ import "~/styles/globals.css";
 import Head from "next/head";
 import NextNProgress from "nextjs-progressbar";
 import { useEffect, useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const [previousNetworkStatus, setPreviousNetworkStatus] = useState("online"); // ["online", "offline"
   const [networkStatus, setNetworkStatus] = useState("online");
+  const [showDev, setShowDev] = useState(true);
+
+  const { data } = api.versioning.getVersionType.useQuery();
+
+  const [versionType, setVersionType] = useState("PROD");
+
+  useEffect(() => {
+    if (data) {
+      setVersionType(data);
+    }
+
+    if (data == "PROD") {
+      setShowDev(false);
+    }
+  }, [data]);
 
   useEffect(() => {
     window.addEventListener("online", () => setNetworkStatus("online"));
@@ -50,22 +66,43 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     <>
       <Head>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>War Manager</title>
+
         <meta
           name="description"
           content="War Manager is your digital multi-tool to anticipate challenges in the field."
         />
-        <link
-          rel="shortcut icon"
-          crossOrigin="use-credentials"
-          href="/favicon.ico"
-        />
-        <link
-          rel="mask-icon"
-          crossOrigin="use-credentials"
-          href="/icon.png"
-          color="#27272a"
-        />
+        {versionType == "PROD" && (
+          <>
+            <title>War Manager</title>
+            <link
+              rel="shortcut icon"
+              crossOrigin="use-credentials"
+              href="/favicon.ico"
+            />
+            <link
+              rel="mask-icon"
+              crossOrigin="use-credentials"
+              href="/icon.png"
+              color="#27272a"
+            />
+          </>
+        )}
+        {versionType == "DEV" && (
+          <>
+            <title>{"War Manager (Development)"}</title>
+            <link
+              rel="shortcut icon"
+              crossOrigin="use-credentials"
+              href="/static/dev_favicon.ico"
+            />
+            <link
+              rel="mask-icon"
+              crossOrigin="use-credentials"
+              href="/static/WM Web Logo Development v1.png"
+              color="#27272a"
+            />
+          </>
+        )}
         <meta name="theme-color" content="#27272a" />
         {/* <link rel="apple-touch-icon" crossOrigin="use-credentials" href="logo.png" />
         <link rel="apple-touch-icon" crossOrigin="use-credentials" sizes="152x152" href="logo.png" />
@@ -120,6 +157,18 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         {...pageProps}
       >
         <Toaster position="bottom-center" />
+        {versionType == "DEV" && showDev && (
+          <div className="fixed top-0 z-40 flex w-full items-center justify-center rounded-b border-b border-zinc-700 bg-white font-semibold text-red-500">
+            Development Version
+            <button
+              onClick={() => {
+                setShowDev(false);
+              }}
+            >
+              <XMarkIcon className="ml-2 h-5 w-5 cursor-pointer" />
+            </button>
+          </div>
+        )}
         <Component {...pageProps} />
       </ClerkProvider>
     </>
