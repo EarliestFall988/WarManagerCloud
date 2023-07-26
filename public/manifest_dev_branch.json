@@ -1,0 +1,41 @@
+{
+  "start_url": "/dashboard",
+  "id": "/dashboard",
+  "name": "(Beta) War Manager Production Cloud Service",
+  "short_name": "War Manager BETA",
+  "description": "War Manager enables you to stay organized and keep your team on the same page.",
+  "icons": [
+    {
+      "src": "https://warmanagerstorage.blob.core.windows.net/wmcontainerstorage/Installer%20Website/PWA%20Icons/wmlogo44.png",
+      "type": "image/png",
+      "sizes": "184x184"
+    },
+    {
+      "src": "https://warmanagerstorage.blob.core.windows.net/wmcontainerstorage/Installer%20Website/PWA%20Icons/android-launchericon-48-48.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "https://warmanagerstorage.blob.core.windows.net/wmcontainerstorage/Installer%20Website/PWA%20Icons/72.png",
+      "type": "image/png",
+      "sizes": "72x72"
+    },
+    {
+      "src": "https://warmanagerstorage.blob.core.windows.net/wmcontainerstorage/Installer%20Website/PWA%20Icons/Wide310x150Logo.scale-100.png",
+      "type": "image/png",
+      "sizes": "310x150"
+    },
+    {
+      "src": "https://warmanagerstorage.blob.core.windows.net/wmcontainerstorage/Installer%20Website/PWA%20Icons/512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "theme_color": "#b45309",
+  "background_color": "black",
+  "orientation": "portrait",
+  "display": "standalone",
+  "display_override": [
+    "tabbed"
+  ]
+}
