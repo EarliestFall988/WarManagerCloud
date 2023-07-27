@@ -71,7 +71,7 @@ const NewBlueprintPage: NextPage = () => {
 
   //redirect if the user is not found
   if (!user) {
-    return <SignInModal redirectUrl={`/newblueprint`} />;
+    return <SignInModal redirectUrl={`/blueprints/new`} />;
   }
 
   // const nodes = [] as object[];

@@ -29,7 +29,7 @@ const ProjectMenu = () => (
         </Head>
         <TooltipComponent content="Add a New Project" side="bottom">
             <Link
-                href="/newproject"
+                href="/projects/new"
                 className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
             >
                 <PlusIcon className="h-6 w-6 text-zinc-100" />
