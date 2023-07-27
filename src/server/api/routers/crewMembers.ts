@@ -214,7 +214,7 @@ export const crewMembersRouter = createTRPCRouter({
         email: z
           .string({ required_error: "Email is required." })
           .email("The email is invalid.")
-          .max(255, "Email must be less than 255 characters."),
+          .max(255, "Email must be less than 255 characters.").optional(),
         tags: z.array(z.string()),
         wage: z
           .number({ required_error: "A crew member must have a wage" })
@@ -281,7 +281,7 @@ export const crewMembersRouter = createTRPCRouter({
           position: input.position.trim(),
           description: input.notes?.trim(),
           phone: input.phone.trim(),
-          email: input.email.trim(),
+          email: input?.email?.trim() || "",
           wage: input.wage,
           burden: input.burden,
           rating: input.rating.toString().trim(),
