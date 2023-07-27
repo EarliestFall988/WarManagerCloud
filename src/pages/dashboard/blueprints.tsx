@@ -89,7 +89,7 @@ const BlueprintsListPage: NextPage = () => {
             </div>
             <TooltipComponent content="Create a New Blueprint" side="bottom">
               <Link
-                href="/newblueprint"
+                href="/blueprints/new"
                 className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-zinc-700 bg-gradient-to-br text-center transition-all duration-100 hover:bg-amber-700 sm:text-lg sm:font-semibold"
               >
                 <PlusIcon className="h-6 w-6" />
