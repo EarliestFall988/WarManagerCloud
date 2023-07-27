@@ -1,9 +1,8 @@
 import type { Project } from "@prisma/client";
 import type { NextPage } from "next";
-import { useCallback, useState } from "react";
-import { utils, writeFileXLSX, writeXLSX } from "xlsx";
+import { useCallback } from "react";
+import { utils, writeFileXLSX } from "xlsx";
 import {
-  LoadingPage,
   LoadingPage2,
   LoadingSpinner,
 } from "~/components/loading";
@@ -19,7 +18,6 @@ import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 import { toast } from "react-hot-toast";
 import TooltipComponent from "~/components/Tooltip";
-import { reject } from "lib0/promise";
 
 type DealType = {
   id: number;

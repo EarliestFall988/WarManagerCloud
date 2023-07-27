@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { parse } from "papaparse";
 import { toast } from "react-hot-toast";
 import { api } from "~/utils/api";
-import { date } from "zod";
 
 type projectData = {
   Job: string;
@@ -27,6 +26,8 @@ export const Projects = () => {
   //   const [file, setFile] = useState<File | null>(null);
   const [isDeveloper, setIsDeveloper] = useState(false);
   const router = useRouter();
+
+
   const { user } = useUser();
 
   const { mutate } = api.projects.createMany.useMutation({
@@ -93,6 +94,8 @@ export const Projects = () => {
       },
     });
   };
+
+  void router.push("/");
 
   const uploadCrewData = (files: FileList | null) => {
     if (!files) {

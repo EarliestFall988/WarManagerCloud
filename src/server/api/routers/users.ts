@@ -3,10 +3,9 @@ import { createTRPCRouter, privateProcedure } from "../trpc";
 import { type User } from "@clerk/nextjs/server";
 import type { User as PUser } from "@prisma/client";
 
-import { z } from "zod";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-import { TRPCError } from "@trpc/server";
+// import { Ratelimit } from "@upstash/ratelimit";
+// import { Redis } from "@upstash/redis";
+
 import checkIfUserIsAdmin from "~/server/helpers/userIsAdmin";
 
 type UserType = {
@@ -15,15 +14,15 @@ type UserType = {
 };
 
 
-const redis = new Redis({
-  url: "https://us1-merry-snake-32728.upstash.io",
-  token: "AX_sAdsdfsgODM5ZjExZGEtMmmVjNmE345445kGVmZTk5MzQ=",
-});
+// const redis = new Redis({
+//   url: "https://us1-merry-snake-32728.upstash.io",
+//   token: "AX_sAdsdfsgODM5ZjExZGEtMmmVjNmE345445kGVmZTk5MzQ=",
+// });
 
-const rateLimit = new Ratelimit({
-  redis: redis,
-  limiter: Ratelimit.slidingWindow(3, "1 m"),
-});
+// const rateLimit = new Ratelimit({
+//   redis: redis,
+//   limiter: Ratelimit.slidingWindow(3, "1 m"),
+// });
 
 const isValidUser = (user?: User) => {
   if (!user) {
