@@ -185,10 +185,14 @@ export const projectsRouter = createTRPCRouter({
             },
           ],
         },
-        orderBy: {
-          updatedAt: "desc",
-          name: "asc",
-        },
+        orderBy: [
+          {
+            updatedAt: "desc",
+          },
+          {
+            name: "asc",
+          },
+        ],
         include: {
           tags: true,
         },

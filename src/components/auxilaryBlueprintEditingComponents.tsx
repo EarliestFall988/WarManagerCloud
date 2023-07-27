@@ -243,6 +243,7 @@ export const ProjectsList = (props: { blueprintId: string }) => {
             )}
           </>
         )}
+        {isLoading && <LoadingSpinner />}
       </div>
     </div>
   );
