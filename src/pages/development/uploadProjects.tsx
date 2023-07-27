@@ -1,5 +1,4 @@
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { parse } from "papaparse";
 import { toast } from "react-hot-toast";

@@ -370,7 +370,7 @@ export const crewMembersRouter = createTRPCRouter({
 
       if (updatedDescription) {
         result += `Notes: ${oldCrewMember?.description || ""} -> ${
-          crewMember.description
+          crewMember.description || ""
         }\n`;
         changes++;
       }
