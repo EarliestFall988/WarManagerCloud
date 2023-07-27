@@ -212,9 +212,8 @@ export const crewMembersRouter = createTRPCRouter({
           .string({ required_error: "Phone Number is required." })
           .refine(isMobilePhone, "The phone number is invalid."),
         email: z
-          .string({ required_error: "Email is required." })
-          .email("The email is invalid.")
-          .max(255, "Email must be less than 255 characters.").optional(),
+        .union([z.string().length(0), z.string().email()])
+        .optional().transform(e => e === "" ? null : e),
         tags: z.array(z.string()),
         wage: z
           .number({ required_error: "A crew member must have a wage" })
