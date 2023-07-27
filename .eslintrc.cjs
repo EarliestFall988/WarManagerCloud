@@ -1,3 +1,5 @@
+import { off } from "process";
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require("path");
 
@@ -29,6 +31,7 @@ const config = {
       },
     ],
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    "react-hooks/exhaustive-deps": "off",
   },
 };
 
