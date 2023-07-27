@@ -7,7 +7,6 @@ import { TRPCError } from "@trpc/server";
 
 import isMobilePhone from "validator/lib/isMobilePhone";
 import { clerkClient } from "@clerk/nextjs";
-import { last } from "lib0/array";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",

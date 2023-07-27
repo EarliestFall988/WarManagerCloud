@@ -25,7 +25,6 @@ type crewData = {
 export const Projects = () => {
   //   const [file, setFile] = useState<File | null>(null);
   const [isDeveloper, setIsDeveloper] = useState(false);
-  const router = useRouter();
 
 
   const { user } = useUser();
@@ -94,8 +93,6 @@ export const Projects = () => {
       },
     });
   };
-
-  void router.push("/");
 
   const uploadCrewData = (files: FileList | null) => {
     if (!files) {

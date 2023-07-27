@@ -348,7 +348,7 @@ const ProjectProgress: React.FC<{ project: Project; index: number }> = ({
             500 // * (index / 3) + 500
         );
         return () => clearTimeout(timer);
-    }, []);
+    }, [project.percentComplete]);
 
     return (
         <TooltipComponent
