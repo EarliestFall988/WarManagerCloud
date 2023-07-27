@@ -50,9 +50,14 @@ export const projectsRouter = createTRPCRouter({
       if (input.search.length < 3 && input.filter.length === 0) {
         const projects = await ctx.prisma.project.findMany({
           take: 100,
-          orderBy: {
-            updatedAt: "desc",
-          },
+          orderBy: [
+            {
+              updatedAt: "desc",
+            },
+            {
+              name: "asc",
+            },
+          ],
           include: {
             tags: true,
           },
@@ -64,10 +69,15 @@ export const projectsRouter = createTRPCRouter({
 
       if (input.search.length < 3 && input.filter.length > 0) {
         const projects = await ctx.prisma.project.findMany({
-          take: 30,
-          orderBy: {
-            updatedAt: "desc",
-          },
+          take: 50,
+          orderBy: [
+            {
+              updatedAt: "desc",
+            },
+            {
+              name: "asc",
+            },
+          ],
           include: {
             tags: true,
           },
@@ -86,10 +96,15 @@ export const projectsRouter = createTRPCRouter({
 
       if (input.search.length >= 3 && input.filter.length > 0) {
         const projects = await ctx.prisma.project.findMany({
-          take: 30,
-          orderBy: {
-            updatedAt: "desc",
-          },
+          take: 50,
+          orderBy: [
+            {
+              updatedAt: "desc",
+            },
+            {
+              name: "asc",
+            },
+          ],
           include: {
             tags: true,
           },
@@ -140,7 +155,7 @@ export const projectsRouter = createTRPCRouter({
       }
 
       const projects = await ctx.prisma.project.findMany({
-        take: 30,
+        take: 50,
         where: {
           OR: [
             {
@@ -172,6 +187,7 @@ export const projectsRouter = createTRPCRouter({
         },
         orderBy: {
           updatedAt: "desc",
+          name: "asc",
         },
         include: {
           tags: true,
@@ -194,6 +210,123 @@ export const projectsRouter = createTRPCRouter({
       });
 
       return project;
+    }),
+
+  createMany: privateProcedure
+    .input(
+      z
+        .object({
+          jobNumber: z.string(),
+          name: z.string(),
+          city: z.string(),
+          state: z.string(),
+        })
+        .array()
+    )
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await rateLimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the rate limit, try again in a minute",
+        });
+      }
+
+      const content = input.map((obj) => {
+        if (obj !== undefined) {
+          const d = obj;
+
+          if (
+            d?.jobNumber !== undefined &&
+            d?.name !== undefined &&
+            d?.city !== undefined &&
+            d?.state !== undefined
+          ) {
+            return {
+              authorId,
+              name: d.name,
+              description: "",
+              jobNumber: d.jobNumber,
+              address: "",
+              notes: "",
+
+              startDate: new Date(),
+              endDate: new Date(),
+              status: "",
+              percentComplete: 0,
+              completed: false,
+
+              laborCost: 0,
+              subContractorCost: 0,
+              materialCost: 0,
+              equipmentCost: 0,
+              otherCost: 0,
+
+              safetyRating: "",
+              qualityRating: "",
+              staffingRating: "",
+              profitabilityRating: "",
+              customerRating: "",
+
+              BillDate: new Date(),
+
+              city: d.city,
+              state: d.state,
+              zip: "",
+            };
+          }
+        }
+
+        return {
+          authorId,
+          name: "",
+          description: "",
+          jobNumber: "",
+          address: "",
+          notes: "",
+
+          startDate: new Date(),
+          endDate: new Date(),
+          status: "",
+          percentComplete: 0,
+          completed: false,
+
+          laborCost: 0,
+          subContractorCost: 0,
+          materialCost: 0,
+          equipmentCost: 0,
+          otherCost: 0,
+
+          safetyRating: "",
+          qualityRating: "",
+          staffingRating: "",
+          profitabilityRating: "",
+          customerRating: "",
+
+          BillDate: new Date(),
+
+          city: "",
+          state: "",
+          zip: "",
+        };
+      });
+
+      if (!content) {
+        throw new Error("No data");
+      }
+
+      const data = content.filter(
+        (obj) => obj !== undefined && obj !== null && obj.jobNumber !== ""
+      );
+
+      const result = await ctx.prisma.project.createMany({
+        data,
+      });
+
+      return result;
     }),
 
   create: privateProcedure
@@ -533,18 +666,24 @@ export const projectsRouter = createTRPCRouter({
       const updatedFields = [] as string[];
 
       if (updatedName) {
-        updatedFields.push(`Name: ${oldData.name || "no name"} -> ${project.name}\n`);
+        updatedFields.push(
+          `Name: ${oldData.name || "no name"} -> ${project.name}\n`
+        );
       }
 
       if (updatedDescription) {
         updatedFields.push(
-          `Description: ${oldData.description || "no description"} -> ${project.description}\n`
+          `Description: ${oldData.description || "no description"} -> ${
+            project.description
+          }\n`
         );
       }
 
       if (updatedJobNumber) {
         updatedFields.push(
-          `Job Number: ${oldData.jobNumber || "no job number"} -> ${project.jobNumber}\n`
+          `Job Number: ${oldData.jobNumber || "no job number"} -> ${
+            project.jobNumber
+          }\n`
         );
       }
 
@@ -555,7 +694,9 @@ export const projectsRouter = createTRPCRouter({
       }
 
       if (updatedCity) {
-        updatedFields.push(`City: ${oldData.city || "no city"} -> ${project.city}\n`);
+        updatedFields.push(
+          `City: ${oldData.city || "no city"} -> ${project.city}\n`
+        );
       }
 
       if (updatedState) {
@@ -565,7 +706,9 @@ export const projectsRouter = createTRPCRouter({
       }
 
       if (updatedZip) {
-        updatedFields.push(`Zip: ${oldData.zip || "no zip"} -> ${project.zip}\n`);
+        updatedFields.push(
+          `Zip: ${oldData.zip || "no zip"} -> ${project.zip}\n`
+        );
       }
 
       if (updatedNotes) {
@@ -576,7 +719,9 @@ export const projectsRouter = createTRPCRouter({
 
       if (updatedTotalManHours) {
         updatedFields.push(
-          `Total Man Hours: ${oldData.TotalManHours || 0} -> ${project.TotalManHours}\n`
+          `Total Man Hours: ${oldData.TotalManHours || 0} -> ${
+            project.TotalManHours
+          }\n`
         );
       }
 
@@ -604,7 +749,9 @@ export const projectsRouter = createTRPCRouter({
 
       if (updatedPercentComplete) {
         updatedFields.push(
-          `Percent Complete: ${oldData.percentComplete || 0} -> ${project.percentComplete}\n`
+          `Percent Complete: ${oldData.percentComplete || 0} -> ${
+            project.percentComplete
+          }\n`
         );
       }
 

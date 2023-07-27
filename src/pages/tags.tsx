@@ -435,8 +435,6 @@ const TagsPage: NextPage = () => {
     setNewPanelOpen(!newPanelOpen);
   }, [newPanelOpen, setNewPanelOpen]);
 
-  const context = api.useContext().tags;
-
   const {
     data,
     isLoading: loading,
@@ -500,9 +498,9 @@ const TagCard: React.FC<{ tag: TagType }> = ({ tag }) => {
       <div className="flex items-center justify-start gap-2">
         <div className="flex items-center gap-2"></div>
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 py-1">
             <div
-              className="-ml-2 rounded-full border-2 px-2 text-lg font-semibold"
+              className="-ml-2 rounded-full border px-2 font-semibold"
               style={{
                 color: tag.backgroundColor || "#000",
                 borderColor: tag.backgroundColor || "#000",
@@ -529,13 +527,12 @@ const TagCard: React.FC<{ tag: TagType }> = ({ tag }) => {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-center">
-        <p className="text-sm text-zinc-300"> {tag.user?.email}</p>
-      </div>
+      <div className="flex items-center justify-center"></div>
       <div className="flex gap-1">
         <div className="hidden items-center gap-1 md:flex">
+          <p className="text-sm text-zinc-300"> {tag.user?.email}</p>
           <p className="hidden text-sm text-zinc-300 md:block">
-            <span className="italic text-zinc-500">updated</span>{" "}
+            {" • "}
             {dayjs(tag.updatedAt || tag.createdAt).fromNow()}
           </p>
           {/* <TagOptions /> */}

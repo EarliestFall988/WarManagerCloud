@@ -10,7 +10,7 @@ import { TagBubble } from "~/components/TagComponent";
 import { TagsPopover } from "~/components/TagDropdown";
 import TooltipComponent from "~/components/Tooltip";
 import { SimpleDropDown } from "~/components/dropdown";
-import { LoadingHeader, LoadingPage2, LoadingSpinner } from "~/components/loading";
+import { LoadingPage2, LoadingSpinner } from "~/components/loading";
 import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -348,7 +348,7 @@ const ProjectProgress: React.FC<{ project: Project; index: number }> = ({
             500 // * (index / 3) + 500
         );
         return () => clearTimeout(timer);
-    }, []);
+    }, [project.percentComplete]);
 
     return (
         <TooltipComponent

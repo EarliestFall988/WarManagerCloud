@@ -97,23 +97,24 @@ model CrewMember {
 
   name        String  @db.VarChar(255)
   position    String  @db.VarChar(255)
-  description String  @db.VarChar(255)
+  description String? @db.VarChar(255)
   phone       String  @db.VarChar(255)
   email       String  @db.VarChar(255)
-  travel      String  @db.VarChar(255)
+  travel      String? @db.VarChar(255)
   skills      Json?
-  rating      String  @db.VarChar(255)
+  rating      String  @db.VarChar(255) @default("5")
   sector      Sector? @relation(fields: [sectorId], references: [id])
 
+  startDate      DateTime?
   lastReviewDate DateTime?
 
   tags Tag[]
 
-  wage   Float
-  burden Float
-  rate   Float
-  hours  Float
-  total  Float
+  wage   Float @default(0)
+  burden Float @default(0)
+  rate   Float @default(0)
+  hours  Float @default(0)
+  total  Float @default(0)
 
   authorId String
   sectorId String?
@@ -270,8 +271,8 @@ model Permissions {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
+  name        String          @db.VarChar(255)
+  description String          @db.VarChar(255)
   keywords    PermissionKey[]
 
   authorId   String
@@ -286,9 +287,9 @@ model PermissionKey {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
-  color       String @db.VarChar(255)
+  name        String        @db.VarChar(255)
+  description String        @db.VarChar(255)
+  color       String        @db.VarChar(255)
   Permissions Permissions[]
 
   authorId String
@@ -297,14 +298,14 @@ model PermissionKey {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   permissionsId String
 
-  clerkId     String        @unique @db.VarChar(255)
-  permissions Permissions   @relation(fields: [permissionsId], references: [id])
-  role        String        @db.VarChar(255)
+  clerkId     String      @unique @db.VarChar(255)
+  permissions Permissions @relation(fields: [permissionsId], references: [id])
+  role        String      @db.VarChar(255)
 
   authorId String
 

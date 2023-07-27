@@ -19,7 +19,7 @@ import { toast } from "react-hot-toast";
 import { TagBubble } from "~/components/TagComponent";
 import { TagsPopover } from "~/components/TagDropdown";
 import { SimpleDropDown } from "~/components/dropdown";
-import { LoadingHeader, LoadingPage2, LoadingSpinner } from "~/components/loading";
+import { LoadingPage2, LoadingSpinner } from "~/components/loading";
 import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";

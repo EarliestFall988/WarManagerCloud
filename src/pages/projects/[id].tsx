@@ -2,15 +2,13 @@ import { SignedIn } from "@clerk/nextjs";
 import {
   ArrowRightIcon,
   CloudArrowUpIcon,
-  PlusIcon,
-  TrashIcon,
 } from "@heroicons/react/24/solid";
-import type { Equipment, Tag } from "@prisma/client";
+import type { Tag } from "@prisma/client";
 import * as Slider from "@radix-ui/react-slider";
 import type { GetStaticProps, GetStaticPropsContext, NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
@@ -18,7 +16,7 @@ import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 
 import { TagsMultiselectDropdown } from "~/components/TagDropdown";
-import { ButtonCallToActionComponent, ButtonDeleteAction, InputComponent, TextareaComponent, style } from "~/components/input";
+import { ButtonCallToActionComponent, ButtonDeleteAction, InputComponent, TextareaComponent } from "~/components/input";
 
 function padTo2Digits(num: number) {
   return num.toString().padStart(2, "0");
@@ -464,113 +462,113 @@ const EditProjectPage = function ({ id }: { id: string }) {
   );
 };
 
-type JobData = {
-  equipment: Equipment[];
-  other: string[];
-};
+// type JobData = {
+//   equipment: Equipment[];
+//   other: string[];
+// };
 
-type EquipmentEstimation = {
-  id: string;
-  name: string;
-  quantity: string;
-  type: string;
-};
+// type EquipmentEstimation = {
+//   id: string;
+//   name: string;
+//   quantity: string;
+//   type: string;
+// };
 
 
 //props: { data?: JobData | [] }
-const EquipmentEditor = () => {
-  // if (!props.data) {
-  //   return (
-  //     <div className="w-full rounded bg-white p-2 font-semibold italic text-zinc-500">
-  //       no data...
-  //     </div>
-  //   );
-  // }
+// const EquipmentEditor = () => {
+//   // if (!props.data) {
+//   //   return (
+//   //     <div className="w-full rounded bg-white p-2 font-semibold italic text-zinc-500">
+//   //       no data...
+//   //     </div>
+//   //   );
+//   // }
 
-  const [name, setName] = useState("Dumpster");
-  const [quantity, setQuantity] = useState("1");
-  const [type, setType] = useState("Dumpster");
+//   const [name, setName] = useState("Dumpster");
+//   const [quantity, setQuantity] = useState("1");
+//   const [type, setType] = useState("Dumpster");
 
-  const [equipment, setEquipment] = useState<EquipmentEstimation[]>([]);
+//   const [equipment, setEquipment] = useState<EquipmentEstimation[]>([]);
 
-  // const data = props.data ?? [];
+//   // const data = props.data ?? [];
 
-  // const equipment = data { equipment } as Equipment[];
+//   // const equipment = data { equipment } as Equipment[];
 
-  // console.log("equipment", equipment);
+//   // console.log("equipment", equipment);
 
-  const typeInputRef = useRef<HTMLInputElement>(null);
+//   const typeInputRef = useRef<HTMLInputElement>(null);
 
-  const AddToEquipment = () => {
-    setEquipment((prev) => [
-      ...prev,
-      { id: equipment.length.toString(), name, quantity, type },
-    ]);
-    setName("");
-    setQuantity("1");
-    setType("");
-    if (typeInputRef.current) typeInputRef.current.focus();
-  };
+//   const AddToEquipment = () => {
+//     setEquipment((prev) => [
+//       ...prev,
+//       { id: equipment.length.toString(), name, quantity, type },
+//     ]);
+//     setName("");
+//     setQuantity("1");
+//     setType("");
+//     if (typeInputRef.current) typeInputRef.current.focus();
+//   };
 
-  const RemoveFromEquipment = (id: string) => {
-    setEquipment((prev) => prev.filter((e) => e.id !== id));
-  };
+//   const RemoveFromEquipment = (id: string) => {
+//     setEquipment((prev) => prev.filter((e) => e.id !== id));
+//   };
 
-  return (
-    <div className="flex flex-col border-t border-zinc-700">
-      {equipment.map((e) => (
-        <div
-          className="flex w-full gap-2 border-x border-b border-zinc-700 p-2 text-white"
-          key={e.id}
-        >
-          <p>{e.quantity}</p>
-          <p className="w-full">{e.type}</p>
-          <button onClick={() => RemoveFromEquipment(e.id)}>
-            <TrashIcon className="h-5 w-5 text-red-500" />
-          </button>
-        </div>
-      ))}
-      <div className="p-1"></div>
-      <div className="flex gap-2">
-        <input
-          className={`${style}`}
-          value={type}
-          id="type"
-          type="text"
-          placeholder="name or type of equipment"
-          onChange={(e) => setType(e.target.value)}
-          disabled={false}
-          ref={typeInputRef}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              AddToEquipment();
-            }
-          }}
-        />
-        <input
-          className={`${style} w-1/6`}
-          value={quantity}
-          type="number"
-          onChange={(e) => setQuantity(e.target.value)}
-          disabled={false}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              AddToEquipment();
-            }
-          }}
-        />
-      </div>
-      <button
-        onClick={AddToEquipment}
-        className="mt-2 flex w-full items-center justify-center rounded bg-zinc-600 p-2 hover:bg-zinc-500"
-      >
-        <PlusIcon className="h-5 w-5" />
-      </button>
-    </div>
-  );
-};
+//   return (
+//     <div className="flex flex-col border-t border-zinc-700">
+//       {equipment.map((e) => (
+//         <div
+//           className="flex w-full gap-2 border-x border-b border-zinc-700 p-2 text-white"
+//           key={e.id}
+//         >
+//           <p>{e.quantity}</p>
+//           <p className="w-full">{e.type}</p>
+//           <button onClick={() => RemoveFromEquipment(e.id)}>
+//             <TrashIcon className="h-5 w-5 text-red-500" />
+//           </button>
+//         </div>
+//       ))}
+//       <div className="p-1"></div>
+//       <div className="flex gap-2">
+//         <input
+//           className={`${style}`}
+//           value={type}
+//           id="type"
+//           type="text"
+//           placeholder="name or type of equipment"
+//           onChange={(e) => setType(e.target.value)}
+//           disabled={false}
+//           ref={typeInputRef}
+//           onKeyDown={(e) => {
+//             if (e.key === "Enter") {
+//               e.preventDefault();
+//               AddToEquipment();
+//             }
+//           }}
+//         />
+//         <input
+//           className={`${style} w-1/6`}
+//           value={quantity}
+//           type="number"
+//           onChange={(e) => setQuantity(e.target.value)}
+//           disabled={false}
+//           onKeyDown={(e) => {
+//             if (e.key === "Enter") {
+//               e.preventDefault();
+//               AddToEquipment();
+//             }
+//           }}
+//         />
+//       </div>
+//       <button
+//         onClick={AddToEquipment}
+//         className="mt-2 flex w-full items-center justify-center rounded bg-zinc-600 p-2 hover:bg-zinc-500"
+//       >
+//         <PlusIcon className="h-5 w-5" />
+//       </button>
+//     </div>
+//   );
+// };
 
 const ViewProjectPage = function ({ id }: { id: string }) {
   const { data: project } = api.projects.getById.useQuery({ id });
