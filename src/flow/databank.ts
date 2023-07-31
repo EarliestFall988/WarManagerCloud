@@ -24,9 +24,7 @@ const useLiveData = () => {
     data: projects,
     isLoading: loadingProjects,
     isError: errorProjects,
-  } = api.projects.getAll.useQuery({
-    statusFilter: "Active",
-  });
+  } = api.projects.getAll.useQuery();
 
   useMemo(() => {
     if (!crewMembers || !projects) return;
