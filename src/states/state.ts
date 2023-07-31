@@ -199,22 +199,22 @@ export const GetListOfNodesSortedByRow = () => {
   return nodesSortedByRow;
 };
 
-export const GetListOfNodesSortedByColumn = () => {
-  const nodes = useStore.getState().nodes;
-  const nodesSortedByColumn = nodes.sort((a, b) => {
-    const xCol = a.position.x - b.position.x;
+// export const GetListOfNodesSortedByColumn = () => {
+//   const nodes = useStore.getState().nodes;
+//   const nodesSortedByColumn = nodes.sort((a, b) => {
+//     const xCol = a.position.x - b.position.x;
 
-    if (xCol !== 0) {
-      return xCol;
-    } else {
-      return a.position.y - b.position.y;
-    }
-  });
+//     if (xCol !== 0) {
+//       return xCol;
+//     } else {
+//       return a.position.y - b.position.y;
+//     }
+//   });
 
-  console.log("sorted by column", nodesSortedByColumn);
+//   console.log("sorted by column", nodesSortedByColumn);
 
-  return nodesSortedByColumn;
-};
+//   return nodesSortedByColumn;
+// };
 
 const DeleteEdgesOfSelectedNodes = () => {
   const selectedNodeIds = GetSelectedNodes().map((node) => node.id);

@@ -19,7 +19,6 @@ const rateLimit = new Ratelimit({
 export const projectsRouter = createTRPCRouter({
   getAll: privateProcedure.query(async ({ ctx }) => {
     const projects = await ctx.prisma.project.findMany({
-      take: 100,
       orderBy: {
         createdAt: "desc",
       },

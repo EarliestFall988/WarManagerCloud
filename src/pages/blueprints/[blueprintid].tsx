@@ -266,7 +266,7 @@ const Panels: React.FC<{
       }`}
     >
       <div className="w-full overflow-y-auto overflow-x-hidden ">
-        {toggle === "GetLink" && <ExportBlueprint />}
+        {toggle === "GetLink" && <ExportBlueprint blueprintId={blueprint.id} />}
         {toggle === "Project" && <ProjectsList blueprintId={blueprint.id} />}
         {toggle === "Employee" && <CrewList blueprintId={blueprint.id} />}
         {toggle === "Stats" && <Stats blueprint={blueprint} />}

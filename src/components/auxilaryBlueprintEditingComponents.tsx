@@ -19,7 +19,6 @@ import {
 import useScript from "./dragDropTouchEventsHandling";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
-import { GetListOfNodesSortedByColumn } from "~/states/state";
 import TooltipComponent from "./Tooltip";
 import * as Tabs from "@radix-ui/react-tabs";
 import { TagBubble } from "./TagComponent";
@@ -27,6 +26,7 @@ import { ScheduleItem } from "./ScheduleItem";
 import { DialogComponent } from "./dialog";
 import { useRouter } from "next/router";
 import { GetNodes } from "~/flow/useNodesStateSynced";
+import { GetListOfNodesSortedByColumn } from "~/flow/flow";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -95,18 +95,12 @@ export const ProjectsList = (props: { blueprintId: string }) => {
         (node) => node.type === "projectNode"
       );
 
-      console.log("props nodes", blueprintNodes);
-
-      console.log("nodes", nodes);
-
       const projects = data?.filter((project) => {
         return nodes.some((node) => {
           const nodeProject = node.data as Project;
           return nodeProject.id === project.id;
         });
       });
-
-      console.log("projects", projects);
 
       return projects || ([] as (Project & { tags: Tag[] })[]);
     } else {
@@ -243,7 +237,11 @@ export const ProjectsList = (props: { blueprintId: string }) => {
             )}
           </>
         )}
-        {isLoading && <LoadingSpinner />}
+        {(isLoading || isLoadingProjects) && (
+          <div className="flex h-40 items-center justify-center">
+            <LoadingSpinner />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -469,7 +467,9 @@ const NothingToDisplayNotice = (props: { context: string }) => {
   );
 };
 
-export const ExportBlueprint = () => {
+export const ExportBlueprint: React.FC<{ blueprintId: string }> = ({
+  blueprintId
+}) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
@@ -504,17 +504,20 @@ export const ExportBlueprint = () => {
     toast.success("Link copied to clipboard");
   };
 
-  const ExportSchedule = useCallback(() => {
-    const nodes = GetListOfNodesSortedByColumn();
+  const ExportSchedule = useCallback(
+    (blueprintId: string) => {
+      const nodes = GetListOfNodesSortedByColumn(blueprintId);
 
-    const schedule = {
-      title: title,
-      notes: description,
-      nodes: JSON.stringify(nodes),
-    };
+      const schedule = {
+        title: title,
+        notes: description,
+        nodes: JSON.stringify(nodes),
+      };
 
-    mutate(schedule);
-  }, [title, description, mutate]);
+      mutate(schedule);
+    },
+    [title, description, mutate]
+  );
 
   return (
     <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh]">
@@ -544,7 +547,9 @@ export const ExportBlueprint = () => {
           disabled={isCreating}
         />
         <button
-          onClick={ExportSchedule}
+          onClick={() => {
+            ExportSchedule(blueprintId);
+          }}
           disabled={isCreating}
           className="flex items-center justify-center gap-1 rounded bg-gradient-to-br from-amber-700 to-red-700 p-2 font-semibold text-white hover:from-amber-600 hover:to-red-600 disabled:bg-red-500"
         >
@@ -612,9 +617,7 @@ interface IFlowInstance {
   };
 }
 
-export const Stats = (props: {
-  blueprint: Blueprint;
-}) => {
+export const Stats = (props: { blueprint: Blueprint }) => {
   const data = JSON.parse(props.blueprint?.data) as IFlowInstance;
 
   const currentNodes = GetNodes(props.blueprint.id);
