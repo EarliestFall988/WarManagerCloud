@@ -1,9 +1,9 @@
 import autoAnimate from "@formkit/auto-animate";
 import {
   Bars3Icon,
+  BuildingOffice2Icon,
   ChevronLeftIcon,
   DocumentIcon,
-  GlobeAmericasIcon,
   NewspaperIcon,
   ShieldCheckIcon,
   UserCircleIcon,
@@ -116,7 +116,7 @@ const MobileMenu = () => {
                 }}
                 className={`flex w-full items-center justify-start gap-2 border-b border-zinc-600 p-3 text-lg font-bold transition-all duration-200`}
               >
-                <GlobeAmericasIcon className="h-5 w-5" />
+                <BuildingOffice2Icon className="h-5 w-5" />
                 Sectors
               </button>
             </Dialog.DialogClose>
@@ -224,7 +224,7 @@ const SettingsMenu: React.FC<{ showMenu: boolean }> = ({ showMenu }) => {
               </button>
               <div className="h-full w-full bg-zinc-800">
                 <MenuLink name="Sectors" link="/settings/sectors">
-                  <GlobeAmericasIcon className="h-5 w-5" />
+                  <BuildingOffice2Icon className="h-5 w-5" />
                 </MenuLink>
                 <MenuLink name="Permissions" link="/settings/permissions">
                   <ShieldCheckIcon className="h-5 w-5" />

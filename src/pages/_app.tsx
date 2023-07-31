@@ -164,15 +164,20 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       >
         <Toaster position="bottom-center" />
         {versionType == "DEV" && showDev && (
-          <div className="fixed top-0 z-40 flex w-full items-center justify-center rounded-b border-b border-zinc-700 bg-white font-semibold text-red-500">
-            Development Version
-            <button
-              onClick={() => {
-                setShowDev(false);
-              }}
-            >
-              <XMarkIcon className="ml-2 h-5 w-5 cursor-pointer" />
-            </button>
+          <div className="fixed bottom-0 z-40 flex w-full items-center justify-around font-semibold text-red-500/80">
+            <div className="flex gap-2 rounded bg-white/90 px-2 border-black border-2">
+              <p>
+                Developer version - anything is subject to change.
+              </p>
+              <button
+                onClick={() => {
+                  setShowDev(false);
+                }}
+              >
+                <XMarkIcon className="ml-2 h-5 w-5 cursor-pointer" />
+              </button>
+            </div>
+            <div></div>
           </div>
         )}
         <Component {...pageProps} />

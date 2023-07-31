@@ -5,7 +5,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
 import { clerkClient } from "@clerk/nextjs";
-import { Prisma } from "@prisma/client";
+import { type Prisma } from "@prisma/client";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -342,7 +342,7 @@ export const projectsRouter = createTRPCRouter({
             (d) => d.jobNumber === obj.jobNumber && d.pw === true
           );
 
-          console.log(obj.jobNumber, compare);
+          // console.log(obj.jobNumber, compare);
 
           if (compare) {
             await ctx.prisma.project
@@ -399,11 +399,15 @@ export const projectsRouter = createTRPCRouter({
   create: privateProcedure
     .input(
       z.object({
-        name: z.string().min(3).max(255),
+        name: z.string().min(3, "The project name must be at least 3 characters long").max(255, "The project name is too long!"),
         // jobNumber: z.string().min(3).max(255),
         // notes: z.string().min(3).max(255),
-        description: z.string().min(3).max(255),
-
+        description: z.string().optional(),
+        tags: z.array(z.string()),
+        sectors: z
+          .array(z.string())
+          .min(1, "Be sure to add a sector to your project.")
+          .max(1, "Currently only one sector can be added to a project."),
         // address: z.string().min(3).max(255),
         // city: z.string().min(3).max(255),
         // state: z.string().min(3).max(255),
@@ -457,7 +461,7 @@ export const projectsRouter = createTRPCRouter({
         data: {
           authorId,
           name: input.name,
-          description: input.description,
+          description: input.description || "",
           jobNumber: "",
           address: "",
           notes: "",
@@ -485,6 +489,20 @@ export const projectsRouter = createTRPCRouter({
           city: "",
           state: "",
           zip: "",
+          tags: {
+            connect: input.tags.map((tag) => ({
+              id: tag,
+            })),
+          },
+          sectors: {
+            connect: input.sectors.map((sector) => ({
+              id: sector,
+            })),
+          },
+        },
+        include: {
+          tags: true,
+          sectors: true,
         },
       });
 
@@ -584,6 +602,10 @@ export const projectsRouter = createTRPCRouter({
           .number({ required_error: "Percent completion status is required." })
           .min(0, "The percent complete must be a positive integer.")
           .max(100, "The percent complete must be less than or equal to 100."),
+        sectors: z
+          .array(z.string())
+          .min(1, "Be sure to add a sector to your project.")
+          .max(1, "Currently, only one sector is allowed."),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -630,6 +652,14 @@ export const projectsRouter = createTRPCRouter({
         })
         .tags();
 
+      const sectorsToDisconnect = await ctx.prisma.project
+        .findUnique({
+          where: {
+            id: input.id,
+          },
+        })
+        .sectors();
+
       const project = await ctx.prisma.project.update({
         where: {
           id: input.id,
@@ -656,6 +686,15 @@ export const projectsRouter = createTRPCRouter({
 
             connect: input.tags?.map((tag) => ({
               id: tag,
+            })),
+          },
+          sectors: {
+            disconnect: sectorsToDisconnect?.map((sector) => ({
+              id: sector.id,
+            })),
+
+            connect: input.sectors?.map((sector) => ({
+              id: sector,
             })),
           },
         },

@@ -8,7 +8,7 @@ import {
   TagIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
-import { Sector, type Project, type Tag } from "@prisma/client";
+import { type Sector, type Project, type Tag } from "@prisma/client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Progress from "@radix-ui/react-progress";
 import { type NextPage } from "next";
@@ -203,7 +203,7 @@ const ProjectsPage: NextPage = () => {
                           className="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
                         >
                           <div className="lg:w-1/2">
-                            <div className="hidden items-center justify-start text-center font-thin lg:flex">
+                            <div className="flex items-center justify-start gap-2 text-center font-thin">
                               <p className="whitespace-nowrap text-xs font-normal text-zinc-300">
                                 {project.jobNumber}
                               </p>

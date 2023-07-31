@@ -9,6 +9,7 @@ import { TagIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import * as Popover from "@radix-ui/react-popover";
 
 import { useState } from "react";
+import { style } from "./input";
 
 export type DropdownTagType = {
   value: string;
@@ -57,8 +58,6 @@ export const TagsMultiselectDropdown: React.FC<{
       };
     });
 
-    // console.log("tag data", tagData);
-
     const selectedTagData = allTags
       ?.filter((tag) => {
         return savedTags?.find((savedTag) => savedTag.id === tag.id);
@@ -75,8 +74,8 @@ export const TagsMultiselectDropdown: React.FC<{
       const sectorData = sectors?.map((sector) => {
         return {
           value: "s:" + sector.id,
-          label: sector.name,
-          color: "#aaa",
+          label: "🏢 " + sector.name,
+          color: "#eee",
         };
       });
 
@@ -90,12 +89,12 @@ export const TagsMultiselectDropdown: React.FC<{
       .map((sector) => {
         return {
           value: "s:" + sector.id,
-          label: sector.name,
-          color: "#aaa",
+          label: "🏢 " + sector.name,
+          color: "#eee",
         };
       });
 
-    console.log(selectedSectorData);
+    // console.log(selectedSectorData);
 
     selectedTags.push(...(selectedSectorData || []));
 
@@ -120,7 +119,7 @@ export const TagsMultiselectDropdown: React.FC<{
       if (!allTags) return;
 
       e.forEach((tg) => {
-        console.log(tg);
+        // console.log(tg);
 
         if (tg?.value !== undefined && tg?.value.startsWith("s:")) {
           const sector = sectors?.find(
@@ -173,6 +172,24 @@ export const TagsMultiselectDropdown: React.FC<{
         }}
         unstyled
         placeholder="Add Tags..."
+        styles={{
+          option: (provided, state) => ({
+            color: state.data.color,
+            borderWidth: state.data.color === "#eee" ? "0" : "1px",
+            borderColor: state.data.color,
+            borderRadius: "1rem",
+            marginTop: "0.125rem",
+            marginBottom: "0.125rem",
+            padding: "0.125rem 0.5rem",
+          }),
+          multiValue: (provided, state) => ({
+            color: state.data.color,
+            borderWidth: state.data.color === "#eee" ? "1px" : "1px",
+            borderColor: state.data.color,
+            borderRadius: "1rem",
+            padding: "0.125rem 0.5rem",
+          }),
+        }}
         classNames={{
           valueContainer(props) {
             return `flex flex-wrap p-2 bg-zinc-800 rounded-l focus:bg-red-500 gap-1 ${
