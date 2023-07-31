@@ -240,14 +240,6 @@ export const projectsRouter = createTRPCRouter({
           tags: true,
           sectors: true,
         },
-        orderBy: [
-          {
-            updatedAt: "desc",
-          },
-          {
-            name: "asc",
-          },
-        ],
       });
 
       return project;
