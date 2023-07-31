@@ -21,7 +21,6 @@ const rateLimit = new Ratelimit({
 export const crewMembersRouter = createTRPCRouter({
   getAll: privateProcedure.query(async ({ ctx }) => {
     const crewMembers = await ctx.prisma.crewMember.findMany({
-      take: 100,
       orderBy: {
         name: "asc",
       },

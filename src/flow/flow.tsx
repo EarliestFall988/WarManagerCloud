@@ -24,6 +24,7 @@ import noteNode from "~/components/noteNode";
 import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
 import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
+import { toast } from "react-hot-toast";
 // import getDoc, { Init, isLoaded } from "./flowDocument";
 // import { LoadingSpinner } from "~/components/loading";
 // import { setName } from "~/flow/flowDocument";
@@ -57,6 +58,30 @@ const nodeTypes = {
 const proOptions = {
   account: "paid-pro",
   hideAttribution: true,
+};
+
+export const GetListOfNodesSortedByColumn = (blueprintId: string) => {
+  const yMap = nodesMap(blueprintId);
+
+  const nodes = [] as Node[];
+
+  yMap.forEach((node) => {
+    nodes.push(node);
+  });
+
+  const nodesSortedByColumn = nodes.sort((a, b) => {
+    const xCol = a.position.x - b.position.x;
+
+    if (xCol !== 0) {
+      return xCol;
+    } else {
+      return a.position.y - b.position.y;
+    }
+  });
+
+  // console.log("sorted by column", nodesSortedByColumn);
+
+  return nodesSortedByColumn;
 };
 
 // const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
@@ -110,7 +135,11 @@ const Flow: React.FC<{ blueprintId: string; OnNodeDrop?: () => void }> = ({
 
       if (type == "p") {
         const project = projectData.find((project) => project.id == dataId);
-        if (!project) return;
+        if (!project) {
+          console.log("no project found", dataId);
+          toast.error("No project found");
+          return;
+        }
 
         blockResult.data = project;
       }
@@ -119,7 +148,11 @@ const Flow: React.FC<{ blueprintId: string; OnNodeDrop?: () => void }> = ({
         const crewMember = crewData.find(
           (crewMember) => crewMember.id == dataId
         );
-        if (!crewMember) return;
+        if (!crewMember) {
+          console.log("no crew member found", dataId);
+          toast.error("No crew member found");
+          return;
+        }
         blockResult.data = crewMember;
       }
 
