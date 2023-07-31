@@ -1,7 +1,16 @@
-import { ArrowDownTrayIcon, ArrowLongUpIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FunnelIcon, PlusIcon, TagIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowDownTrayIcon,
+  ArrowLongUpIcon,
+  ClipboardDocumentIcon,
+  EllipsisVerticalIcon,
+  FunnelIcon,
+  PlusIcon,
+  TagIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
 import { type Project, type Tag } from "@prisma/client";
-import * as  DropdownMenu from "@radix-ui/react-dropdown-menu";
-import * as  Progress from "@radix-ui/react-progress";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as Progress from "@radix-ui/react-progress";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -18,243 +27,255 @@ import { DashboardMenu } from "~/components/dashboardMenu";
 import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 import Head from "next/head";
-import { useAutoAnimate } from '@formkit/auto-animate/react';
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { DialogComponent } from "~/components/dialog";
 dayjs.extend(relativeTime);
 
 const ProjectMenu = () => (
-    <>
-        <Head>
-            <title>Projects | War Manager</title>
-        </Head>
-        <TooltipComponent content="Add a New Project" side="bottom">
-            <Link
-                href="/projects/new"
-                className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
-            >
-                <PlusIcon className="h-6 w-6 text-zinc-100" />
-            </Link>
-        </TooltipComponent>
-        <TooltipComponent content="Download Projects Spreadsheet" side="bottom">
-            <Link
-                href="/projects/download"
-                className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
-            >
-                <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
-            </Link>
-        </TooltipComponent>
-        <TooltipComponent content="View Tags" side="bottom">
-            <Link
-                href="/tags"
-                className=" flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
-            >
-                <TagIcon className="h-6 w-6 text-zinc-100" />
-            </Link>
-        </TooltipComponent>
-    </>
+  <>
+    <Head>
+      <title>Projects | War Manager</title>
+    </Head>
+    <TooltipComponent content="Add a New Project" side="bottom">
+      <Link
+        href="/projects/new"
+        className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+      >
+        <PlusIcon className="h-6 w-6 text-zinc-100" />
+      </Link>
+    </TooltipComponent>
+    <TooltipComponent content="Download Projects Spreadsheet" side="bottom">
+      <Link
+        href="/projects/download"
+        className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+      >
+        <ArrowDownTrayIcon className="h-6 w-6 text-zinc-100" />
+      </Link>
+    </TooltipComponent>
+    <TooltipComponent content="View Tags" side="bottom">
+      <Link
+        href="/tags"
+        className=" flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+      >
+        <TagIcon className="h-6 w-6 text-zinc-100" />
+      </Link>
+    </TooltipComponent>
+  </>
 );
 
-
 const ProjectsPage: NextPage = () => {
+  const [animateParent] = useAutoAnimate();
 
-    const [animateParent] = useAutoAnimate();
+  const [projectSearchTerm, setProjectsSearchTerm] = useState("");
 
-    const [projectSearchTerm, setProjectsSearchTerm] = useState("");
+  const [filter, setFilter] = useState<Tag[]>([]);
+  const [filterOpen, setFilterOpen] = useState(false);
 
-    const [filter, setFilter] = useState<Tag[]>([]);
-    const [filterOpen, setFilterOpen] = useState(false);
+  const filterToStringArray: string[] = filter.map((tag) => {
+    return tag.id;
+  });
 
-    const filterToStringArray: string[] = filter.map((tag) => {
-        return tag.id;
-    });
+  const { data, isLoading, isError } = api.projects.search.useQuery({
+    search: projectSearchTerm,
+    filter: filterToStringArray,
+  });
 
-    const { data, isLoading, isError } = api.projects.search.useQuery({
-        search: projectSearchTerm,
-        filter: filterToStringArray,
-    });
+  const ctx = api.useContext();
 
-    const ctx = api.useContext();
+  const { mutate } = api.projects.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Project Deleted");
+      void ctx.projects.invalidate();
+    },
+  });
 
-    const { mutate } = api.projects.delete.useMutation({
-        onSuccess: () => {
-            toast.success("Project Deleted");
-            void ctx.projects.invalidate();
-        },
-    });
+  const copyAddress = useCallback((address: string) => {
+    void window.navigator.clipboard.writeText(address);
+    toast.success("Address Copied to Clipboard");
+  }, []);
 
-    const copyAddress = useCallback((address: string) => {
-        void window.navigator.clipboard.writeText(address);
-        toast.success("Address Copied to Clipboard");
-    }, []);
+  const deleteJob = useCallback(
+    (id: string) => {
+      toast.loading("Deleting Project", { duration: 2000 });
+      mutate({ id });
+    },
+    [mutate]
+  );
 
-    const deleteJob = useCallback(
-        (id: string) => {
-            toast.loading("Deleting Project", { duration: 2000 });
-            mutate({ id });
-        },
-        [mutate]
-    );
+  const { isSignedIn, isLoaded } = useUser();
 
-    const { isSignedIn, isLoaded } = useUser();
+  if (!isLoaded) {
+    return <LoadingPage2 />;
+  }
 
-    if (!isLoaded) {
-        return <LoadingPage2 />
-    }
+  if (!isSignedIn && isLoaded) {
+    return <SignInModal redirectUrl="/dashboard/projects" />;
+  }
 
-    if (!isSignedIn && isLoaded) {
-        return <SignInModal redirectUrl="/dashboard/projects" />;
-    }
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    };
-
-    return (
-        <main className="flex min-h-[100vh] bg-zinc-900">
-            <DashboardMenu />
-            <div className="w-full" >
-                <div className="flex w-full items-center justify-between gap-1 p-2">
-                    <div className="flex w-full gap-1">
-                        <input
-                            type="search"
-                            value={projectSearchTerm}
-                            onChange={(e) => setProjectsSearchTerm(e.target.value)}
-                            placeholder="search projects by name, job code, or address"
-                            className="w-full rounded bg-zinc-800 p-2 outline-none ring-1 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-700 focus:ring-amber-700 sm:w-3/5"
-                        />
-                        {/* <TooltipComponent content="Filter Tags" side="bottom"> */}
-                        <TagsPopover
-                            savedTags={filter}
-                            type={"projects"}
-                            onSetTags={setFilter}
-                        >
-                            <button
-                                onClick={() => {
-                                    setFilterOpen(!filterOpen);
-                                }}
-                                className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
-                            >
-                                <FunnelIcon className="h-6 w-6 text-zinc-100" />
-                            </button>
-                        </TagsPopover>
-                        {/* </TooltipComponent> */}
-                    </div>
-                    <div className="hidden gap-1 md:flex">
-                        <ProjectMenu />
-                    </div>
-                    <SimpleDropDown
-                        trigger={
-                            <div className="flex items-center justify-center p-2 md:hidden">
-                                <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
-                            </div>
-                        }
-                    >
-                        <div className="flex gap-1">
-                            <ProjectMenu />
-                        </div>
-                    </SimpleDropDown>
+  return (
+    <main className="flex min-h-[100vh] bg-zinc-900">
+      <DashboardMenu />
+      <div className="w-full">
+        <div className="flex w-full items-center justify-between gap-1 p-2">
+          <div className="flex w-full gap-1">
+            <input
+              type="search"
+              value={projectSearchTerm}
+              onChange={(e) => setProjectsSearchTerm(e.target.value)}
+              placeholder="search projects by name, job code, or address"
+              className="w-full rounded bg-zinc-800 p-2 outline-none ring-1 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-700 focus:ring-amber-700 sm:w-3/5"
+            />
+            {/* <TooltipComponent content="Filter Tags" side="bottom"> */}
+            <TagsPopover
+              savedTags={filter}
+              type={"projects"}
+              onSetTags={setFilter}
+            >
+              <button
+                onClick={() => {
+                  setFilterOpen(!filterOpen);
+                }}
+                className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+              >
+                <FunnelIcon className="h-6 w-6 text-zinc-100" />
+              </button>
+            </TagsPopover>
+            {/* </TooltipComponent> */}
+          </div>
+          <div className="hidden gap-1 md:flex">
+            <ProjectMenu />
+          </div>
+          <SimpleDropDown
+            trigger={
+              <div className="flex items-center justify-center p-2 md:hidden">
+                <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
+              </div>
+            }
+          >
+            <div className="flex gap-1">
+              <ProjectMenu />
+            </div>
+          </SimpleDropDown>
+        </div>
+        <div className="w-full overflow-y-auto overflow-x-hidden ">
+          <div
+            ref={animateParent}
+            className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 "
+          >
+            {(isLoading && (
+              // <LoadingHeader loading={isLoading} title={"Loading Projects"} />
+              <div className="flex h-[100vh] w-full flex-col items-center justify-center gap-2">
+                <LoadingSpinner />
+                <p className="font-semibold text-zinc-600">Loading Projects</p>
+              </div>
+            )) ||
+              (isError && (
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <p className="text-xl font-bold text-zinc-300">
+                    Error Loading Projects
+                  </p>
                 </div>
-                <div className="w-full overflow-y-auto overflow-x-hidden ">
-                    <div ref={animateParent} className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 ">
-                        {(isLoading && (
-                            // <LoadingHeader loading={isLoading} title={"Loading Projects"} />
-                            <div className="h-[100vh] w-full flex flex-col gap-2 justify-center items-center">
-                                <LoadingSpinner />
-                                <p className="text-zinc-600 font-semibold">Loading Projects</p>
+              )) ||
+              (data && data?.length > 0 && (
+                <>
+                  {data?.map((project, index) => (
+                    <div
+                      key={project.id}
+                      className="w-full select-none rounded-sm bg-zinc-700 transition-all duration-100 hover:bg-zinc-600"
+                    >
+                      <div className="md:1/2 flex items-center gap-1 ">
+                        {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}
+                        <Link
+                          href={`/projects/${project.id}`}
+                          passHref
+                          className="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
+                        >
+                          <div className="lg:w-1/2">
+                            <div className="hidden items-center justify-start text-center font-thin lg:flex">
+                              <p className="whitespace-nowrap text-xs font-normal text-zinc-300">
+                                {project.jobNumber}
+                              </p>
+                              {project.sectors.map((sector) => (
+                                <p
+                                  className="rounded-full px-2 text-xs"
+                                  key={sector.id}
+                                >
+                                  {sector.name}
+                                </p>
+                              ))}
                             </div>
-                        )) ||
-                            (isError && (
-                                <div className="flex flex-col items-center justify-center gap-2">
-                                    <p className="text-xl font-bold text-zinc-300">
-                                        Error Loading Projects
-                                    </p>
+                            <div className="flex w-full items-center justify-start gap-1 overflow-clip">
+                              <p className="truncate text-ellipsis font-semibold ">
+                                {project.name}
+                              </p>
+                              {project.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {project.tags.map((tag) => (
+                                    <TagBubble
+                                      tag={tag}
+                                      key={tag.id}
+                                      style="text-xs"
+                                    />
+                                  ))}
                                 </div>
-                            )) ||
-                            (data && data?.length > 0 && (
-                                <>
-
-                                    {data?.map((project, index) => (
-                                        <div
-                                            key={project.id}
-                                            className="w-full select-none rounded-sm bg-zinc-700 hover:bg-zinc-600 transition-all duration-100"
-                                        >
-                                            <div className="md:1/2 flex items-center gap-1 ">
-                                                {/* <WrenchScrewdriverIcon className="hidden h-8 w-8 text-zinc-300 sm:block" /> */}
-                                                <Link
-                                                    href={`/projects/${project.id}`}
-                                                    passHref
-                                                    className="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
-                                                >
-                                                    <div className="lg:w-1/2">
-                                                        <div className="flex w-full items-center justify-start gap-1 overflow-clip">
-                                                            <p className="whitespace-nowrap text-sm font-normal text-zinc-300">
-                                                                {project.jobNumber}
-                                                            </p>
-                                                            <p className="truncate text-ellipsis ">
-                                                                {project.name}
-                                                            </p>
-                                                            {project.tags.length > 0 && (
-                                                                <div className="flex flex-wrap gap-1">
-                                                                    {project.tags.map((tag) => (
-                                                                        <TagBubble
-                                                                            tag={tag}
-                                                                            key={tag.id}
-                                                                            style="text-xs"
-                                                                        />
-                                                                    ))}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
-                                                            <div className="flex items-center justify-start gap-1 overflow-clip text-xs">
-                                                                {/* <MapPinIcon className="h-4 w-4" /> */}
-                                                                <p className="block max-w-[7rem] truncate text-left text-sm font-normal italic tracking-tight">
-                                                                    {project.city.trim()}
-                                                                    {project.state.trim() && `, ${project.state}`}
-                                                                </p>
-                                                            </div>
-                                                            {project.city && project.state && project.status && <p>·</p>}
-                                                            <p className="text-sm">{project.status}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="hidden overflow-clip text-center font-thin flex-shrink  max-w-[30%] lg:flex">
-                                                        <p className="w-full truncate text-ellipsis text-center">
-                                                            {project.description}
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex-shrink text-right items-center justify-end gap-1">
-                                                        <p className="hidden text-xs text-zinc-400 md:block">
-                                                            {dayjs(project.updatedAt).fromNow()}
-                                                        </p>
-                                                    </div>
-                                                </Link>
-                                                <DropdownMenu.Root>
-                                                    <DropdownMenu.Trigger asChild>
-                                                        <button className="p-1">
-                                                            <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
-                                                        </button>
-                                                    </DropdownMenu.Trigger>
-                                                    <DropdownMenu.Portal>
-                                                        <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-500 bg-black/60 p-3 py-2 drop-shadow-lg backdrop-blur ">
-                                                            <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-500" />
-                                                            <DropdownMenu.Item
-                                                                className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
-                                                                onSelect={() => {
-                                                                    copyAddress(
-                                                                        project.address +
-                                                                        " " +
-                                                                        project.city +
-                                                                        " " +
-                                                                        project.state +
-                                                                        " " +
-                                                                        project.zip
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
-                                                                Copy Address
-                                                            </DropdownMenu.Item>
-                                                            {/* <Dialog.Root>
+                              )}
+                            </div>
+                            <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
+                              <div className="flex items-center justify-start gap-1 overflow-clip text-xs">
+                                {/* <MapPinIcon className="h-4 w-4" /> */}
+                                <p className="block max-w-[10rem] truncate text-left text-sm font-normal italic tracking-tight">
+                                  {project.city.trim()}
+                                  {project.state.trim() && `, ${project.state}`}
+                                </p>
+                              </div>
+                              {project.city &&
+                                project.state &&
+                                project.status && <p>·</p>}
+                              <p className="text-sm">{project.status}</p>
+                            </div>
+                          </div>
+                          <div className="hidden max-w-[30%] flex-shrink overflow-clip text-center  font-thin lg:flex">
+                            <p className="w-full truncate text-ellipsis text-center">
+                              {project.description}
+                            </p>
+                          </div>
+                          <div className="flex-shrink items-center justify-end gap-1 text-right">
+                            <p className="hidden text-xs text-zinc-400 md:block">
+                              {dayjs(project.updatedAt).fromNow()}
+                            </p>
+                          </div>
+                        </Link>
+                        <DropdownMenu.Root>
+                          <DropdownMenu.Trigger asChild>
+                            <button className="p-1">
+                              <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
+                            </button>
+                          </DropdownMenu.Trigger>
+                          <DropdownMenu.Portal>
+                            <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-500 bg-black/60 p-3 py-2 drop-shadow-lg backdrop-blur ">
+                              <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-500" />
+                              <DropdownMenu.Item
+                                className="flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
+                                onSelect={() => {
+                                  copyAddress(
+                                    project.address +
+                                      " " +
+                                      project.city +
+                                      " " +
+                                      project.state +
+                                      " " +
+                                      project.zip
+                                  );
+                                }}
+                              >
+                                <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
+                                Copy Address
+                              </DropdownMenu.Item>
+                              {/* <Dialog.Root>
                                                             <Dialog.Trigger asChild>
                                                                 <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
                                                                     <TrashIcon className="h-5 w-5 text-white" />
@@ -294,87 +315,95 @@ const ProjectsPage: NextPage = () => {
                                                             </Dialog.Portal>
                                                         </Dialog.Root> */}
 
-                                                            <DialogComponent title="Delete Project?" description="Are you sure you want to delete the project? After deletion it cannot be recovered." yes={() => { deleteJob(project.id); }} trigger={
-                                                                <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
-                                                                    <TrashIcon className="h-5 w-5 text-white" />
-                                                                    Delete
-                                                                </button>
-                                                            } />
-
-                                                        </DropdownMenu.Content>
-                                                    </DropdownMenu.Portal>
-                                                </DropdownMenu.Root>
-                                            </div>
-                                            <ProjectProgress project={project} index={index} />
-                                        </div>
-                                    ))}
-                                    <div className="h-20"></div>
-                                    <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
-                                        <p>Back To Top</p>
-                                        <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
-                                    </button>
-                                    <div className="h-20" />
-                                </>
-                            ))}
-                        {data?.length === 0 && (
-                            <div className="flex flex-col items-center justify-center gap-4">
-                                <p className="text-center text-2xl font-bold text-zinc-300">
-                                    {`You don't have any projects with the name '${projectSearchTerm}' yet. `}
-                                </p>
-                                <Link
-                                    href="/newproject"
-                                    className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
-                                >
-                                    Create one now.
-                                </Link>
-                            </div>
-                        )}
+                              <DialogComponent
+                                title="Delete Project?"
+                                description="Are you sure you want to delete the project? After deletion it cannot be recovered."
+                                yes={() => {
+                                  deleteJob(project.id);
+                                }}
+                                trigger={
+                                  <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
+                                    <TrashIcon className="h-5 w-5 text-white" />
+                                    Delete
+                                  </button>
+                                }
+                              />
+                            </DropdownMenu.Content>
+                          </DropdownMenu.Portal>
+                        </DropdownMenu.Root>
+                      </div>
+                      <ProjectProgress project={project} index={index} />
                     </div>
-                </div>
-            </div>
-            <div className="h-44" />
-        </main>
-    );
+                  ))}
+                  <div className="h-20"></div>
+                  <button
+                    onClick={scrollToTop}
+                    className="flex w-full items-center justify-center gap-2"
+                  >
+                    <p>Back To Top</p>
+                    <ArrowLongUpIcon className="h-5 w-5 text-zinc-400 hover:text-zinc-200" />
+                  </button>
+                  <div className="h-20" />
+                </>
+              ))}
+            {data?.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-4">
+                <p className="text-center text-2xl font-bold text-zinc-300">
+                  {`You don't have any projects with the name '${projectSearchTerm}' yet. `}
+                </p>
+                <Link
+                  href="/newproject"
+                  className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
+                >
+                  Create one now.
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="h-44" />
+    </main>
+  );
 };
 
 const ProjectProgress: React.FC<{ project: Project; index: number }> = ({
-    project,
+  project,
 }) => {
-    const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(0);
 
-    useEffect(() => {
-        const timer = setTimeout(
-            () => setProgress(project.percentComplete),
-            500 // * (index / 3) + 500
-        );
-        return () => clearTimeout(timer);
-    }, [project.percentComplete]);
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setProgress(project.percentComplete),
+      500 // * (index / 3) + 500
+    );
+    return () => clearTimeout(timer);
+  }, [project.percentComplete]);
 
-    return (
-        <TooltipComponent
-            content={`${project.name} is ${progress}% Complete`}
-            side="bottom"
-        >
-            {/* {progress === 0 && <div className="relative overflow-hidden rounded-b-sm bg-zinc-700 w-full h-[4px]">
+  return (
+    <TooltipComponent
+      content={`${project.name} is ${progress}% Complete`}
+      side="bottom"
+    >
+      {/* {progress === 0 && <div className="relative overflow-hidden rounded-b-sm bg-zinc-700 w-full h-[4px]">
       </div>
       } */}
-            <Progress.Root
-                className="relative h-[4px] w-full overflow-hidden rounded-b-sm bg-zinc-700"
-                style={{
-                    // Fix overflow clipping in Safari
-                    // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
-                    transform: "translateZ(0)",
-                }}
-                value={progress}
-            >
-                <Progress.Indicator
-                    style={{ transform: `translateX(-${100 - progress}%)` }}
-                    className="ease-[cubic-bezier(0.65, 0, 0.35,  1)]  h-full w-full rounded-md bg-gradient-to-r from-orange-600 to-amber-700 transition-transform duration-[660ms]"
-                />
-            </Progress.Root>
-        </TooltipComponent>
-    );
-
+      <Progress.Root
+        className="relative h-[4px] w-full overflow-hidden rounded-b-sm bg-zinc-700"
+        style={{
+          // Fix overflow clipping in Safari
+          // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
+          transform: "translateZ(0)",
+        }}
+        value={progress}
+      >
+        <Progress.Indicator
+          style={{ transform: `translateX(-${100 - progress}%)` }}
+          className="ease-[cubic-bezier(0.65, 0, 0.35,  1)]  h-full w-full rounded-md bg-gradient-to-r from-orange-600 to-amber-700 transition-transform duration-[660ms]"
+        />
+      </Progress.Root>
+    </TooltipComponent>
+  );
 };
 
 export default ProjectsPage;

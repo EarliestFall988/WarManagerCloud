@@ -17,17 +17,42 @@ const rateLimit = new Ratelimit({
 });
 
 export const projectsRouter = createTRPCRouter({
-  getAll: privateProcedure.query(async ({ ctx }) => {
-    const projects = await ctx.prisma.project.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        tags: true,
-      },
-    });
-    return projects;
-  }),
+  getAll: privateProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().optional(),
+          cursor: z.number().optional(),
+          statusFilter: z.string().optional(),
+        })
+        .optional()
+    )
+    .query(async ({ input, ctx }) => {
+      const projects = await ctx.prisma.project.findMany({
+        take: input?.limit || 500,
+        skip: input?.cursor ? input.cursor : 0,
+        where: {
+          status: input?.statusFilter
+            ? {
+                equals: input.statusFilter,
+              }
+            : undefined,
+        },
+        orderBy: [
+          {
+            updatedAt: "desc",
+          },
+          {
+            name: "asc",
+          },
+        ],
+        include: {
+          tags: true,
+          sectors: true,
+        },
+      });
+      return projects;
+    }),
 
   download: privateProcedure.query(async ({ ctx }) => {
     const projects = await ctx.prisma.project.findMany({
@@ -59,12 +84,13 @@ export const projectsRouter = createTRPCRouter({
           ],
           include: {
             tags: true,
+            sectors: true,
           },
         });
         return projects;
       }
 
-      console.log(input.filter);
+      // console.log(input.filter);
 
       if (input.search.length < 3 && input.filter.length > 0) {
         const projects = await ctx.prisma.project.findMany({
@@ -79,6 +105,7 @@ export const projectsRouter = createTRPCRouter({
           ],
           include: {
             tags: true,
+            sectors: true,
           },
           where: {
             tags: {
@@ -106,6 +133,7 @@ export const projectsRouter = createTRPCRouter({
           ],
           include: {
             tags: true,
+            sectors: true,
           },
           where: {
             AND: [
@@ -194,6 +222,7 @@ export const projectsRouter = createTRPCRouter({
         ],
         include: {
           tags: true,
+          sectors: true,
         },
       });
 
@@ -209,7 +238,16 @@ export const projectsRouter = createTRPCRouter({
         },
         include: {
           tags: true,
+          sectors: true,
         },
+        orderBy: [
+          {
+            updatedAt: "desc",
+          },
+          {
+            name: "asc",
+          },
+        ],
       });
 
       return project;
@@ -223,6 +261,9 @@ export const projectsRouter = createTRPCRouter({
           name: z.string(),
           city: z.string(),
           state: z.string(),
+          status: z.string(),
+          pw: z.boolean(),
+          department: z.string(),
         })
         .array()
     )
@@ -237,6 +278,40 @@ export const projectsRouter = createTRPCRouter({
           message: "You have exceeded the rate limit, try again in a minute",
         });
       }
+
+      const pwTag = ctx.prisma.tag.findFirst({
+        where: {
+          name: "Prevailing Wage",
+        },
+      });
+
+      const pwTagId = await pwTag
+        .then((tag) => tag?.id)
+        .catch(() => {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Prevailing Wage tag not found",
+          });
+        });
+
+      if (
+        pwTag === null ||
+        pwTag === undefined ||
+        pwTagId === null ||
+        pwTagId === undefined
+      )
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Prevailing Wage tag not found",
+        });
+
+      const sectors = await ctx.prisma.sector.findMany({
+        where: {
+          departmentCode: {
+            in: input.map((obj) => obj.department),
+          },
+        },
+      });
 
       const content = input.map((obj) => {
         if (obj !== undefined) {
@@ -258,8 +333,8 @@ export const projectsRouter = createTRPCRouter({
 
               startDate: new Date(),
               endDate: new Date(),
-              status: "",
-              percentComplete: 0,
+              status: d?.status,
+              percentComplete: 1,
               completed: false,
 
               laborCost: 0,
@@ -322,12 +397,92 @@ export const projectsRouter = createTRPCRouter({
       }
 
       const data = content.filter(
-        (obj) => obj !== undefined && obj !== null && obj.jobNumber !== ""
+        (obj) =>
+          obj !== undefined &&
+          obj !== null &&
+          obj.jobNumber !== undefined &&
+          obj.jobNumber !== null &&
+          obj.jobNumber !== ""
       );
 
       const result = await ctx.prisma.project.createMany({
         data,
       });
+
+      const getProjects = await ctx.prisma.project.findMany({
+        where: {
+          authorId,
+        },
+      });
+
+      const projects = getProjects.filter(
+        (obj) =>
+          obj !== undefined &&
+          obj !== null &&
+          obj.jobNumber !== "" &&
+          data.find((d) => d.jobNumber === obj.jobNumber) !== undefined
+      );
+
+      for (const obj of projects) {
+        const p = input.find((d) => d.jobNumber === obj.jobNumber);
+
+        const sector = sectors.find((d) => d.departmentCode === p?.department);
+
+        if (sector !== undefined) {
+          const compare = input.find(
+            (d) => d.jobNumber === obj.jobNumber && d.pw === true
+          );
+
+          console.log(obj.jobNumber, compare);
+
+          if (compare) {
+            await ctx.prisma.project
+              .update({
+                where: {
+                  id: obj.id,
+                },
+                data: {
+                  tags: {
+                    connect: {
+                      id: pwTagId,
+                    },
+                  },
+                  sectors: {
+                    connect: {
+                      id: sector?.id,
+                    },
+                  },
+                },
+              })
+              .catch((err: Error) => {
+                throw new TRPCError({
+                  code: "INTERNAL_SERVER_ERROR",
+                  message: `Error connecting projects to tags ${err.message}`,
+                });
+              });
+          } else {
+            await ctx.prisma.project
+              .update({
+                where: {
+                  id: obj.id,
+                },
+                data: {
+                  sectors: {
+                    connect: {
+                      id: sector?.id,
+                    },
+                  },
+                },
+              })
+              .catch((err: Error) => {
+                throw new TRPCError({
+                  code: "INTERNAL_SERVER_ERROR",
+                  message: `Error connecting projects to tags ${err.message}`,
+                });
+              });
+          }
+        }
+      }
 
       return result;
     }),
@@ -468,14 +623,28 @@ export const projectsRouter = createTRPCRouter({
           .optional(),
         // tags: z.array(z.string()),
         address: z
-          .string({
-            required_error: "The project address is required for each project.",
-          })
-          .min(3, "The project address must be more than 3 characters long.")
-          .max(
-            255,
-            "The project address must be less than 255 characters long."
-          ),
+          .union([
+            z
+              .string({
+                required_error:
+                  "The project address is required for each project.",
+              })
+              .min(
+                3,
+                "The project address must be more than 3 characters long."
+              )
+              .max(
+                255,
+                "The project address must be less than 255 characters long."
+              ),
+            z.string().length(0),
+          ])
+          .optional()
+          .transform((val) => {
+            if (val === undefined || val === null) {
+              return "";
+            }
+          }),
         city: z
           .string({ required_error: "The city is required for each project." })
           .min(2, "The project city name is too short.")
@@ -583,6 +752,7 @@ export const projectsRouter = createTRPCRouter({
         },
         include: {
           tags: true,
+          sectors: true,
         },
       });
 
@@ -820,7 +990,16 @@ export const projectsRouter = createTRPCRouter({
         },
         include: {
           tags: true,
+          sectors: true,
         },
+        orderBy: [
+          {
+            updatedAt: "desc",
+          },
+          {
+            name: "asc",
+          },
+        ],
       });
 
       return project;
@@ -871,4 +1050,8 @@ export const projectsRouter = createTRPCRouter({
 
       return project;
     }),
+
+  deleteMany: privateProcedure.mutation(async ({ ctx }) => {
+    await ctx.prisma.project.deleteMany();
+  }),
 });

@@ -72,14 +72,14 @@ const SectorsSettingsPage: NextPage = () => {
         </div>
         <div
           ref={animationParent}
-          className="flex max-h-[70vh] min-h-[10vh] flex-col overflow-y-auto overflow-x-clip border-t border-zinc-600 pt-1 md:max-h-[60vh]"
+          className="flex min-h-[10vh] flex-col overflow-y-auto overflow-x-clip border-t border-zinc-600 pt-1 md:max-h-[85vh]"
         >
           {loading ? (
-            <div className="flex h-[10vh] w-full items-center justify-center p-5">
+            <div className="flex h-full w-full items-center justify-center p-5">
               <LoadingSpinner />
             </div>
           ) : error ? (
-            <div className="flex h-[10vh] items-center justify-center">
+            <div className="flex h-full items-center justify-center">
               <p className="text-center text-lg font-semibold text-red-500">
                 There was an error. Try again later, or contact support.
               </p>
