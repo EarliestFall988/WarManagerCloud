@@ -8,7 +8,7 @@ import {
   TagIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
-import { type Project, type Tag } from "@prisma/client";
+import { Sector, type Project, type Tag } from "@prisma/client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Progress from "@radix-ui/react-progress";
 import { type NextPage } from "next";
@@ -69,15 +69,21 @@ const ProjectsPage: NextPage = () => {
   const [projectSearchTerm, setProjectsSearchTerm] = useState("");
 
   const [filter, setFilter] = useState<Tag[]>([]);
+  const [sectors, setSectors] = useState<Sector[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const filterToStringArray: string[] = filter.map((tag) => {
     return tag.id;
   });
 
+  const filterSectorsToStringArray = sectors.map((sector) => {
+    return sector.id;
+  });
+
   const { data, isLoading, isError } = api.projects.search.useQuery({
     search: projectSearchTerm,
-    filter: filterToStringArray,
+    tagsFilter: filterToStringArray,
+    sectorsFilter: filterSectorsToStringArray,
   });
 
   const ctx = api.useContext();
@@ -132,8 +138,10 @@ const ProjectsPage: NextPage = () => {
             {/* <TooltipComponent content="Filter Tags" side="bottom"> */}
             <TagsPopover
               savedTags={filter}
-              type={"projects"}
+              savedSectors={sectors}
+              type={"projects and sectors"}
               onSetTags={setFilter}
+              onSetSectors={setSectors}
             >
               <button
                 onClick={() => {

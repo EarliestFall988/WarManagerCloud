@@ -31,29 +31,8 @@ const isValidUser = (user?: User) => {
 
   const email = user?.emailAddresses[0]?.emailAddress;
 
-  if (email) {
-    //emails used for early connection testing and development, not included with the company and should not be included in the user list
-    if (email === "greentractorland@gmail.com") {
-      return false;
-    }
-
-    if (email === "howellkyle213@gmail.com") {
-      return false;
-    }
-
-    if (email === "khelizabeths3@gmail.com") {
-      return false;
-    }
-
-    if (email === "tnbnpmvx2r@privaterelay.appleid.com") {
-      return false;
-    }
-
-    if (email === "howelltaylor195@gmail.com") {
-      return false;
-    }
-
-    return true;
+  if (!email) {
+    return false;
   }
 };
 
