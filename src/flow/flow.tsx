@@ -25,6 +25,7 @@ import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
 import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
 import { toast } from "react-hot-toast";
+import useLiveData from "./databank";
 // import getDoc, { Init, isLoaded } from "./flowDocument";
 // import { LoadingSpinner } from "~/components/loading";
 // import { setName } from "~/flow/flowDocument";
@@ -101,9 +102,10 @@ const Flow: React.FC<{ blueprintId: string; OnNodeDrop?: () => void }> = ({
   const [nodes, onNodesChange] = useNodesStateSynced(blueprintId);
   const [edges, onEdgesChange, onConnect] = useEdgesStateSynced(blueprintId);
 
-  const { data: crewData } = api.crewMembers.getAll.useQuery(); //could be inefficient to fetch all crew members and projects for every blueprint - TODO fix
-  const { data: projectData } = api.projects.getAll.useQuery();
+  // const { data: crewData } = api.crewMembers.getAll.useQuery(); //could be inefficient to fetch all crew members and projects for every blueprint - TODO fix
+  // const { data: projectData } = api.projects.getAll.useQuery();
   const { data: noteData } = api.notes.getAll.useQuery({});
+  const { crewData, projectData } = useLiveData();
 
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
   const reactFlowInstance = useReactFlow();

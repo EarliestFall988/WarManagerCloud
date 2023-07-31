@@ -5,10 +5,24 @@ import { toast } from "react-hot-toast";
 import { api } from "~/utils/api";
 
 type projectData = {
-  Job: string;
-  "Job Address City": string;
-  "Job Address State": string;
-  "Job Name": string;
+  Job?: string;
+  "Job Address City"?: string;
+  "Job Address State"?: string;
+  "Job Name"?: string;
+  Status?: string;
+  PW?: string;
+  Department?: string;
+  "Date Open"?: string;
+};
+
+type exportProjectDataType = {
+  jobNumber: string;
+  name: string;
+  city: string;
+  state: string;
+  status: string;
+  department: string;
+  pw: boolean;
 };
 
 type crewData = {
@@ -25,8 +39,9 @@ export const Projects = () => {
   //   const [file, setFile] = useState<File | null>(null);
   const [isDeveloper, setIsDeveloper] = useState(false);
 
-
   const { user } = useUser();
+
+  const { mutate: deleteAllProjects } = api.projects.deleteMany.useMutation();
 
   const { mutate } = api.projects.createMany.useMutation({
     onSuccess: () => {
@@ -49,6 +64,12 @@ export const Projects = () => {
       toast.error("there was an error uploading the Crews");
     },
   });
+
+  const DeleteAllProjects = () => {
+    if (confirm("Are you sure you want to delete all projects?")) {
+      deleteAllProjects();
+    }
+  };
 
   React.useMemo(() => {
     if (user?.emailAddresses[0]?.emailAddress === "taylor.howell@jrcousa.com") {
@@ -79,16 +100,24 @@ export const Projects = () => {
     parse<projectData>(file, {
       header: true,
       complete: function (results) {
-        const d = results.data.map((item) => {
-          return {
-            jobNumber: item.Job,
+        const d = [] as exportProjectDataType[];
+
+        results.data.map((item) => {
+          d.push({
+            jobNumber: item.Job || "",
             name: item["Job Name"] || "",
             city: item["Job Address City"] || "",
             state: item["Job Address State"] || "",
-          };
+            status: item.Status || "",
+            pw: item.PW == "TRUE" ? true : false,
+            department: item.Department || "",
+          });
         });
 
-        mutate(d);
+        console.log(d);
+        if (confirm("Are you sure you want to add all selected projects?")) {
+          mutate(d);
+        }
       },
     });
   };
@@ -113,6 +142,9 @@ export const Projects = () => {
 
     parse<crewData>(file, {
       header: true,
+      transform: function (value) {
+        return value.trim();
+      },
       complete: function (results) {
         const d = results.data.map((item) => {
           let lastReviewDate = undefined;
@@ -121,11 +153,11 @@ export const Projects = () => {
           }
           if (item.first_name === "") {
             return {
-                name: "",
-                position: "",
-                phone: "",
-                startDate: new Date(),
-                lastReviewDate: lastReviewDate,
+              name: "",
+              position: "",
+              phone: "",
+              startDate: new Date(),
+              lastReviewDate: lastReviewDate,
             };
           } else {
             return {
@@ -138,7 +170,9 @@ export const Projects = () => {
           }
         });
 
-       const data = d.filter((item) => item !== undefined && item !== null && item.name !== "");
+        const data = d.filter(
+          (item) => item !== undefined && item !== null && item.name !== ""
+        );
 
         console.log(d);
 
@@ -159,6 +193,7 @@ export const Projects = () => {
             }}
             className="focus:border-primary focus:shadow-te-primary dark:focus:border-primary relative m-0 block w-full min-w-0 flex-auto rounded border border-solid border-zinc-300 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-zinc-700 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-zinc-100 file:px-3 file:py-[0.32rem] file:text-zinc-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-zinc-200 focus:text-zinc-700 focus:outline-none dark:border-zinc-600 dark:text-zinc-200 dark:file:bg-zinc-700 dark:file:text-zinc-100"
           />
+          <button onClick={DeleteAllProjects}>Delete All Projects</button>
 
           <h1 className="text-3xl font-semibold">Crew Members</h1>
           <input

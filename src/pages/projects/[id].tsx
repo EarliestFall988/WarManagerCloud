@@ -314,6 +314,8 @@ const EditProjectPage = function ({ id }: { id: string }) {
     toast.loading("Saving changes...", { duration: 2000 });
   }
 
+  console.log(project);
+
   return (
     <>
       <Head>
@@ -409,6 +411,9 @@ const EditProjectPage = function ({ id }: { id: string }) {
                 <option value="Start 30 Days">Start 30 Days</option>
                 <option value="Start 60 Days">Start 60 Days</option>
                 <option value="Start 90+ Days">Start 90+ Days</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Closed">Closed</option>
               </select>
               <p className="text-red-500">{statusError}</p>
             </div>

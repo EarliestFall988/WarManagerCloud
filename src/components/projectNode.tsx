@@ -36,7 +36,7 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
 
   if (!data || isLoading) return <LoadingSpinner />;
 
-  if (!info) return <div>err</div>;
+  if (!info) return <div className="bg-red-500/30 rounded-sm p-2 text-[0.5em]">err</div>;
 
   if (typeof selected !== "boolean") return <>err</>;
 

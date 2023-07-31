@@ -1,7 +1,13 @@
 import React, { type ReactNode, useCallback, useState } from "react";
 import { api } from "~/utils/api";
 import { LoadingSpinner } from "./loading";
-import type { Blueprint, CrewMember, Project, Tag } from "@prisma/client";
+import type {
+  Blueprint,
+  CrewMember,
+  Project,
+  Sector,
+  Tag,
+} from "@prisma/client";
 import type { Edge, Node } from "reactflow";
 import {
   CloudArrowUpIcon,
@@ -27,6 +33,7 @@ import { DialogComponent } from "./dialog";
 import { useRouter } from "next/router";
 import { GetNodes } from "~/flow/useNodesStateSynced";
 import { GetListOfNodesSortedByColumn } from "~/flow/flow";
+import useLiveData from "~/flow/databank";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -71,7 +78,8 @@ export const ProjectsList = (props: { blueprintId: string }) => {
     "all" | "notOnBlueprint" | "onlyOnBlueprint"
   >("notOnBlueprint");
 
-  const { data, isLoading, isError } = api.projects.getAll.useQuery();
+  // const { data, isLoading, isError } = api.projects.getAll.useQuery();
+  const { projectData: data, isError, isLoading } = useLiveData();
 
   const {
     data: searchedProjects,
@@ -87,9 +95,15 @@ export const ProjectsList = (props: { blueprintId: string }) => {
 
   const getProjectsToView = () => {
     if (nodeMode === "all" && !isLoadingProjects && !isErrorProjects) {
-      return searchedProjects || ([] as (Project & { tags: Tag[] })[]);
+      return (
+        searchedProjects ||
+        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] })[])
+      );
     } else if (nodeMode === "notOnBlueprint") {
-      return FilterProjects({ nodes: blueprintNodes, data: searchedProjects });
+      return FilterProjects({
+        nodes: blueprintNodes,
+        data: searchedProjects,
+      }) as (Project & { tags: Tag[] } & { sectors: Sector[] })[];
     } else if (nodeMode === "onlyOnBlueprint") {
       const nodes = blueprintNodes.filter(
         (node) => node.type === "projectNode"
@@ -102,9 +116,12 @@ export const ProjectsList = (props: { blueprintId: string }) => {
         });
       });
 
-      return projects || ([] as (Project & { tags: Tag[] })[]);
+      return (
+        projects ||
+        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] })[])
+      );
     } else {
-      return [] as (Project & { tags: Tag[] })[];
+      return [] as (Project & { tags: Tag[] } & { sectors: Sector[] })[];
     }
   };
 
@@ -200,9 +217,16 @@ export const ProjectsList = (props: { blueprintId: string }) => {
                   onDragStart={(event) => onDragStart(event, "p-" + project.id)}
                 >
                   <div className="w-full truncate">
-                    <p className="truncate text-xs font-normal text-zinc-300">
-                      {project.jobNumber}
-                    </p>
+                    <div className="w-full flex gap-2 items-center justify-start">
+                      <p className="truncate text-xs font-normal text-zinc-300">
+                        {project.jobNumber}
+                      </p>
+                      <p className="truncate text-xs font-normal text-zinc-300">
+                        {project.sectors.map((sector) => (
+                          <p key={sector.id}>{sector.name}</p>
+                        ))}
+                      </p>
+                    </div>
 
                     <div className="text-md flex flex-grow flex-wrap items-center justify-start gap-1 truncate font-semibold">
                       {project.name}
@@ -468,7 +492,7 @@ const NothingToDisplayNotice = (props: { context: string }) => {
 };
 
 export const ExportBlueprint: React.FC<{ blueprintId: string }> = ({
-  blueprintId
+  blueprintId,
 }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
