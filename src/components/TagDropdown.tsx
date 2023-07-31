@@ -24,7 +24,7 @@ export const TagsMultiselectDropdown: React.FC<{
   savedSectors?: Sector[];
   type: "projects" | "crews" | "blueprints" | "projects and sectors";
   onSetTags: (tags: Tag[]) => void;
-  onSetSectors: (sectors: Sector[]) => void;
+  onSetSectors?: (sectors: Sector[]) => void;
 }> = ({ savedTags, savedSectors, type, onSetTags, onSetSectors }) => {
   const { data: sectors } = api.sectors.getByName.useQuery({ name: "" });
   const [canUseSectors, setCanUseSectors] = useState(false);
@@ -140,7 +140,7 @@ export const TagsMultiselectDropdown: React.FC<{
       });
 
       onSetTags(tags);
-      onSetSectors(sectorResult);
+      if (onSetSectors) onSetSectors(sectorResult);
     },
     [allTags, onSetTags, sectors, onSetSectors]
   );
