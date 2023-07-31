@@ -5,6 +5,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
 import { clerkClient } from "@clerk/nextjs";
+import { Prisma } from "@prisma/client";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -18,22 +19,22 @@ const rateLimit = new Ratelimit({
 
 export const projectsRouter = createTRPCRouter({
   getAll: privateProcedure.query(async ({ ctx }) => {
-      const projects = await ctx.prisma.project.findMany({
-        orderBy: [
-          {
-            updatedAt: "desc",
-          },
-          {
-            name: "asc",
-          },
-        ],
-        include: {
-          tags: true,
-          sectors: true,
+    const projects = await ctx.prisma.project.findMany({
+      orderBy: [
+        {
+          updatedAt: "desc",
         },
-      });
-      return projects;
-    }),
+        {
+          name: "asc",
+        },
+      ],
+      include: {
+        tags: true,
+        sectors: true,
+      },
+    });
+    return projects;
+  }),
 
   download: privateProcedure.query(async ({ ctx }) => {
     const projects = await ctx.prisma.project.findMany({
@@ -48,154 +49,89 @@ export const projectsRouter = createTRPCRouter({
     .input(
       z.object({
         search: z.string().min(0).max(255),
-        filter: z.array(z.string()),
+        tagsFilter: z.array(z.string()),
+        sectorsFilter: z.array(z.string()).optional(),
       })
     )
     .query(async ({ ctx, input }) => {
-      if (input.search.length < 3 && input.filter.length === 0) {
-        const projects = await ctx.prisma.project.findMany({
-          take: 100,
-          orderBy: [
-            {
-              updatedAt: "desc",
+      const filters: Prisma.ProjectWhereInput = {};
+
+      if (input.tagsFilter.length > 0) {
+        filters.tags = {
+          some: {
+            id: {
+              in: input.tagsFilter,
             },
-            {
-              name: "asc",
-            },
-          ],
-          include: {
-            tags: true,
-            sectors: true,
           },
-        });
-        return projects;
+        };
       }
 
-      // console.log(input.filter);
-
-      if (input.search.length < 3 && input.filter.length > 0) {
-        const projects = await ctx.prisma.project.findMany({
-          take: 50,
-          orderBy: [
-            {
-              updatedAt: "desc",
-            },
-            {
-              name: "asc",
-            },
-          ],
-          include: {
-            tags: true,
-            sectors: true,
-          },
-          where: {
-            tags: {
-              some: {
-                id: {
-                  in: input.filter,
-                },
-              },
+      if (input.sectorsFilter && input.sectorsFilter.length > 0) {
+        filters.sectors = {
+          some: {
+            id: {
+              in: input.sectorsFilter,
             },
           },
-        });
-        return projects;
+        };
       }
 
-      if (input.search.length >= 3 && input.filter.length > 0) {
-        const projects = await ctx.prisma.project.findMany({
-          take: 50,
-          orderBy: [
-            {
-              updatedAt: "desc",
+      if (input.search) {
+        filters.OR = [
+          {
+            name: {
+              contains: input.search,
             },
-            {
-              name: "asc",
+          },
+          {
+            city: {
+              contains: input.search,
             },
-          ],
-          include: {
-            tags: true,
-            sectors: true,
           },
-          where: {
-            AND: [
-              {
-                OR: [
-                  {
-                    name: {
-                      contains: input.search,
-                    },
-                  },
-                  {
-                    jobNumber: {
-                      contains: input.search,
-                    },
-                  },
-                  {
-                    city: {
-                      contains: input.search,
-                    },
-                  },
-                  {
-                    state: {
-                      contains: input.search,
-                    },
-                  },
-                  {
-                    description: {
-                      contains: input.search,
-                    },
-                  },
-                ],
-              },
-              {
-                tags: {
-                  some: {
-                    id: {
-                      in: input.filter,
-                    },
-                  },
-                },
-              },
-            ],
+          {
+            state: {
+              contains: input.search,
+            },
           },
-        });
-        return projects;
+          {
+            jobNumber: {
+              contains: input.search,
+            },
+          },
+          {
+            description: {
+              contains: input.search,
+            },
+          },
+          {
+            notes: {
+              contains: input.search,
+            },
+          },
+        ];
       }
 
-      const projects = await ctx.prisma.project.findMany({
-        take: 50,
-        where: {
-          OR: [
-            {
-              name: {
-                contains: input.search,
-              },
-            },
-            {
-              jobNumber: {
-                contains: input.search,
-              },
-            },
-            {
-              city: {
-                contains: input.search,
-              },
-            },
-            {
-              state: {
-                contains: input.search,
-              },
-            },
-            {
-              description: {
-                contains: input.search,
-              },
-            },
-          ],
-        },
+      const result = await ctx.prisma.project.findMany({
+        where: filters,
+        take: 100,
         orderBy: [
           {
             updatedAt: "desc",
+          },
+          {
+            _relevance: {
+              fields: [
+                "name",
+                "description",
+                "notes",
+                "address",
+                "city",
+                "state",
+                "zip",
+              ],
+              search: input.search,
+              sort: "desc",
+            },
           },
           {
             name: "asc",
@@ -207,7 +143,7 @@ export const projectsRouter = createTRPCRouter({
         },
       });
 
-      return projects;
+      return result;
     }),
 
   getById: privateProcedure

@@ -9,6 +9,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 model Post {
@@ -69,6 +70,9 @@ model Project {
   tags     Tag[]
 
   @@index([authorId])
+
+  @@fulltext([description, notes])
+  @@fulltext([name, description, notes, address, city, state, zip])
 }
 
 model ScopeOfWork {

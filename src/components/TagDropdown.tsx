@@ -1,148 +1,246 @@
-import type { Tag } from "@prisma/client";
-import { type ReactNode, useCallback, useMemo } from "react";
+import type { Sector, Tag } from "@prisma/client";
+import { type ReactNode, useCallback, useMemo, useEffect } from "react";
 import { api } from "~/utils/api";
 import { LoadingSpinner } from "./loading";
 import Select, { type MultiValue } from "react-select";
 import TooltipComponent from "./Tooltip";
 import Link from "next/link";
 import { TagIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import * as Popover from '@radix-ui/react-popover';
+import * as Popover from "@radix-ui/react-popover";
+
+import { useState } from "react";
 
 export type DropdownTagType = {
-    value: string;
-    label: string;
-    color: string;
-}
+  value: string;
+  label: string;
+  color: string;
+};
 
 let tags = [] as DropdownTagType[];
 let selectedTags = [] as DropdownTagType[];
 
-export const TagsMultiselectDropdown: React.FC<{ savedTags: Tag[], type: "projects" | "crews" | "blueprints", onSetTags: (tags: Tag[]) => void }> = ({ savedTags, type, onSetTags }) => {
+export const TagsMultiselectDropdown: React.FC<{
+  savedTags: Tag[];
+  savedSectors?: Sector[];
+  type: "projects" | "crews" | "blueprints" | "projects and sectors";
+  onSetTags: (tags: Tag[]) => void;
+  onSetSectors?: (sectors: Sector[]) => void;
+}> = ({ savedTags, savedSectors, type, onSetTags, onSetSectors }) => {
+  const { data: sectors } = api.sectors.getByName.useQuery({ name: "" });
+  const [canUseSectors, setCanUseSectors] = useState(false);
+  const [tagType, setTagType] = useState("projects");
 
-    const { data: allTags, isLoading, isError } = api.tags.getTagsToAdd.useQuery({ type });
+  useEffect(() => {
+    if (type === "projects and sectors") {
+      setTagType("projects");
+      setCanUseSectors(true);
+    } else {
+      setTagType(type);
+    }
+  }, [type]);
 
+  const {
+    data: allTags,
+    isLoading,
+    isError,
+  } = api.tags.getTagsToAdd.useQuery({ type: tagType });
 
-    useMemo(() => {
+  useMemo(() => {
+    tags = [];
+    selectedTags = [];
 
-        tags = [];
-        selectedTags = [];
+    const tagData = allTags?.map((tag) => {
+      return {
+        value: tag.id,
+        label: tag.name,
+        color: tag.backgroundColor,
+      };
+    });
 
-        const tagData = allTags?.map((tag) => {
-            return {
-                value: tag.id,
-                label: tag.name,
-                color: tag.backgroundColor
-            };
-        });
+    // console.log("tag data", tagData);
 
-        // console.log("tag data", tagData);
+    const selectedTagData = allTags
+      ?.filter((tag) => {
+        return savedTags?.find((savedTag) => savedTag.id === tag.id);
+      })
+      .map((tag) => {
+        return {
+          value: tag.id,
+          label: tag.name,
+          color: tag.backgroundColor,
+        };
+      });
 
-        const selectedTagData = allTags?.filter((tag) => {
-            return savedTags?.find((savedTag) => savedTag.id === tag.id);
-        }).map((tag) => {
-            return {
-                value: tag.id,
-                label: tag.name,
-                color: tag.backgroundColor
-            };
-        });
+    if (sectors && sectors.length > 0 && canUseSectors) {
+      const sectorData = sectors?.map((sector) => {
+        return {
+          value: "s:" + sector.id,
+          label: sector.name,
+          color: "#aaa",
+        };
+      });
 
-        // console.log("saved tags", savedTags);
-        // console.log("selected tag data", selectedTagData);
+      tags.push(...(sectorData || []));
+    }
 
-        selectedTags.push(...selectedTagData || []);
-        tags.push(...tagData || []);
+    const selectedSectorData = sectors
+      ?.filter((sector) => {
+        return savedSectors?.find((saved) => saved.id === sector.id);
+      })
+      .map((sector) => {
+        return {
+          value: "s:" + sector.id,
+          label: sector.name,
+          color: "#aaa",
+        };
+      });
 
-    }, [allTags, savedTags]);
+    console.log(selectedSectorData);
 
-    const onChange = useCallback((e: MultiValue<{
+    selectedTags.push(...(selectedSectorData || []));
+
+    // console.log("saved tags", savedTags);
+    // console.log("selected tag data", selectedTagData);
+
+    selectedTags.push(...(selectedTagData || []));
+    tags.push(...(tagData || []));
+  }, [allTags, savedTags, sectors, canUseSectors, savedSectors]);
+
+  const onChange = useCallback(
+    (
+      e: MultiValue<{
         value: string;
         label: string;
         color: string;
-    }>) => {
+      }>
+    ) => {
+      const tags = [] as Tag[];
+      const sectorResult = [] as Sector[];
 
-        const tags = [] as Tag[]
+      if (!allTags) return;
 
-        if (!allTags) return;
+      e.forEach((tg) => {
+        console.log(tg);
 
-        e.forEach((tg) => {
-            const tag = allTags.find((t) => t.id === tg.value);
+        if (tg?.value !== undefined && tg?.value.startsWith("s:")) {
+          const sector = sectors?.find(
+            (s) => s.id === tg.value.replace("s:", "")
+          );
 
-            if (tag) {
-                tags.push(tag);
-            }
-        });
+          if (sector) {
+            sectorResult.push(sector);
+          }
+        }
 
-        onSetTags(tags);
+        const tag = allTags.find((t) => t.id === tg.value);
 
-    }, [allTags, onSetTags]);
+        if (tag) {
+          tags.push(tag);
+        }
+      });
 
+      onSetTags(tags);
+      if (onSetSectors) onSetSectors(sectorResult);
+    },
+    [allTags, onSetTags, sectors, onSetSectors]
+  );
 
-    if (isLoading) {
-        return <div className="w-full" > <LoadingSpinner /></div>;
-    }
-
-    if (isError) {
-        return <p>Error</p>;
-    }
-
-
+  if (isLoading) {
     return (
-        <div className="flex gap-1 w-full text-zinc-800 ">
-            <Select
-                closeMenuOnSelect={false}
-                defaultValue={selectedTags}
-                isMulti
-                name="currentTags"
-                options={tags}
-                classNamePrefix="select"
-                className="w-full ring-2 ring-zinc-700 rounded outline-none hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800 text-zinc-300"
-                onChange={(e) => { onChange(e) }}
-                unstyled
-                placeholder="Add Tags..."
-                classNames={{
-                    valueContainer(props) {
-                        return `flex flex-wrap p-2 bg-zinc-800 rounded-l focus:bg-red-500 gap-1 ${props.selectProps.classNamePrefix ? props.selectProps.classNamePrefix + "-value-container" : ""}`;
-                    },
-                    multiValue() {
-                        return `text-zinc-300 border border-zinc-300 px-2 rounded-xl px-1 flex items-center text-sm`;
-                    },
-                    container({ isFocused }) {
-                        return `w-full bg-zinc-800 rounded ${isFocused ? "ring-2 ring-amber-700" : "hover:ring-zinc-600 hover:ring-2"} `;
-                    },
-                    menuList() {
-                        return `bg-zinc-900 rounded text-zinc-200 p-1 border-2 border-zinc-500`;
-                    },
-                    option() {
-                        return `hover:bg-zinc-700 hover:text-zinc-100 cursor-pointer rounded p-2 md:p-1`;
-                    }
-                }}
-            />
-            <TooltipComponent content="Tags..." side="bottom">
-                <Link className="flex items-center w-6 justify-center rounded bg-zinc-700 text-zinc-100 p-2 hover:bg-zinc-600" href="/tags">
-                    <TagIcon className="w-5 h-5 cursor-pointer" />
-                </Link>
-            </TooltipComponent>
-        </div>
+      <div className="w-full">
+        {" "}
+        <LoadingSpinner />
+      </div>
     );
-}
+  }
 
-export const TagsPopover: React.FC<{ savedTags: Tag[], type: "projects" | "crews" | "blueprints", onSetTags: (tags: Tag[]) => void, children: ReactNode }> = ({ savedTags, type, onSetTags, children }) => {
+  if (isError) {
+    return <p>Error</p>;
+  }
 
-    return (
-        <Popover.Root>
-            <Popover.Trigger asChild>
-                {children}
-            </Popover.Trigger>
-            <Popover.Portal>
-                <Popover.Content className="flex w-[20rem] md:w-[40rem] gap-2 fade-y bg-black/40 backdrop-blur-sm p-2 drop-shadow-xl rounded border border-zinc-500">
-                    <TagsMultiselectDropdown savedTags={savedTags} type={type} onSetTags={onSetTags} />
-                    <Popover.Close >
-                        <XMarkIcon className="w-5 h-5 cursor-pointer hover:text-red-500" />
-                    </Popover.Close>
-                    <Popover.Arrow className="fill-current text-zinc-500" />
-                </Popover.Content>
-            </Popover.Portal>
-        </Popover.Root>
-    );
-}
+  return (
+    <div className="flex w-full gap-1 text-zinc-800 ">
+      <Select
+        closeMenuOnSelect={false}
+        defaultValue={selectedTags}
+        isMulti
+        name="currentTags"
+        options={tags}
+        classNamePrefix="select"
+        className="w-full rounded bg-zinc-800 text-zinc-300 outline-none ring-2 ring-zinc-700 transition-all duration-100 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 focus:ring-2 focus:ring-amber-700"
+        onChange={(e) => {
+          onChange(e);
+        }}
+        unstyled
+        placeholder="Add Tags..."
+        classNames={{
+          valueContainer(props) {
+            return `flex flex-wrap p-2 bg-zinc-800 rounded-l focus:bg-red-500 gap-1 ${
+              props.selectProps.classNamePrefix
+                ? props.selectProps.classNamePrefix + "-value-container"
+                : ""
+            }`;
+          },
+          multiValue() {
+            return `text-zinc-300 border border-zinc-300 px-2 rounded-xl px-1 flex items-center text-sm`;
+          },
+          container({ isFocused }) {
+            return `w-full bg-zinc-800 rounded ${
+              isFocused
+                ? "ring-2 ring-amber-700"
+                : "hover:ring-zinc-600 hover:ring-2"
+            } `;
+          },
+          menuList() {
+            return `bg-zinc-900 rounded text-zinc-200 p-1 border-2 border-zinc-500`;
+          },
+          option() {
+            return `hover:bg-zinc-700 hover:text-zinc-100 cursor-pointer rounded p-2 md:p-1`;
+          },
+        }}
+      />
+      <TooltipComponent content="Tags..." side="bottom">
+        <Link
+          className="flex w-6 items-center justify-center rounded bg-zinc-700 p-2 text-zinc-100 hover:bg-zinc-600"
+          href="/tags"
+        >
+          <TagIcon className="h-5 w-5 cursor-pointer" />
+        </Link>
+      </TooltipComponent>
+    </div>
+  );
+};
+
+export const TagsPopover: React.FC<{
+  savedTags: Tag[];
+  savedSectors?: Sector[];
+  type: "projects" | "crews" | "blueprints" | "projects and sectors";
+  onSetTags: (tags: Tag[]) => void;
+  onSetSectors?: (sectors: Sector[]) => void;
+  children: ReactNode;
+}> = ({ savedTags, savedSectors, type, onSetTags, onSetSectors, children }) => {
+  return (
+    <Popover.Root>
+      <Popover.Trigger asChild>{children}</Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content className="fade-y flex w-[20rem] gap-2 rounded border border-zinc-500 bg-black/40 p-2 drop-shadow-xl backdrop-blur-sm md:w-[40rem]">
+          <TagsMultiselectDropdown
+            savedTags={savedTags}
+            savedSectors={savedSectors}
+            type={type}
+            onSetTags={onSetTags}
+            onSetSectors={(data) => {
+              if (onSetSectors) {
+                onSetSectors(data);
+              }
+            }}
+          />
+          <Popover.Close>
+            <XMarkIcon className="h-5 w-5 cursor-pointer hover:text-red-500" />
+          </Popover.Close>
+          <Popover.Arrow className="fill-current text-zinc-500" />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+};
