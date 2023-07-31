@@ -17,27 +17,8 @@ const rateLimit = new Ratelimit({
 });
 
 export const projectsRouter = createTRPCRouter({
-  getAll: privateProcedure
-    .input(
-      z
-        .object({
-          limit: z.number().optional(),
-          cursor: z.number().optional(),
-          statusFilter: z.string().optional(),
-        })
-        .optional()
-    )
-    .query(async ({ input, ctx }) => {
+  getAll: privateProcedure.query(async ({ ctx }) => {
       const projects = await ctx.prisma.project.findMany({
-        take: input?.limit || 500,
-        skip: input?.cursor ? input.cursor : 0,
-        where: {
-          status: input?.statusFilter
-            ? {
-                equals: input.statusFilter,
-              }
-            : undefined,
-        },
         orderBy: [
           {
             updatedAt: "desc",
