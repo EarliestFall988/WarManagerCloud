@@ -312,7 +312,7 @@ const FilterAndSearch: React.FC<{
           clearFilters={clearFilters}
           onSetTags={onFilter}
           selectedTags={[]}
-          placeholder="Filter By Log Severity"
+          placeholder="Filter By Log Severity and Category"
         />
       </div>
     </>

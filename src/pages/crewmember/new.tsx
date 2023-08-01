@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/nextjs";
-import { type Tag } from "@prisma/client";
+import { type Sector, type Tag } from "@prisma/client";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
@@ -30,6 +30,7 @@ const NewCrewMemberPage: NextPage = () => {
   const [burden, setBurden] = useState("0");
   const [rating, setRating] = useState("5");
   const [tags, setTags] = useState([] as Tag[]);
+  const [sectors, setSectors] = useState([] as Sector[]);
 
   const [nameError, setNameError] = useState("");
   const [notesError, setNotesError] = useState("");
@@ -39,6 +40,7 @@ const NewCrewMemberPage: NextPage = () => {
   const [wageError, setWageError] = useState("");
   const [burdenError, setBurdenError] = useState("");
   const [ratingError, setRatingError] = useState("");
+  const [sectorError, setSectorError] = useState("");
 
   // const canTravel = travel === "Yes";
   const wageNumber = parseFloat(wage);
@@ -97,6 +99,9 @@ const NewCrewMemberPage: NextPage = () => {
             case "rating":
               setRatingError(message);
               break;
+            case "sectors":
+              setSectorError(message);
+              break;
             default:
               break;
           }
@@ -125,12 +130,22 @@ const NewCrewMemberPage: NextPage = () => {
 
     setRatingError("");
 
+    setSectorError("");
+
     const getTagsStringArray = () => {
       const tagsStringArray = [] as string[];
       tags.forEach((tag) => {
         tagsStringArray.push(tag.id);
       });
       return tagsStringArray;
+    };
+
+    const getSectorsStringArray = () => {
+      const sectorsStringArray = [] as string[];
+      sectors.forEach((sector) => {
+        sectorsStringArray.push(sector.id);
+      });
+      return sectorsStringArray;
     };
 
     toast.loading("Saving", { duration: 1000 });
@@ -147,6 +162,7 @@ const NewCrewMemberPage: NextPage = () => {
       burden: burdenNumber,
       rating: ratingNumber,
       tags: getTagsStringArray(),
+      sectors: getSectorsStringArray(),
     });
   }, [
     name,
@@ -159,6 +175,7 @@ const NewCrewMemberPage: NextPage = () => {
     ratingNumber,
     mutate,
     tags,
+    sectors,
   ]);
 
   //redirect if the user is not found
@@ -214,10 +231,18 @@ const NewCrewMemberPage: NextPage = () => {
         <div className="w-full p-2">
           <p className="py-1 text-lg font-semibold">Tags</p>
           <TagsMultiselectDropdown
-            type={"crews"}
+            type={"crews and sectors"}
             savedTags={tags}
             onSetTags={setTags}
+            savedSectors={sectors}
+            onSetSectors={setSectors}
           />
+          {sectorError && (
+            <>
+              <div className="h-[3px] rounded bg-red-500 translate-y-1"></div>
+              <p className="p-1 text-red-500 tracking-tight">{sectorError}</p>
+            </>
+          )}
         </div>
         <div className="p-2" />
         <div className="w-full p-2">
