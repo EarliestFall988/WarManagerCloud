@@ -4,6 +4,7 @@ import { createTRPCRouter, privateProcedure } from "../trpc";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
+import { type Prisma } from "@prisma/client";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -31,31 +32,40 @@ export const sectorsRouter = createTRPCRouter({
   getByName: privateProcedure
     .input(z.object({ name: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (input.name.length < 1) {
-        const sectors = await ctx.prisma.sector.findMany({
-          take: 100,
-          orderBy: {
-            createdAt: "desc",
-          },
-        });
+      const filters: Prisma.SectorWhereInput = {};
 
-        return sectors;
+      if (input.name) {
+        filters.OR = [
+          {
+            name: {
+              contains: input.name,
+            },
+          },
+          {
+            description: {
+              contains: input.name,
+            },
+          },
+          {
+            departmentCode: {
+              contains: input.name,
+            },
+          },
+        ];
       }
 
       const sectors = await ctx.prisma.sector.findMany({
-        where: {
-          OR: [
-            {
-              name: {
-                contains: input.name,
-              },
+        where: filters,
+        include: {
+          _count: {
+            select: {
+              CrewMembers: true,
+              Projects: true,
             },
-            {
-              description: {
-                contains: input.name,
-              },
-            },
-          ],
+          },
+        },
+        orderBy: {
+          departmentCode: "asc",
         },
       });
 
