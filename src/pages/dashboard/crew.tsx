@@ -10,7 +10,7 @@ import {
   TagIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
-import { type CrewMember, type Tag } from "@prisma/client";
+import { type Sector, type CrewMember, type Tag } from "@prisma/client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { type NextPage } from "next";
 import Link from "next/link";
@@ -37,12 +37,17 @@ const CrewMembersPage: NextPage = () => {
 
   const [crewSearchTerm, setCrewSearchTerm] = useState("");
   const [filterTags, setFilterTags] = useState<Tag[]>([]);
+  const [sectors, setSectors] = useState<Sector[]>([]);
 
   const [animationParent] = useAutoAnimate();
 
   const getFilterTagIds = useCallback(() => {
     return filterTags.map((tag) => tag.id);
   }, [filterTags]);
+
+  const getSectorTagIds = useCallback(() => {
+    return sectors.map((sector) => sector.id);
+  }, [sectors]);
 
   const {
     data: crewData,
@@ -51,6 +56,7 @@ const CrewMembersPage: NextPage = () => {
   } = api.crewMembers.search.useQuery({
     search: crewSearchTerm,
     filter: getFilterTagIds(),
+    sectors: getSectorTagIds(),
   });
 
   const ctx = api.useContext();
@@ -107,8 +113,10 @@ const CrewMembersPage: NextPage = () => {
                 className="w-full rounded bg-zinc-800 p-2 outline-none ring-1 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-700 focus:ring-amber-700 md:w-3/5"
               />
               <TagsPopover
-                type={"crews"}
+                type={"crews and sectors"}
                 savedTags={filterTags}
+                savedSectors={sectors}
+                onSetSectors={(e) => setSectors(e)}
                 onSetTags={(e) => setFilterTags(e)}
               >
                 <button className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700">
@@ -146,6 +154,7 @@ const CrewMembersPage: NextPage = () => {
                   crewData?.map((crewMember) => (
                     <CrewMemberItem
                       crewMember={crewMember}
+                      sector={crewMember.sector}
                       tags={crewMember.tags}
                       key={crewMember.id}
                       removeCrewMember={(e) => {
@@ -190,8 +199,9 @@ const CrewMembersPage: NextPage = () => {
 const CrewMemberItem: FC<{
   crewMember: CrewMember;
   tags: Tag[];
+  sector: Sector | null | undefined;
   removeCrewMember: (id: string) => void;
-}> = ({ crewMember, tags, removeCrewMember }) => {
+}> = ({ crewMember, tags, removeCrewMember, sector }) => {
   const copy = useCallback((text: string, type: string) => {
     void navigator.clipboard.writeText(text);
     toast.success(`${type}Copied to clipboard`);
@@ -209,9 +219,16 @@ const CrewMemberItem: FC<{
       >
         {/* <UserCircleIcon className="hidden h-10 w-10 flex-1 text-zinc-300 md:block" /> */}
         <div className="flex flex-grow flex-col text-left text-white md:max-w-[40%] lg:w-1/3">
-          <p className="truncate text-xs text-zinc-300 ">
-            {crewMember.position}
-          </p>
+          <div className="flex gap-2 justify-start items-center">
+            {sector && (
+              <p className="truncate text-xs text-zinc-100 font-semibold bg-zinc-500 px-2 rounded-full ">
+                {sector?.name}
+              </p>
+            )}
+            <p className="truncate text-xs text-zinc-300 ">
+              {crewMember.position}
+            </p>
+          </div>
           <div className="flex w-full items-center justify-start gap-1 ">
             <p className="truncate text-lg font-semibold text-white ">
               {crewMember.name}

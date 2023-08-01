@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 
 import isMobilePhone from "validator/lib/isMobilePhone";
 import { clerkClient } from "@clerk/nextjs";
+import { type Prisma } from "@prisma/client";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -47,112 +48,78 @@ export const crewMembersRouter = createTRPCRouter({
       z.object({
         search: z.string().min(0).max(255),
         filter: z.array(z.string()),
+        sectors: z.array(z.string()),
       })
     )
     .query(async ({ ctx, input }) => {
-      if (input.search.length < 3 && input.filter.length === 0) {
-        const crewMembers = await ctx.prisma.crewMember.findMany({
-          take: 500,
-          orderBy: {
-            name: "asc",
-          },
-          include: {
-            tags: true,
-          },
-        });
-        return crewMembers;
-      }
+      const filters: Prisma.CrewMemberWhereInput = {};
 
-      if (input.search.length < 3 && input.filter.length > 0) {
-        const crewMembers = await ctx.prisma.crewMember.findMany({
-          take: 500,
-          orderBy: {
-            name: "asc",
-          },
-          include: {
-            tags: true,
-          },
-          where: {
-            tags: {
-              some: {
-                id: {
-                  in: input.filter,
-                },
-              },
+      if (input.filter.length > 0) {
+        filters.tags = {
+          some: {
+            id: {
+              in: input.filter,
             },
           },
-        });
-        return crewMembers;
+        };
       }
 
-      if (input.search.length > 2 && input.filter.length > 0) {
-        const crewMembers = await ctx.prisma.crewMember.findMany({
-          take: 500,
-          where: {
-            AND: [
-              {
-                OR: [
-                  {
-                    name: {
-                      contains: input.search,
-                    },
-                  },
-                  {
-                    position: {
-                      contains: input.search,
-                    },
-                  },
-                ],
-              },
-              {
-                tags: {
-                  some: {
-                    id: {
-                      in: input.filter,
-                    },
-                  },
-                },
-              },
-            ],
+      if (input.search.length > 0) {
+        filters.OR = [
+          {
+            name: {
+              contains: input.search,
+            },
           },
-          include: {
-            tags: true,
+          {
+            position: {
+              contains: input.search,
+            },
           },
-          orderBy: {
-            name: "asc",
+          {
+            description: {
+              contains: input.search,
+            },
           },
-        });
-
-        return crewMembers;
+          {
+            phone: {
+              contains: input.search,
+            },
+          },
+          {
+            email: {
+              contains: input.search,
+            },
+          },
+          {
+            rating: {
+              contains: input.search,
+            },
+          },
+        ]
       }
 
-      if (input.search.length > 2 && input.filter.length == 0) {
-        const crewMembers = await ctx.prisma.crewMember.findMany({
-          take: 500,
-          where: {
-            OR: [
-              {
-                name: {
-                  contains: input.search,
-                },
-              },
-              {
-                position: {
-                  contains: input.search,
-                },
-              },
-            ],
-          },
-          include: {
-            tags: true,
-          },
-          orderBy: {
-            name: "asc",
-          },
-        });
-
-        return crewMembers;
+      if (input.sectors.length > 0) {
+        filters.sector = {
+          id: {
+            in: input.sectors
+          }
+        }
       }
+
+      const result = await ctx.prisma.crewMember.findMany({
+        where: filters,
+        include: {
+          tags: true,
+          sector: true,
+        },
+        orderBy: {
+          name: "asc",
+        }
+      });
+
+      return result;
+
     }),
 
   getById: privateProcedure
@@ -164,6 +131,7 @@ export const crewMembersRouter = createTRPCRouter({
         },
         include: {
           tags: true,
+          sector: true,
         },
       });
       return crewMember;
@@ -211,9 +179,10 @@ export const crewMembersRouter = createTRPCRouter({
           .string({ required_error: "Phone Number is required." })
           .refine(isMobilePhone, "The phone number is invalid."),
         email: z
-        .union([z.string().length(0), z.string().email()])
-        .optional().transform(e => e === "" ? null : e),
+          .union([z.string().length(0), z.string().email()])
+          .optional().transform(e => e === "" ? null : e),
         tags: z.array(z.string()),
+        sectors: z.array(z.string()).min(1, "A crew member must belong to a sector.").max(1, "A crew member cannot belong to more than one sector at a time."),
         wage: z
           .number({ required_error: "A crew member must have a wage" })
           .min(0, "The wage must be a positive number.")
@@ -259,6 +228,7 @@ export const crewMembersRouter = createTRPCRouter({
         },
         include: {
           tags: true,
+          sector: true,
         },
       });
 
@@ -269,6 +239,15 @@ export const crewMembersRouter = createTRPCRouter({
       const disconnectTags = oldCrewMember?.tags?.filter((tag) => {
         return !input.tags?.includes(tag.id);
       });
+
+      if (!input.sectors || input.sectors.length < 1 || !input.sectors[0]) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "A crew member must belong to a sector.",
+        });
+      }
+
+      const sector = input.sectors[0];
 
       const crewMember = await ctx.prisma.crewMember.update({
         where: {
@@ -283,7 +262,7 @@ export const crewMembersRouter = createTRPCRouter({
           wage: input.wage,
           burden: input.burden,
           rating: input.rating.toString().trim(),
-
+          sectorId: sector,
           tags: {
             disconnect: disconnectTags?.map((tag) => ({
               id: tag.id,
@@ -296,6 +275,7 @@ export const crewMembersRouter = createTRPCRouter({
         },
         include: {
           tags: true,
+          sector: true,
         },
       });
 
@@ -308,6 +288,7 @@ export const crewMembersRouter = createTRPCRouter({
       let updatedBurden = false;
       let updatedRating = false;
       let updatedTags = false;
+      let updatedSectors = false;
 
       if (crewData.name !== crewMember.name) {
         updatedName = true;
@@ -341,6 +322,10 @@ export const crewMembersRouter = createTRPCRouter({
         updatedRating = true;
       }
 
+      if (crewData.sectorId !== crewMember.sectorId) {
+        updatedSectors = true;
+      }
+
       if (crewData.tags?.length !== crewMember.tags?.length) {
         updatedTags = true;
       }
@@ -360,58 +345,55 @@ export const crewMembersRouter = createTRPCRouter({
       }
 
       if (updatedPosition) {
-        result += `Position: ${oldCrewMember?.position || ""} -> ${
-          crewMember.position
-        }\n`;
+        result += `Position: ${oldCrewMember?.position || ""} -> ${crewMember.position
+          }\n`;
         changes++;
       }
 
       if (updatedDescription) {
-        result += `Notes: ${oldCrewMember?.description || ""} -> ${
-          crewMember.description || ""
-        }\n`;
+        result += `Notes: ${oldCrewMember?.description || ""} -> ${crewMember.description || ""
+          }\n`;
         changes++;
       }
 
       if (updatedPhone) {
-        result += `Phone: ${oldCrewMember?.phone || ""} -> ${
-          crewMember.phone
-        }\n`;
+        result += `Phone: ${oldCrewMember?.phone || ""} -> ${crewMember.phone
+          }\n`;
         changes++;
       }
 
       if (updatedEmail) {
-        result += `Email: ${oldCrewMember?.email || ""} -> ${
-          crewMember.email
-        }\n`;
+        result += `Email: ${oldCrewMember?.email || ""} -> ${crewMember.email
+          }\n`;
         changes++;
       }
 
       if (updatedWage) {
-        result += `Wage: $${oldCrewMember?.wage || ""} -> $${
-          crewMember.wage
-        }\n`;
+        result += `Wage: $${oldCrewMember?.wage || ""} -> $${crewMember.wage
+          }\n`;
         changes++;
       }
 
       if (updatedBurden) {
-        result += `Burden: $${oldCrewMember?.burden || ""} -> $${
-          crewMember.burden
-        }\n`;
+        result += `Burden: $${oldCrewMember?.burden || ""} -> $${crewMember.burden
+          }\n`;
         changes++;
       }
 
       if (updatedRating) {
-        result += `Rating: ${oldCrewMember?.rating || ""} -> ${
-          crewMember.rating
-        }\n`;
+        result += `Rating: ${oldCrewMember?.rating || ""} -> ${crewMember.rating
+          }\n`;
         changes++;
       }
 
       if (updatedTags) {
-        result += `Tags: ${
-          oldCrewMember?.tags?.map((tag) => tag.name).join(", ") || ""
-        } -> ${crewMember.tags?.map((tag) => tag.name).join(", ")}`;
+        result += `Tags: ${oldCrewMember?.tags?.map((tag) => tag.name).join(", ") || ""
+          } -> ${crewMember.tags?.map((tag) => tag.name).join(", ")}`;
+        changes++;
+      }
+
+      if (updatedSectors) {
+        result += `Sector: ${oldCrewMember?.sector?.name || ""} -> ${crewMember.sector?.name || ""}`;
         changes++;
       }
 
@@ -422,9 +404,8 @@ export const crewMembersRouter = createTRPCRouter({
           url: `/crewmember/${crewMember.id}`,
           authorId: authorId,
           category: "crew",
-          description: `${changes} ${
-            changes == 1 ? "change" : "changes"
-          }: \n${result}`,
+          description: `${changes} ${changes == 1 ? "change" : "changes"
+            }: \n${result}`,
           severity: "moderate",
         },
       });
@@ -561,6 +542,7 @@ export const crewMembersRouter = createTRPCRouter({
           .email("The email is invalid.")
           .max(255, "Email must be less than 255 characters."),
         tags: z.array(z.string()),
+        sectors: z.array(z.string()).min(1, "A member must be assigned a sector.").max(1, "A member cannot be assigned more than one sector."),
         wage: z
           .number({ required_error: "A crew member must have a wage" })
           .min(0, "The wage must be a positive number.")
@@ -613,6 +595,15 @@ export const crewMembersRouter = createTRPCRouter({
         });
       }
 
+      if (input.sectors.length < 1 || !input.sectors[0]) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "A crew member must belong to a sector.",
+        })
+      }
+
+      const sector = input.sectors[0];
+
       const crewMember = await ctx.prisma.crewMember.create({
         data: {
           authorId,
@@ -626,12 +617,15 @@ export const crewMembersRouter = createTRPCRouter({
           rating: input.rating.toString().trim(),
           lastReviewDate: new Date(),
 
+
           wage: input.wage,
           burden: input.burden,
           travel: "",
           rate: 0,
           hours: 0,
           total: 0,
+
+          sectorId: sector,
           tags: {
             connect: input.tags?.map((tag) => ({
               id: tag,
@@ -640,6 +634,14 @@ export const crewMembersRouter = createTRPCRouter({
         },
       });
 
+      const sectorData = await ctx.prisma.sector.findUnique({
+        where: {
+          id: sector,
+        },
+      });
+
+      const name = sectorData?.name || "<unknown>";
+
       await ctx.prisma.log.create({
         data: {
           action: "url",
@@ -647,7 +649,7 @@ export const crewMembersRouter = createTRPCRouter({
           name: `Created new Crew Member \"${input.name}\"`,
           authorId: authorId,
           url: `/crewmember/${crewMember.id}`,
-          description: `${email} created new crew member \"${input.name}\" (\"${input.position}\")`,
+          description: `${email} created new crew member \"${input.name}\" (${input.position} in the ${name} sector)`,
           severity: "moderate",
         },
       });

@@ -10,7 +10,7 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { CloudArrowUpIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
-import { type Tag } from "@prisma/client";
+import { type Sector, type Tag } from "@prisma/client";
 import { TagsMultiselectDropdown } from "~/components/TagDropdown";
 import { ButtonCallToActionComponent, ButtonDeleteAction, InputComponent, PhoneEmailComponent, TextareaComponent } from "~/components/input";
 
@@ -26,7 +26,8 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [burden, setBurden] = useState("0");
   const [rating, setRating] = useState("5");
 
-  const [tags, setTags] = useState([] as Tag[]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [sectors, setSectors] = useState<Sector[]>([]);
 
   const [crewNameError, setCrewNameError] = useState("");
   const [positionError, setPositionError] = useState("");
@@ -36,18 +37,21 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [wageError, setWageError] = useState("");
   const [burdenError, setBurdenError] = useState("");
   const [ratingError, setRatingError] = useState("");
+  const [sectorError, setSectorError] = useState("");
 
 
   const router = useRouter();
 
   const crewContext = api.useContext().crewMembers;
   const tagsContext = api.useContext().tags;
+  const sectorsContext = api.useContext().sectors;
 
   const mutation = api.crewMembers.update.useMutation({
     onSuccess: (data) => {
       toast.success(`${data.name} (${data.position}) updated successfully!`);
       void crewContext.invalidate();
       void tagsContext.invalidate();
+      void sectorsContext.invalidate();
       void router.back();
     },
     onError: (e) => {
@@ -94,6 +98,9 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
             case "rating":
               setRatingError(message);
               break;
+            case "sectors":
+              setSectorError(message);
+              break;
             default:
               break;
           }
@@ -137,9 +144,11 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     if (data.name) {
       setCrewName(data.name);
     }
+
     if (data.position) {
       setPosition(data.position);
     }
+
     if (data.description) {
       setDescription(data.description);
     }
@@ -165,6 +174,10 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
 
     if (data.tags) {
       setTags(data.tags)
+    }
+
+    if (data.sector) {
+      setSectors([data.sector]);
     }
 
   }, [data]);
@@ -195,6 +208,14 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     return tagsStringArray;
   }
 
+  const getSectorsIds = () => {
+    const sectorsIdsArray = [] as string[];
+    sectors.forEach((s) => {
+      sectorsIdsArray.push(s.id);
+    });
+    return sectorsIdsArray;
+  }
+
   const save = () => {
 
     setCrewNameError("");
@@ -212,6 +233,8 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
 
     setRatingError("");
 
+    setSectorError("");
+
     mutation.mutate({
       crewMemberId: data.id,
       name: crewName,
@@ -223,6 +246,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       wage: parseFloat(wage),
       burden: parseFloat(burden),
       rating: parseInt(rating),
+      sectors: getSectorsIds()
     });
     toast.loading("Saving changes...", { duration: 1000 });
   }
@@ -266,8 +290,14 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
 
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Tags</p>
-              <TagsMultiselectDropdown type={"crews"} savedTags={tags} onSetTags={setTags} />
-            </ div>
+              <TagsMultiselectDropdown type={"crews and sectors"} savedTags={tags} savedSectors={sectors} onSetSectors={setSectors} onSetTags={setTags} />
+              {sectorError && (
+                <>
+                  <div className="h-[3px] rounded bg-red-500 translate-y-1"></div>
+                  <p className="p-1 text-red-500 tracking-tight">{sectorError}</p>
+                </>
+              )}
+            </div>
 
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Phone Number</p>

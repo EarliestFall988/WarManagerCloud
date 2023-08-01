@@ -34,6 +34,8 @@ const isValidUser = (user?: User) => {
   if (!email) {
     return false;
   }
+
+  return true;
 };
 
 export const usersRouter = createTRPCRouter({
