@@ -6,9 +6,16 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { LoadingSpinner } from "~/components/loading";
 import TooltipComponent from "~/components/Tooltip";
-import { PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {
+  PlusIcon,
+  TrashIcon,
+  UserCircleIcon,
+  WrenchScrewdriverIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { type Sector } from "@prisma/client";
 
 const SectorsSettingsPage: NextPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,13 +44,29 @@ const SectorsSettingsPage: NextPage = () => {
     },
   });
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (
+    sector: Sector & { _count: { Projects: number; CrewMembers: number } }
+  ) => {
+    if (sector._count.CrewMembers > 0)
+      return toast.error(
+        "Sector has crew members. Please assign them to another sector first.", {
+          duration: 5000,
+        }
+      );
+
+    if (sector._count.Projects > 0)
+      return toast.error(
+        "Sector has projects. Please assign them to another sector first.", {
+          duration: 5000,
+        }
+      );
+
     toast.loading("Deleting sector...", {
       duration: 1000,
     });
 
     mutate({
-      id,
+      id: sector.id,
     });
   };
 
@@ -72,7 +95,7 @@ const SectorsSettingsPage: NextPage = () => {
         </div>
         <div
           ref={animationParent}
-          className="flex min-h-[10vh] flex-col overflow-y-auto overflow-x-clip border-t border-zinc-600 pt-1 md:max-h-[85vh]"
+          className="flex min-h-[10vh] flex-col overflow-y-auto overflow-x-clip border-t border-zinc-600 px-1 md:max-h-[85vh]"
         >
           {loading ? (
             <div className="flex h-full w-full items-center justify-center p-5">
@@ -87,7 +110,7 @@ const SectorsSettingsPage: NextPage = () => {
           ) : (
             data?.map((sector) => (
               <div
-                className="flex border-b border-zinc-700 hover:rounded hover:bg-zinc-700 "
+                className="flex border-x border-b border-zinc-700 transition-all duration-100 hover:bg-zinc-800 "
                 key={sector.id}
               >
                 <Link
@@ -95,15 +118,65 @@ const SectorsSettingsPage: NextPage = () => {
                   className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-l  px-1 py-2  "
                 >
                   <div className="w-1/2 px-2 text-left">
+                    <div className="flex items-center justify-start text-xs md:hidden">
+                      <div className="flex gap-1 rounded-full">
+                        <div className="flex items-center gap-1 rounded-full">
+                          <UserCircleIcon className="h-3 w-3 text-zinc-300" />
+                          <p className="truncate text-zinc-300">
+                            {sector._count.CrewMembers}
+                          </p>
+                        </div>
+                        <div className="border-r border-zinc-600"></div>
+                        <div className="flex items-center gap-1 rounded-full">
+                          <WrenchScrewdriverIcon className="h-3 w-3 text-zinc-300" />
+                          <p className="truncate text-zinc-300">
+                            {sector._count.Projects}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                     <p className="truncate font-semibold text-zinc-200 sm:text-lg">
                       {sector.name}
                     </p>
                     <p className="truncate text-sm text-zinc-300 sm:text-xs">
-                      {sector.departmentCode}
+                      {sector.departmentCode}{" "}
+                      <span className="text-zinc-500">Department code</span>
                     </p>
                   </div>
+                  <div className="text-md hidden gap-2 md:flex md:w-1/3">
+                    <TooltipComponent
+                      content={`There ${
+                        sector._count.CrewMembers == 1 ? "is" : "are"
+                      } ${sector._count.CrewMembers} ${
+                        sector._count.CrewMembers == 1 ? "person" : "people"
+                      } in the ${sector.name} sector.`}
+                      side="left"
+                    >
+                      <div className="flex items-center gap-1 rounded-full bg-zinc-700 px-2">
+                        <UserCircleIcon className="h-3 w-3 text-zinc-300" />
+                        <p className="sm:text-md truncate text-zinc-300">
+                          {sector._count.CrewMembers}
+                        </p>
+                      </div>
+                    </TooltipComponent>
+                    <TooltipComponent
+                      content={`There ${
+                        sector._count.Projects == 1 ? "is" : "are"
+                      } ${sector._count.Projects} ${
+                        sector._count.Projects == 1 ? "project" : "projects"
+                      } in the ${sector.name} sector.`}
+                      side="right"
+                    >
+                      <div className="flex items-center gap-1 rounded-full bg-zinc-700 px-2">
+                        <WrenchScrewdriverIcon className="h-3 w-3 text-zinc-300" />
+                        <p className="sm:text-md truncate text-zinc-300">
+                          {sector._count.Projects}
+                        </p>
+                      </div>
+                    </TooltipComponent>
+                  </div>
                   <div className="hidden sm:flex sm:w-1/3">
-                    <p className="truncate text-center font-thin italic tracking-tight text-zinc-200">
+                    <p className="truncate text-center font-thin tracking-tight text-zinc-200">
                       {sector.description}
                     </p>
                   </div>
@@ -121,9 +194,9 @@ const SectorsSettingsPage: NextPage = () => {
                       </Dialog.Trigger>
                     </TooltipComponent>
                     <Dialog.Portal>
-                      <Dialog.Overlay className="fixed inset-0 top-0 flex items-center justify-center bg-black/30 backdrop-blur-sm" />
+                      <Dialog.Overlay className="fixed inset-0 top-0 flex animate-overlayDrawerShow items-center justify-center bg-black/30 backdrop-blur-sm" />
                       <div className="flex h-screen w-screen items-center justify-center">
-                        <Dialog.Content className="fixed top-0 m-auto h-screen w-full border-zinc-600 bg-zinc-800 p-3 py-2 md:top-[30%] md:h-40 md:max-h-[80vh] md:w-1/4 md:rounded-lg md:border">
+                        <Dialog.Content className="fade-y  fixed top-0 m-auto h-screen w-full border-zinc-600 bg-zinc-800 p-3 py-2 md:top-[30%] md:h-40 md:max-h-[80vh] md:w-1/4 md:rounded-lg md:border">
                           <div className="flex w-full justify-between ">
                             <Dialog.Title className="text-lg font-bold text-white">
                               Delete Sector
@@ -142,7 +215,7 @@ const SectorsSettingsPage: NextPage = () => {
                             <Dialog.Close asChild>
                               <button
                                 onClick={() => {
-                                  handleDelete(sector.id);
+                                  handleDelete(sector);
                                 }}
                                 className="rounded bg-red-700 p-2 transition-all duration-100 hover:scale-105 hover:bg-red-600"
                               >

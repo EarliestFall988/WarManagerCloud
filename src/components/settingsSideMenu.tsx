@@ -79,7 +79,7 @@ const SettingsLayout: React.FC<{ children: React.ReactNode }> = ({
               {convertToBreadcrumb(router.pathname, " > ")}
             </p>
           </div>
-          <div className="rounded bg-zinc-800 p-2">{children}</div>
+          <div className="rounded p-2">{children}</div>
         </div>
       </main>
     </>
