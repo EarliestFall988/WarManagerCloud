@@ -182,7 +182,7 @@ const SectorsSettingsPage: NextPage = () => {
                   </div>
                 </Link>
                 <div className="flex justify-end">
-                  <Dialog.Root>
+                  {/* <Dialog.Root>
                     <TooltipComponent
                       content={`Delete ${sector.name}`}
                       side="bottom"
@@ -228,7 +228,7 @@ const SectorsSettingsPage: NextPage = () => {
                         </Dialog.Content>
                       </div>
                     </Dialog.Portal>
-                  </Dialog.Root>
+                  </Dialog.Root> */}
                 </div>
               </div>
             ))

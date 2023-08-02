@@ -75,9 +75,15 @@ export const sectorsRouter = createTRPCRouter({
   create: privateProcedure
     .input(
       z.object({
-        name: z.string(),
+        name: z
+          .string()
+          .min(3, "Name must be at least 3 characters long")
+          .max(50, "Name must be at most 50 characters long"),
         description: z.string(),
-        departmentCode: z.string(),
+        departmentCode: z
+          .string()
+          .min(2, "Code must be at least 2 characters long")
+          .max(10, "Code must be at most 10 characters long"),
         color: z.string(),
       })
     )
@@ -91,16 +97,27 @@ export const sectorsRouter = createTRPCRouter({
         });
       }
 
-      const sectorExists = await ctx.prisma.sector.findUnique({
+      const sectorExists = await ctx.prisma.sector.findFirst({
         where: {
-          name: input.name,
+          OR: [
+            {
+              name: {
+                equals: input.name,
+              },
+            },
+            {
+              departmentCode: {
+                equals: input.departmentCode,
+              },
+            },
+          ],
         },
       });
 
       if (sectorExists) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "A sector with this name already exists",
+          message: "A sector with the name and/or code already exists",
         });
       }
 
@@ -129,9 +146,16 @@ export const sectorsRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        name: z.string(),
+        name: z
+          .string()
+          .min(3, "Name must be at least 3 characters long")
+          .max(50, "Name must be at most 50 characters long"),
         description: z.string(),
-        departmentCode: z.string(),
+        departmentCode: z
+          .string()
+          .min(2, "Code must be at least 2 characters long")
+          .max(10, "Code must be at most 10 characters long"),
+        color: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
