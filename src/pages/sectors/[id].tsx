@@ -14,7 +14,13 @@ import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingSpinner } from "~/components/loading";
 import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
-import { ButtonCallToActionComponent, InputComponent, TextareaComponent } from "~/components/input";
+import {
+  ButtonCallToActionComponent,
+  ButtonDeleteAction,
+  InputComponent,
+  TextareaComponent,
+} from "~/components/input";
+import { useRouter } from "next/router";
 
 const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
   const [sectorName, setSectorName] = useState("");
@@ -26,6 +32,7 @@ const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
   const [sectorNotesError, setSectorNotesError] = useState("");
 
   const context = api.useContext();
+  const router = useRouter();
 
   const { mutate, isLoading: isCreating } = api.sectors.update.useMutation({
     onSuccess: (data) => {
@@ -34,13 +41,70 @@ const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
       setSectorCode("");
       setSectorNotes("");
       void context.invalidate();
+      if (window.history.length > 0) {
+        router.back();
+      } else {
+        void router.push("settings/sectors");
+      }
     },
-    onError: (error) => {
-      console.log(error);
-      toast.error("there was an error adding the sector");
+    onError: (e) => {
+      const errorMessage = e.shape?.data?.zodError?.fieldErrors;
+
+      if (!errorMessage) {
+        toast.error(e.message);
+        return;
+      } else {
+        toast.error(
+          "There were a few errors, please check the form and try again."
+        );
+      }
+
+      for (const key in errorMessage) {
+        // toast.error(errorMessage?[key][0] || "there was an api error");
+        const keyMessage = errorMessage[key];
+
+        if (keyMessage) {
+          const message = keyMessage[0] || "";
+
+          switch (key) {
+            case "name":
+              setSectorNameError(message);
+              break;
+            case "description":
+              setSectorNotesError(message);
+              break;
+            case "departmentCode":
+              setSectorCodeError(message);
+              break;
+            default:
+              toast.error(message);
+              break;
+          }
+        } else {
+          toast.error("Something went wrong! Please try again later");
+        }
+      }
     },
   });
 
+  const { back, push } = useRouter();
+
+  const { mutate: deleteSector, isLoading: isDeleting } =
+    api.sectors.delete.useMutation({
+      onSuccess: (data) => {
+        toast.success(`${data.name} deleted successfully!`);
+        void context.invalidate();
+        if (window.history.length > 2) {
+          back();
+        } else {
+          void push("settings/sectors");
+        }
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error("there was an error deleting the sector");
+      },
+    });
 
   const { data } = api.sectors.getbyId.useQuery({
     id,
@@ -54,23 +118,60 @@ const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
     }
   }, [data]);
 
+  const mutateSector = useCallback(
+    (name: string, code: string, notes: string, id: string) => {
+      setSectorNameError("");
+      setSectorCodeError("");
+      setSectorNotesError("");
 
-  const createNewSector = useCallback((name: string, code: string, notes: string, id: string) => {
+      mutate({ name, departmentCode: code, description: notes, id, color: "" });
+    },
+    [mutate]
+  );
 
-    setSectorNameError("");
-    setSectorCodeError("");
-    setSectorNotesError("");
+  const handleDelete = () => {
+    if (!data) return toast.error("There was an error deleting the sector");
 
-    mutate({ name, departmentCode: code, description: notes, id });
-  }, [mutate]);
+    if (data._count.CrewMembers > 0)
+      return toast.error(
+        "Sector has crew members. Please assign them to another sector first.",
+        {
+          duration: 5000,
+        }
+      );
+
+    if (data._count.Projects > 0)
+      return toast.error(
+        "Sector has projects. Please assign them to another sector first.",
+        {
+          duration: 5000,
+        }
+      );
+
+    toast.loading("Deleting sector...", {
+      duration: 1000,
+    });
+
+    deleteSector({
+      id: data.id,
+    });
+  };
 
   return (
     <>
       <Head>
-        <title>New Sector | War Manager</title>
+        <title>Editing {sectorName} sector | War Manager</title>
       </Head>
       <main className="min-h-[100vh] bg-zinc-900">
-        <NewItemPageHeader title="New Sector" save={() => { createNewSector(sectorName, sectorCode, sectorNotes, id) }} saving={isCreating} context="blueprints" />
+        <NewItemPageHeader
+          title={`${sectorName}`}
+          save={() => {
+            mutateSector(sectorName, sectorCode, sectorNotes, id);
+          }}
+          saving={isCreating}
+          context="blueprints"
+          deleting={isDeleting}
+        />
         <SignedIn>
           <div className="m-auto w-full sm:w-2/3">
             <div className="flex h-full w-full flex-col items-center justify-center">
@@ -104,18 +205,24 @@ const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
                   placeholder="Talk about anything you want!"
                   disabled={isCreating}
                 />
-
               </div>
               <div className="w-full p-2 font-semibold">
                 <ButtonCallToActionComponent
                   onClick={() => {
-                    createNewSector(sectorName, sectorCode, sectorNotes, id);
+                    mutateSector(sectorName, sectorCode, sectorNotes, id);
                   }}
                   disabled={isCreating}
                 >
-                  {isCreating ? <LoadingSpinner /> : <p>Create New Sector</p>}
+                  {isCreating ? <LoadingSpinner /> : <p>Save Changes</p>}
                 </ButtonCallToActionComponent>
               </div>
+              <ButtonDeleteAction
+                description="This will permanently delete this sector and all of its data. This action cannot be undone."
+                title="Delete Sector"
+                disabled={isDeleting}
+                loading={isDeleting}
+                yes={handleDelete}
+              />
             </div>
           </div>
         </SignedIn>

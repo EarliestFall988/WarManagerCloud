@@ -2,20 +2,16 @@ import { type NextPage } from "next";
 import SettingsLayout from "~/components/settingsSideMenu";
 import { api } from "~/utils/api";
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { LoadingSpinner } from "~/components/loading";
 import TooltipComponent from "~/components/Tooltip";
 import {
   PlusIcon,
-  TrashIcon,
   UserCircleIcon,
   WrenchScrewdriverIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/solid";
-import * as Dialog from "@radix-ui/react-dialog";
+
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { type Sector } from "@prisma/client";
 
 const SectorsSettingsPage: NextPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,49 +24,11 @@ const SectorsSettingsPage: NextPage = () => {
     name: searchTerm,
   });
 
-  const context = api.useContext();
 
   const [animationParent] = useAutoAnimate();
 
-  const { mutate, isLoading: isDeleting } = api.sectors.delete.useMutation({
-    onSuccess: () => {
-      void context.invalidate();
-      toast.success("Sector deleted successfully");
-    },
 
-    onError: (error) => {
-      console.log(error);
-      toast.error("Error deleting sector");
-    },
-  });
-
-  const handleDelete = (
-    sector: Sector & { _count: { Projects: number; CrewMembers: number } }
-  ) => {
-    if (sector._count.CrewMembers > 0)
-      return toast.error(
-        "Sector has crew members. Please assign them to another sector first.", {
-          duration: 5000,
-        }
-      );
-
-    if (sector._count.Projects > 0)
-      return toast.error(
-        "Sector has projects. Please assign them to another sector first.", {
-          duration: 5000,
-        }
-      );
-
-    toast.loading("Deleting sector...", {
-      duration: 1000,
-    });
-
-    mutate({
-      id: sector.id,
-    });
-  };
-
-  const loading = loadingSearch || isDeleting;
+  const loading = loadingSearch;
 
   return (
     <SettingsLayout>
@@ -182,7 +140,7 @@ const SectorsSettingsPage: NextPage = () => {
                   </div>
                 </Link>
                 <div className="flex justify-end">
-                  <Dialog.Root>
+                  {/* <Dialog.Root>
                     <TooltipComponent
                       content={`Delete ${sector.name}`}
                       side="bottom"
@@ -228,7 +186,7 @@ const SectorsSettingsPage: NextPage = () => {
                         </Dialog.Content>
                       </div>
                     </Dialog.Portal>
-                  </Dialog.Root>
+                  </Dialog.Root> */}
                 </div>
               </div>
             ))
