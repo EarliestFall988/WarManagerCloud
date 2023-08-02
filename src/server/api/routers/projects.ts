@@ -188,6 +188,24 @@ export const projectsRouter = createTRPCRouter({
         });
       }
 
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
+      if (email !== "taylor.howell@jrcousa.com") {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
       const pwTag = ctx.prisma.tag.findFirst({
         where: {
           name: "Prevailing Wage",
@@ -399,7 +417,10 @@ export const projectsRouter = createTRPCRouter({
   create: privateProcedure
     .input(
       z.object({
-        name: z.string().min(3, "The project name must be at least 3 characters long").max(255, "The project name is too long!"),
+        name: z
+          .string()
+          .min(3, "The project name must be at least 3 characters long")
+          .max(255, "The project name is too long!"),
         // jobNumber: z.string().min(3).max(255),
         // notes: z.string().min(3).max(255),
         description: z.string().optional(),
@@ -809,14 +830,16 @@ export const projectsRouter = createTRPCRouter({
 
       if (updatedDescription) {
         updatedFields.push(
-          `Description: ${oldData.description || "no description"} -> ${project.description
+          `Description: ${oldData.description || "no description"} -> ${
+            project.description
           }\n`
         );
       }
 
       if (updatedJobNumber) {
         updatedFields.push(
-          `Job Number: ${oldData.jobNumber || "no job number"} -> ${project.jobNumber
+          `Job Number: ${oldData.jobNumber || "no job number"} -> ${
+            project.jobNumber
           }\n`
         );
       }
@@ -853,21 +876,24 @@ export const projectsRouter = createTRPCRouter({
 
       if (updatedTotalManHours) {
         updatedFields.push(
-          `Total Man Hours: ${oldData.TotalManHours || 0} -> ${project.TotalManHours
+          `Total Man Hours: ${oldData.TotalManHours || 0} -> ${
+            project.TotalManHours
           }\n`
         );
       }
 
       if (updatedStartDate) {
         updatedFields.push(
-          `Start Date: ${oldData.startDate?.toDateString() || "no start date"
+          `Start Date: ${
+            oldData.startDate?.toDateString() || "no start date"
           } -> ${project.startDate.toDateString()}\n`
         );
       }
 
       if (updatedEndDate) {
         updatedFields.push(
-          `End Date: ${oldData.endDate?.toDateString() || "no end date"
+          `End Date: ${
+            oldData.endDate?.toDateString() || "no end date"
           } -> ${project.endDate.toDateString()}\n`
         );
       }
@@ -880,21 +906,25 @@ export const projectsRouter = createTRPCRouter({
 
       if (updatedPercentComplete) {
         updatedFields.push(
-          `Percent Complete: ${oldData.percentComplete || 0} -> ${project.percentComplete
+          `Percent Complete: ${oldData.percentComplete || 0} -> ${
+            project.percentComplete
           }\n`
         );
       }
 
       if (updatedTags) {
         updatedFields.push(
-          `Tags: ${oldData.tags?.map((tag) => tag.name).join(", ") || "no tags"
+          `Tags: ${
+            oldData.tags?.map((tag) => tag.name).join(", ") || "no tags"
           } -> ${project.tags?.map((tag) => tag.name).join(", ")}\n`
         );
       }
 
       if (updatedSectors) {
         updatedFields.push(
-          `Sectors: ${oldData.sectors?.map((sector) => sector.name).join(", ") || "no sectors"
+          `Sectors: ${
+            oldData.sectors?.map((sector) => sector.name).join(", ") ||
+            "no sectors"
           } -> ${project.sectors?.map((sector) => sector.name).join(", ")}\n`
         );
       }
@@ -908,8 +938,9 @@ export const projectsRouter = createTRPCRouter({
           name: `Updated Project \"${project.name}\"`,
           authorId: authorId,
           url: `/projects/${project.id}`,
-          description: `${len} ${len == 1 ? "change" : "changes"
-            } made to project \"${project.name}\":\n ${updatedFields.join(" ")}`,
+          description: `${len} ${
+            len == 1 ? "change" : "changes"
+          } made to project \"${project.name}\":\n ${updatedFields.join(" ")}`,
           severity: "moderate",
         },
       });
@@ -1014,6 +1045,35 @@ export const projectsRouter = createTRPCRouter({
     }),
 
   deleteMany: privateProcedure.mutation(async ({ ctx }) => {
+    const authorId = ctx.currentUser;
+
+    const { success } = await rateLimit.limit(authorId);
+
+    if (!success) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: "You have exceeded the rate limit, try again in a minute",
+      });
+    }
+
+    const user = await clerkClient.users.getUser(authorId);
+
+    const email = user?.emailAddresses[0]?.emailAddress;
+
+    if (!user || !email || user.banned) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You are not authorized to perform this action",
+      });
+    }
+
+    if (email !== "taylor.howell@jrcousa.com") {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You are not authorized to perform this action",
+      });
+    }
+
     await ctx.prisma.project.deleteMany();
   }),
 });
