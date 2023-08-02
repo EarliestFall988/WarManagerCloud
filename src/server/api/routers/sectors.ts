@@ -5,6 +5,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
 import { type Prisma } from "@prisma/client";
+import { clerkClient } from "@clerk/nextjs";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -23,6 +24,14 @@ export const sectorsRouter = createTRPCRouter({
       const sector = await ctx.prisma.sector.findUnique({
         where: {
           id: input.id,
+        },
+        include: {
+          _count: {
+            select: {
+              CrewMembers: true,
+              Projects: true,
+            },
+          },
         },
       });
 
@@ -174,6 +183,14 @@ export const sectorsRouter = createTRPCRouter({
         where: {
           id: input.id,
         },
+        include: {
+          _count: {
+            select: {
+              CrewMembers: true,
+              Projects: true,
+            },
+          },
+        },
         data: {
           name: input.name,
           description: input.description,
@@ -199,9 +216,56 @@ export const sectorsRouter = createTRPCRouter({
         });
       }
 
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
+      const getSector = await ctx.prisma.sector.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          _count: {
+            select: {
+              CrewMembers: true,
+              Projects: true,
+            },
+          },
+        },
+      });
+
+      if (
+        getSector?._count.CrewMembers !== 0 ||
+        getSector?._count.Projects !== 0
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot delete a sector with crew members or projects",
+        });
+      }
+
       const sector = await ctx.prisma.sector.delete({
         where: {
           id: input.id,
+        },
+      });
+
+      await ctx.prisma.log.create({
+        data: {
+          action: "none",
+          category: "crew",
+          name: `Deleted Sector ${sector.name}`,
+          authorId: authorId,
+          url: `/#`,
+          description: `${email} deleted sector ${sector.name} (department ${sector.departmentCode})`,
+          severity: "critical",
         },
       });
 

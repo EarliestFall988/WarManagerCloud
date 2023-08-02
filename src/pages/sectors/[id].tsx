@@ -129,6 +129,34 @@ const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
     [mutate]
   );
 
+  const handleDelete = () => {
+    if (!data) return toast.error("There was an error deleting the sector");
+
+    if (data._count.CrewMembers > 0)
+      return toast.error(
+        "Sector has crew members. Please assign them to another sector first.",
+        {
+          duration: 5000,
+        }
+      );
+
+    if (data._count.Projects > 0)
+      return toast.error(
+        "Sector has projects. Please assign them to another sector first.",
+        {
+          duration: 5000,
+        }
+      );
+
+    toast.loading("Deleting sector...", {
+      duration: 1000,
+    });
+
+    deleteSector({
+      id: data.id,
+    });
+  };
+
   return (
     <>
       <Head>
@@ -193,9 +221,7 @@ const SingleProjectPage: NextPage<{ id: string }> = ({ id }) => {
                 title="Delete Sector"
                 disabled={isDeleting}
                 loading={isDeleting}
-                yes={() => {
-                  deleteSector({ id });
-                }}
+                yes={handleDelete}
               />
             </div>
           </div>
