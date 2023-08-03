@@ -191,7 +191,6 @@ const NewCrewMemberPage: NextPage = () => {
           save();
         }}
         saving={isCreating}
-        cancel={() => void router.back()}
       />
       <div className="m-auto flex flex-col md:w-1/2">
         <div className="w-full p-2">

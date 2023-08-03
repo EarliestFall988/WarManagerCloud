@@ -1,4 +1,12 @@
-import { ArrowLongUpIcon, ArrowPathIcon, ClipboardDocumentIcon, EllipsisVerticalIcon, FlagIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowLongUpIcon,
+  ArrowPathIcon,
+  ClipboardDocumentIcon,
+  EllipsisVerticalIcon,
+  FlagIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import type { NextPage } from "next";
 import Link from "next/link";
@@ -50,10 +58,9 @@ const BlueprintsListPage: NextPage = () => {
   //     </div>
   //   );
 
-
   const getPinnedBlueprints = () => {
     return data?.filter((blueprint) => blueprint.pinned) || [];
-  }
+  };
 
   if (!isLoaded) {
     return <LoadingPage2 />;
@@ -63,11 +70,9 @@ const BlueprintsListPage: NextPage = () => {
     return <SignInModal redirectUrl="/dashboard/blueprints" />;
   }
 
-
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
 
   return (
     <>
@@ -96,11 +101,13 @@ const BlueprintsListPage: NextPage = () => {
               </Link>
             </TooltipComponent>
           </div>
-          <div ref={animationParent} className="w-full h-full" >
+          <div ref={animationParent} className="h-full w-full">
             {loadingBlueprints ? (
-              <div className="h-[100vh] w-full flex flex-col gap-2 justify-center items-center">
+              <div className="flex h-[100vh] w-full flex-col items-center justify-center gap-2">
                 <LoadingSpinner />
-                <p className="text-zinc-600 font-semibold">Loading Blueprints</p>
+                <p className="font-semibold text-zinc-600">
+                  Loading Blueprints
+                </p>
               </div>
             ) : loadingBlueprintsError || !data ? (
               <div className="flex w-full items-center justify-center">
@@ -111,14 +118,19 @@ const BlueprintsListPage: NextPage = () => {
             ) : (
               data.length > 0 && (
                 <>
-                  <div className="flex w-full flex-col gap-1 border-t border-zinc-700 text-gray-100 select-none transition-all duration-100">
-                    {!blueprintSearchTerm && getPinnedBlueprints().length > 0 && (
-                      <div className="flex flex-col gap-1 p-2">
-                        <div className="flex w-full items-center justify-between gap-1">
-                          <p className="text-lg font-bold text-zinc-300">Pinned Blueprints</p>
-                          <div className="flex items-center gap-2">
-                            <p className="text-lg font-bold text-zinc-300">{getPinnedBlueprints().length} Pinned</p>
-                            {/* {getPinnedBlueprints().length > 0 && (
+                  <div className="flex w-full select-none flex-col gap-1 border-t border-zinc-700 text-gray-100 transition-all duration-100">
+                    {!blueprintSearchTerm &&
+                      getPinnedBlueprints().length > 0 && (
+                        <div className="flex flex-col gap-1 p-2">
+                          <div className="flex w-full items-center justify-between gap-1">
+                            <p className="text-lg font-bold text-zinc-300">
+                              Pinned Blueprints
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-lg font-bold text-zinc-300">
+                                {getPinnedBlueprints().length} Pinned
+                              </p>
+                              {/* {getPinnedBlueprints().length > 0 && (
                         <div className="flex gap-1">
                           <TooltipComponent content="Unpin All" side="bottom">
                             <button
@@ -133,29 +145,48 @@ const BlueprintsListPage: NextPage = () => {
                           </TooltipComponent>
                         </div>
                       )} */}
+                            </div>
                           </div>
+
+                          {getPinnedBlueprints().length > 0 && (
+                            <div className="flex flex-col gap-1">
+                              {getPinnedBlueprints().map((blueprint) => (
+                                <BlueprintListItem
+                                  key={blueprint.id}
+                                  pinned={blueprint.pinned || false}
+                                  id={blueprint.id}
+                                  name={blueprint.name}
+                                  updatedAt={blueprint.updatedAt}
+                                  description={blueprint.description}
+                                  userEmail={blueprint.user?.email}
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
+                      )}
 
-                        {getPinnedBlueprints().length > 0 && (
-                          <div className="flex flex-col gap-1">
-                            {getPinnedBlueprints().map((blueprint) => (
-                              <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="p-2 gap-1 flex flex-col">
+                    <div className="flex flex-col gap-1 p-2">
                       {data?.map((blueprint) => (
-                        <BlueprintListItem key={blueprint.id} pinned={blueprint.pinned || false} id={blueprint.id} name={blueprint.name} updatedAt={blueprint.updatedAt} description={blueprint.description} userEmail={blueprint.user?.email} />
+                        <BlueprintListItem
+                          key={blueprint.id}
+                          pinned={blueprint.pinned || false}
+                          id={blueprint.id}
+                          name={blueprint.name}
+                          updatedAt={blueprint.updatedAt}
+                          description={blueprint.description}
+                          userEmail={blueprint.user?.email}
+                        />
                       ))}
                     </div>
                   </div>
                   <div className="h-20"></div>
-                  <button onClick={scrollToTop} className="w-full gap-2 flex items-center justify-center">
+                  <button
+                    onClick={scrollToTop}
+                    className="flex w-full items-center justify-center gap-2"
+                  >
                     <p>Back To Top</p>
-                    <ArrowLongUpIcon className="w-5 h-5 text-zinc-400 hover:text-zinc-200" />
+                    <ArrowLongUpIcon className="h-5 w-5 text-zinc-400 hover:text-zinc-200" />
                   </button>
                   <div className="h-20" />
                 </>
@@ -164,7 +195,8 @@ const BlueprintsListPage: NextPage = () => {
             {data?.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-2">
                 <p className="text-xl font-bold text-zinc-300">
-                  No Blueprints matching your search {`'${blueprintSearchTerm}'`}
+                  No Blueprints matching your search{" "}
+                  {`'${blueprintSearchTerm}'`}
                 </p>
               </div>
             )}
@@ -175,44 +207,65 @@ const BlueprintsListPage: NextPage = () => {
   );
 };
 
-
-const BlueprintListItem: React.FC<{ id: string, pinned: boolean, name: string, description: string, updatedAt: Date, userEmail: string | undefined }> = ({ id, name, pinned, description, updatedAt, userEmail }) => {
-
+const BlueprintListItem: React.FC<{
+  id: string;
+  pinned: boolean;
+  name: string;
+  description: string;
+  updatedAt: Date;
+  userEmail: string | undefined;
+}> = ({ id, name, pinned, description, updatedAt, userEmail }) => {
   const copy = (text: string, type: string) => {
     void navigator.clipboard.writeText(text);
     toast.success(`${type} copied to clipboard`);
   };
 
-  const [isPinned, setIsPinned] = useState<"pinning" | "unpinning" | "unknown">("unknown");
+  const [isPinned, setIsPinned] = useState<"pinning" | "unpinning" | "unknown">(
+    "unknown"
+  );
 
   const blueprintContext = api.useContext().blueprints;
 
-  const { mutate } = api.blueprints.setBlueprintPined.useMutation(
-    {
-      onSuccess: () => {
-        toast.success(isPinned === "pinning" ? `${name} Pinned` : `${name} unpinned`)
-        setIsPinned("unknown");
-        void blueprintContext.invalidate();
-      },
+  const { mutate: deleteBlueprint } = api.blueprints.delete.useMutation({
+    onSuccess: () => {
+      toast.success(`${name} deleted`);
+      void blueprintContext.invalidate();
+    },
 
-      onError: (error) => {
-        console.log(error);
-        toast.error('Something went wrong');
-      }
-    }
+    onError: (e) => {
+      console.log(e);
+      toast.error("Something went wrong");
+    },
+  });
+
+  const { mutate } = api.blueprints.setBlueprintPined.useMutation({
+    onSuccess: () => {
+      toast.success(
+        isPinned === "pinning" ? `${name} Pinned` : `${name} unpinned`
+      );
+      setIsPinned("unknown");
+      void blueprintContext.invalidate();
+    },
+
+    onError: (error) => {
+      console.log(error);
+      toast.error("Something went wrong");
+    },
+  });
+
+  const toggleBlueprintPinned = useCallback(
+    (id: string, blueprintPinned: boolean) => {
+      setIsPinned(blueprintPinned ? "pinning" : "unpinning");
+
+      mutate({ blueprintId: id, isPinned: blueprintPinned });
+    },
+    [mutate]
   );
-
-  const toggleBlueprintPinned = useCallback((id: string, blueprintPinned: boolean) => {
-
-    setIsPinned(blueprintPinned ? "pinning" : "unpinning");
-
-    mutate({ blueprintId: id, isPinned: blueprintPinned });
-  }, [mutate]);
 
   return (
     <div
       key={id}
-      className="flex w-full items-center justify-between gap-1 rounded-sm bg-zinc-700  hover:bg-zinc-600 transition-all duration-100 select-none"
+      className="flex w-full select-none items-center justify-between gap-1 rounded-sm  bg-zinc-700 transition-all duration-100 hover:bg-zinc-600"
     >
       <Link
         href={`/blueprints/${id}`}
@@ -220,7 +273,7 @@ const BlueprintListItem: React.FC<{ id: string, pinned: boolean, name: string, d
         className="flex w-full cursor-pointer items-center justify-between gap-1 rounded-sm p-2 "
       >
         <div className="w-3/2 tracking-tight md:w-3/5">
-          <div className="flex gap-1 items-center justify-start">
+          <div className="flex items-center justify-start gap-1">
             {pinned && (
               <div className="flex items-center justify-start gap-1">
                 <TooltipComponent content="Pinned" side="bottom">
@@ -234,9 +287,7 @@ const BlueprintListItem: React.FC<{ id: string, pinned: boolean, name: string, d
           </div>
           {userEmail && (
             <div className="flex items-start justify-start gap-1 font-normal text-zinc-300">
-              <p className="truncate text-sm">
-                {userEmail}
-              </p>
+              <p className="truncate text-sm">{userEmail}</p>
             </div>
           )}
         </div>
@@ -245,13 +296,13 @@ const BlueprintListItem: React.FC<{ id: string, pinned: boolean, name: string, d
             {description}
           </p>
         </div>
-        <p className="w-1/4 truncate text-right text-zinc-300 text-xs">
+        <p className="w-1/4 truncate text-right text-xs text-zinc-300">
           {dayjs(updatedAt).fromNow()}
         </p>
       </Link>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
-          <button className="flex w-1/12 items-center justify-end rounded-sm bg-transparent p-1 transition-all duration-100 md:w-auto outline-none select-none">
+          <button className="flex w-1/12 select-none items-center justify-end rounded-sm bg-transparent p-1 outline-none transition-all duration-100 md:w-auto">
             <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
           </button>
         </DropdownMenu.Trigger>
@@ -259,17 +310,20 @@ const BlueprintListItem: React.FC<{ id: string, pinned: boolean, name: string, d
           <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-500 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
             <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-500" />
             <DropdownMenu.Item
-              className="outline-none selection-none flex items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
+              className="selection-none flex items-center justify-start gap-2 border-b border-zinc-600 p-1 outline-none transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
               onClick={(e) => {
                 e.preventDefault();
-                copy(`${window.location.origin}/blueprints/${id}`, "Blueprint Link ");
+                copy(
+                  `${window.location.origin}/blueprints/${id}`,
+                  "Blueprint Link "
+                );
               }}
             >
               <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
               Copy Link
             </DropdownMenu.Item>
             <DropdownMenu.Item
-              className="outline-none flex selection-none items-center justify-start gap-2 border-b border-zinc-600 p-1 transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
+              className="selection-none flex items-center justify-start gap-2 border-b border-zinc-600 p-1 outline-none transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
               onClick={(e) => {
                 e.preventDefault();
                 toggleBlueprintPinned(id, !pinned);
@@ -282,34 +336,38 @@ const BlueprintListItem: React.FC<{ id: string, pinned: boolean, name: string, d
                   {pinned ? <p>Unpin</p> : <p>Pin</p>}
                 </>
               )}
-              {
-                isPinned === "pinning" && (
-                  <>
-                    <ArrowPathIcon className="h-5 w-5 text-zinc-200 animate-spin" />
-                    <p>Pinning...</p>
-                  </>
-                )
-              }
-              {
-                isPinned === "unpinning" && (
-                  <>
-                    <ArrowPathIcon className="h-5 w-5 text-zinc-200 animate-spin" />
-                    <p>Unpinning...</p>
-                  </>
-                )
-              }
+              {isPinned === "pinning" && (
+                <>
+                  <ArrowPathIcon className="h-5 w-5 animate-spin text-zinc-200" />
+                  <p>Pinning...</p>
+                </>
+              )}
+              {isPinned === "unpinning" && (
+                <>
+                  <ArrowPathIcon className="h-5 w-5 animate-spin text-zinc-200" />
+                  <p>Unpinning...</p>
+                </>
+              )}
             </DropdownMenu.Item>
-            <DialogComponent title={"Are you sure you want to delete this blueprint?"} description="If you click yes, it cannot be recovered." yes={() => { console.log("remove blueprint") }} trigger={
-              <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
-                <TrashIcon className="h-4 w-4 text-white" />
-                Delete
-              </button>
-            } />
+            <DialogComponent
+              title={"Are you sure you want to delete this blueprint?"}
+              description="If you click yes, it cannot be recovered."
+              yes={() => {
+                toast.loading("Deleting blueprint...", { duration: 3000 });
+                deleteBlueprint({ blueprintId: id });
+              }}
+              trigger={
+                <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
+                  <TrashIcon className="h-4 w-4 text-white" />
+                  Delete
+                </button>
+              }
+            />
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
     </div>
-  )
-}
+  );
+};
 
 export default BlueprintsListPage;

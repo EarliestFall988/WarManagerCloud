@@ -116,7 +116,6 @@ const NewProjectPage: NextPage = () => {
         save={() => {
           save();
         }}
-        cancel={() => router.back()}
       />
       <SignedIn>
         <div className="m-auto flex flex-col md:w-1/2">

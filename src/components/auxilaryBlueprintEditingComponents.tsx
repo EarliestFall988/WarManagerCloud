@@ -132,7 +132,7 @@ export const ProjectsList = (props: { blueprintId: string }) => {
       <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
         <div className="flex gap-1">
           <Link
-            href="/newproject"
+            href="/projects/new"
             className="rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
           >
             <TooltipComponent content="Add Project" side={"top"}>
