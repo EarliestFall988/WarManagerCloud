@@ -205,7 +205,9 @@ const RecentActivityPage: NextPage = () => {
               className="m-auto flex flex-col rounded-sm border-x border-t border-zinc-700 sm:w-full lg:w-[50vw]"
             >
               {data.length > 0 &&
-                data?.map((log) => (
+                data?.map((log) => {
+                  if (log.user?.email !== "taylor.howell@jrcousa.com") {
+                    return (
                       <ActivityListItem
                         key={log.id}
                         id={log.id}
@@ -219,7 +221,9 @@ const RecentActivityPage: NextPage = () => {
                         action={log.action}
                         actionTime={log.updatedAt || log.createdAt}
                       />
-                ))}
+                    );
+                  }
+                })}
             </div>
             <div className="flex select-none flex-col items-center justify-center gap-4 p-5 text-zinc-600">
               <p>End of Timeline</p>

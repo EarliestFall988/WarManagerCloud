@@ -30,7 +30,7 @@ import {
   ProjectsList,
   Stats,
 } from "~/components/auxilaryBlueprintEditingComponents";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { api } from "~/utils/api";
 
 import { toast } from "react-hot-toast";
@@ -40,8 +40,18 @@ ArrowUturnLeftIcon;
 import dynamic from "next/dynamic";
 import { Disconnect, Redo, Undo } from "~/flow/ydoc";
 import { type Node } from "reactflow";
-import { DeleteNode, GetNodes, nodesMap } from "~/flow/useNodesStateSynced";
+// import useNodesStateSynced, {
+//   DeleteNode,
+//   GetNodes,
+//   nodesMap,
+// } from "~/flow/useNodesStateSynced";
 import { GetEdges } from "~/flow/useEdgesStateSynced";
+import useNodesStateSynced, {
+  DeleteNode,
+  GetNodes,
+  nodesMap,
+} from "~/flow/useNodesStateSynced";
+import { blueprintNodes } from "~/flow/costing";
 
 const BlueprintGUI = () => {
   const { isLoaded, isSignedIn } = useUser();
@@ -83,6 +93,15 @@ const BlueprintGUI = () => {
     blueprintId: blueprintId || "",
   });
 
+  // React.useEffect(() => {
+  //   if (!blueprintId) return;
+
+  //   setInterval(() => {
+  //   const nodes = blueprintNodes;
+  //   setNodes(nodes);
+  // }, 1000);
+  // }, [blueprintId]);
+
   if (!isLoaded) {
     return <LoadingPage2 />;
   }
@@ -100,6 +119,13 @@ const BlueprintGUI = () => {
   const BlueprintFlowProvider = dynamic(() => import("../../flow/flow"), {
     ssr: false,
   });
+
+  const CostingComponent = dynamic(
+    () => import("../../flow/costingComponent"),
+    {
+      ssr: false,
+    }
+  );
 
   return (
     <>
@@ -135,15 +161,17 @@ const BlueprintGUI = () => {
               {/* <FlowWithProvider blueprintId={blueprintId} /> */}
               <BlueprintFlowProvider
                 blueprintId={blueprintId}
-                OnNodeDrop={() => {console.log("")}}
               />
               <Panels blueprint={blueprint} />
+              <CostingComponent blueprintId={blueprint.id} />
             </>
           ) : (
             <LoadingPage />
           )}
         </div>
-        <ToolbarComponent blueprintId={blueprintId} />
+        <ToolbarComponent
+          blueprintId={blueprintId}
+        />
       </main>
     </>
   );
@@ -342,8 +370,7 @@ const Panels: React.FC<{
 
 const ToolbarComponent: React.FC<{
   blueprintId?: string;
-  onFlowUpdate?: () => void;
-}> = ({ blueprintId, onFlowUpdate }) => {
+}> = ({ blueprintId }) => {
   const GetSelectedNode = () => {
     if (!blueprintId) return;
 
@@ -390,8 +417,8 @@ const ToolbarComponent: React.FC<{
     if (!node) return;
 
     if (node.selected) {
-      DeleteNode(blueprintId, node.id);
-      if (onFlowUpdate) onFlowUpdate();
+      const nodes = DeleteNode(blueprintId, node.id);
+      // if (onFlowUpdate) onFlowUpdate(nodes);
     }
   };
 
