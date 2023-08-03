@@ -5,6 +5,7 @@ import {
   Cog8ToothIcon,
   DocumentIcon,
   NewspaperIcon,
+  QuestionMarkCircleIcon,
   UserCircleIcon,
   UsersIcon,
   WrenchScrewdriverIcon,
@@ -292,6 +293,9 @@ export const DashboardMenu = () => {
     if (router.pathname === "/dashboard/reporting") {
       setContext("Reporting");
     }
+    if (router.pathname === "/dashboard/help") {
+      setContext("Help");
+    }
   }, [router.pathname]);
 
   const { user } = useUser();
@@ -323,8 +327,9 @@ export const DashboardMenu = () => {
         //     setOver(false);
         //     setToggle(false);
         // }}
-        className={`z-30 hidden h-screen w-12 flex-col items-start justify-between overflow-x-clip border-r border-zinc-700 bg-zinc-800/90 backdrop-blur transition-all duration-75 ${toggleOpen ? "hover:w-1/6 hover:shadow-xl" : ""
-          }  md:fixed md:flex`}
+        className={`z-30 hidden h-screen w-12 flex-col items-start justify-between overflow-x-clip border-r border-zinc-700 bg-zinc-800/90 backdrop-blur transition-all duration-75 ${
+          toggleOpen ? "hover:w-1/6 hover:shadow-xl" : ""
+        }  md:fixed md:flex`}
       >
         <div className="flex w-full select-none flex-col items-center justify-start">
           <TooltipComponent content="See it all in context" side="right">
@@ -333,11 +338,13 @@ export const DashboardMenu = () => {
                 // void router.push("/dashboard?context=Projects");
                 void router.push("/dashboard/activity");
               }}
-              className={`flex w-full gap-1 p-2 font-semibold ${toggleOpen ? "justify-start" : "justify-center"
-                } items-center transition-all duration-200 ${context === "Activity"
+              className={`flex w-full gap-1 p-2 font-semibold ${
+                toggleOpen ? "justify-start" : "justify-center"
+              } items-center transition-all duration-200 ${
+                context === "Activity"
                   ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
                   : " border-b border-zinc-700 hover:bg-zinc-700"
-                }`}
+              }`}
             >
               <NewspaperIcon className="h-6 w-6" />
               {toggleOpen && <p>Hub</p>}
@@ -370,11 +377,13 @@ export const DashboardMenu = () => {
                 // void router.push("/dashboard?context=Blueprints");
                 void router.push("/dashboard/blueprints");
               }}
-              className={`flex  w-full gap-1 p-2 font-semibold transition-all ${toggleOpen ? "justify-start" : "justify-center"
-                } items-center duration-200 ${context === "Blueprints"
+              className={`flex  w-full gap-1 p-2 font-semibold transition-all ${
+                toggleOpen ? "justify-start" : "justify-center"
+              } items-center duration-200 ${
+                context === "Blueprints"
                   ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
                   : " border-b border-zinc-700 hover:bg-zinc-700"
-                }`}
+              }`}
             >
               <DocumentIcon className="h-6 w-6" />
               {toggleOpen && <p>Blueprints</p>}
@@ -387,11 +396,13 @@ export const DashboardMenu = () => {
                 // void router.push("/dashboard?context=CrewMembers");
                 void router.push("/dashboard/crew");
               }}
-              className={`flex  w-full gap-1 p-2 font-semibold ${toggleOpen ? "justify-start" : "justify-center"
-                } items-center transition-all duration-200 ${context === "CrewMembers"
+              className={`flex  w-full gap-1 p-2 font-semibold ${
+                toggleOpen ? "justify-start" : "justify-center"
+              } items-center transition-all duration-200 ${
+                context === "CrewMembers"
                   ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
                   : " border-b border-zinc-700 hover:bg-zinc-700"
-                }`}
+              }`}
             >
               <UserCircleIcon className="h-6 w-6" />
               {toggleOpen && <p>Crew</p>}
@@ -404,16 +415,19 @@ export const DashboardMenu = () => {
                 // void router.push("/dashboard?context=Projects");
                 void router.push("/dashboard/projects");
               }}
-              className={`flex w-full gap-1 p-2 font-semibold ${toggleOpen ? "justify-start" : "justify-center"
-                } items-center transition-all duration-200 ${context === "Projects"
+              className={`flex w-full gap-1 p-2 font-semibold ${
+                toggleOpen ? "justify-start" : "justify-center"
+              } items-center transition-all duration-200 ${
+                context === "Projects"
                   ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
                   : " border-b border-zinc-700 hover:bg-zinc-700"
-                }`}
+              }`}
             >
               <WrenchScrewdriverIcon className="h-6 w-6" />
               {toggleOpen && <p>Projects</p>}
             </button>
           </TooltipComponent>
+
           {/* <TooltipComponent content="View reports and download xlsx documents" side="right">
                         <button
                             onClick={() => {
@@ -433,9 +447,29 @@ export const DashboardMenu = () => {
                     </TooltipComponent> */}
         </div>
         <div
-          className={`flex w-full flex-col ${toggleOpen ? "" : "select-none items-center justify-center"
-            } truncate whitespace-nowrap`}
+          className={`flex w-full flex-col ${
+            toggleOpen ? "" : "select-none items-center justify-center"
+          } truncate whitespace-nowrap`}
         >
+          <TooltipComponent content="View content to help show off new features troubleshoot problems." side="right">
+            <button
+              onClick={() => {
+                setContext("Help");
+                // void router.push("/dashboard?context=Projects");
+                void router.push("/dashboard/help");
+              }}
+              className={`flex w-full gap-1 p-2 font-semibold ${
+                toggleOpen ? "justify-start" : "justify-center"
+              } items-center transition-all duration-200 ${
+                context === "Help"
+                  ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                  : " border-y border-zinc-700 hover:bg-zinc-700"
+              }`}
+            >
+              <QuestionMarkCircleIcon className="h-6 w-6" />
+              {toggleOpen && <p>Help</p>}
+            </button>
+          </TooltipComponent>
           {/* <SettingsButton menuOpen={toggleOpen}>
                         <Settings />
                     </SettingsButton> */}
@@ -446,11 +480,13 @@ export const DashboardMenu = () => {
                 // void router.push("/dashboard?context=Projects");
                 void router.push("/settings/sectors");
               }}
-              className={`flex w-full gap-1 p-2 font-semibold ${toggleOpen ? "justify-start" : "justify-center"
-                } items-center transition-all duration-200 ${context === "Settings"
+              className={`flex w-full gap-1 p-2 font-semibold ${
+                toggleOpen ? "justify-start" : "justify-center"
+              } items-center transition-all duration-200 ${
+                context === "Settings"
                   ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
                   : " border-b border-zinc-700 hover:bg-zinc-700"
-                }`}
+              }`}
             >
               <Cog8ToothIcon className="h-6 w-6" />
               {toggleOpen && <p>Settings</p>}
@@ -574,10 +610,11 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                     onClick={() => {
                       void router.push("/dashboard/activity");
                     }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${context === "Activity"
+                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
+                      context === "Activity"
                         ? "bg-amber-800 hover:bg-red-700"
                         : "border-b border-zinc-600 hover:bg-zinc-600"
-                      }`}
+                    }`}
                   >
                     <NewspaperIcon className="h-6 w-6" />
                     Hub
@@ -589,10 +626,11 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                     onClick={() => {
                       void router.push("/dashboard/blueprints");
                     }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${context === "Blueprints"
+                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
+                      context === "Blueprints"
                         ? "bg-amber-800 hover:bg-red-700"
                         : "border-b border-zinc-600 hover:bg-zinc-600"
-                      }`}
+                    }`}
                   >
                     <DocumentIcon className="h-6 w-6" />
                     Blueprints
@@ -603,10 +641,11 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                     onClick={() => {
                       void router.push("/dashboard/crew");
                     }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${context === "CrewMembers"
+                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
+                      context === "CrewMembers"
                         ? "bg-amber-800 hover:bg-red-700"
                         : "border-b border-zinc-600 hover:bg-zinc-600"
-                      }`}
+                    }`}
                   >
                     <UsersIcon className="h-6 w-6" />
                     Crew
@@ -617,12 +656,27 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                     onClick={() => {
                       void router.push("/dashboard/projects");
                     }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${context === "Projects"
+                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
+                      context === "Projects"
                         ? "bg-amber-800 hover:bg-red-700"
                         : "border-b border-zinc-600 hover:bg-zinc-600 "
-                      }`}
+                    }`}
                   >
                     <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
+                  </button>
+                </Dialog.DialogClose>
+                <Dialog.DialogClose asChild>
+                  <button
+                    onClick={() => {
+                      void router.push("/dashboard/help");
+                    }}
+                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
+                      context === "Help"
+                        ? "bg-amber-800 hover:bg-red-700"
+                        : "border-b border-zinc-600 hover:bg-zinc-600 "
+                    }`}
+                  >
+                    <QuestionMarkCircleIcon className="h-6 w-6 " /> Helpful Tips
                   </button>
                 </Dialog.DialogClose>
                 <Dialog.DialogClose asChild>

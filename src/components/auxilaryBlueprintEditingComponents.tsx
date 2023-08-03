@@ -35,8 +35,7 @@ import { useRouter } from "next/router";
 import { GetNodes } from "~/flow/useNodesStateSynced";
 import { GetListOfNodesSortedByColumn } from "~/flow/flow";
 import useLiveData from "~/flow/databank";
-import { blueprintNodes, getCrewCost } from "~/flow/costing";
-import { Tooltip } from "@radix-ui/react-tooltip";
+import { getCrewCost } from "~/flow/costing";
 import { useUser } from "@clerk/nextjs";
 
 const onDragStart = (

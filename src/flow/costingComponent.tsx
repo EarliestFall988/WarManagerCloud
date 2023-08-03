@@ -1,6 +1,6 @@
 import TooltipComponent from "~/components/Tooltip";
 import useNodesStateSynced from "./useNodesStateSynced";
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import {
   FireIcon,
   UserCircleIcon,
