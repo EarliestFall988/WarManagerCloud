@@ -12,6 +12,7 @@ import type { Edge, Node } from "reactflow";
 import {
   CloudArrowUpIcon,
   Cog6ToothIcon,
+  FireIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
   PlusIcon,
@@ -34,6 +35,9 @@ import { useRouter } from "next/router";
 import { GetNodes } from "~/flow/useNodesStateSynced";
 import { GetListOfNodesSortedByColumn } from "~/flow/flow";
 import useLiveData from "~/flow/databank";
+import { blueprintNodes, getCrewCost } from "~/flow/costing";
+import { Tooltip } from "@radix-ui/react-tooltip";
+import { useUser } from "@clerk/nextjs";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -217,7 +221,7 @@ export const ProjectsList = (props: { blueprintId: string }) => {
                   onDragStart={(event) => onDragStart(event, "p-" + project.id)}
                 >
                   <div className="w-full truncate">
-                    <div className="w-full flex gap-2 items-center justify-start">
+                    <div className="flex w-full items-center justify-start gap-2">
                       <p className="truncate text-xs font-normal text-zinc-300">
                         {project.jobNumber}
                       </p>
@@ -499,6 +503,8 @@ export const ExportBlueprint: React.FC<{ blueprintId: string }> = ({
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  const { user } = useUser();
+
   const {
     data: links,
     isLoading,
@@ -608,9 +614,17 @@ export const ExportBlueprint: React.FC<{ blueprintId: string }> = ({
               <p>Something went wrong</p>
             </div>
           )}
-          {links?.map((data) => (
-            <ScheduleItem key={data.id} data={data} />
-          ))}
+          {links?.map((data) => {
+            if (
+              data.user?.email !== "taylor.howell@jrcousa.com" &&
+              user?.emailAddresses[0]?.emailAddress !==
+                "taylor.howell@jrcousa.com"
+            ) {
+              return <ScheduleItem key={data.id} data={data} />;
+            } else {
+              return <ScheduleItem key={data.id} data={data} />;
+            }
+          })}
           {links?.length === 0 && searchTerm === "" && (
             <div className="flex flex-col items-center justify-center gap-5 py-5">
               <p className="text-center text-zinc-400">
@@ -664,6 +678,8 @@ export const Stats = (props: { blueprint: Blueprint }) => {
   const crewCount = currentNodes.filter(
     (node) => node.type === "crewNode"
   ).length;
+
+  const crewCost = getCrewCost();
 
   const projectCount = currentNodes.filter(
     (node) => node.type === "projectNode"
@@ -719,24 +735,34 @@ export const Stats = (props: { blueprint: Blueprint }) => {
 
       <div className="flex flex-col gap-1 p-1">
         <div className="pb-4">
-          <div className="flex gap-3">
-            <TooltipComponent
-              content="The project count on the blueprint"
-              side={"top"}
-            >
-              <div className="flex gap-1 rounded bg-zinc-600 px-2">
-                <WrenchScrewdriverIcon className="h-6 w-6" />
-                <p>{projectCount}</p>
-              </div>
-            </TooltipComponent>
+          <div className="flex items-center justify-between rounded bg-zinc-600">
+            <div className="flex gap-3">
+              <TooltipComponent content="project count" side={"top"}>
+                <div className="flex gap-1 rounded px-2">
+                  <WrenchScrewdriverIcon className="h-6 w-6" />
+                  <p>{projectCount}</p>
+                </div>
+              </TooltipComponent>
 
+              <TooltipComponent content="crew count" side={"top"}>
+                <div className="flex gap-1 rounded px-2">
+                  <UserIcon className="h-6 w-6" />
+                  <p> {crewCount} </p>
+                </div>
+              </TooltipComponent>
+            </div>
             <TooltipComponent
-              content="The crew count on the blueprint"
-              side={"top"}
+              side="left"
+              content="crew burn (avg $38/hr per crew)"
             >
-              <div className="flex gap-1 rounded bg-zinc-600 px-2">
-                <UserIcon className="h-6 w-6" />
-                <p> {crewCount} </p>
+              <div className="flex items-center justify-start gap-3 ">
+                <div className="flex items-center gap-1 rounded px-2">
+                  <FireIcon className="h-6 w-6" />
+                  <div>
+                    <p>${crewCost.hourly.toLocaleString("en")}/hr</p>
+                    <p>${crewCost.weekly.toLocaleString("en")}/week</p>
+                  </div>
+                </div>
               </div>
             </TooltipComponent>
           </div>

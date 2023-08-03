@@ -12,6 +12,7 @@ import {
 
 import { edgesMap } from "./useEdgesStateSynced";
 import getDoc from "./ydoc";
+import { blueprintNodes, setBlueprintNodes } from "./costing";
 // import getDoc, { isLoaded } from "./flowDocument";
 
 // We are using nodesMap as the one source of truth for the nodes.
@@ -56,6 +57,8 @@ export const DeleteNode = (id: string, nodeId: string) => {
 
     edgesMap(id).delete(edge.id);
   });
+
+  return GetNodes(id);
 }
 
 function useNodesStateSynced(id: string): [Node[], OnNodesChange] {
@@ -102,6 +105,8 @@ function useNodesStateSynced(id: string): [Node[], OnNodesChange] {
           }
         }
       });
+
+      setBlueprintNodes(nodes);
     },
     [id]
   );

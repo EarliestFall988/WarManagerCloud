@@ -23,7 +23,9 @@ import projectNode from "~/components/projectNode";
 import noteNode from "~/components/noteNode";
 import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
-import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
+import useNodesStateSynced, {
+  nodesMap,
+} from "~/flow/useNodesStateSynced";
 import { toast } from "react-hot-toast";
 import useLiveData from "./databank";
 // import getDoc, { Init, isLoaded } from "./flowDocument";
@@ -87,10 +89,9 @@ export const GetListOfNodesSortedByColumn = (blueprintId: string) => {
 
 // const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
 
-const Flow: React.FC<{ blueprintId: string; OnNodeDrop?: () => void }> = ({
-  blueprintId,
-  OnNodeDrop: FlowChange,
-}) => {
+const Flow: React.FC<{
+  blueprintId: string;
+}> = ({ blueprintId }) => {
   // const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore(
   //   selector,
   //   shallow
@@ -114,6 +115,10 @@ const Flow: React.FC<{ blueprintId: string; OnNodeDrop?: () => void }> = ({
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
+
+  // React.useMemo(() => {
+  //   FlowChange(GetNodes(blueprintId));
+  // }, [blueprintId, FlowChange]);
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -197,16 +202,8 @@ const Flow: React.FC<{ blueprintId: string; OnNodeDrop?: () => void }> = ({
       // }));
 
       nodesMap(blueprintId).set(id, newNode);
-      if (FlowChange) FlowChange();
     },
-    [
-      crewData,
-      projectData,
-      reactFlowInstance,
-      noteData,
-      blueprintId,
-      FlowChange,
-    ]
+    [crewData, projectData, reactFlowInstance, noteData, blueprintId]
   );
 
   return (
@@ -226,11 +223,14 @@ const Flow: React.FC<{ blueprintId: string; OnNodeDrop?: () => void }> = ({
         onConnect={(e) => {
           onConnect(e);
         }}
+        onNodesDelete={() => {
+          // FlowChange(GetNodes(blueprintId));
+        }}
         // onNodeClick={onNodeClick}
         proOptions={proOptions}
         snapToGrid={true}
         snapGrid={[10, 10]}
-        fitView
+        selectNodesOnDrag={true}
       >
         {" "}
         <Background
@@ -257,11 +257,10 @@ const Flow: React.FC<{ blueprintId: string; OnNodeDrop?: () => void }> = ({
 
 export const FlowWithProvider: React.FC<{
   blueprintId: string;
-  OnNodeDrop: () => void;
-}> = ({ blueprintId, OnNodeDrop }) => {
+}> = ({ blueprintId }) => {
   return (
     <ReactFlowProvider>
-      <Flow blueprintId={blueprintId} OnNodeDrop={OnNodeDrop} />
+      <Flow blueprintId={blueprintId} />
     </ReactFlowProvider>
   );
 };
