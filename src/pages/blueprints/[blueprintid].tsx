@@ -30,7 +30,7 @@ import {
   ProjectsList,
   Stats,
 } from "~/components/auxilaryBlueprintEditingComponents";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { api } from "~/utils/api";
 
 import { toast } from "react-hot-toast";
@@ -46,12 +46,11 @@ import { type Node } from "reactflow";
 //   nodesMap,
 // } from "~/flow/useNodesStateSynced";
 import { GetEdges } from "~/flow/useEdgesStateSynced";
-import useNodesStateSynced, {
+import  {
   DeleteNode,
   GetNodes,
   nodesMap,
 } from "~/flow/useNodesStateSynced";
-import { blueprintNodes } from "~/flow/costing";
 
 const BlueprintGUI = () => {
   const { isLoaded, isSignedIn } = useUser();

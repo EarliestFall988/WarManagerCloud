@@ -12,7 +12,7 @@ import {
 
 import { edgesMap } from "./useEdgesStateSynced";
 import getDoc from "./ydoc";
-import { blueprintNodes, setBlueprintNodes } from "./costing";
+import { setBlueprintNodes } from "./costing";
 // import getDoc, { isLoaded } from "./flowDocument";
 
 // We are using nodesMap as the one source of truth for the nodes.
