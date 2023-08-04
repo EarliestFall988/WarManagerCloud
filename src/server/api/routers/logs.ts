@@ -8,7 +8,6 @@ import type { Prisma, Log, LogReaction, LogReply } from "@prisma/client";
 import { clerkClient } from "@clerk/nextjs";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
 import { env } from "process";
-import { User } from "@clerk/nextjs/server";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",

@@ -642,6 +642,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
 
   const logsUpdateContext = api.useContext().logs;
   const reactionContext = api.useContext().reactions;
+  const context = api.useContext();
 
   useMemo(() => {
     const reaction = reactions.find((r) => r.authorId === user?.id);
@@ -657,6 +658,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
         toast.success("Message updated");
         setShowEdit(false);
         void logsUpdateContext.invalidate();
+        void context.invalidate();
       },
 
       onError: (err) => {
@@ -671,6 +673,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
       onSuccess: (e) => {
         setMyReaction(e);
         void reactionContext.invalidate();
+        void context.invalidate();
       },
       onError: (err) => {
         console.log(err);
@@ -742,16 +745,22 @@ const ActivityListItem: React.FC<activityListItemType> = ({
 
   return (
     <div
-      className={`flex flex-col border-b border-zinc-700 ${
-        severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""
-      } p-2 ${category === "announcement" ? "h-44" : ""} `}
+      className={`flex flex-col   ${
+        severity === "critical" && category !== "announcement"
+          ? "bg-gradient-to-l from-amber-800/30"
+          : ""
+      } ${
+        category === "announcement"
+          ? "m-2 rounded border border-zinc-700 bg-zinc-600/30"
+          : "border-b border-zinc-700"
+      } `}
       id={`activity-${id}`}
     >
       <button
         onClick={() => {
           setLogDrawerOpen(!logDrawerOpen);
         }}
-        className="flex h-full w-full items-start justify-start gap-2"
+        className="flex h-full w-full items-start justify-start gap-2 p-2"
       >
         <div className="hidden flex-shrink-0 pt-1 md:block">
           <Image
@@ -1037,11 +1046,12 @@ const ActivityListItem: React.FC<activityListItemType> = ({
           </button>
         )}
       </div>
-
-      <div ref={animationParent} className="pl-14">
-        {logDrawerOpen && (
-          <LogDrawer id={id} incrementReplyCount={incrementReplyCount} />
-        )}
+      <div className={` ${logDrawerOpen ? "bg-zinc-900 p-2" : ""}`}>
+        <div ref={animationParent} className="pl-14">
+          {logDrawerOpen && (
+            <LogDrawer id={id} incrementReplyCount={incrementReplyCount} />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1067,14 +1077,12 @@ const LogDrawer: React.FC<{
   const reactions = data?.logReactions;
   const replies = data?.logReplies;
 
-  const replyContext = api.useContext().logReplies;
-  const logContext = api.useContext().logs;
+  const context = api.useContext();
 
   const { mutate, isLoading: creating } =
     api.logReplies.createReply.useMutation({
       onSuccess: () => {
-        void replyContext.invalidate();
-        void logContext.invalidate();
+        void context.invalidate();
         setMessage("");
         incrementReplyCount();
       },
@@ -1132,66 +1140,74 @@ const LogDrawer: React.FC<{
         className="ml-10 border-l border-amber-700 py-2 pr-2"
       >
         {!isLoading && (
-          <div className="flex w-full flex-col gap-2">
-            {replies && replies?.length > 0 ? (
-              replies?.map((reply) => (
-                <div key={reply.id} className="w-full">
-                  <ReplyComponent
-                    reply={reply}
-                    email={reply.user?.email || "<unknown>"}
-                  />
+          <>
+            <div className="flex w-full flex-col gap-2">
+              {replies && replies?.length > 0 ? (
+                <div>
+                  {replies?.map((reply) => (
+                    <div key={reply.id} className="w-full">
+                      <ReplyComponent
+                        reply={reply}
+                        email={reply.user?.email || "<unknown>"}
+                        logId={id}
+                      />
+                    </div>
+                  ))}
+                  <p className="flex w-full select-none items-center justify-center p-5 text-zinc-500">
+                    ·
+                  </p>
                 </div>
-              ))
-            ) : (
-              <div className="flex items-center justify-center gap-2 pr-14 text-zinc-500">
-                <p className="p-2"></p>
+              ) : (
+                <div className="flex items-center justify-center gap-2 pr-14 text-zinc-500">
+                  <p className="p-2"></p>
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="flex translate-x-[-0.4rem] items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-amber-700" />
+                <p className="pb-1 text-sm text-zinc-500">{userEmail}</p>
+                <p className="pb-1 text-sm text-zinc-500">{"|"}</p>
+                <p className="pb-1 text-sm text-zinc-500">
+                  {dayjs(Date.now()).fromNow()}
+                </p>
               </div>
-            )}
-          </div>
+              <div className="pl-2">
+                <TextareaComponent
+                  disabled={false}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                  }}
+                  value={message}
+                  autoFocus
+                  error=""
+                  placeholder="What's on your mind?"
+                />
+                <div className="flex items-center justify-end">
+                  <button
+                    onClick={() => {
+                      createReply();
+                    }}
+                    className="flex items-center justify-center gap-2 rounded bg-amber-700 p-2 hover:bg-amber-600 focus:bg-amber-600"
+                  >
+                    {creating && <LoadingSpinner />}
+                    {!creating && (
+                      <>
+                        <p>Reply</p>
+                        <PaperAirplaneIcon className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
         {isLoading && (
           <div className="flex items-center justify-center">
             <LoadingSpinner />
           </div>
         )}
-        <div className="pt-11">
-          <div className="flex translate-x-[-0.4rem] items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-amber-700" />
-            <p className="pb-1 text-sm text-zinc-500">{userEmail}</p>
-            <p className="pb-1 text-sm text-zinc-500">{"|"}</p>
-            <p className="pb-1 text-sm text-zinc-500">
-              {dayjs(Date.now()).fromNow()}
-            </p>
-          </div>
-          <div className="pl-2">
-            <TextareaComponent
-              disabled={false}
-              onChange={(e) => {
-                setMessage(e.target.value);
-              }}
-              value={message}
-              autoFocus
-              error=""
-              placeholder="What's on your mind?"
-            />
-            <div className="flex items-center justify-end">
-              <button
-                onClick={() => {
-                  createReply();
-                }}
-                className="flex items-center justify-center gap-2 rounded bg-amber-700 p-2 hover:bg-amber-600 focus:bg-amber-600"
-              >
-                {creating && <LoadingSpinner />}
-                {!creating && (
-                  <>
-                    <p>Reply</p>
-                    <PaperAirplaneIcon className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -1200,7 +1216,42 @@ const LogDrawer: React.FC<{
 export const ReplyComponent: React.FC<{
   reply: LogReply;
   email: string;
-}> = ({ reply, email }) => {
+  logId: string;
+}> = ({ reply, email, logId }) => {
+  const [message, setMessage] = useState(reply.message);
+  const [showEdit, setShowEdit] = useState(false);
+
+  const replyContext = api.useContext();
+
+  const { mutate, isLoading } = api.logReplies.updateReply.useMutation({
+    onSuccess: () => {
+      toast.success("Reply updated");
+      void replyContext.invalidate();
+      setShowEdit(false);
+    },
+    onError: (e) => {
+      console.log(e);
+      toast.error("Failed to update reply");
+    },
+  });
+
+  useMemo(() => {
+    setMessage(reply.message);
+  }, [reply.message]);
+
+  const setEditMessage = useCallback(
+    (message: string) => {
+      if (message !== reply.message) {
+        mutate({
+          id: reply.id,
+          message,
+          logId,
+        });
+      }
+    },
+    [reply.message, reply.id, mutate, logId]
+  );
+
   return (
     <>
       <div className="flex translate-x-[-0.4rem] items-center gap-2" w-full>
@@ -1211,9 +1262,42 @@ export const ReplyComponent: React.FC<{
           <p className="pb-1 text-sm text-zinc-500">
             {dayjs(reply.updatedAt).fromNow()}
           </p>
-          <p className="pb-1 text-sm text-zinc-500">
-            {reply.updatedAt !== reply.createdAt && "(edited)"}
-          </p>
+          <EditModalComponent
+            title="Edit Message"
+            messageToEdit={message}
+            open={showEdit}
+            yes={(e) => {
+              setEditMessage(e);
+            }}
+            cancel={() => {
+              setShowEdit(false);
+            }}
+            loading={isLoading}
+            trigger={
+              <TooltipComponent content={`Edit Message`} side="top">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowEdit(true);
+                  }}
+                >
+                  <div className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800">
+                    <PencilIcon className="h-4 w-4 " />
+                  </div>
+                </button>
+              </TooltipComponent>
+            }
+          />
+          {reply.editedMessage && (
+            <TooltipComponent
+              content={`previous message: \'${reply.editedMessage}\'`}
+              side="top"
+            >
+              <p className="pb-1 text-sm text-zinc-500">
+                {reply.editedMessage && "(edited)"}
+              </p>
+            </TooltipComponent>
+          )}
         </div>
       </div>
       <div className="pl-3">

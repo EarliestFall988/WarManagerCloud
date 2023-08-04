@@ -23,14 +23,13 @@ export const logMessageReplies = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
-     
       const log = await ctx.prisma.log.findFirst({
         where: {
           id: input.logId,
         },
         include: {
           logReplys: true,
-        }
+        },
       });
 
       return log?.logReplys ?? [];
@@ -108,12 +107,26 @@ export const logMessageReplies = createTRPCRouter({
         where: {
           id: input.logId,
         },
+        include: {
+          logReplys: true,
+        },
       });
 
       if (!log) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Log not found",
+        });
+      }
+
+      const reply = log.logReplys.find(
+        (logReply) => logReply.authorId === authorId && logReply.id === input.id
+      );
+
+      if (!reply) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Reply not found",
         });
       }
 
@@ -124,7 +137,7 @@ export const logMessageReplies = createTRPCRouter({
         data: {
           message: input.message,
           authorId: authorId,
-          editedMessage: "",
+          editedMessage: reply.message,
           log: {
             connect: {
               id: input.logId,
