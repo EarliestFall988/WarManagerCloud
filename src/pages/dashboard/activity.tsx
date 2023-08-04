@@ -39,6 +39,7 @@ import { utils, writeFileXLSX } from "xlsx";
 import { EditModalComponent } from "~/components/dialog";
 import { type LogReaction, type LogReply } from "@prisma/client";
 import * as Popover from "@radix-ui/react-popover";
+import { log } from "console";
 
 dayjs.extend(relativeTime);
 
@@ -637,6 +638,8 @@ const ActivityListItem: React.FC<activityListItemType> = ({
   const [reactionCount, setReactionCount] = useState(count.logReactions);
   const [replyCount, setReplyCount] = useState(count.logReplys);
 
+  const [animationParent] = useAutoAnimate();
+
   const logsUpdateContext = api.useContext().logs;
   const reactionContext = api.useContext().reactions;
 
@@ -667,6 +670,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
     api.reactions.createReaction.useMutation({
       onSuccess: (e) => {
         setMyReaction(e);
+        void reactionContext.invalidate();
       },
       onError: (err) => {
         console.log(err);
@@ -732,9 +736,13 @@ const ActivityListItem: React.FC<activityListItemType> = ({
     }
   };
 
+  const incrementReplyCount = () => {
+    setReplyCount(replyCount + 1);
+  };
+
   return (
     <div
-      className={`border-b border-zinc-700 ${
+      className={`flex flex-col border-b border-zinc-700 ${
         severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""
       } p-2 ${category === "announcement" ? "h-44" : ""} `}
       id={`activity-${id}`}
@@ -811,195 +819,200 @@ const ActivityListItem: React.FC<activityListItemType> = ({
               )}
             </div>
             <div
-              className={`w-full whitespace-pre-wrap ${
+              className={`w-full whitespace-pre-wrap text-left ${
                 category === "announcement" ? "text-md" : "text-sm"
               }`}
             >
-              {description}{" "}
-              {editedMessage && (
-                <TooltipComponent
-                  content={`${editedMessage ? editedMessage : ""}`}
-                  side="top"
-                >
-                  <span className="text-xs text-zinc-400">
-                    {editedMessage && `(edited)`}
-                  </span>
-                </TooltipComponent>
-              )}
+              <p className="text-left">
+                {description}{" "}
+                {editedMessage && (
+                  <TooltipComponent
+                    content={`${editedMessage ? editedMessage : ""}`}
+                    side="top"
+                  >
+                    <span className="text-xs text-zinc-400">
+                      {editedMessage && `(edited)`}
+                    </span>
+                  </TooltipComponent>
+                )}
+              </p>
             </div>
           </div>
-          <div className="flex select-none justify-start gap-2">
-            {
-              <Popover.Root
-                defaultOpen={false}
-                onOpenChange={(e) => setShowReactions(e)}
-                open={showReactions}
-              >
-                <Popover.Trigger asChild>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      console.log("clicked reaction button");
-                      setShowReactions(!showReactions);
-                    }}
-                    className={`flex cursor-pointer items-center gap-1 rounded p-1 transition-all duration-100 hover:bg-zinc-800 ${
-                      myReaction?.reaction ? "text-amber-600" : "text-zinc-400"
-                    }`}
-                  >
-                    <TooltipComponent
-                      content={`React to this ${
-                        category === "announcement" ? "message" : "log"
-                      }`}
-                      side="top"
-                    >
-                      <>
-                        <p className="text-sm">{reactionCount}</p>
-                        <HandThumbUpIcon className="h-4 w-4 " />
-                      </>
-                    </TooltipComponent>
-                  </button>
-                </Popover.Trigger>
-                <Popover.Portal>
-                  <Popover.Content
-                    onClick={(e) => {
-                      e.preventDefault();
-                    }}
-                    className="w-[260px] rounded border border-zinc-500 bg-black/70 p-1 shadow-[0_10px_38px_-10px_hsla(206,22%,7%,.35),0_10px_20px_-15px_hsla(206,22%,7%,.2)] backdrop-blur will-change-[transform,opacity] focus:shadow-[0_10px_38px_-10px_hsla(206,22%,7%,.35),0_10px_20px_-15px_hsla(206,22%,7%,.2),0_0_0_2px_theme(colors.violet7)] data-[state=open]:data-[side=bottom]:animate-slideUpAndFade data-[state=open]:data-[side=left]:animate-slideRightAndFade data-[state=open]:data-[side=right]:animate-slideLeftAndFade data-[state=open]:data-[side=top]:animate-slideDownAndFade"
-                    sideOffset={2}
-                  >
-                    {deleting || creating ? (
-                      <div className="flex w-full items-center justify-center">
-                        <LoadingSpinner />
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center justify-center gap-2 text-2xl">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              createReaction("👍");
-                            }}
-                            className={`rounded p-1 transition duration-200 hover:scale-110 ${
-                              myReaction?.reaction === "👍" ? "opacity-50" : ""
-                            }`}
-                          >
-                            <p>👍</p>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              createReaction("❤️");
-                            }}
-                            className={`rounded p-1 transition duration-200 hover:scale-110 ${
-                              myReaction?.reaction === "❤️" ? "opacity-50" : ""
-                            }`}
-                          >
-                            <p>❤️</p>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              createReaction("🚀");
-                            }}
-                            className={`rounded p-1 transition duration-200 hover:scale-110 ${
-                              myReaction?.reaction === "🚀" ? "opacity-50" : ""
-                            }`}
-                          >
-                            <p>🚀</p>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              createReaction("🔥");
-                            }}
-                            className={`rounded p-1 transition duration-200 hover:scale-110 ${
-                              myReaction?.reaction === "🔥" ? "opacity-50" : ""
-                            }`}
-                          >
-                            <p>🔥</p>
-                          </button>
-                        </div>
-                        {myReaction && (
-                          <div className="flex w-full justify-center">
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                removeMyReaction();
-                              }}
-                              className={`w-full rounded p-1 text-zinc-300 transition duration-200 hover:bg-red-800 hover:text-white`}
-                            >
-                              <p>Remove {myReaction.reaction}</p>
-                            </button>
-                          </div>
-                        )}
-                      </>
-                    )}
-                    <Popover.Arrow className="fill-zinc-500" />
-                  </Popover.Content>
-                </Popover.Portal>
-              </Popover.Root>
-            }
-            {
-              <TooltipComponent
-                content={`Message ${
-                  replyCount === 0 ? "User" : "Users in This Thread"
+        </div>
+      </button>
+      <div className="flex select-none justify-start gap-2 pl-16">
+        {
+          <Popover.Root
+            defaultOpen={false}
+            onOpenChange={(e) => setShowReactions(e)}
+            open={showReactions}
+          >
+            <Popover.Trigger
+              onClick={(e) => {
+                e.preventDefault();
+                console.log("clicked reaction button");
+                setShowReactions(!showReactions);
+              }}
+            >
+              <div
+                className={`flex cursor-pointer items-center gap-1 rounded p-1 transition-all duration-100 hover:bg-zinc-800 ${
+                  myReaction?.reaction ? "text-amber-600" : "text-zinc-400"
                 }`}
-                side="top"
               >
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    console.log("Reply");
-                  }}
-                  className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800"
+                <TooltipComponent
+                  content={`React to this ${
+                    category === "announcement" ? "message" : "log"
+                  }`}
+                  side="top"
                 >
-                  <p className="text-sm ">{replyCount}</p>
-                  <ChatBubbleLeftEllipsisIcon className="h-4 w-4" />
-                </button>
-              </TooltipComponent>
-            }
-            {category === "announcement" &&
-              user?.emailAddresses[0]?.emailAddress === author && (
-                <EditModalComponent
-                  title="Edit Message"
-                  messageToEdit={description}
-                  open={showEdit}
-                  yes={(e) => {
-                    setEditMessage(e);
-                  }}
-                  cancel={() => {
-                    setShowEdit(false);
-                  }}
-                  loading={isLoading}
-                  trigger={
-                    <TooltipComponent content={`Edit Message`} side="top">
+                  <>
+                    <p className="text-sm">{reactionCount}</p>
+                    <HandThumbUpIcon className="h-4 w-4 " />
+                  </>
+                </TooltipComponent>
+              </div>
+            </Popover.Trigger>
+            <Popover.Portal>
+              <Popover.Content
+                onClick={(e) => {
+                  e.preventDefault();
+                }}
+                className="w-[260px] rounded border border-zinc-500 bg-black/70 p-1 shadow-[0_10px_38px_-10px_hsla(206,22%,7%,.35),0_10px_20px_-15px_hsla(206,22%,7%,.2)] backdrop-blur will-change-[transform,opacity] focus:shadow-[0_10px_38px_-10px_hsla(206,22%,7%,.35),0_10px_20px_-15px_hsla(206,22%,7%,.2),0_0_0_2px_theme(colors.violet7)] data-[state=open]:data-[side=bottom]:animate-slideUpAndFade data-[state=open]:data-[side=left]:animate-slideRightAndFade data-[state=open]:data-[side=right]:animate-slideLeftAndFade data-[state=open]:data-[side=top]:animate-slideDownAndFade"
+                sideOffset={2}
+              >
+                {deleting || creating ? (
+                  <div className="flex w-full items-center justify-center">
+                    <LoadingSpinner />
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center gap-2 text-2xl">
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          setShowEdit(true);
+                          createReaction("👍");
                         }}
+                        className={`rounded p-1 transition duration-200 hover:scale-110 ${
+                          myReaction?.reaction === "👍" ? "opacity-50" : ""
+                        }`}
                       >
-                        <div className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800">
-                          <PencilIcon className="h-4 w-4 " />
-                        </div>
+                        <p>👍</p>
                       </button>
-                    </TooltipComponent>
-                  }
-                />
-              )}
-            {(action === "url" || action === "external url") && (
-              <button
-                onClick={(e) => {
-                  void router.push(link);
-                  e.preventDefault();
-                }}
-                className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800"
-              >
-                <p className="text-sm ">View Changes</p>
-                <ArrowUpRightIcon className="h-4 w-4" />
-              </button>
-            )}
-            {/* {
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          createReaction("❤️");
+                        }}
+                        className={`rounded p-1 transition duration-200 hover:scale-110 ${
+                          myReaction?.reaction === "❤️" ? "opacity-50" : ""
+                        }`}
+                      >
+                        <p>❤️</p>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          createReaction("🚀");
+                        }}
+                        className={`rounded p-1 transition duration-200 hover:scale-110 ${
+                          myReaction?.reaction === "🚀" ? "opacity-50" : ""
+                        }`}
+                      >
+                        <p>🚀</p>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          createReaction("🔥");
+                        }}
+                        className={`rounded p-1 transition duration-200 hover:scale-110 ${
+                          myReaction?.reaction === "🔥" ? "opacity-50" : ""
+                        }`}
+                      >
+                        <p>🔥</p>
+                      </button>
+                    </div>
+                    {myReaction && (
+                      <div className="flex w-full justify-center">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            removeMyReaction();
+                          }}
+                          className={`w-full rounded p-1 text-zinc-300 transition duration-200 hover:bg-red-800 hover:text-white`}
+                        >
+                          <p>Remove {myReaction.reaction}</p>
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+                <Popover.Arrow className="fill-zinc-500" />
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
+        }
+        {
+          <TooltipComponent
+            content={`Message ${
+              replyCount === 0 ? "User" : "Users in This Thread"
+            }`}
+            side="top"
+          >
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setLogDrawerOpen(!logDrawerOpen);
+              }}
+              className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800"
+            >
+              <p className="text-sm ">{replyCount}</p>
+              <ChatBubbleLeftEllipsisIcon className="h-4 w-4" />
+            </button>
+          </TooltipComponent>
+        }
+        {category === "announcement" &&
+          user?.emailAddresses[0]?.emailAddress === author && (
+            <EditModalComponent
+              title="Edit Message"
+              messageToEdit={description}
+              open={showEdit}
+              yes={(e) => {
+                setEditMessage(e);
+              }}
+              cancel={() => {
+                setShowEdit(false);
+              }}
+              loading={isLoading}
+              trigger={
+                <TooltipComponent content={`Edit Message`} side="top">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowEdit(true);
+                    }}
+                  >
+                    <div className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800">
+                      <PencilIcon className="h-4 w-4 " />
+                    </div>
+                  </button>
+                </TooltipComponent>
+              }
+            />
+          )}
+        {(action === "url" || action === "external url") && (
+          <button
+            onClick={(e) => {
+              void router.push(link);
+              e.preventDefault();
+            }}
+            className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800"
+          >
+            <p className="text-sm ">View Changes</p>
+            <ArrowUpRightIcon className="h-4 w-4" />
+          </button>
+        )}
+        {/* {
               <button
                 onClick={(e) => {
                   Copy(author);
@@ -1011,74 +1024,202 @@ const ActivityListItem: React.FC<activityListItemType> = ({
                 <Square2StackIcon className="h-4 w-4 text-zinc-400" />
               </button>
             } */}
-            {action === "external url" && (
-              <button
-                onClick={(e) => {
-                  Copy(link);
-                  e.preventDefault();
-                }}
-                className="flex cursor-pointer items-center gap-1 rounded p-1 transition-all duration-100 hover:bg-zinc-800"
-              >
-                <p className="text-sm text-zinc-200">Copy Link</p>
-                <Square2StackIcon className="h-4 w-4 text-zinc-400" />
-              </button>
-            )}
-          </div>
-        </div>
-      </button>
-      <div className="pl-14">
-        <LogDrawer open={logDrawerOpen} id={id} />
+        {action === "external url" && (
+          <button
+            onClick={(e) => {
+              Copy(link);
+              e.preventDefault();
+            }}
+            className="flex cursor-pointer items-center gap-1 rounded p-1 transition-all duration-100 hover:bg-zinc-800"
+          >
+            <p className="text-sm text-zinc-200">Copy Link</p>
+            <Square2StackIcon className="h-4 w-4 text-zinc-400" />
+          </button>
+        )}
+      </div>
+
+      <div ref={animationParent} className="pl-14">
+        {logDrawerOpen && (
+          <LogDrawer id={id} incrementReplyCount={incrementReplyCount} />
+        )}
       </div>
     </div>
   );
 };
 
 const LogDrawer: React.FC<{
-  open: boolean;
   id: string;
-}> = ({ open, id }) => {
-  const [animationParent] = useAutoAnimate();
-
-  const { data } = api.logs.getLogReactionsAndReplys.useQuery({
+  incrementReplyCount: () => void;
+}> = ({ id, incrementReplyCount }) => {
+  const { data, isLoading } = api.logs.getLogReactionsAndReplys.useQuery({
     logId: id,
   });
+
+  const [animationParent] = useAutoAnimate();
+  const [animationParent1] = useAutoAnimate();
+  const [animationParent2] = useAutoAnimate();
+
+  const { user } = useUser();
+  const userEmail = user?.emailAddresses[0]?.emailAddress || "<unknown email>";
+
+  const [message, setMessage] = useState("");
 
   const reactions = data?.logReactions;
   const replies = data?.logReplies;
 
+  const replyContext = api.useContext().logReplies;
+  const logContext = api.useContext().logs;
+
+  const { mutate, isLoading: creating } =
+    api.logReplies.createReply.useMutation({
+      onSuccess: () => {
+        void replyContext.invalidate();
+        void logContext.invalidate();
+        setMessage("");
+        incrementReplyCount();
+      },
+      onError: (e) => {
+        console.log(e);
+        toast.error("Failed to create reply");
+      },
+    });
+
+  const createReply = () => {
+    if (message.trim().length === 0) {
+      toast.error("Reply cannot be empty");
+      return;
+    }
+
+    mutate({
+      logId: id,
+      message,
+    });
+  };
+
   return (
     <div ref={animationParent}>
-      {open && (
-        <>
-          <div className="m-2 border-t border-zinc-600"></div>
-          <div className="flex flex-wrap items-center justify-start gap-2 px-1">
-            {reactions?.map((reaction) => (
-              <div
-                key={reaction.id}
-                className="flex items-center gap-1 rounded bg-zinc-700 p-1 text-zinc-300"
-              >
-                <p>{reaction.reaction}</p>
-                <p>{reaction.user?.email || "<unknown>"}</p>
-              </div>
-            ))}
+      <div
+        ref={animationParent1}
+        className="flex flex-wrap items-center justify-start gap-2 rounded border border-zinc-700 bg-zinc-800 p-2"
+      >
+        {!isLoading &&
+          reactions &&
+          reactions?.length > 0 &&
+          reactions?.map((reaction) => (
+            <div
+              key={reaction.id}
+              className="flex items-center gap-1 rounded text-zinc-300"
+            >
+              <p>{reaction.reaction}</p>
+              <p className="text-sm text-zinc-300">
+                {reaction.user?.email || "<unknown>"}
+              </p>
+            </div>
+          ))}
+        {isLoading && (
+          <div className="flex items-center justify-center">
+            <LoadingSpinner />
           </div>
-          <div className="flex flex-col gap-2">
+        )}
+        {!isLoading && reactions && reactions?.length === 0 && (
+          <div className="flex items-center gap-1 rounded px-2 text-zinc-500">
+            <p>No Reactions</p>
+          </div>
+        )}
+      </div>
+      <div
+        ref={animationParent2}
+        className="ml-10 border-l border-amber-700 py-2 pr-2"
+      >
+        {!isLoading && (
+          <div className="flex w-full flex-col gap-2">
             {replies && replies?.length > 0 ? (
               replies?.map((reply) => (
-                <div key={reply.id} className="flex items-center gap-2">
-                  <p>{reply.user?.email || "<unknown>"}</p>
-                  <p>{reply.message}</p>
+                <div key={reply.id} className="w-full">
+                  <ReplyComponent
+                    reply={reply}
+                    email={reply.user?.email || "<unknown>"}
+                  />
                 </div>
               ))
             ) : (
               <div className="flex items-center justify-center gap-2 pr-14 text-zinc-500">
-                <p>No Replies</p>
+                <p className="p-2"></p>
               </div>
             )}
           </div>
-        </>
-      )}
+        )}
+        {isLoading && (
+          <div className="flex items-center justify-center">
+            <LoadingSpinner />
+          </div>
+        )}
+        <div className="pt-11">
+          <div className="flex translate-x-[-0.4rem] items-center gap-2">
+            <div className="h-3 w-3 rounded-full bg-amber-700" />
+            <p className="pb-1 text-sm text-zinc-500">{userEmail}</p>
+            <p className="pb-1 text-sm text-zinc-500">{"|"}</p>
+            <p className="pb-1 text-sm text-zinc-500">
+              {dayjs(Date.now()).fromNow()}
+            </p>
+          </div>
+          <div className="pl-2">
+            <TextareaComponent
+              disabled={false}
+              onChange={(e) => {
+                setMessage(e.target.value);
+              }}
+              value={message}
+              autoFocus
+              error=""
+              placeholder="What's on your mind?"
+            />
+            <div className="flex items-center justify-end">
+              <button
+                onClick={() => {
+                  createReply();
+                }}
+                className="flex items-center justify-center gap-2 rounded bg-amber-700 p-2 hover:bg-amber-600 focus:bg-amber-600"
+              >
+                {creating && <LoadingSpinner />}
+                {!creating && (
+                  <>
+                    <p>Reply</p>
+                    <PaperAirplaneIcon className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  );
+};
+
+export const ReplyComponent: React.FC<{
+  reply: LogReply;
+  email: string;
+}> = ({ reply, email }) => {
+  return (
+    <>
+      <div className="flex translate-x-[-0.4rem] items-center gap-2" w-full>
+        <div className="h-3 w-3 rounded-full bg-amber-700" />
+        <div className="flex gap-2 border-b border-zinc-700">
+          <p className="pb-1 text-sm text-zinc-500">{email}</p>
+          <p className="pb-1 text-sm text-zinc-500">{"|"}</p>
+          <p className="pb-1 text-sm text-zinc-500">
+            {dayjs(reply.updatedAt).fromNow()}
+          </p>
+          <p className="pb-1 text-sm text-zinc-500">
+            {reply.updatedAt !== reply.createdAt && "(edited)"}
+          </p>
+        </div>
+      </div>
+      <div className="pl-3">
+        <p>{reply.message}</p>
+      </div>
+    </>
   );
 };
 

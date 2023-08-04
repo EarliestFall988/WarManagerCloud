@@ -32,32 +32,16 @@ type LogWithMetaData = Prisma.LogGetPayload<{
   };
 }>;
 
-let users = [] as User[];
 
-const setUsers = async () => {
-  if (users) return users;
-
-  await clerkClient.users
+const addUserToLogs = async (logs: Log[]) => {
+  const users = await clerkClient.users
     .getUserList()
-    .then((u) => {
-      users = u;
+    .then((users) => {
+      return users;
     })
     .catch((err) => {
       console.log(err);
     });
-};
-
-const addUserToLogs = async (logs: Log[]) => {
-  // const users = await clerkClient.users
-  //   .getUserList()
-  //   .then((users) => {
-  //     return users;
-  //   })
-  //   .catch((err) => {
-  //     console.log(err);
-  //   });
-
-  await setUsers();
 
   if (!users)
     return logs.map((log) => {
@@ -98,7 +82,14 @@ const addUserToLogs = async (logs: Log[]) => {
 };
 
 const addUserToLogsWithMetaData = async (logs: LogWithMetaData[]) => {
-  await setUsers();
+  const users = await clerkClient.users
+    .getUserList()
+    .then((users) => {
+      return users;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 
   if (!users)
     return logs.map((log) => {
@@ -139,7 +130,14 @@ const addUserToLogsWithMetaData = async (logs: LogWithMetaData[]) => {
 };
 
 const addUserToReactions = async (reactions: LogReaction[]) => {
-  await setUsers();
+  const users = await clerkClient.users
+    .getUserList()
+    .then((users) => {
+      return users;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 
   if (!users)
     return reactions.map((log) => {
@@ -180,7 +178,14 @@ const addUserToReactions = async (reactions: LogReaction[]) => {
 };
 
 const addUserToReplies = async (replies: LogReply[]) => {
-  await setUsers();
+  const users = await clerkClient.users
+    .getUserList()
+    .then((users) => {
+      return users;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 
   if (!users)
     return replies.map((log) => {
