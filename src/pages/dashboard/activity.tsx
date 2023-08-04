@@ -4,9 +4,14 @@ import {
   ArrowLongUpIcon,
   ArrowPathRoundedSquareIcon,
   ArrowUpRightIcon,
+  ChatBubbleLeftEllipsisIcon,
   ExclamationTriangleIcon,
   FunnelIcon,
+  HandThumbUpIcon,
   MegaphoneIcon,
+  PaperAirplaneIcon,
+  PencilIcon,
+  PencilSquareIcon,
   SparklesIcon,
   Square2StackIcon,
   XMarkIcon,
@@ -14,7 +19,7 @@ import {
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useRef, useCallback, useMemo, useState } from "react";
 import { DashboardMenu } from "~/components/dashboardMenu";
 
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
@@ -26,11 +31,14 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { toast } from "react-hot-toast";
 import { type DropdownTagType } from "~/components/TagDropdown";
 import Select, { type MultiValue } from "react-select";
-import { InputComponent } from "~/components/input";
+import { InputComponent, TextareaComponent } from "~/components/input";
 import { useRouter } from "next/router";
 import TooltipComponent from "~/components/Tooltip";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { utils, writeFileXLSX } from "xlsx";
+import { EditModalComponent } from "~/components/dialog";
+import { type LogReaction, type LogReply } from "@prisma/client";
+import * as Popover from "@radix-ui/react-popover";
 
 dayjs.extend(relativeTime);
 
@@ -46,6 +54,7 @@ const RecentActivityPage: NextPage = () => {
 
   const [filter, setFilter] = useState<DropdownTagType[]>([]);
   const [search, setSearch] = useState<string>("");
+  const [announcementCount, setAnnouncementCount] = useState<number>(0);
   // const [page, setPage] = useState<number>(1);
   // const [pageSize, setPageSize] = useState<number>(10);
   // const [sort, setSort] = useState<string>("createdAt:DESC");
@@ -86,8 +95,6 @@ const RecentActivityPage: NextPage = () => {
         user: log.user?.email || "<unknown>",
       };
     });
-
-    console.log(json);
 
     const ws = utils.json_to_sheet(json);
     const wb = utils.book_new();
@@ -190,39 +197,31 @@ const RecentActivityPage: NextPage = () => {
         {!loadingData && !errorLoadingData && data && data?.length > 0 && (
           <>
             <div className="h-32 lg:h-48" />
-            <div className="m-auto flex items-center justify-end p-2 sm:w-full lg:w-[50vw]">
-              <TooltipComponent content="Refresh" side="top">
-                <button
-                  className="flex gap-2 rounded p-1 text-zinc-500 transition-all duration-100 hover:scale-110 hover:text-zinc-300"
-                  onClick={refresh}
-                >
-                  <ArrowPathRoundedSquareIcon className="h-6 w-6" />
-                </button>
-              </TooltipComponent>
-            </div>
+            <ActivityTopButtons refresh={refresh} />
             <div
               ref={animationParent}
               className="m-auto flex flex-col rounded-sm border-x border-t border-zinc-700 sm:w-full lg:w-[50vw]"
             >
               {data.length > 0 &&
                 data?.map((log) => {
-                  if (log.user?.email !== "taylor.howell@jrcousa.com") {
-                    return (
-                      <ActivityListItem
-                        key={log.id}
-                        id={log.id}
-                        severity={log.severity}
-                        profileURl={log.user?.profilePicture || ""}
-                        description={log.description}
-                        category={log.category}
-                        name={log.name}
-                        author={log.user?.email || "unknown"}
-                        link={log.url}
-                        action={log.action}
-                        actionTime={log.updatedAt || log.createdAt}
-                      />
-                    );
-                  }
+                  return (
+                    <ActivityListItem
+                      key={log.id}
+                      id={log.id}
+                      severity={log.severity}
+                      profileURl={log.user?.profilePicture || ""}
+                      description={log.description}
+                      category={log.category}
+                      name={log.name}
+                      author={log.user?.email || "unknown"}
+                      link={log.url}
+                      action={log.action}
+                      actionTime={log.updatedAt || log.createdAt}
+                      editedMessage={log.editedMessage}
+                      reactions={log.logReactions}
+                      count={log._count}
+                    />
+                  );
                 })}
             </div>
             <div className="flex select-none flex-col items-center justify-center gap-4 p-5 text-zinc-600">
@@ -275,6 +274,113 @@ const RecentActivityPage: NextPage = () => {
         )}
       </div>
     </main>
+  );
+};
+
+const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
+  const [isAnnouncementInputVisible, setIsAnnouncementInputVisible] =
+    useState(false);
+
+  const [message, setMessage] = useState("");
+
+  const { mutate, isLoading } = api.logs.create.useMutation({
+    onSuccess: () => {
+      toast.success("Announcement created");
+      setIsAnnouncementInputVisible(false);
+      setMessage("");
+      refresh();
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error("Error creating announcement");
+    },
+  });
+
+  const { user } = useUser();
+  const userEmail = user?.emailAddresses[0]?.emailAddress || "<unknown email>";
+
+  const ToggleMessageInput = useCallback(() => {
+    setIsAnnouncementInputVisible((prev) => !prev);
+  }, []);
+
+  const postMessage = useCallback(() => {
+    if (message.trim().length > 0) {
+      toast.loading("Sending message...", { duration: 3000 });
+
+      mutate({
+        description: message,
+        category: "announcement",
+        severity: "info",
+        action: "",
+        name: `Announcement from ${userEmail}`,
+        url: "",
+      });
+    } else {
+      toast.error("Please enter a message");
+    }
+  }, [message, mutate, userEmail]);
+
+  const [animationParent] = useAutoAnimate();
+  return (
+    <>
+      <div className="m-auto flex items-center justify-end p-2 sm:w-full lg:w-[50vw]">
+        <TooltipComponent content="Create Message" side="top">
+          <button
+            className="flex rounded p-1 text-zinc-500 transition-all duration-100 hover:scale-110 hover:text-zinc-300"
+            onClick={() => {
+              ToggleMessageInput();
+            }}
+          >
+            <PencilSquareIcon className="h-6 w-6" />
+          </button>
+        </TooltipComponent>
+        <TooltipComponent content="Refresh" side="top">
+          <button
+            className="flex gap-2 rounded p-1 text-zinc-500 transition-all duration-100 hover:scale-110 hover:text-zinc-300"
+            onClick={refresh}
+          >
+            <ArrowPathRoundedSquareIcon className="h-6 w-6" />
+          </button>
+        </TooltipComponent>
+      </div>
+      <div ref={animationParent}>
+        {isAnnouncementInputVisible && (
+          <div className="m-auto h-[25vh] p-1 sm:w-full lg:w-[50vw]">
+            <div className="flex gap-2">
+              <p className="pb-1 text-sm text-zinc-500">{userEmail}</p>
+              <p className="pb-1 text-sm text-zinc-500">{"|"}</p>
+              <p className="pb-1 text-sm text-zinc-500">
+                {dayjs(Date.now()).fromNow()}
+              </p>
+            </div>
+            <TextareaComponent
+              autoFocus
+              error=""
+              placeholder="What's on your mind?"
+              disabled={false}
+              value={message}
+              onChange={(e) => {
+                setMessage(e.target.value);
+              }}
+            />
+            <div className="flex select-none justify-end">
+              <button
+                onClick={postMessage}
+                className="flex items-center justify-center gap-1 rounded bg-amber-700 p-2 font-semibold outline-none transition duration-100 hover:bg-amber-500 focus:bg-amber-500 "
+              >
+                {isLoading && <LoadingSpinner />}
+                {!isLoading && (
+                  <>
+                    <p>Send</p>
+                    <PaperAirplaneIcon className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 
@@ -492,6 +598,12 @@ type activityListItemType = {
   link: string;
   actionTime: Date;
   id: string;
+  editedMessage?: string | undefined | null;
+  reactions: LogReaction[];
+  count: {
+    logReactions: number;
+    logReplys: number;
+  };
 };
 
 const ActivityListItem: React.FC<activityListItemType> = ({
@@ -504,6 +616,10 @@ const ActivityListItem: React.FC<activityListItemType> = ({
   link,
   actionTime,
   id,
+  category,
+  editedMessage,
+  reactions,
+  count,
 }) => {
   const Copy = (url: string) => {
     void window.navigator.clipboard.writeText(url);
@@ -511,18 +627,125 @@ const ActivityListItem: React.FC<activityListItemType> = ({
   };
 
   const router = useRouter();
+  const { user } = useUser();
+
+  const [showEdit, setShowEdit] = useState(false);
+  const [showReactions, setShowReactions] = useState(false);
+  const [myReaction, setMyReaction] = useState<LogReaction | null>(null);
+  const [logDrawerOpen, setLogDrawerOpen] = useState(false);
+
+  const [reactionCount, setReactionCount] = useState(count.logReactions);
+  const [replyCount, setReplyCount] = useState(count.logReplys);
+
+  const logsUpdateContext = api.useContext().logs;
+  const reactionContext = api.useContext().reactions;
+
+  useMemo(() => {
+    const reaction = reactions.find((r) => r.authorId === user?.id);
+
+    if (reaction) {
+      setMyReaction(reaction);
+    }
+  }, [reactions, user?.id]);
+
+  const { mutate: editMessage, isLoading } = api.logs.updateMessage.useMutation(
+    {
+      onSuccess: () => {
+        toast.success("Message updated");
+        setShowEdit(false);
+        void logsUpdateContext.invalidate();
+      },
+
+      onError: (err) => {
+        console.log(err);
+        toast.error("Something went wrong");
+      },
+    }
+  );
+
+  const { mutate, isLoading: creating } =
+    api.reactions.createReaction.useMutation({
+      onSuccess: (e) => {
+        setMyReaction(e);
+      },
+      onError: (err) => {
+        console.log(err);
+        toast.error("Something went wrong");
+        void reactionContext.invalidate();
+        void logsUpdateContext.invalidate();
+      },
+    });
+
+  const { mutate: deleteReaction, isLoading: deleting } =
+    api.reactions.deleteReaction.useMutation({
+      onError: (err) => {
+        console.log(err);
+        toast.error("Something went wrong");
+        void reactionContext.invalidate();
+        void logsUpdateContext.invalidate();
+      },
+    });
+
+  const setEditMessage = useCallback(
+    (message: string) => {
+      editMessage({ id, message });
+    },
+    [id, editMessage]
+  );
+
+  const createReaction = (reaction: string) => {
+    setShowReactions(false);
+
+    if (!myReaction) {
+      setReactionCount(reactionCount + 1);
+      setMyReaction({
+        authorId: user?.id || "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        id: "",
+        reaction,
+      });
+    }
+
+    if (myReaction?.reaction === reaction) {
+      removeMyReaction();
+      return;
+    }
+
+    if (myReaction !== undefined && myReaction !== null) {
+      myReaction.reaction = reaction;
+    }
+
+    mutate({ logId: id, reaction });
+  };
+
+  const removeMyReaction = () => {
+    setShowReactions(false);
+
+    if (myReaction) {
+      setMyReaction(null);
+      const count = reactionCount - 1;
+      if (count >= 0) {
+        setReactionCount(reactionCount - 1);
+      }
+      deleteReaction({ id: myReaction.id });
+    }
+  };
 
   return (
     <div
       className={`border-b border-zinc-700 ${
         severity === "critical" ? "bg-gradient-to-bl from-amber-800/30" : ""
-      } p-2 `}
+      } p-2 ${category === "announcement" ? "h-44" : ""} `}
+      id={`activity-${id}`}
     >
-      <Link
-        href={`/log/${id}`}
-        className="flex w-full cursor-pointer items-start justify-start gap-2"
+      <button
+        onClick={() => {
+          setLogDrawerOpen(!logDrawerOpen);
+        }}
+        className="flex h-full w-full items-start justify-start gap-2"
       >
-        <div className="hidden md:block">
+        <div className="hidden flex-shrink-0 pt-1 md:block">
           <Image
             src={profileURl}
             className="h-12 w-12 flex-shrink-0 select-none rounded-full"
@@ -531,7 +754,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
             alt={`${author}'s profile picture`}
           />
         </div>
-        <div className="block flex-shrink-0 md:hidden">
+        <div className="block h-10 w-10 flex-shrink-0 pt-1 md:hidden">
           <Image
             src={profileURl}
             className="h-10 w-10 select-none rounded-full"
@@ -540,27 +763,38 @@ const ActivityListItem: React.FC<activityListItemType> = ({
             alt={`${author}'s profile picture`}
           />
         </div>
-        <div className="flex flex-col truncate">
-          <div className="truncate pb-2">
-            <div className="flex items-center gap-2">
-              {(severity === "critical" || severity === "moderate") && (
-                <div className="block md:hidden">
-                  {severity === "critical" && (
-                    <ExclamationTriangleIcon className="h-4 w-4 select-none text-yellow-500" />
-                  )}
-                  {severity === "moderate" && (
-                    <MegaphoneIcon className="h-4 w-4 text-blue-300" />
-                  )}
-                </div>
-              )}
-              <p className="text-sm text-zinc-500">{author}</p>
-              <p className="text-sm text-zinc-500">|</p>
-              <p className="text-sm text-zinc-500">
-                {dayjs(actionTime).fromNow()}
-              </p>
-            </div>
+        <div className={"flex h-full w-full flex-col justify-between truncate"}>
+          <div className="flex flex-col items-start justify-start truncate pb-2">
+            <TooltipComponent content="View Log" side="right">
+              <Link
+                href={`/log/${id}`}
+                className="flex cursor-pointer items-center gap-2 rounded-md px-1 hover:bg-zinc-700/50"
+              >
+                {(severity === "critical" || severity === "moderate") && (
+                  <div className="block md:hidden">
+                    {severity === "critical" && (
+                      <ExclamationTriangleIcon className="h-4 w-4 select-none text-yellow-500" />
+                    )}
+                    {severity === "moderate" && (
+                      <MegaphoneIcon className="h-4 w-4 text-blue-300" />
+                    )}
+                  </div>
+                )}
+                <p className="text-sm text-zinc-500">{author}</p>
+                <p className="text-sm text-zinc-500">|</p>
+                <p className="text-sm text-zinc-500">
+                  {dayjs(actionTime).fromNow()}
+                </p>
+              </Link>
+            </TooltipComponent>
             <div className="flex items-center justify-start gap-1">
-              <p className="pb-1 text-lg font-semibold">{name}</p>
+              <p
+                className={`pb-1 text-lg font-semibold ${
+                  category === "announcement" ? "hidden" : ""
+                }`}
+              >
+                {name}
+              </p>
               {severity === "critical" && (
                 <div className="hidden items-center gap-1 md:flex">
                   <ExclamationTriangleIcon className="h-4 w-4 select-none text-yellow-500" />
@@ -576,22 +810,196 @@ const ActivityListItem: React.FC<activityListItemType> = ({
                 </div>
               )}
             </div>
-            <p className="w-full whitespace-pre-wrap text-sm">{description}</p>
+            <div
+              className={`w-full whitespace-pre-wrap ${
+                category === "announcement" ? "text-md" : "text-sm"
+              }`}
+            >
+              {description}{" "}
+              {editedMessage && (
+                <TooltipComponent
+                  content={`${editedMessage ? editedMessage : ""}`}
+                  side="top"
+                >
+                  <span className="text-xs text-zinc-400">
+                    {editedMessage && `(edited)`}
+                  </span>
+                </TooltipComponent>
+              )}
+            </div>
           </div>
           <div className="flex select-none justify-start gap-2">
+            {
+              <Popover.Root
+                defaultOpen={false}
+                onOpenChange={(e) => setShowReactions(e)}
+                open={showReactions}
+              >
+                <Popover.Trigger asChild>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log("clicked reaction button");
+                      setShowReactions(!showReactions);
+                    }}
+                    className={`flex cursor-pointer items-center gap-1 rounded p-1 transition-all duration-100 hover:bg-zinc-800 ${
+                      myReaction?.reaction ? "text-amber-600" : "text-zinc-400"
+                    }`}
+                  >
+                    <TooltipComponent
+                      content={`React to this ${
+                        category === "announcement" ? "message" : "log"
+                      }`}
+                      side="top"
+                    >
+                      <>
+                        <p className="text-sm">{reactionCount}</p>
+                        <HandThumbUpIcon className="h-4 w-4 " />
+                      </>
+                    </TooltipComponent>
+                  </button>
+                </Popover.Trigger>
+                <Popover.Portal>
+                  <Popover.Content
+                    onClick={(e) => {
+                      e.preventDefault();
+                    }}
+                    className="w-[260px] rounded border border-zinc-500 bg-black/70 p-1 shadow-[0_10px_38px_-10px_hsla(206,22%,7%,.35),0_10px_20px_-15px_hsla(206,22%,7%,.2)] backdrop-blur will-change-[transform,opacity] focus:shadow-[0_10px_38px_-10px_hsla(206,22%,7%,.35),0_10px_20px_-15px_hsla(206,22%,7%,.2),0_0_0_2px_theme(colors.violet7)] data-[state=open]:data-[side=bottom]:animate-slideUpAndFade data-[state=open]:data-[side=left]:animate-slideRightAndFade data-[state=open]:data-[side=right]:animate-slideLeftAndFade data-[state=open]:data-[side=top]:animate-slideDownAndFade"
+                    sideOffset={2}
+                  >
+                    {deleting || creating ? (
+                      <div className="flex w-full items-center justify-center">
+                        <LoadingSpinner />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-center gap-2 text-2xl">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              createReaction("👍");
+                            }}
+                            className={`rounded p-1 transition duration-200 hover:scale-110 ${
+                              myReaction?.reaction === "👍" ? "opacity-50" : ""
+                            }`}
+                          >
+                            <p>👍</p>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              createReaction("❤️");
+                            }}
+                            className={`rounded p-1 transition duration-200 hover:scale-110 ${
+                              myReaction?.reaction === "❤️" ? "opacity-50" : ""
+                            }`}
+                          >
+                            <p>❤️</p>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              createReaction("🚀");
+                            }}
+                            className={`rounded p-1 transition duration-200 hover:scale-110 ${
+                              myReaction?.reaction === "🚀" ? "opacity-50" : ""
+                            }`}
+                          >
+                            <p>🚀</p>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              createReaction("🔥");
+                            }}
+                            className={`rounded p-1 transition duration-200 hover:scale-110 ${
+                              myReaction?.reaction === "🔥" ? "opacity-50" : ""
+                            }`}
+                          >
+                            <p>🔥</p>
+                          </button>
+                        </div>
+                        {myReaction && (
+                          <div className="flex w-full justify-center">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                removeMyReaction();
+                              }}
+                              className={`w-full rounded p-1 text-zinc-300 transition duration-200 hover:bg-red-800 hover:text-white`}
+                            >
+                              <p>Remove {myReaction.reaction}</p>
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    <Popover.Arrow className="fill-zinc-500" />
+                  </Popover.Content>
+                </Popover.Portal>
+              </Popover.Root>
+            }
+            {
+              <TooltipComponent
+                content={`Message ${
+                  replyCount === 0 ? "User" : "Users in This Thread"
+                }`}
+                side="top"
+              >
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log("Reply");
+                  }}
+                  className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800"
+                >
+                  <p className="text-sm ">{replyCount}</p>
+                  <ChatBubbleLeftEllipsisIcon className="h-4 w-4" />
+                </button>
+              </TooltipComponent>
+            }
+            {category === "announcement" &&
+              user?.emailAddresses[0]?.emailAddress === author && (
+                <EditModalComponent
+                  title="Edit Message"
+                  messageToEdit={description}
+                  open={showEdit}
+                  yes={(e) => {
+                    setEditMessage(e);
+                  }}
+                  cancel={() => {
+                    setShowEdit(false);
+                  }}
+                  loading={isLoading}
+                  trigger={
+                    <TooltipComponent content={`Edit Message`} side="top">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowEdit(true);
+                        }}
+                      >
+                        <div className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800">
+                          <PencilIcon className="h-4 w-4 " />
+                        </div>
+                      </button>
+                    </TooltipComponent>
+                  }
+                />
+              )}
             {(action === "url" || action === "external url") && (
               <button
                 onClick={(e) => {
                   void router.push(link);
                   e.preventDefault();
                 }}
-                className="flex cursor-pointer items-center gap-1 rounded p-1 transition-all duration-100 hover:bg-zinc-800"
+                className="flex cursor-pointer items-center gap-1 rounded p-1 text-zinc-400 transition-all duration-100 hover:bg-zinc-800"
               >
-                <p className="text-sm text-zinc-200">View</p>
-                <ArrowUpRightIcon className="h-4 w-4 text-zinc-400" />
+                <p className="text-sm ">View Changes</p>
+                <ArrowUpRightIcon className="h-4 w-4" />
               </button>
             )}
-            {
+            {/* {
               <button
                 onClick={(e) => {
                   Copy(author);
@@ -602,7 +1010,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
                 <p className="text-sm text-zinc-200">{"Copy Author's Email"}</p>
                 <Square2StackIcon className="h-4 w-4 text-zinc-400" />
               </button>
-            }
+            } */}
             {action === "external url" && (
               <button
                 onClick={(e) => {
@@ -615,25 +1023,61 @@ const ActivityListItem: React.FC<activityListItemType> = ({
                 <Square2StackIcon className="h-4 w-4 text-zinc-400" />
               </button>
             )}
-            {/* {
-                action === "url" && (
-                  <Link href={link} passHref className="flex gap-1 items-center cursor-pointer rounded p-2 bg-zinc-800 hover:bg-amber-700">
-                    <p className="text-sm text-zinc-200">Comment</p>
-                    <ChatBubbleBottomCenterIcon className="h-4 w-4 text-zinc-200" />
-                  </Link>
-                )
-              }
-              {
-                action === "url" && (
-                  <Link href={link} passHref className="flex gap-1 items-center cursor-pointer rounded p-2 bg-zinc-800 hover:bg-amber-700">
-                    <p className="text-sm text-zinc-200">React</p>
-                    <HeartIcon className="h-4 w-4 text-zinc-200" />
-                  </Link>
-                )
-              } */}
           </div>
         </div>
-      </Link>
+      </button>
+      <div className="pl-14">
+        <LogDrawer open={logDrawerOpen} id={id} />
+      </div>
+    </div>
+  );
+};
+
+const LogDrawer: React.FC<{
+  open: boolean;
+  id: string;
+}> = ({ open, id }) => {
+  const [animationParent] = useAutoAnimate();
+
+  const { data } = api.logs.getLogReactionsAndReplys.useQuery({
+    logId: id,
+  });
+
+  const reactions = data?.logReactions;
+  const replies = data?.logReplies;
+
+  return (
+    <div ref={animationParent}>
+      {open && (
+        <>
+          <div className="m-2 border-t border-zinc-600"></div>
+          <div className="flex flex-wrap items-center justify-start gap-2 px-1">
+            {reactions?.map((reaction) => (
+              <div
+                key={reaction.id}
+                className="flex items-center gap-1 rounded bg-zinc-700 p-1 text-zinc-300"
+              >
+                <p>{reaction.reaction}</p>
+                <p>{reaction.user?.email || "<unknown>"}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col gap-2">
+            {replies && replies?.length > 0 ? (
+              replies?.map((reply) => (
+                <div key={reply.id} className="flex items-center gap-2">
+                  <p>{reply.user?.email || "<unknown>"}</p>
+                  <p>{reply.message}</p>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center justify-center gap-2 pr-14 text-zinc-500">
+                <p>No Replies</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };

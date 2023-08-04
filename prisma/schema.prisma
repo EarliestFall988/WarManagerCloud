@@ -8,7 +8,7 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
@@ -70,7 +70,6 @@ model Project {
   tags     Tag[]
 
   @@index([authorId])
-
   @@fulltext([description, notes])
   @@fulltext([name, description, notes, address, city, state, zip])
 }
@@ -106,7 +105,7 @@ model CrewMember {
   email       String  @db.VarChar(255)
   travel      String? @db.VarChar(255)
   skills      Json?
-  rating      String  @db.VarChar(255) @default("5")
+  rating      String  @default("5") @db.VarChar(255)
   sector      Sector? @relation(fields: [sectorId], references: [id])
 
   startDate      DateTime?
@@ -192,13 +191,46 @@ model Log {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String  @db.VarChar(255)
-  description String  @db.VarChar(255)
-  url         String  @db.VarChar(255)
-  action      String  @db.VarChar(255)
-  category    String  @db.VarChar(255)
-  severity    String  @db.VarChar(255)
-  data        String? @db.VarChar(255)
+  name          String  @db.VarChar(255)
+  description   String  @db.Text()
+  editedMessage String? @db.Text()
+  url           String  @db.VarChar(255)
+  action        String  @db.VarChar(255)
+  category      String  @db.VarChar(255)
+  severity      String  @db.VarChar(255)
+  data          String? @db.VarChar(255)
+
+  logReplys LogReply[]
+  logReactions LogReaction[]
+
+  authorId String
+
+  @@index([authorId])
+}
+
+model LogReply {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  message       String @db.VarChar(255)
+  editedMessage String @db.VarChar(255)
+  log           Log[]
+
+  authorId String
+  
+
+  @@index([authorId])
+ 
+}
+
+model LogReaction {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reaction String @db.VarChar(255)
+  log           Log[]
 
   authorId String
 
