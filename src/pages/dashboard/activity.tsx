@@ -751,7 +751,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
           : ""
       } ${
         category === "announcement"
-          ? "m-2 rounded border border-zinc-700 bg-zinc-600/30"
+          ? "m-2 rounded border border-zinc-600 bg-zinc-600/30"
           : "border-b border-zinc-700"
       } `}
       id={`activity-${id}`}
@@ -1047,7 +1047,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
         )}
       </div>
       <div className={` ${logDrawerOpen ? "bg-zinc-900 p-2" : ""}`}>
-        <div ref={animationParent} className="pl-14">
+        <div ref={animationParent} className="pl-1 md:pl-14">
           {logDrawerOpen && (
             <LogDrawer id={id} incrementReplyCount={incrementReplyCount} />
           )}
@@ -1137,7 +1137,7 @@ const LogDrawer: React.FC<{
       </div>
       <div
         ref={animationParent2}
-        className="ml-10 border-l border-amber-700 py-2 pr-2"
+        className="ml-2 border-l border-amber-700 py-2 pr-2 md:ml-10"
       >
         {!isLoading && (
           <>
@@ -1158,7 +1158,7 @@ const LogDrawer: React.FC<{
                   </p>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-2 pr-14 text-zinc-500">
+                <div className="flex items-center justify-center gap-2 text-zinc-500 md:pr-14">
                   <p className="p-2"></p>
                 </div>
               )}
@@ -1179,7 +1179,6 @@ const LogDrawer: React.FC<{
                     setMessage(e.target.value);
                   }}
                   value={message}
-                  autoFocus
                   error=""
                   placeholder="What's on your mind?"
                 />
