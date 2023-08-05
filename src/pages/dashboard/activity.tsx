@@ -12,8 +12,11 @@ import {
   PaperAirplaneIcon,
   PencilIcon,
   PencilSquareIcon,
+  PhoneIcon,
   SparklesIcon,
   Square2StackIcon,
+  UserCircleIcon,
+  WrenchScrewdriverIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { type NextPage } from "next";
@@ -205,7 +208,7 @@ const RecentActivityPage: NextPage = () => {
             <ActivityTopButtons refresh={refresh} />
             <div
               ref={animationParent}
-              className="m-auto flex flex-col rounded-sm border-x border-t border-zinc-700 sm:w-full lg:w-[50vw]"
+              className="m-auto flex flex-col rounded-sm border-zinc-700 sm:w-full lg:w-[50vw]"
             >
               {data.length > 0 &&
                 data?.map((log) => {
@@ -755,8 +758,8 @@ const ActivityListItem: React.FC<activityListItemType> = ({
           : ""
       } ${
         category === "announcement"
-          ? "m-2 rounded border border-zinc-600 bg-zinc-600/30"
-          : "border-b border-zinc-700"
+          ? "my-2 rounded-lg border border-t border-zinc-600 bg-zinc-600/30"
+          : "border-x border-t border-zinc-700"
       } `}
       id={`activity-${id}`}
     >
@@ -837,9 +840,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
               }`}
             >
               <p className="text-left">
-                <Linkify as="span">
-                  {description}
-                </Linkify>{" "}
+                <MessageComponent data={description} />
                 {editedMessage && (
                   <TooltipComponent
                     content={`${editedMessage ? editedMessage : ""}`}
@@ -1067,67 +1068,154 @@ const ActivityListItem: React.FC<activityListItemType> = ({
   );
 };
 
-type propsType = {
-  attributes: {
-    href: string;
-  };
-  content: string;
+const MessageComponent: React.FC<{ data: string }> = ({ data }) => {
+  return (
+    <Linkify
+      options={{
+        render: {
+          url: ({ attributes, content }) => {
+            const name = window.location.hostname;
+
+            const localHostName = "http://localhost:3000";
+            const localLiveName = `https://${name}.net`;
+
+            const href = attributes.href as string | null | undefined;
+
+            if (href === null || href === undefined) {
+              return <div></div>;
+            }
+
+            const isInternal =
+              href.startsWith("/") ||
+              href.startsWith(localHostName) ||
+              href.startsWith(localLiveName);
+
+            if (isInternal) {
+              const isProject =
+                href.startsWith("/projects") ||
+                href.startsWith("http://localhost:3000/projects/") ||
+                href.startsWith(`https://${name}.net/projects/`);
+              const isCrewMember =
+                href.startsWith("/crewmember") ||
+                href.startsWith("http://localhost:3000/crewmember/") ||
+                href.startsWith(`https://${name}.net/crewmember/`);
+
+              if (!isProject && !isCrewMember)
+                return (
+                  <Link className="text-sky-500 underline" href={href || "'"}>
+                    {content}
+                  </Link>
+                );
+
+              if (isProject) {
+                const projectID = href.split("/")[href.split("/").length - 1];
+                if (projectID !== undefined)
+                  return (
+                    <ProjectComponent
+                      url={href}
+                      id={projectID}
+                      key={projectID}
+                    />
+                  );
+              }
+              if (isCrewMember) {
+                const crewId = href.split("/")[href.split("/").length - 1];
+                if (crewId !== undefined)
+                  return <CrewComponent url={href} id={crewId} key={crewId} />;
+              }
+            }
+            return (
+              <a
+                {...attributes}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:underline"
+              >
+                {content}
+              </a>
+            );
+          },
+        },
+      }}
+      as="span"
+    >
+      {data}
+    </Linkify>
+  );
 };
 
-const RenderLink = (content: string, href?: string) => {
-  // console.log("attributes", attributes);
-  console.log("content", content);
-  // const { href, ...props } = attributes;
+const ProjectComponent: React.FC<{ url: string; id: string }> = ({
+  url,
+  id,
+}) => {
+  const { data, isLoading } = api.projects.getById.useQuery({ id });
 
-  const name = window.location.hostname;
-
-  const localHostName = "http://localhost:3000";
-  const localLiveName = `https://${name}.net`;
-
-  const [open, setOpen] = useState(false);
-
-  if (!href) {
-    return <div></div>;
+  if (isLoading) {
+    return <Link href={url}>{"Loading..."}</Link>;
   }
 
-  const isInternal =
-    href?.startsWith("/") ||
-    href?.startsWith("#") ||
-    href?.startsWith(localHostName) ||
-    href?.startsWith(localLiveName);
-
-  if (isInternal) {
+  if (data !== undefined && data !== null)
     return (
-      <Link className="text-sky-500 underline" href={href || "'"}>
-        {content}
-      </Link>
+      <div className="flex items-start justify-start">
+        <TooltipComponent content={`Visit Project`} side="top">
+          <Link href={`/projects/${id}`}>
+            <div className="flex items-center justify-start gap-2 rounded border border-zinc-600 bg-zinc-700 p-1 transition-all duration-100 hover:border-amber-600 focus:border-amber-600">
+              <WrenchScrewdriverIcon className="mr-1 h-5 w-5" />
+              <div>
+                <p className="font-semibold">{data.name}</p>
+                <div className="flex text-sm">
+                  <p>{data.jobNumber}</p> <p>{data.sectors[0]?.name || ""}</p>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </TooltipComponent>
+      </div>
     );
+
+  return <div>{url}</div>;
+};
+const CrewComponent: React.FC<{ url: string; id: string }> = ({ url, id }) => {
+  console.log(id);
+
+  const { data, isLoading } = api.crewMembers.getById.useQuery({
+    crewMemberId: id,
+  });
+
+  if (isLoading) {
+    return <Link href={url}>{"Loading..."}</Link>;
   }
 
-  return (
-    <DialogComponentManualOpenClose
-      title="External Link"
-      description={`You are about to leave this site and go to ${href} \nAre you sure?`}
-      yes={() => {
-        setOpen(false);
-        window.open(href || "", "_blank");
-      }}
-      no={() => {
-        setOpen(false);
-      }}
-      open={open}
-    >
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          setOpen(true);
-        }}
-        className="text-sky-500 underline"
-      >
-        {content}
-      </button>
-    </DialogComponentManualOpenClose>
-  );
+  if (data !== undefined && data !== null)
+    return (
+      <div className="flex flex-col items-start justify-start gap-2">
+        <TooltipComponent content={`Visit Crew`} side="top">
+          <Link href={`/projects/${id}`}>
+            <div className="rounded border border-zinc-600 bg-zinc-700 p-1 transition-all duration-100 hover:border-amber-600 focus:border-amber-600">
+              <div className="flex items-center justify-start gap-2">
+                <div className="h-5 w-5">
+                  <UserCircleIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-semibold">{data.name}</p>
+                  <div className="flex gap-2 text-sm">
+                    <p>{data.phone}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </TooltipComponent>
+        <div className="block rounded bg-zinc-700 p-2 sm:hidden">
+          <a href={`tel:${data.phone}`} className="flex gap-2 md:hidden">
+            <PhoneIcon className="h-5 w-5" />
+            Call {data.name}
+          </a>
+        </div>
+      </div>
+    );
+
+  return <div>{id}</div>;
 };
 
 const LogDrawer: React.FC<{

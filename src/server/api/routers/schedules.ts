@@ -178,9 +178,11 @@ export const schedulesRouter = createTRPCRouter({
           url: `${retrieveLink}`,
           authorId: authorId,
           category: "schedule",
-          description: `${input.notes || "<no description>"}`,
+          description: `${
+            input.notes ? `${input.notes}\n${retrieveLink}` : retrieveLink
+          }`,
           severity: "moderate",
-        }
+        },
       });
       return schedule;
     }),
