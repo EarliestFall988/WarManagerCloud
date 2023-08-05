@@ -36,10 +36,14 @@ import { useRouter } from "next/router";
 import TooltipComponent from "~/components/Tooltip";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { utils, writeFileXLSX } from "xlsx";
-import { EditModalComponent } from "~/components/dialog";
+import {
+  DialogComponent,
+  DialogComponentManualOpenClose,
+  EditModalComponent,
+} from "~/components/dialog";
 import { type LogReaction, type LogReply } from "@prisma/client";
 import * as Popover from "@radix-ui/react-popover";
-import { log } from "console";
+import Linkify from "linkify-react";
 
 dayjs.extend(relativeTime);
 
@@ -833,7 +837,9 @@ const ActivityListItem: React.FC<activityListItemType> = ({
               }`}
             >
               <p className="text-left">
-                {description}{" "}
+                <Linkify as="span">
+                  {description}
+                </Linkify>{" "}
                 {editedMessage && (
                   <TooltipComponent
                     content={`${editedMessage ? editedMessage : ""}`}
@@ -1049,7 +1055,11 @@ const ActivityListItem: React.FC<activityListItemType> = ({
       <div className={` ${logDrawerOpen ? "bg-zinc-900 p-2" : ""}`}>
         <div ref={animationParent} className="pl-1 md:pl-14">
           {logDrawerOpen && (
-            <LogDrawer id={id} incrementReplyCount={incrementReplyCount} />
+            <LogDrawer
+              id={id}
+              incrementReplyCount={incrementReplyCount}
+              myReaction={myReaction}
+            />
           )}
         </div>
       </div>
@@ -1057,12 +1067,77 @@ const ActivityListItem: React.FC<activityListItemType> = ({
   );
 };
 
+type propsType = {
+  attributes: {
+    href: string;
+  };
+  content: string;
+};
+
+const RenderLink = (content: string, href?: string) => {
+  // console.log("attributes", attributes);
+  console.log("content", content);
+  // const { href, ...props } = attributes;
+
+  const name = window.location.hostname;
+
+  const localHostName = "http://localhost:3000";
+  const localLiveName = `https://${name}.net`;
+
+  const [open, setOpen] = useState(false);
+
+  if (!href) {
+    return <div></div>;
+  }
+
+  const isInternal =
+    href?.startsWith("/") ||
+    href?.startsWith("#") ||
+    href?.startsWith(localHostName) ||
+    href?.startsWith(localLiveName);
+
+  if (isInternal) {
+    return (
+      <Link className="text-sky-500 underline" href={href || "'"}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <DialogComponentManualOpenClose
+      title="External Link"
+      description={`You are about to leave this site and go to ${href} \nAre you sure?`}
+      yes={() => {
+        setOpen(false);
+        window.open(href || "", "_blank");
+      }}
+      no={() => {
+        setOpen(false);
+      }}
+      open={open}
+    >
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
+        className="text-sky-500 underline"
+      >
+        {content}
+      </button>
+    </DialogComponentManualOpenClose>
+  );
+};
+
 const LogDrawer: React.FC<{
   id: string;
+  myReaction: LogReaction | undefined | null;
   incrementReplyCount: () => void;
-}> = ({ id, incrementReplyCount }) => {
+}> = ({ id, incrementReplyCount, myReaction }) => {
   const { data, isLoading } = api.logs.getLogReactionsAndReplys.useQuery({
     logId: id,
+    removeMyReactions: true,
   });
 
   const [animationParent] = useAutoAnimate();
@@ -1074,7 +1149,9 @@ const LogDrawer: React.FC<{
 
   const [message, setMessage] = useState("");
 
-  const reactions = data?.logReactions;
+  const reactions = data?.logReactions.filter(
+    (x) => x.user?.email !== userEmail
+  );
   const replies = data?.logReplies;
 
   const context = api.useContext();
@@ -1110,6 +1187,15 @@ const LogDrawer: React.FC<{
         ref={animationParent1}
         className="flex flex-wrap items-center justify-start gap-2 rounded border border-zinc-700 bg-zinc-800 p-2"
       >
+        {myReaction && (
+          <div
+            key={myReaction.id}
+            className="flex items-center gap-1 rounded text-zinc-300"
+          >
+            <p>{myReaction.reaction}</p>
+            <p className="text-sm text-zinc-300">{userEmail}</p>
+          </div>
+        )}
         {!isLoading &&
           reactions &&
           reactions?.length > 0 &&
@@ -1129,11 +1215,14 @@ const LogDrawer: React.FC<{
             <LoadingSpinner />
           </div>
         )}
-        {!isLoading && reactions && reactions?.length === 0 && (
-          <div className="flex items-center gap-1 rounded px-2 text-zinc-500">
-            <p>No Reactions</p>
-          </div>
-        )}
+        {!isLoading &&
+          reactions &&
+          reactions?.length === 0 &&
+          !myReaction?.reaction && (
+            <div className="flex items-center gap-1 rounded px-2 text-zinc-500">
+              <p>No Reactions</p>
+            </div>
+          )}
       </div>
       <div
         ref={animationParent2}

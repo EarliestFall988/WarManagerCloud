@@ -31,7 +31,6 @@ type LogWithMetaData = Prisma.LogGetPayload<{
   };
 }>;
 
-
 const addUserToLogs = async (logs: Log[]) => {
   const users = await clerkClient.users
     .getUserList()
@@ -503,6 +502,7 @@ export const logsRouter = createTRPCRouter({
     .input(
       z.object({
         logId: z.string(),
+        removeMyReactions: z.boolean().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -523,7 +523,15 @@ export const logsRouter = createTRPCRouter({
         });
       }
 
-      const reactions = await addUserToReactions(log.logReactions);
+      let totalReactions = log.logReactions;
+
+      if (input.removeMyReactions) {
+        totalReactions = log.logReactions.filter(
+          (r) => r.authorId === ctx.currentUser
+        );
+      }
+
+      const reactions = await addUserToReactions(totalReactions);
       const replies = await addUserToReplies(log.logReplys);
 
       return {
