@@ -76,9 +76,16 @@ export const DialogComponentManualOpenClose: React.FC<{
   return (
     <Dialog.Root open={open}>
       {children}
-      <Dialog.Portal>
+      <Dialog.Portal
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          no && no();
+        }}
+      >
         <Dialog.Overlay
           onClick={(e) => {
+            e.stopPropagation();
             e.preventDefault();
             no && no();
           }}
@@ -87,6 +94,7 @@ export const DialogComponentManualOpenClose: React.FC<{
         {/* <div className="fixed top-0 data-[state=open]:animate-contentShow inset-0 z-30 flex items-center justify-center"> */}
         <Dialog.Content
           onClick={(e) => {
+            e.stopPropagation();
             e.preventDefault();
           }}
           className="fixed left-[50%] top-[50%] z-30 max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-black p-[25px] focus:outline-none data-[state=open]:animate-contentShow"
@@ -100,7 +108,8 @@ export const DialogComponentManualOpenClose: React.FC<{
           <div className="mt-4 flex justify-end gap-2">
             <Dialog.Close asChild>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   no && no();
                 }}
                 className="min-w-[3em] select-none rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-zinc-600"
@@ -111,7 +120,8 @@ export const DialogComponentManualOpenClose: React.FC<{
             <Dialog.Close asChild>
               <button
                 className="min-w-[3em] select-none rounded bg-zinc-700 bg-gradient-to-br p-2 text-center transition-all duration-100 hover:bg-zinc-600"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   yes();
                 }}
               >

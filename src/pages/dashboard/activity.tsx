@@ -1101,11 +1101,7 @@ const MessageComponent: React.FC<{ data: string }> = ({ data }) => {
                 href.startsWith(`https://${name}.net/crewmember/`);
 
               if (!isProject && !isCrewMember)
-                return (
-                  <Link className="text-sky-500 underline" href={href || "'"}>
-                    {content}
-                  </Link>
-                );
+                return <InternalLink href={href} />;
 
               if (isProject) {
                 const projectID = href.split("/")[href.split("/").length - 1];
@@ -1124,16 +1120,7 @@ const MessageComponent: React.FC<{ data: string }> = ({ data }) => {
                   return <CrewComponent url={href} id={crewId} key={crewId} />;
               }
             }
-            return (
-              <a
-                {...attributes}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:underline"
-              >
-                {content}
-              </a>
-            );
+            return <ExternalLink href={href} />;
           },
         },
       }}
@@ -1151,7 +1138,11 @@ const ProjectComponent: React.FC<{ url: string; id: string }> = ({
   const { data, isLoading } = api.projects.getById.useQuery({ id });
 
   if (isLoading) {
-    return <Link href={url}>{"Loading..."}</Link>;
+    return (
+      <Link href={url}>
+        <LoadingSpinner />
+      </Link>
+    );
   }
 
   if (data !== undefined && data !== null)
@@ -1159,7 +1150,12 @@ const ProjectComponent: React.FC<{ url: string; id: string }> = ({
       <div className="flex items-start justify-start">
         <TooltipComponent content={`Visit Project`} side="top">
           <Link href={`/projects/${id}`}>
-            <div className="flex items-center justify-start gap-2 rounded border border-zinc-600 bg-zinc-700 p-1 transition-all duration-100 hover:border-amber-600 focus:border-amber-600">
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              className="flex items-center justify-start gap-2 rounded border border-zinc-600 bg-zinc-700 p-1 transition-all duration-100 hover:border-amber-600 focus:border-amber-600"
+            >
               <WrenchScrewdriverIcon className="mr-1 h-5 w-5" />
               <div>
                 <p className="font-semibold">{data.name}</p>
@@ -1183,7 +1179,11 @@ const CrewComponent: React.FC<{ url: string; id: string }> = ({ url, id }) => {
   });
 
   if (isLoading) {
-    return <Link href={url}>{"Loading..."}</Link>;
+    return (
+      <Link href={url}>
+        <LoadingSpinner />
+      </Link>
+    );
   }
 
   if (data !== undefined && data !== null)
@@ -1191,7 +1191,12 @@ const CrewComponent: React.FC<{ url: string; id: string }> = ({ url, id }) => {
       <div className="flex flex-col items-start justify-start gap-2">
         <TooltipComponent content={`Visit Crew`} side="top">
           <Link href={`/projects/${id}`}>
-            <div className="rounded border border-zinc-600 bg-zinc-700 p-1 transition-all duration-100 hover:border-amber-600 focus:border-amber-600">
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              className="rounded border border-zinc-600 bg-zinc-700 p-1 transition-all duration-100 hover:border-amber-600 focus:border-amber-600"
+            >
               <div className="flex items-center justify-start gap-2">
                 <div className="h-5 w-5">
                   <UserCircleIcon className="h-5 w-5" />
@@ -1206,7 +1211,12 @@ const CrewComponent: React.FC<{ url: string; id: string }> = ({ url, id }) => {
             </div>
           </Link>
         </TooltipComponent>
-        <div className="block rounded bg-zinc-700 p-2 sm:hidden">
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          className="block rounded bg-zinc-700 p-2 sm:hidden"
+        >
           <a href={`tel:${data.phone}`} className="flex gap-2 md:hidden">
             <PhoneIcon className="h-5 w-5" />
             Call {data.name}
@@ -1216,6 +1226,49 @@ const CrewComponent: React.FC<{ url: string; id: string }> = ({ url, id }) => {
     );
 
   return <div>{id}</div>;
+};
+
+const ExternalLink: React.FC<{ href: string }> = ({ href }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <DialogComponentManualOpenClose
+      title="External Link"
+      description={`You are about to go to ${href} Are you sure?`}
+      yes={() => {
+        setOpen(false);
+        window.open(href || "", "_blank");
+      }}
+      no={() => {
+        setOpen(false);
+      }}
+      open={open}
+    >
+      <button
+        onClick={(e) => {
+          setOpen(true);
+          e.stopPropagation();
+        }}
+        className="text-blue-400 hover:underline"
+      >
+        {href}
+      </button>
+    </DialogComponentManualOpenClose>
+  );
+};
+
+const InternalLink: React.FC<{ href: string }> = ({ href }) => {
+  return (
+    <Link
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+      href={href}
+      className="text-blue-400 hover:underline"
+    >
+      {href}
+    </Link>
+  );
 };
 
 const LogDrawer: React.FC<{
@@ -1477,7 +1530,7 @@ export const ReplyComponent: React.FC<{
         </div>
       </div>
       <div className="pl-3">
-        <p>{reply.message}</p>
+        <MessageComponent data={reply.message} />
       </div>
     </>
   );
