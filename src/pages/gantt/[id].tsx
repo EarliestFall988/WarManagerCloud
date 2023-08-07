@@ -1,6 +1,6 @@
 import { type NextPage } from "next";
 import React from "react";
-import { type Task, ViewMode, Gantt } from "gantt-task-react";
+import { ViewMode, Gantt, type Task } from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
 
 const GanttPage: NextPage = () => {
@@ -23,11 +23,26 @@ const GanttPage: NextPage = () => {
       const [start, end] = getStartEndDateForProject(newTasks, task.project);
       const project =
         newTasks[newTasks.findIndex((t) => t.id === task.project)];
+
       if (
-        project?.start.getTime() !== start?.getTime() ||
-        project?.end.getTime() !== end?.getTime()
+        project == undefined ||
+        project == null ||
+        project.id == undefined ||
+        project.id == null ||
+        start == undefined ||
+        start == null ||
+        end == undefined ||
+        end == null
+      ) {
+        return;
+      }
+
+      if (
+        project.start.getTime() !== start.getTime() ||
+        project.end.getTime() !== end.getTime()
       ) {
         const changedProject = { ...project, start, end };
+
         newTasks = newTasks.map((t) =>
           t.id === task.project ? changedProject : t
         );
