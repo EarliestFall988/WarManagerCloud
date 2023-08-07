@@ -28,8 +28,6 @@ export const setBlueprintNodes = (Nodes: Node[]) => {
     }
   }).filter((n) => n) as Node[];
 
-  console.log(result);
-
   blueprintNodes = result;
 };
 

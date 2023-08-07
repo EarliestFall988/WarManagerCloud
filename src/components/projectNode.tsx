@@ -32,7 +32,7 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
 
   const { projectData, isLoading } = useLiveData();
 
-  const info = projectData.find((crew) => crew.id == data.id);
+  const info = projectData.find((node) => node.id == data.id);
 
   if (!data || isLoading) return <LoadingSpinner />;
 

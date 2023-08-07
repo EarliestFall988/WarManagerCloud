@@ -33,10 +33,10 @@ import { ScheduleItem } from "./ScheduleItem";
 import { DialogComponent } from "./dialog";
 import { useRouter } from "next/router";
 import { GetNodes } from "~/flow/useNodesStateSynced";
-import { GetListOfNodesSortedByColumn } from "~/flow/flow";
 import useLiveData from "~/flow/databank";
 import { getCrewCost } from "~/flow/costing";
 import { useUser } from "@clerk/nextjs";
+import { GetListOfNodesSortedByColumn } from "~/flow/blueprintStructure";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,

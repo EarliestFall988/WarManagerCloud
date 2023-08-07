@@ -1,16 +1,12 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 import { useRouter } from "next/router";
 import {
   ArrowLeftIcon,
-  ArrowPathIcon,
-  ArrowRightIcon,
-  ArrowTopRightOnSquareIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
-  CloudArrowUpIcon,
   DocumentTextIcon,
   EllipsisHorizontalIcon,
   IdentificationIcon,
@@ -34,20 +30,18 @@ import {
 import React, { useCallback, useState } from "react";
 import { api } from "~/utils/api";
 
-import { toast } from "react-hot-toast";
 import type { Blueprint } from "@prisma/client";
 import TooltipComponent from "~/components/Tooltip";
 ArrowUturnLeftIcon;
 import dynamic from "next/dynamic";
 import { Disconnect, Redo, Undo } from "~/flow/ydoc";
 import { type Node } from "reactflow";
+import { DeleteNode, nodesMap } from "~/flow/useNodesStateSynced";
 // import useNodesStateSynced, {
 //   DeleteNode,
 //   GetNodes,
 //   nodesMap,
 // } from "~/flow/useNodesStateSynced";
-import { GetEdges } from "~/flow/useEdgesStateSynced";
-import { DeleteNode, GetNodes, nodesMap } from "~/flow/useNodesStateSynced";
 
 const BlueprintGUI = () => {
   const { isLoaded, isSignedIn } = useUser();
@@ -55,48 +49,10 @@ const BlueprintGUI = () => {
 
   const blueprintId = (query.blueprintid as string) || undefined || null;
 
-  const { mutate, isLoading: isSaving } = api.blueprints.save.useMutation({
-    onSuccess: (data) => {
-      toast.success(`${data.name} saved successfully`);
-    },
-
-    onError: (error) => {
-      console.log("error saving blueprint", error);
-      toast.error("Error saving blueprint");
-    },
-  });
-
-  const onSave = useCallback(() => {
-    if (!blueprintId) return;
-
-    const nodes = GetNodes(blueprintId);
-    const edges = GetEdges(blueprintId);
-
-    const flowInstance = JSON.stringify({
-      nodes,
-      edges,
-      viewport: {
-        x: 0,
-        y: 0,
-        zoom: 1,
-      },
-    });
-
-    mutate({ blueprintId, flowInstanceData: flowInstance });
-  }, [mutate, blueprintId]);
-
   const { data: blueprint } = api.blueprints.getOneById.useQuery({
     blueprintId: blueprintId || "",
   });
 
-  // React.useEffect(() => {
-  //   if (!blueprintId) return;
-
-  //   setInterval(() => {
-  //   const nodes = blueprintNodes;
-  //   setNodes(nodes);
-  // }, 1000);
-  // }, [blueprintId]);
 
   if (!isLoaded) {
     return <LoadingPage2 />;
@@ -149,8 +105,6 @@ const BlueprintGUI = () => {
           <Ribbon
             name={blueprint?.name}
             description={blueprint?.description}
-            isSaving={isSaving}
-            OnSave={onSave}
             id={blueprintId}
           />
           {blueprint ? (
@@ -173,17 +127,16 @@ const BlueprintGUI = () => {
 const Ribbon: React.FC<{
   name?: string;
   description?: string;
-  isSaving: boolean;
-  OnSave: () => void;
   id?: string;
-}> = ({ name, description, isSaving, OnSave, id }) => {
+}> = ({ name, description, id }) => {
   const router = useRouter();
 
-  const GoToGantt = useCallback(() => {
-    if (!id) return;
-
-    void router.push(`/blueprints/${id}/gantt`);
-  }, [id, router]);
+  const BpStructureComponent = dynamic(
+    () => import("../../flow/blueprintStructure"),
+    {
+      ssr: false,
+    }
+  );
 
   return (
     <div className="absolute inset-0 top-0 z-20 flex h-12 w-full items-center justify-between bg-zinc-700 p-1 text-gray-100 drop-shadow-md ">
@@ -211,61 +164,11 @@ const Ribbon: React.FC<{
           </TooltipComponent>
         </div>
       </div>
-
-      <div className="flex w-1/2 items-center justify-end gap-1 sm:w-1/3 sm:gap-2">
-        {name && (
-          <>
-            <TooltipComponent
-              content="Share blueprint with other managers (link)"
-              side="bottom"
-              disableToolTipIfNoContent={true}
-            >
-              <button
-                disabled={isSaving}
-                className="flex rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-                onClick={() => {
-                  void navigator.clipboard.writeText(`${window.location.href}`);
-                  toast.success("Copied blueprint link to clipboard");
-                }}
-              >
-                <ArrowTopRightOnSquareIcon className="h-6 w-6" />
-              </button>
-            </TooltipComponent>
-            <TooltipComponent
-              content="Save changes to the Cloud"
-              side="bottom"
-              disableToolTipIfNoContent={true}
-            >
-              <button
-                disabled={isSaving}
-                className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-                onClick={OnSave}
-              >
-                {!isSaving && <CloudArrowUpIcon className="h-6 w-6" />}
-                {isSaving && (
-                  <div className="flex flex-col-reverse items-center justify-center sm:flex-row sm:gap-2">
-                    <ArrowPathIcon className="h-6 w-6 animate-spin rounded-full text-white" />
-                  </div>
-                )}
-              </button>
-            </TooltipComponent>
-          </>
-        )}
-        {id && (
-          <TooltipComponent
-            content="Adjust Time for Each Crew Member"
-            side="bottom"
-          >
-            <button
-              onClick={GoToGantt}
-              className="flex items-center gap-2 rounded bg-green-700 p-2 text-white transition duration-100 hover:scale-105 hover:bg-green-500 focus:scale-105 focus:bg-green-500"
-            >
-              <p>Next</p>
-              <ArrowRightIcon className="h-5 w-5" />
-            </button>
-          </TooltipComponent>
-        )}
-      </div>
+      {id && (
+        <div className="flex w-1/2 items-center justify-end gap-1 sm:w-1/3 sm:gap-2">
+          <BpStructureComponent blueprintId={id} />
+        </div>
+      )}
     </div>
   );
 };
@@ -422,7 +325,7 @@ const ToolbarComponent: React.FC<{
     if (!node) return;
 
     if (node.selected) {
-      const nodes = DeleteNode(blueprintId, node.id);
+      DeleteNode(blueprintId, node.id);
       // if (onFlowUpdate) onFlowUpdate(nodes);
     }
   };

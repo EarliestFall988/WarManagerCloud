@@ -63,29 +63,7 @@ const proOptions = {
   hideAttribution: true,
 };
 
-export const GetListOfNodesSortedByColumn = (blueprintId: string) => {
-  const yMap = nodesMap(blueprintId);
 
-  const nodes = [] as Node[];
-
-  yMap.forEach((node) => {
-    nodes.push(node);
-  });
-
-  const nodesSortedByColumn = nodes.sort((a, b) => {
-    const xCol = a.position.x - b.position.x;
-
-    if (xCol !== 0) {
-      return xCol;
-    } else {
-      return a.position.y - b.position.y;
-    }
-  });
-
-  // console.log("sorted by column", nodesSortedByColumn);
-
-  return nodesSortedByColumn;
-};
 
 // const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
 

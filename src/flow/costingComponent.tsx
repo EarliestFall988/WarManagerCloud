@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 const Costing: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
-  const [nodes, onNodesChange] = useNodesStateSynced(blueprintId);
+  const [nodes] = useNodesStateSynced(blueprintId);
 
   const getCrewCount = useCallback(() => {
     let count = 0;
