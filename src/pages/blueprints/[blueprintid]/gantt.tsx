@@ -1,13 +1,25 @@
 import { type NextPage } from "next";
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import { ViewMode, Gantt, type Task } from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
+import {
+  ArrowLeftIcon,
+  CheckBadgeIcon,
+  CheckCircleIcon,
+  CheckIcon,
+} from "@heroicons/react/24/solid";
+import { useRouter } from "next/router";
+import Head from "next/head";
 
 const GanttPage: NextPage = () => {
   const [view, setView] = React.useState<ViewMode>(ViewMode.Day);
+  const [viewString, setViewString] = React.useState<string>("day");
   const [tasks, setTasks] = React.useState<Task[]>(initTasks());
   const [isChecked, setIsChecked] = React.useState(true);
   let columnWidth = 65;
+
+  const router = useRouter();
+
   if (view === ViewMode.Year) {
     columnWidth = 350;
   } else if (view === ViewMode.Month) {
@@ -15,6 +27,46 @@ const GanttPage: NextPage = () => {
   } else if (view === ViewMode.Week) {
     columnWidth = 250;
   }
+
+  useEffect(() => {
+    switch (view) {
+      case ViewMode.Year:
+        setViewString("year");
+        break;
+      case ViewMode.Month:
+        setViewString("month");
+        break;
+      case ViewMode.QuarterDay:
+        setViewString("daily");
+        break;
+      case ViewMode.Week:
+        setViewString("week");
+        break;
+      case ViewMode.Day:
+        setViewString("day");
+        break;
+    }
+  }, [view]);
+
+  const HandleSetViewString = useCallback((view: string) => {
+    switch (view) {
+      case "year":
+        setView(ViewMode.Year);
+        break;
+      case "month":
+        setView(ViewMode.Month);
+        break;
+      case "week":
+        setView(ViewMode.Week);
+        break;
+      case "hour":
+        setView(ViewMode.QuarterDay);
+        break;
+      case "day":
+        setView(ViewMode.Day);
+        break;
+    }
+  }, []);
 
   const handleTaskChange = (task: Task) => {
     console.log("On date change Id:" + task.id);
@@ -81,24 +133,73 @@ const GanttPage: NextPage = () => {
     console.log("On expander click Id:" + task.id);
   };
 
+  const toggleChecked = useCallback(() => {
+    setIsChecked(!isChecked);
+  }, [isChecked]);
+
+  const Back = () => {
+    if (window.history.length > 0) router.back();
+    else void router.push("/dashboard/blueprints");
+  };
+
   return (
-    <div className="no-global-styles">
-      <div className="min-h-[100vh] w-full bg-white p-2 text-black">
-        <Gantt
-          tasks={tasks}
-          viewMode={view}
-          onDateChange={handleTaskChange}
-          onDelete={handleTaskDelete}
-          onProgressChange={handleProgressChange}
-          onDoubleClick={handleDblClick}
-          onClick={handleClick}
-          onSelect={handleSelect}
-          onExpanderClick={handleExpanderClick}
-          listCellWidth={isChecked ? "155px" : ""}
-          columnWidth={columnWidth}
-        />
-      </div>
-    </div>
+    <>
+      <Head>
+        <title>Scheduling Time | War Manager</title>
+      </Head>
+      <main className="no-global-styles">
+        <div className="min-h-[100vh] w-full bg-zinc-900 text-black">
+          <div className="flex w-full items-center justify-between bg-zinc-900 p-2">
+            <div className="flex gap-2">
+              <button
+                onClick={Back}
+                className="rounded border border-zinc-600 bg-zinc-700 p-2 px-3 text-zinc-100 transition duration-200 hover:border-amber-600 hover:bg-zinc-600 focus:border-amber-600"
+              >
+                <ArrowLeftIcon className="h-5 w-5" />
+              </button>
+              <button
+                onClick={toggleChecked}
+                className="rounded border border-zinc-600 bg-zinc-700 p-2 text-zinc-100 transition duration-200 hover:border-amber-600 hover:bg-zinc-600 focus:border-amber-600"
+              >
+                Toggle List
+              </button>
+              <select
+                value={viewString}
+                onChange={(e) => {
+                  HandleSetViewString(e.target.value);
+                }}
+                className="w-40 rounded border border-zinc-600 bg-zinc-700 text-zinc-100 transition duration-200 hover:border-amber-600 hover:bg-zinc-600 focus:border-amber-600"
+              >
+                <option value="hour">Hourly</option>
+                <option value="day">Daily</option>
+                <option value="week">Weekly</option>
+                <option value="month">Monthly</option>
+                <option value="year">Yearly</option>
+              </select>
+            </div>
+            <button className="flex items-center justify-start gap-2 rounded border border-transparent bg-green-600 p-2 font-semibold text-zinc-200 transition duration-200 hover:scale-105 hover:border-zinc-300 hover:bg-green-500 focus:bg-green-500  ">
+              <p>Done</p>
+              <CheckIcon className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="bg-white">
+            <Gantt
+              tasks={tasks}
+              viewMode={view}
+              onDateChange={handleTaskChange}
+              onDelete={handleTaskDelete}
+              onProgressChange={handleProgressChange}
+              onDoubleClick={handleDblClick}
+              onClick={handleClick}
+              onSelect={handleSelect}
+              onExpanderClick={handleExpanderClick}
+              listCellWidth={isChecked ? "155px" : ""}
+              columnWidth={columnWidth}
+            />
+          </div>
+        </div>
+      </main>
+    </>
   );
 };
 

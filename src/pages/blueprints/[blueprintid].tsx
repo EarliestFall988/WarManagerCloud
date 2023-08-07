@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
+  ArrowRightIcon,
   ArrowTopRightOnSquareIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
@@ -46,11 +47,7 @@ import { type Node } from "reactflow";
 //   nodesMap,
 // } from "~/flow/useNodesStateSynced";
 import { GetEdges } from "~/flow/useEdgesStateSynced";
-import  {
-  DeleteNode,
-  GetNodes,
-  nodesMap,
-} from "~/flow/useNodesStateSynced";
+import { DeleteNode, GetNodes, nodesMap } from "~/flow/useNodesStateSynced";
 
 const BlueprintGUI = () => {
   const { isLoaded, isSignedIn } = useUser();
@@ -154,13 +151,12 @@ const BlueprintGUI = () => {
             description={blueprint?.description}
             isSaving={isSaving}
             OnSave={onSave}
+            id={blueprintId}
           />
           {blueprint ? (
             <>
               {/* <FlowWithProvider blueprintId={blueprintId} /> */}
-              <BlueprintFlowProvider
-                blueprintId={blueprintId}
-              />
+              <BlueprintFlowProvider blueprintId={blueprintId} />
               <Panels blueprint={blueprint} />
               <CostingComponent blueprintId={blueprint.id} />
             </>
@@ -168,9 +164,7 @@ const BlueprintGUI = () => {
             <LoadingPage />
           )}
         </div>
-        <ToolbarComponent
-          blueprintId={blueprintId}
-        />
+        <ToolbarComponent blueprintId={blueprintId} />
       </main>
     </>
   );
@@ -181,8 +175,15 @@ const Ribbon: React.FC<{
   description?: string;
   isSaving: boolean;
   OnSave: () => void;
-}> = ({ name, description, isSaving, OnSave }) => {
+  id?: string;
+}> = ({ name, description, isSaving, OnSave, id }) => {
   const router = useRouter();
+
+  const GoToGantt = useCallback(() => {
+    if (!id) return;
+
+    void router.push(`/blueprints/${id}/gantt`);
+  }, [id, router]);
 
   return (
     <div className="absolute inset-0 top-0 z-20 flex h-12 w-full items-center justify-between bg-zinc-700 p-1 text-gray-100 drop-shadow-md ">
@@ -250,15 +251,20 @@ const Ribbon: React.FC<{
             </TooltipComponent>
           </>
         )}
-        <TooltipComponent
-          content="Account"
-          side="bottom"
-          disableToolTipIfNoContent={true}
-        >
-          <div className="flex items-center gap-2 rounded bg-zinc-600 p-1 hover:scale-105 hover:bg-zinc-500">
-            <UserButton />
-          </div>
-        </TooltipComponent>
+        {id && (
+          <TooltipComponent
+            content="Adjust Time for Each Crew Member"
+            side="bottom"
+          >
+            <button
+              onClick={GoToGantt}
+              className="flex items-center gap-2 rounded bg-green-700 p-2 text-white transition duration-100 hover:scale-105 hover:bg-green-500 focus:scale-105 focus:bg-green-500"
+            >
+              <p>Next</p>
+              <ArrowRightIcon className="h-5 w-5" />
+            </button>
+          </TooltipComponent>
+        )}
       </div>
     </div>
   );

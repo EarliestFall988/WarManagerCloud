@@ -63,8 +63,10 @@ model Project {
 
   scopeOfWork ScopeOfWork[]
 
-  managers CrewMember[]
-  sectors  Sector[]
+  crew      CrewMember[]
+  equipment Equipment[]
+  sectors   Sector[]
+  blueprint Blueprint[]
 
   authorId String
   tags     Tag[]
@@ -123,7 +125,7 @@ model CrewMember {
   sectorId String?
 
   Project   Project[]
-  projectId String?
+  blueprint Blueprint[]
 
   @@index([authorId])
   @@index([sectorId])
@@ -144,6 +146,10 @@ model Blueprint {
   permissions Permissions[]
   tags        Tag[]
 
+  projects  Project[]
+  crew      CrewMember[]
+  equipment Equipment[]
+
   notes Note[]
 
   authorId String
@@ -162,6 +168,9 @@ model Equipment {
   description String? @db.VarChar(255) // this is a description of the equipment if desired
 
   data Json? @db.Json // other data
+
+  projects  Project[]
+  blueprint Blueprint[]
 
   authorId String
 
@@ -200,7 +209,7 @@ model Log {
   severity      String  @db.VarChar(255)
   data          String? @db.VarChar(255)
 
-  logReplys LogReply[]
+  logReplys    LogReply[]
   logReactions LogReaction[]
 
   authorId String
@@ -218,10 +227,8 @@ model LogReply {
   log           Log[]
 
   authorId String
-  
 
   @@index([authorId])
- 
 }
 
 model LogReaction {
@@ -230,7 +237,7 @@ model LogReaction {
   updatedAt DateTime @updatedAt
 
   reaction String @db.VarChar(255)
-  log           Log[]
+  log      Log[]
 
   authorId String
 
