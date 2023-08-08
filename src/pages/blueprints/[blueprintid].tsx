@@ -5,8 +5,10 @@ import SignInModal from "~/components/signInPage";
 import { useRouter } from "next/router";
 import {
   ArrowLeftIcon,
+  ArrowTopRightOnSquareIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
+  DocumentCheckIcon,
   DocumentTextIcon,
   EllipsisHorizontalIcon,
   IdentificationIcon,
@@ -37,6 +39,8 @@ import dynamic from "next/dynamic";
 import { Disconnect, Redo, Undo } from "~/flow/ydoc";
 import { type Node } from "reactflow";
 import { DeleteNode, nodesMap } from "~/flow/useNodesStateSynced";
+import { toast } from "react-hot-toast";
+import { SwitchComponent } from "~/components/input";
 // import useNodesStateSynced, {
 //   DeleteNode,
 //   GetNodes,
@@ -49,10 +53,11 @@ const BlueprintGUI = () => {
 
   const blueprintId = (query.blueprintid as string) || undefined || null;
 
+  const [usingLiveData, setUsingLiveData] = useState(false);
+
   const { data: blueprint } = api.blueprints.getOneById.useQuery({
     blueprintId: blueprintId || "",
   });
-
 
   if (!isLoaded) {
     return <LoadingPage2 />;
@@ -106,6 +111,8 @@ const BlueprintGUI = () => {
             name={blueprint?.name}
             description={blueprint?.description}
             id={blueprintId}
+            usingLiveData={usingLiveData}
+            setUsingLiveData={setUsingLiveData}
           />
           {blueprint ? (
             <>
@@ -128,7 +135,9 @@ const Ribbon: React.FC<{
   name?: string;
   description?: string;
   id?: string;
-}> = ({ name, description, id }) => {
+  usingLiveData: boolean;
+  setUsingLiveData: (res: boolean) => void;
+}> = ({ name, description, id, usingLiveData, setUsingLiveData }) => {
   const router = useRouter();
 
   const BpStructureComponent = dynamic(
@@ -166,7 +175,42 @@ const Ribbon: React.FC<{
       </div>
       {id && (
         <div className="flex w-1/2 items-center justify-end gap-1 sm:w-1/3 sm:gap-2">
-          <BpStructureComponent blueprintId={id} />
+          <TooltipComponent
+            content="Share blueprint with other managers (link)"
+            side="bottom"
+            disableToolTipIfNoContent={true}
+          >
+            <button
+              className="flex rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
+              onClick={() => {
+                void navigator.clipboard.writeText(`${window.location.href}`);
+                toast.success("Copied blueprint link to clipboard");
+              }}
+            >
+              <ArrowTopRightOnSquareIcon className="h-6 w-6" />
+            </button>
+          </TooltipComponent>
+          <TooltipComponent
+            content="Check Crews and Projects for any Scheduling Conflicts"
+            side="bottom"
+          >
+            <SwitchComponent
+              onCheckedChange={(e) => {
+                setUsingLiveData(e);
+
+                if (e) {
+                  toast.success(
+                    "Live data enabled. Save changes to see results.",
+                    { duration: 5000 }
+                  );
+                }
+              }}
+              checked={usingLiveData}
+            >
+              <DocumentCheckIcon className="h-6 w-6" />
+            </SwitchComponent>
+          </TooltipComponent>
+          <BpStructureComponent blueprintId={id} liveData={usingLiveData} />
         </div>
       )}
     </div>

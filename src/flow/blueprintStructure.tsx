@@ -4,12 +4,11 @@ import useLiveData from "./databank";
 import {
   ArrowPathIcon,
   ArrowRightIcon,
-  ArrowTopRightOnSquareIcon,
   CloudArrowUpIcon,
 } from "@heroicons/react/24/solid";
 import TooltipComponent from "~/components/Tooltip";
 import { api } from "~/utils/api";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "react-hot-toast";
 import { GetEdges } from "./useEdgesStateSynced";
 import { useRouter } from "next/router";
@@ -148,18 +147,26 @@ const useCreateStructure = (n: Node[]) => {
 
 const SaveButton: React.FC<{
   blueprintId: string;
-}> = ({ blueprintId }) => {
+  liveData: boolean;
+}> = ({ blueprintId, liveData }) => {
   const [Nodes] = useNodesStateSynced(blueprintId);
   useCreateStructure(Nodes);
 
   const { push } = useRouter();
 
+  const [goToGantt, setGoToGantt] = useState(false);
+
   const { mutate, isLoading: isSaving } = api.blueprints.save.useMutation({
     onSuccess: (data) => {
       toast.success(`${data.name} saved successfully`);
+      if (goToGantt) {
+        setGoToGantt(false);
+        void push(`/blueprints/${data.id}/gantt`);
+      }
     },
 
     onError: (error) => {
+      setGoToGantt(false);
       console.log("error saving blueprint", error);
       toast.error("Error saving blueprint");
     },
@@ -181,33 +188,18 @@ const SaveButton: React.FC<{
       },
     });
 
-    mutate({ blueprintId, flowInstanceData: flowInstance });
-  }, [mutate, blueprintId]);
+    mutate({ blueprintId, flowInstanceData: flowInstance, live: liveData });
+  }, [mutate, blueprintId, liveData]);
 
   const OnScheduleTime = useCallback(() => {
     if (!blueprintId) return;
+
+    setGoToGantt(true);
     onSave();
-    void push(`/blueprints/${blueprintId}/gantt`);
-  }, [blueprintId, onSave, push]);
+  }, [blueprintId, onSave]);
 
   return (
     <>
-      <TooltipComponent
-        content="Share blueprint with other managers (link)"
-        side="bottom"
-        disableToolTipIfNoContent={true}
-      >
-        <button
-          disabled={isSaving}
-          className="flex rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-          onClick={() => {
-            void navigator.clipboard.writeText(`${window.location.href}`);
-            toast.success("Copied blueprint link to clipboard");
-          }}
-        >
-          <ArrowTopRightOnSquareIcon className="h-6 w-6" />
-        </button>
-      </TooltipComponent>
       <TooltipComponent
         content="Save changes to the Cloud"
         side="bottom"
@@ -215,7 +207,10 @@ const SaveButton: React.FC<{
       >
         <button
           className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-          onClick={onSave}
+          onClick={() => {
+            setGoToGantt(false);
+            onSave();
+          }}
         >
           {!isSaving && <CloudArrowUpIcon className="h-6 w-6" />}
           {isSaving && (
@@ -231,10 +226,16 @@ const SaveButton: React.FC<{
       >
         <button
           onClick={OnScheduleTime}
-          className="flex items-center gap-2 rounded bg-green-700 p-2 text-white transition duration-100 hover:scale-105 hover:bg-green-500 focus:scale-105 focus:bg-green-500"
+          className={`flex items-center gap-2 rounded bg-green-700 p-2 text-white transition duration-300 hover:scale-105 hover:bg-green-500 focus:scale-105 focus:bg-green-500`}
         >
-          <p>Next</p>
-          <ArrowRightIcon className="h-5 w-5" />
+          {isSaving && goToGantt ? (
+            <p>Saving...</p>
+          ) : (
+            <>
+              <p>Next</p>
+              <ArrowRightIcon className="h-5 w-5" />
+            </>
+          )}
         </button>
       </TooltipComponent>
     </>

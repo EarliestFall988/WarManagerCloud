@@ -63,13 +63,11 @@ model Project {
 
   scopeOfWork ScopeOfWork[]
 
-  crew      CrewMember[]
-  equipment Equipment[]
   sectors   Sector[]
-  blueprint Blueprint[]
 
-  authorId String
-  tags     Tag[]
+  authorId        String
+  tags            Tag[]
+  ScheduleHistory ScheduleHistory[]
 
   @@index([authorId])
   @@fulltext([description, notes])
@@ -124,8 +122,7 @@ model CrewMember {
   authorId String
   sectorId String?
 
-  Project   Project[]
-  blueprint Blueprint[]
+  schedules ScheduleHistory[]
 
   @@index([authorId])
   @@index([sectorId])
@@ -146,15 +143,45 @@ model Blueprint {
   permissions Permissions[]
   tags        Tag[]
 
-  projects  Project[]
-  crew      CrewMember[]
-  equipment Equipment[]
+  exportLinks      ExportLink[]
 
   notes Note[]
 
   authorId String
 
   @@index([authorId])
+}
+
+model ScheduleHistory {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notes String @db.Text
+
+  startTime String @db.VarChar(255)
+  endTime   String @db.VarChar(255)
+
+
+
+  crew      CrewMember? @relation(fields: [crewId], references: [id])
+  equipment Equipment?  @relation(fields: [equipmentId], references: [id])
+  project   Project?    @relation(fields: [projectId], references: [id])
+
+  exportLink ExportLink[]
+
+  projectId   String  @db.VarChar(255)
+  crewId      String? @db.VarChar(255)
+  equipmentId String? @db.VarChar(255)
+  blueprintId String? @db.VarChar(255)
+
+  authorId String
+
+  @@index([authorId])
+  @@index([projectId])
+  @@index([crewId])
+  @@index([equipmentId])
+  @@index([blueprintId])
 }
 
 model Equipment {
@@ -169,8 +196,7 @@ model Equipment {
 
   data Json? @db.Json // other data
 
-  projects  Project[]
-  blueprint Blueprint[]
+  scheduleHistory ScheduleHistory[]
 
   authorId String
 
@@ -287,6 +313,9 @@ model ExportLink {
   title       String @db.VarChar(255)
   description String @db.VarChar(255)
   link        String @db.VarChar(255)
+
+  scheduleHistory ScheduleHistory[]
+  blueprints      Blueprint[]
 
   authorId String
 
