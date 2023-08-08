@@ -190,7 +190,7 @@ const Ribbon: React.FC<{
               <ArrowTopRightOnSquareIcon className="h-6 w-6" />
             </button>
           </TooltipComponent>
-          <TooltipComponent
+          {/* <TooltipComponent
             content="Check Crews and Projects for any Scheduling Conflicts"
             side="bottom"
           >
@@ -209,7 +209,7 @@ const Ribbon: React.FC<{
             >
               <DocumentCheckIcon className="h-6 w-6" />
             </SwitchComponent>
-          </TooltipComponent>
+          </TooltipComponent> */}
           <BpStructureComponent blueprintId={id} liveData={usingLiveData} />
         </div>
       )}

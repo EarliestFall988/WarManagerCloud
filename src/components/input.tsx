@@ -244,10 +244,14 @@ export const SwitchComponent: React.FC<{
   className?: string;
 }> = ({ checked, onCheckedChange, children, className }) => {
   return (
-    <div className={`flex items-center justify-normal gap-1 rounded bg-zinc-600 p-2 ${className ? className : ""}`}>
+    <div
+      className={`flex items-center justify-normal gap-1 rounded bg-zinc-600 p-2 ${
+        className ? className : ""
+      }`}
+    >
       {children}
       <Switch.Root
-        className="relative h-[25px] w-[42px] cursor-default rounded-full bg-black/30 shadow-[0_2px_10px] shadow-black/20 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none data-[state=checked]:bg-amber-700"
+        className="relative focus:ring-2 focus:ring-black h-[25px] w-[42px] cursor-default rounded-full bg-black/30 shadow-[0_2px_10px] shadow-black/20 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none data-[state=checked]:bg-amber-700"
         onCheckedChange={(e) => {
           onCheckedChange(e);
         }}
@@ -255,6 +259,28 @@ export const SwitchComponent: React.FC<{
       >
         <Switch.Thumb className="block h-[21px] w-[21px] translate-x-0.5 rounded-full bg-white shadow-[0_2px_2px] shadow-black/40 transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[19px]" />
       </Switch.Root>
+    </div>
+  );
+};
+export const SwitchComponentWithErrorInput: React.FC<{
+  checked: boolean;
+  onCheckedChange: (e: boolean) => void;
+  children?: React.ReactNode;
+  className?: string;
+  error?: string;
+}> = ({ checked, onCheckedChange, children, className, error }) => {
+  return (
+    <div>
+      <SwitchComponent
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        className={` ${style} ${
+          className || ""
+        }`}
+      >
+        {children}
+      </SwitchComponent>
+      {error && <p className="p-2 text-red-500">Error</p>}
     </div>
   );
 };

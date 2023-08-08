@@ -215,10 +215,9 @@ export const blueprintsRouter = createTRPCRouter({
           id: input.blueprintId,
         },
         include: {
-          crew: true,
-          projects: {
+          scheduleHistories: {
             include: {
-              crew: true,
+              ScheduleHistoryItems: true,
             },
           },
         },
@@ -231,6 +230,7 @@ export const blueprintsRouter = createTRPCRouter({
       z.object({
         name: z.string().min(3).max(255),
         description: z.string().min(0).max(255),
+        liveData: z.boolean().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -261,6 +261,7 @@ export const blueprintsRouter = createTRPCRouter({
           name: input.name,
           authorId,
           description: input.description,
+          live: input.liveData,
           data: "{}",
         },
       });
@@ -324,19 +325,6 @@ export const blueprintsRouter = createTRPCRouter({
           });
         });
 
-        const oldBp = await ctx.prisma.blueprint.findFirst({
-          where: {
-            id: input.blueprintId,
-          },
-          include: {
-            projects: true,
-            crew: true,
-          },
-        });
-
-        const projectsToDisconnect = oldBp?.projects;
-        const crewsToDisconnect = oldBp?.crew;
-
         const crews = [] as { id: string }[];
 
         structure.projects.forEach((project) => {
@@ -353,26 +341,6 @@ export const blueprintsRouter = createTRPCRouter({
           },
           data: {
             data: input.flowInstanceData,
-            projects: {
-              disconnect: projectsToDisconnect?.map((p) => ({
-                id: p.id,
-              })),
-              connect: structure.projects.map((project) => {
-                return {
-                  id: project.id,
-                };
-              }),
-            },
-            crew: {
-              disconnect: crewsToDisconnect?.map((tag) => ({
-                id: tag.id,
-              })),
-              connect: crews.map((crew) => {
-                return {
-                  id: crew.id,
-                };
-              }),
-            },
           },
         });
 
@@ -381,32 +349,21 @@ export const blueprintsRouter = createTRPCRouter({
             where: {
               id: project.id,
             },
-            data: {
-              crew: {
-                disconnect: crewsToDisconnect?.map((tag) => ({
-                  id: tag.id,
-                })),
-                connect: project.crew.map((crew) => {
-                  return {
-                    id: crew.id,
-                  };
-                }),
-              },
-            },
+            data: {},
           });
         });
 
-        await ctx.prisma.log.create({
-          data: {
-            action: "url",
-            category: "blueprint",
-            name: `Edited \"${blueprint.name}\"`,
-            authorId: authorId,
-            url: `/blueprints/${blueprint.id}`,
-            description: `${email} made some changes to \"${blueprint.name}\" `,
-            severity: "moderate",
-          },
-        });
+        // await ctx.prisma.log.create({
+        //   data: {
+        //     action: "url",
+        //     category: "blueprint",
+        //     name: `Edited \"${blueprint.name}\"`,
+        //     authorId: authorId,
+        //     url: `/blueprints/${blueprint.id}`,
+        //     description: `${email} made some changes to \"${blueprint.name}\" `,
+        //     severity: "moderate",
+        //   },
+        // });
 
         return blueprint;
       } else {
