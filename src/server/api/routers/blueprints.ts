@@ -452,6 +452,7 @@ export const blueprintsRouter = createTRPCRouter({
         blueprintId: z.string(),
         name: z.string().min(3).max(255),
         description: z.string().min(0).max(255),
+        live: z.boolean().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -492,6 +493,7 @@ export const blueprintsRouter = createTRPCRouter({
 
       const name = beforeBlueprint.name;
       const description = beforeBlueprint.description;
+      const live = beforeBlueprint.live || false;
 
       const blueprint = await ctx.prisma.blueprint.update({
         where: {
@@ -500,6 +502,7 @@ export const blueprintsRouter = createTRPCRouter({
         data: {
           name: input.name,
           description: input.description,
+          live: input.live,
         },
       });
 
@@ -514,10 +517,18 @@ export const blueprintsRouter = createTRPCRouter({
             blueprint.name === name
               ? ""
               : ` name: from \"${name}\" to \"${blueprint.name}\" `
-          } ${
+          }${
             description === blueprint.description
               ? ""
               : ` description: from \"${description}\" to \"${blueprint.description}\"`
+          }${
+            live === blueprint.live
+              ? ""
+              : `${
+                  blueprint.live
+                    ? `${blueprint.name} is now live. War Manager will use it to check other schedules and blueprints conflicts and record schedule history.`
+                    : "is now in zen mode. It will not be used to check for scheduling conflicts and record schedule history."
+                }`
           }`,
           severity: "moderate",
         },

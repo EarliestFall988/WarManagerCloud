@@ -12,7 +12,19 @@ export const DialogComponent: React.FC<{
   noMessage?: string;
   yes: () => void;
   no?: () => void;
-}> = ({ trigger, title, description, yesMessage, noMessage, yes, no }) => {
+  highlightYes?: boolean;
+  highlightNo?: boolean;
+}> = ({
+  trigger,
+  title,
+  description,
+  yesMessage,
+  noMessage,
+  yes,
+  no,
+  highlightYes,
+  highlightNo,
+}) => {
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
@@ -32,14 +44,22 @@ export const DialogComponent: React.FC<{
                 onClick={() => {
                   no && no();
                 }}
-                className="min-w-[3em] select-none rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-zinc-600"
+                className={`min-w-[3em] select-none rounded  p-2 text-center transition-all duration-100 ${
+                  highlightNo
+                    ? "bg-amber-700 hover:bg-amber-600"
+                    : "bg-zinc-700 hover:bg-zinc-600"
+                } `}
               >
                 {noMessage ? noMessage : "No"}
               </button>
             </Dialog.Close>
             <Dialog.Close asChild>
               <button
-                className="min-w-[3em] select-none rounded bg-zinc-700 bg-gradient-to-br p-2 text-center transition-all duration-100 hover:bg-zinc-600"
+                className={`min-w-[3em] select-none rounded  ${
+                  highlightYes
+                    ? "bg-amber-700 hover:bg-amber-600"
+                    : "bg-zinc-700 hover:bg-zinc-600"
+                } bg-gradient-to-br p-2 text-center transition-all duration-100 `}
                 onClick={() => {
                   yes();
                 }}
