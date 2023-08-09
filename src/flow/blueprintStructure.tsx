@@ -8,9 +8,10 @@ import {
   ArrowTopRightOnSquareIcon,
   CalendarDaysIcon,
   CheckBadgeIcon,
-  ChevronDownIcon,
   CloudArrowUpIcon,
+  EllipsisVerticalIcon,
   PaintBrushIcon,
+  TrashIcon,
 } from "@heroicons/react/24/solid";
 import TooltipComponent from "~/components/Tooltip";
 import { api } from "~/utils/api";
@@ -24,6 +25,7 @@ import { Disconnect } from "./ydoc";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import * as Popover from "@radix-ui/react-popover";
 import { type ScheduleHistory } from "@prisma/client";
 
 import { useMemo } from "react";
@@ -238,11 +240,16 @@ const Ribbon: React.FC<{
       blueprintId,
     });
 
-  const { mutate: deleteTimeSchedule } =
+  const context = api.useContext().timeScheduling;
+  const blueprintContext = api.useContext().blueprints;
+
+  const { mutate: deleteTimeSchedule, isLoading: isDeleting } =
     api.timeScheduling.deleteTimeSchedules.useMutation({
       onSuccess: () => {
-        toast.success("Schedule deleted successfully");
+        void context.invalidate();
+        void blueprintContext.invalidate();
 
+        toast.success("Schedule deleted successfully");
         if (onUpdateSchedule) {
           setOnUpdateSchedule(false);
           void router.push(`/blueprints/${blueprintId}/gantt`);
@@ -398,8 +405,10 @@ const Ribbon: React.FC<{
               }}
             >
               <div ref={animationSaveParent}>
-                {!isSaving && <CloudArrowUpIcon className="h-6 w-6" />}
-                {isSaving && (
+                {!(isSaving || isDeleting) && (
+                  <CloudArrowUpIcon className="h-6 w-6" />
+                )}
+                {(isSaving || isDeleting) && (
                   <div className="flex flex-col-reverse items-center justify-center sm:flex-row sm:gap-2">
                     <ArrowPathIcon className="h-6 w-6 animate-spin rounded-full text-white" />
                   </div>
@@ -416,6 +425,13 @@ const Ribbon: React.FC<{
                 setOnUpdateSchedule(true);
                 deleteTimeSchedule({ id });
                 OnScheduleTime(s, e);
+              }}
+              deleteSchedule={() => {
+                if (lastSchedule) deleteTimeSchedule({ id: lastSchedule?.id });
+                else
+                  toast.error(
+                    "No schedule to delete, please create a schedule first"
+                  );
               }}
               blueprintId={blueprintId}
               newSchedule={(s, e) => {
@@ -459,6 +475,7 @@ export const NextButton: React.FC<{
   endDate: Date;
   setStartDate: (e: Date) => void;
   setEndDate: (e: Date) => void;
+  deleteSchedule: () => void;
   isSaving: boolean;
   goToGantt: boolean;
 }> = ({
@@ -475,6 +492,7 @@ export const NextButton: React.FC<{
   isSaving,
   goToGantt,
   SaveChanges,
+  deleteSchedule,
 }) => {
   const lastUncommittedScheduleExists =
     lastSchedule !== undefined && lastSchedule.committed === false;
@@ -522,7 +540,7 @@ export const NextButton: React.FC<{
             </DateScheduleDialog>
           )}
           {lastUncommittedScheduleExists && (
-            <div className="flex items-center justify-start">
+            <div className="flex select-none items-center justify-start">
               <button
                 onClick={() => {
                   SaveChanges();
@@ -532,35 +550,63 @@ export const NextButton: React.FC<{
               >
                 Next
               </button>
-              <div className="h-8 w-1 border-r border-zinc-400" />
-              <div className="h-8 w-1" />
-              <DateScheduleDialog
-                lastSchedule={lastSchedule}
-                isLoading={isLoading}
-                isError={isError}
-                updateSchedule={(id, s, e) => {
-                  updateSchedule(id, s, e);
-                }}
-                blueprintId={blueprintId}
-                newSchedule={(s, e) => {
-                  newSchedule(s, e);
-                }}
-                highlightYes
-                startDate={startDate}
-                endDate={endDate}
-                setStartDate={(e) => {
-                  setStartDate(e);
-                }}
-                setEndDate={(e) => {
-                  setEndDate(e);
-                }}
-              >
-                <div
-                  className={`flex h-full cursor-pointer items-center gap-2 rounded p-2 text-white transition duration-300 hover:bg-green-600 focus:bg-green-600`}
-                >
-                  <ChevronDownIcon className="h-5 w-5" />
-                </div>
-              </DateScheduleDialog>
+              <div>
+                <Popover.Root>
+                  <Popover.Trigger asChild>
+                    <div
+                      className={`flex h-full cursor-pointer items-center gap-2 rounded px-1 py-2 text-white transition duration-300 hover:bg-green-600 focus:bg-green-600`}
+                    >
+                      <EllipsisVerticalIcon className="h-5 w-5" />
+                    </div>
+                  </Popover.Trigger>
+                  <Popover.Portal>
+                    <Popover.Content className="fade-y-long z-20 grid w-56 gap-1 rounded border border-zinc-400 bg-black/70 p-1 backdrop-blur">
+                      <DateScheduleDialog
+                        lastSchedule={lastSchedule}
+                        isLoading={isLoading}
+                        isError={isError}
+                        updateSchedule={(id, s, e) => {
+                          updateSchedule(id, s, e);
+                        }}
+                        blueprintId={blueprintId}
+                        newSchedule={(s, e) => {
+                          newSchedule(s, e);
+                        }}
+                        highlightYes
+                        startDate={startDate}
+                        endDate={endDate}
+                        setStartDate={(e) => {
+                          setStartDate(e);
+                        }}
+                        setEndDate={(e) => {
+                          setEndDate(e);
+                        }}
+                      >
+                        <div className="flex w-full cursor-pointer items-center justify-start rounded bg-zinc-800 p-2 outline-none transition duration-100 hover:bg-zinc-700 focus:bg-zinc-700">
+                          <CalendarDaysIcon className="mr-2 h-5 w-5" />
+                          <p>Change Dates</p>
+                        </div>
+                      </DateScheduleDialog>
+
+                      <DialogComponent
+                        title="Are you sure you want to delete the schedule?"
+                        description="This will delete the schedule and all the tasks associated with it."
+                        yes={() => {
+                          deleteSchedule();
+                        }}
+                        trigger={
+                          <div className="flex w-full cursor-pointer items-center justify-start gap-2 rounded bg-zinc-800 p-2 outline-none transition duration-100 hover:bg-zinc-700 focus:bg-zinc-700">
+                            <TrashIcon className="h-5 w-5 text-red-500" />
+                            <p>Delete Schedule</p>
+                          </div>
+                        }
+                      />
+                      <Popover.Arrow className="fill-zinc-400" />
+                    </Popover.Content>
+                  </Popover.Portal>
+                </Popover.Root>
+                {/* </DateScheduleDialog> */}
+              </div>
             </div>
           )}
         </>
@@ -610,8 +656,12 @@ export const DateScheduleDialog: React.FC<{
         {/* <div className="fixed top-0 data-[state=open]:animate-contentShow inset-0 z-30 flex items-center justify-center"> */}
         <Dialog.Content className="fixed left-[50%] top-[50%] z-30 max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-black p-[25px] focus:outline-none data-[state=open]:animate-contentShow">
           <div ref={animationParent}>
-            {isLoading && <LoadingSpinner />}
-            {!isLoading && !isError && !lastSchedule ? (
+            {isLoading && (
+              <div className="flex items-center justify-center gap-4">
+                <LoadingSpinner />
+              </div>
+            )}
+            {!isLoading && !isError ? (
               <>
                 <Dialog.Title className="flex select-none items-center justify-start gap-2 text-2xl font-semibold text-zinc-200">
                   <CalendarDaysIcon className="inline-block h-6 w-6" />
@@ -670,9 +720,7 @@ export const DateScheduleDialog: React.FC<{
                       } bg-gradient-to-br p-2 text-center outline-none transition-all duration-100`}
                       onClick={() => {
                         if (lastSchedule !== undefined) {
-                          const sch = lastSchedule as ScheduleHistory;
-
-                          updateSchedule(sch.id, startDate, endDate);
+                          updateSchedule(lastSchedule.id, startDate, endDate);
                         } else {
                           newSchedule(startDate, endDate);
                         }
@@ -685,8 +733,7 @@ export const DateScheduleDialog: React.FC<{
               </>
             ) : (
               <div className="flex items-center justify-center gap-4">
-                <LoadingSpinner />
-                Applying Changes...
+                There was an error...
               </div>
             )}
             {isError && (

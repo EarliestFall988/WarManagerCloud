@@ -22,7 +22,7 @@ import {
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useCallback, useMemo, useState } from "react";
+import React, {  useCallback, useMemo, useState } from "react";
 import { DashboardMenu } from "~/components/dashboardMenu";
 
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
@@ -1289,6 +1289,9 @@ const LogDrawer: React.FC<{
 
   const [message, setMessage] = useState("");
 
+
+
+
   const reactions = data?.logReactions.filter(
     (x) => x.user?.email !== userEmail
   );
@@ -1320,6 +1323,7 @@ const LogDrawer: React.FC<{
       message,
     });
   };
+
 
   return (
     <div ref={animationParent}>

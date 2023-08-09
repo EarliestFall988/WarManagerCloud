@@ -139,13 +139,22 @@ export const timeSchedulingRouter = createTRPCRouter({
         });
       }
 
-      const result = ctx.prisma.scheduleHistoryItem.updateMany({
-        where: {
-          id: {
-            in: input.map((item) => item.id),
+      const result = input.map(async (item) => {
+        const result = await ctx.prisma.scheduleHistoryItem.update({
+          where: {
+            id: item.id,
           },
-        },
-        data: input,
+          data: {
+            startTime: item.startTime,
+            endTime: item.endTime,
+            projectId: item.projectId,
+            crewId: item.crewId,
+            equipmentId: item.equipmentId,
+            notes: item.notes,
+          },
+        });
+
+        return result;
       });
 
       return result;

@@ -1,11 +1,10 @@
 import { type NextPage } from "next";
-import React, { useEffect, useMemo, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import { ViewMode, Gantt, type Task } from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
-  ArrowRightIcon,
   CalendarIcon,
   CloudArrowUpIcon,
   ListBulletIcon,
@@ -16,8 +15,20 @@ import { api } from "~/utils/api";
 import { SwitchComponent } from "~/components/input";
 import TooltipComponent from "~/components/Tooltip";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { type ScheduleHistoryItem } from "@prisma/client";
+import {
+  type CrewMember,
+  type Equipment,
+  type Project,
+  type ScheduleHistoryItem,
+} from "@prisma/client";
 import { LoadingSpinner } from "~/components/loading";
+import { toast } from "react-hot-toast";
+
+type ScheduleItemType = ScheduleHistoryItem & {
+  project: Project;
+  crew: CrewMember | null;
+  equipment: Equipment | null;
+};
 
 const GanttPage: NextPage = () => {
   const { query } = useRouter();
@@ -30,42 +41,51 @@ const GanttPage: NextPage = () => {
   const [viewString, setViewString] = React.useState<string>("day");
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [isChecked, setIsChecked] = React.useState(true);
+  const [scheduleData, setScheduleData] = React.useState<ScheduleItemType[]>();
 
-  const { data, isLoading } =
+  const blueprintContext = api.useContext().blueprints;
+  const timeScheduleContext = api.useContext().timeScheduling;
+
+  const { data, isLoading, isError } =
     api.blueprints.getOneByIdWithScheduleInfo.useQuery({
       blueprintId: id,
     });
 
-  const { mutate: UpdateTimeScheduleItems, isLoading: isSavingChanges } =
-    api.timeScheduling.updateTimeSchedules.useMutation({
-      onSuccess: (data) => {
-        console.log(data);
-      },
-      onError: (e) => {
-        console.log(e);
-      },
-    });
+  if (scheduleData === undefined && data !== undefined) {
+    setScheduleData(data?.scheduleHistories[0]?.ScheduleHistoryItems);
+  }
 
-  useMemo(() => {
-    if (data == undefined) return [];
+  const {
+    mutate: UpdateTimeScheduleItems,
+    isLoading: isSavingChanges,
+    isError: errorSavingChanges,
+  } = api.timeScheduling.updateTimeSchedules.useMutation({
+    onSuccess: (data) => {
+      console.log(data);
+      void blueprintContext.invalidate();
+      void timeScheduleContext.invalidate();
+    },
+    onError: (e) => {
+      console.log(e);
+      toast.error("Error saving changes");
+    },
+  });
 
-    if (tasks.length > 0) return tasks;
+  useEffect(() => {
+    if (scheduleData == undefined || scheduleData.length === 0) return;
 
-    const scheduleHistories = data.scheduleHistories;
-    const latestScheduleHistory = scheduleHistories[0]?.ScheduleHistoryItems;
+    const latestScheduleHistory = scheduleData;
 
     const t = [] as Task[];
 
-    latestScheduleHistory?.map((p, index) => {
+    latestScheduleHistory?.map((p) => {
       const start = new Date(new Date(p.startTime));
-      const end = new Date(new Date(p.endTime).setHours(24));
+      const end = new Date(new Date(p.endTime));
       // new Date(p.endTime) || new Date(Date.now() + 1000 * 60 * 60 * 24 * 5);
 
       const proj = p.project;
 
-      if (t.find((b) => b.id === proj.id)) {
-        // do nothing
-      } else {
+      if (!t.find((b) => b.id === proj.id)) {
         const project = {
           start,
           end,
@@ -74,26 +94,35 @@ const GanttPage: NextPage = () => {
           progress: proj.percentComplete,
           type: "project",
           hideChildren: false,
-          displayOrder: index + 1,
+          displayOrder: 0,
         } as Task;
 
         t.push(project);
       }
+    });
+
+    latestScheduleHistory?.map((p) => {
+      const start = new Date(new Date(p.startTime));
+      const end = new Date(new Date(p.endTime));
 
       if (p.crew !== undefined && p.crew !== null) {
         const crew = {
           start,
           end,
-          name: p.crew.name,
-          id: p.crew.id,
+          name: `${p.crew.name}`,
+          id: `${p.crew.id}:${p.project.id}}`,
           progress: 0,
           type: "task",
           hideChildren: false,
-          displayOrder: index + 1,
-          project: proj.id,
+          displayOrder: 0,
+          project: p.project.id,
         } as Task;
 
-        t.push(crew);
+        const loc = t.findIndex((b) => b.id === p.project.id);
+
+        if (loc > -1) {
+          t.splice(loc + 1, 0, crew);
+        }
       }
 
       if (p.equipment !== undefined && p.equipment !== null) {
@@ -105,16 +134,20 @@ const GanttPage: NextPage = () => {
           progress: 0,
           type: "task",
           hideChildren: false,
-          displayOrder: index + 1,
-          project: p.id,
+          displayOrder: 0,
+          project: p.project.id,
         } as Task;
 
-        t.push(equipment);
+        const loc = t.findIndex((b) => b.id === p.project.id);
+
+        if (loc > -1) {
+          t.splice(loc + 1, 0, equipment);
+        }
       }
     });
 
     setTasks(t);
-  }, [data, tasks]);
+  }, [scheduleData, data]);
 
   let columnWidth = 65;
 
@@ -246,16 +279,23 @@ const GanttPage: NextPage = () => {
     const scheduleHistories = data.scheduleHistories;
     const latestScheduleHistory = scheduleHistories[0]?.ScheduleHistoryItems;
 
+    if (latestScheduleHistory == undefined) return;
+
+    console.log("tasks", tasks);
+
     tasks.map((task) => {
       if (task.type === "task") {
         latestScheduleHistory?.find((history) => {
-          if (history.crewId === task.id) {
+          const taskId = task.id?.split(":")[0];
+          if (
+            history.crewId === taskId &&
+            !result.find((item) => item.id === history.id)
+          )
             result.push({
               ...history,
               startTime: task.start.toISOString(),
               endTime: task.end.toISOString(),
             });
-          }
         });
       }
     });
@@ -266,11 +306,13 @@ const GanttPage: NextPage = () => {
         startTime: item.startTime,
         endTime: item.endTime,
         projectId: item.projectId,
-        crewId: item.crewId || "",
-        equipmentId: item.equipmentId || "",
+        crewId: item.crewId?.split(":")[0] || undefined,
+        equipmentId: item.equipmentId || undefined,
         notes: "",
       };
     });
+
+    console.log("result1", res);
 
     UpdateTimeScheduleItems(res);
   }, [data, tasks, UpdateTimeScheduleItems]);
@@ -374,13 +416,24 @@ const GanttPage: NextPage = () => {
             </>
           )}
           {(isSavingChanges || isLoading) && (
-            <div className="flex min-h-[90vh] w-full items-center justify-center bg-zinc-900 text-white">
+            <div className="flex min-h-[105vh] w-full items-center justify-center bg-zinc-900 text-white">
               <LoadingSpinner />
             </div>
           )}
           {tasks.length === 0 && !isSavingChanges && !isLoading && (
-            <div className="flex min-h-[94vh] w-full flex-col items-center justify-center gap-2 bg-zinc-900  text-white">
+            <div className="flex min-h-[105vh] w-full flex-col items-center justify-center gap-2 bg-zinc-900  text-white">
               <p className="text-lg font-semibold">Nothing to schedule</p>
+              <button className="flex items-center justify-center gap-1 rounded bg-zinc-700 p-2 transition duration-100 hover:bg-zinc-600 focus:bg-zinc-600">
+                <ArrowLeftIcon className="h-5 w-5" />
+                <p>Back</p>
+              </button>
+            </div>
+          )}
+          {isError && errorSavingChanges && (
+            <div className="flex min-h-[105vh] w-full flex-col items-center justify-center gap-2 bg-zinc-900  text-white">
+              <p className="text-lg font-semibold">
+                There was an error. Try again later.
+              </p>
               <button className="flex items-center justify-center gap-1 rounded bg-zinc-700 p-2 transition duration-100 hover:bg-zinc-600 focus:bg-zinc-600">
                 <ArrowLeftIcon className="h-5 w-5" />
                 <p>Back</p>
