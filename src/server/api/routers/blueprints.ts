@@ -4,7 +4,12 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
 import { clerkClient } from "@clerk/nextjs";
-import { type Blueprint } from "@prisma/client";
+import type {
+  Project,
+  Blueprint,
+  CrewMember,
+  ScheduleHistoryItem,
+} from "@prisma/client";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
 import { type Node } from "reactflow";
 
@@ -217,7 +222,19 @@ export const blueprintsRouter = createTRPCRouter({
         include: {
           scheduleHistories: {
             include: {
-              ScheduleHistoryItems: true,
+              ScheduleHistoryItems: {
+                include: {
+                  crew: true,
+                  project: true,
+                  equipment: true,
+                },
+                orderBy: {
+                  updatedAt: "desc",
+                },
+              },
+            },
+            orderBy: {
+              updatedAt: "desc",
             },
           },
         },
@@ -287,6 +304,9 @@ export const blueprintsRouter = createTRPCRouter({
         blueprintId: z.string(),
         flowInstanceData: z.string().min(0).max(100000),
         live: z.boolean().default(false),
+        scheduling: z.boolean().default(false),
+        startDate: z.date(),
+        endDate: z.date(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -312,18 +332,31 @@ export const blueprintsRouter = createTRPCRouter({
         });
       }
 
+      const oldBlueprint = await ctx.prisma.blueprint.findFirst({
+        where: {
+          id: input.blueprintId,
+        },
+        include: {
+          projects: true,
+          crewMembers: true,
+        },
+      });
+
+      const oldProjects = oldBlueprint?.projects || ([] as Project[]);
+      const oldCrews = oldBlueprint?.crewMembers || ([] as CrewMember[]);
+
       if (input.live) {
         const res = JSON.parse(input.flowInstanceData) as blueprintFlowType;
         //checking if the blueprint is supposed to be live data...
         const structure = useCreateStructure(res.nodes);
 
-        console.log("structure", structure);
+        // console.log("structure", structure);
 
-        structure.projects.forEach((project) => {
-          project.crew.forEach((crew) => {
-            console.log("crew", crew);
-          });
-        });
+        // structure.projects.forEach((project) => {
+        //   project.crew.forEach((crew) => {
+        //     // console.log("crew", crew);
+        //   });
+        // });
 
         const crews = [] as { id: string }[];
 
@@ -341,29 +374,89 @@ export const blueprintsRouter = createTRPCRouter({
           },
           data: {
             data: input.flowInstanceData,
+            projects: {
+              disconnect: oldProjects.map((project) => {
+                return {
+                  id: project.id,
+                };
+              }),
+              connect: structure.projects.map((project) => {
+                return {
+                  id: project.id,
+                };
+              }),
+            },
+            crewMembers: {
+              disconnect: oldCrews.map((crew) => {
+                return {
+                  id: crew.id,
+                };
+              }),
+              connect: crews.map((crew) => {
+                return {
+                  id: crew.id,
+                };
+              }),
+            },
           },
         });
 
-        structure.projects.map(async (project) => {
-          await ctx.prisma.project.update({
-            where: {
-              id: project.id,
-            },
-            data: {},
-          });
-        });
+        if (input.scheduling) {
+          const scheduleHistoryItems = [] as ScheduleHistoryItem[];
 
-        // await ctx.prisma.log.create({
-        //   data: {
-        //     action: "url",
-        //     category: "blueprint",
-        //     name: `Edited \"${blueprint.name}\"`,
-        //     authorId: authorId,
-        //     url: `/blueprints/${blueprint.id}`,
-        //     description: `${email} made some changes to \"${blueprint.name}\" `,
-        //     severity: "moderate",
-        //   },
-        // });
+          const scheduleHistory = await ctx.prisma.scheduleHistory.create({
+            data: {
+              authorId,
+              notes: "",
+              blueprintId: blueprint.id,
+            },
+          });
+
+          structure.projects.map((project) => {
+            project.crew.map(async (crew) => {
+              const scheduleHistoryItem =
+                await ctx.prisma.scheduleHistoryItem.create({
+                  data: {
+                    startTime: input.startDate.toDateString(),
+                    endTime: input.endDate.toDateString(),
+                    crewId: crew.id,
+                    notes: "",
+                    projectId: project.id,
+                    authorId,
+                    scheduleHistoryId: scheduleHistory.id,
+                  },
+                });
+              scheduleHistoryItems.push(scheduleHistoryItem);
+            });
+          });
+
+          await ctx.prisma.scheduleHistory.update({
+            where: {
+              id: scheduleHistory.id,
+            },
+            data: {
+              ScheduleHistoryItems: {
+                connect: scheduleHistoryItems.map((item) => {
+                  return {
+                    id: item.id,
+                  };
+                }),
+              },
+            },
+          });
+        }
+
+        await ctx.prisma.log.create({
+          data: {
+            action: "url",
+            category: "blueprint",
+            name: `Edited \"${blueprint.name}\"`,
+            authorId: authorId,
+            url: `/blueprints/${blueprint.id}`,
+            description: `${email} made some changes to \"${blueprint.name}\" `,
+            severity: "moderate",
+          },
+        });
 
         return blueprint;
       } else {

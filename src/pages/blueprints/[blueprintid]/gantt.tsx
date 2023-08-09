@@ -4,18 +4,25 @@ import { ViewMode, Gantt, type Task } from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
 import {
   ArrowLeftIcon,
+  ArrowPathIcon,
   ArrowRightIcon,
+  CloudArrowUpIcon,
   ListBulletIcon,
 } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { api } from "~/utils/api";
 import { SwitchComponent } from "~/components/input";
+import TooltipComponent from "~/components/Tooltip";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const GanttPage: NextPage = () => {
   const { query } = useRouter();
 
   const id = (query.blueprintid || "") as string;
+
+  const [animationSaveParent] = useAutoAnimate();
+  const isSaving = false;
 
   const [view, setView] = React.useState<ViewMode>(ViewMode.Day);
   const [viewString, setViewString] = React.useState<string>("day");
@@ -29,32 +36,59 @@ const GanttPage: NextPage = () => {
   useMemo(() => {
     if (data == undefined) return [];
 
-    const projects = data.projects;
+    if (tasks.length > 0) return tasks;
+
+    const scheduleHistories = data.scheduleHistories;
+    const latestScheduleHistory = scheduleHistories[0]?.ScheduleHistoryItems;
 
     const t = [] as Task[];
 
-    projects.map((p, index) => {
-      const start = new Date();
-      const end = new Date(Date.now() + 1000 * 60 * 60 * 24 * 5);
+    latestScheduleHistory?.map((p, index) => {
+      const start = new Date(new Date(p.startTime));
+      const end = new Date(new Date(p.endTime).setHours(24));
+      // new Date(p.endTime) || new Date(Date.now() + 1000 * 60 * 60 * 24 * 5);
 
-      const project = {
-        start,
-        end,
-        name: p.name,
-        id: p.id,
-        progress: p.percentComplete,
-        type: "project",
-        hideChildren: false,
-        displayOrder: index + 1,
-      } as Task;
-      t.push(project);
+      const proj = p.project;
 
-      p.crew.map((c) => {
+      if (t.find((b) => b.id === proj.id)) {
+        // do nothing
+      } else {
+        const project = {
+          start,
+          end,
+          name: proj.name,
+          id: proj.id,
+          progress: proj.percentComplete,
+          type: "project",
+          hideChildren: false,
+          displayOrder: index + 1,
+        } as Task;
+
+        t.push(project);
+      }
+
+      if (p.crew !== undefined && p.crew !== null) {
         const crew = {
           start,
           end,
-          name: c.name,
-          id: c.id,
+          name: p.crew.name,
+          id: p.crew.id,
+          progress: 0,
+          type: "task",
+          hideChildren: false,
+          displayOrder: index + 1,
+          project: proj.id,
+        } as Task;
+
+        t.push(crew);
+      }
+
+      if (p.equipment !== undefined && p.equipment !== null) {
+        const equipment = {
+          start,
+          end,
+          name: p.equipment.name,
+          id: p.equipment.id,
           progress: 0,
           type: "task",
           hideChildren: false,
@@ -62,11 +96,11 @@ const GanttPage: NextPage = () => {
           project: p.id,
         } as Task;
 
-        t.push(crew);
-      });
+        t.push(equipment);
+      }
     });
 
-    if (tasks.length == 0) setTasks(t);
+    setTasks(t);
   }, [data, tasks]);
 
   let columnWidth = 65;
@@ -202,7 +236,7 @@ const GanttPage: NextPage = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={Back}
-                className="rounded border border-zinc-600 bg-zinc-700 p-2 px-3 text-zinc-100 transition duration-200 hover:border-amber-600 hover:bg-zinc-600 focus:border-amber-600"
+                className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
               >
                 <ArrowLeftIcon className="h-5 w-5" />
               </button>
@@ -213,7 +247,6 @@ const GanttPage: NextPage = () => {
             </div>
             <div className="flex gap-2">
               <SwitchComponent
-                className="rounded border border-zinc-600 bg-zinc-700 p-2 px-3 transition duration-200 hover:border-amber-600 hover:bg-zinc-600 focus:border-amber-600"
                 onCheckedChange={(e) => {
                   setIsChecked(e);
                 }}
@@ -226,7 +259,7 @@ const GanttPage: NextPage = () => {
                 onChange={(e) => {
                   HandleSetViewString(e.target.value);
                 }}
-                className="w-40 rounded border border-zinc-600 bg-zinc-700 text-zinc-100 outline-none transition duration-200 hover:border-amber-600 hover:bg-zinc-600 focus:border-amber-600"
+                className="w-40 rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:bg-zinc-500"
               >
                 <option value="hour">Hourly</option>
                 <option value="day">Daily</option>
@@ -234,6 +267,27 @@ const GanttPage: NextPage = () => {
                 <option value="month">Monthly</option>
                 <option value="year">Yearly</option>
               </select>
+              <TooltipComponent
+                content="Save changes to the Cloud"
+                side="bottom"
+                disableToolTipIfNoContent={true}
+              >
+                <button
+                  className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
+                  onClick={() => {
+                    // onSave(new Date(), new Date());
+                  }}
+                >
+                  <div ref={animationSaveParent}>
+                    {!isSaving && <CloudArrowUpIcon className="h-6 w-6" />}
+                    {isSaving && (
+                      <div className="flex flex-col-reverse items-center justify-center sm:flex-row sm:gap-2">
+                        <ArrowPathIcon className="h-6 w-6 animate-spin rounded-full text-white" />
+                      </div>
+                    )}
+                  </div>
+                </button>
+              </TooltipComponent>
               <button className="flex items-center justify-start gap-2 rounded border border-transparent bg-green-600 p-2 font-semibold text-zinc-200 transition duration-200 hover:scale-105 hover:border-zinc-300 hover:bg-green-500 focus:bg-green-500  ">
                 <p>Next</p>
                 <ArrowRightIcon className="h-5 w-5" />

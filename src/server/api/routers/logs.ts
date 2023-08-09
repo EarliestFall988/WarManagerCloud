@@ -527,7 +527,7 @@ export const logsRouter = createTRPCRouter({
 
       if (input.removeMyReactions) {
         totalReactions = log.logReactions.filter(
-          (r) => r.authorId === ctx.currentUser
+          (r) => r.authorId !== ctx.currentUser
         );
       }
 

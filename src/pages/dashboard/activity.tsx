@@ -1290,6 +1290,9 @@ const LogDrawer: React.FC<{
 
   const [message, setMessage] = useState("");
 
+
+  console.log(data?.logReactions);
+
   const reactions = data?.logReactions.filter(
     (x) => x.user?.email !== userEmail
   );
@@ -1321,6 +1324,8 @@ const LogDrawer: React.FC<{
       message,
     });
   };
+
+  console.log(reactions);
 
   return (
     <div ref={animationParent}>

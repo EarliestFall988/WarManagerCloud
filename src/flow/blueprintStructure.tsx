@@ -2,11 +2,14 @@ import { type Node } from "reactflow";
 import useNodesStateSynced, { GetNodes, nodesMap } from "./useNodesStateSynced";
 import useLiveData from "./databank";
 import {
+  ArrowDownIcon,
   ArrowLeftIcon,
   ArrowPathIcon,
   ArrowRightIcon,
   ArrowTopRightOnSquareIcon,
+  CalendarDaysIcon,
   CheckBadgeIcon,
+  ChevronDownIcon,
   CloudArrowUpIcon,
   PaintBrushIcon,
 } from "@heroicons/react/24/solid";
@@ -20,6 +23,11 @@ import { LoadingSpinner } from "~/components/loading";
 import { DialogComponent } from "~/components/dialog";
 import { Disconnect } from "./ydoc";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+
+import * as Dialog from "@radix-ui/react-dialog";
+import { type ScheduleHistory } from "@prisma/client";
+
+import { useMemo } from "react";
 
 type project = {
   id: string;
@@ -198,33 +206,67 @@ const Ribbon: React.FC<{
     },
   });
 
-  const onSave = useCallback(() => {
-    if (!blueprintId) return;
-
-    const nodes = GetNodes(blueprintId);
-    const edges = GetEdges(blueprintId);
-
-    const flowInstance = JSON.stringify({
-      nodes,
-      edges,
-      viewport: {
-        x: 0,
-        y: 0,
-        zoom: 1,
-      },
+  const { data, isLoading, isError } =
+    api.timeScheduling.getTimeSchedulesByBlueprintId.useQuery({
+      blueprintId,
     });
 
-    mutate({ blueprintId, flowInstanceData: flowInstance, live: liveData });
-  }, [mutate, blueprintId, liveData]);
+  console.log(data);
 
-  const OnScheduleTime = useCallback(() => {
-    if (!blueprintId) return;
+  const getLastUncommittedSchedule = () => {
+    if (!data) return undefined;
 
-    setGoToGantt(true);
-    onSave();
-  }, [blueprintId, onSave]);
+    const lastSchedule = data[0];
 
-  console.log("livedata from ribbon", liveData);
+    if (lastSchedule?.committed) return undefined;
+
+    return lastSchedule;
+  };
+
+  const onSave = useCallback(
+    (startDate: Date, endDate: Date, setDates?: boolean) => {
+      if (!blueprintId) return;
+
+      const nodes = GetNodes(blueprintId);
+      const edges = GetEdges(blueprintId);
+
+      const flowInstance = JSON.stringify({
+        nodes,
+        edges,
+        viewport: {
+          x: 0,
+          y: 0,
+          zoom: 1,
+        },
+      });
+
+      mutate({
+        blueprintId,
+        flowInstanceData: flowInstance,
+        live: liveData,
+        scheduling: setDates,
+        startDate: startDate,
+        endDate: endDate,
+      });
+    },
+    [mutate, blueprintId, liveData]
+  );
+
+  const OnScheduleTime = useCallback(
+    (startDate: Date, endDate: Date) => {
+      if (!blueprintId) return;
+
+      console.log(
+        "selected scheduled time",
+        startDate.toDateString(),
+        endDate.toDateString()
+      );
+
+      setGoToGantt(true);
+      onSave(startDate, endDate, true);
+    },
+    [blueprintId, onSave]
+  );
 
   return (
     <div className="absolute inset-0 top-0 z-20 flex h-12 w-full items-center justify-between bg-zinc-700 p-1 text-gray-100 drop-shadow-md ">
@@ -234,7 +276,7 @@ const Ribbon: React.FC<{
           description="Do you want to push your changes to the cloud before leaving?"
           yes={() => {
             setBack(true);
-            onSave();
+            onSave(new Date(), new Date());
           }}
           no={backButton}
           highlightYes={true}
@@ -292,6 +334,7 @@ const Ribbon: React.FC<{
               <ArrowTopRightOnSquareIcon className="h-6 w-6" />
             </button>
           </TooltipComponent>
+
           <TooltipComponent
             content="Save changes to the Cloud"
             side="bottom"
@@ -301,7 +344,7 @@ const Ribbon: React.FC<{
               className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
               onClick={() => {
                 setGoToGantt(false);
-                onSave();
+                onSave(new Date(), new Date());
               }}
             >
               <div ref={animationSaveParent}>
@@ -314,27 +357,204 @@ const Ribbon: React.FC<{
               </div>
             </button>
           </TooltipComponent>
-          <TooltipComponent
-            content="Adjust Time for Each Crew Member"
-            side="bottom"
-          >
-            <button
-              onClick={OnScheduleTime}
-              className={`flex items-center gap-2 rounded bg-green-700 p-2 text-white transition duration-300 hover:scale-105 hover:bg-green-500 focus:scale-105 focus:bg-green-500`}
+          <div className="flex items-center rounded border-green-600 bg-green-700 ">
+            <DateScheduleDialog
+              getLastUncommittedSchedule={getLastUncommittedSchedule}
+              isLoading={isLoading}
+              isError={isError}
+              updateSchedule={(s, e) => {
+                OnScheduleTime(s, e);
+              }}
+              blueprintId={blueprintId}
+              newSchedule={(s, e) => {
+                OnScheduleTime(s, e);
+              }}
+              highlightYes
             >
-              {isSaving && goToGantt ? (
-                <p>Saving...</p>
-              ) : (
-                <>
-                  <p>Next</p>
-                  <ArrowRightIcon className="h-5 w-5" />
-                </>
-              )}
-            </button>
-          </TooltipComponent>
+              <div
+                className={`flex cursor-pointer items-center gap-2 rounded p-2 text-white transition duration-300 hover:bg-green-600 focus:bg-green-600`}
+              >
+                {isSaving && goToGantt ? (
+                  <p>Saving...</p>
+                ) : (
+                  <>
+                    <p>Next</p>
+                    <ArrowRightIcon className="h-5 w-5" />
+                  </>
+                )}
+              </div>
+            </DateScheduleDialog>
+            {/* <div className="h-8 w-1 border-r border-green-500" />
+            <div className="h-8 w-1" />
+            <button className="gap-2 rounded p-2 transition duration-200 hover:bg-green-600 focus:bg-green-600">
+              <ChevronDownIcon className="h-6 w-6" />
+            </button> */}
+          </div>
         </div>
       )}
     </div>
+  );
+};
+
+export const DateScheduleDialog: React.FC<{
+  children: React.ReactNode;
+  description?: string;
+  newSchedule: (startDate: Date, endDate: Date) => void;
+  updateSchedule: (startDate: Date, endDate: Date) => void;
+  getLastUncommittedSchedule: () => undefined | ScheduleHistory;
+  no?: () => void;
+  highlightYes?: boolean;
+  highlightNo?: boolean;
+  blueprintId: string;
+  isLoading: boolean;
+  isError: boolean;
+}> = ({
+  children,
+  newSchedule,
+  updateSchedule,
+  no,
+  highlightYes,
+  highlightNo,
+  isLoading,
+  isError,
+  getLastUncommittedSchedule,
+}) => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+
+  const getNextMonday = (anyDate: Date) => {
+    const dayOfWeek = anyDate.getDay();
+    const aux = dayOfWeek ? 1 : -6; //if it is sunday or not
+    const nextMonday = new Date();
+    nextMonday.setDate(anyDate.getDate() - dayOfWeek + aux + 7);
+    return nextMonday;
+  };
+
+  const get5DaysFromNow = (anyDate: Date) => {
+    const dayOfWeek = anyDate.getDay();
+    const aux = dayOfWeek ? 1 : -6; //if it is sunday or not
+    const nextMonday = new Date();
+    nextMonday.setDate(anyDate.getDate() - dayOfWeek + aux + 4);
+    return nextMonday;
+  };
+
+  const [startDate, setStartDate] = useState(getNextMonday(d));
+  const [endDate, setEndDate] = useState(get5DaysFromNow(getNextMonday(d)));
+
+  const [animationParent] = useAutoAnimate();
+
+  const [lastSchedule, setLastSchedule] = useState<
+    ScheduleHistory | undefined
+  >();
+
+  useMemo(() => {
+    setLastSchedule(getLastUncommittedSchedule());
+  }, [getLastUncommittedSchedule]);
+
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 top-0 z-30 backdrop-blur-lg data-[state=open]:animate-overlayShow md:bg-black/20" />
+        {/* <div className="fixed top-0 data-[state=open]:animate-contentShow inset-0 z-30 flex items-center justify-center"> */}
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-30 max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-black p-[25px] focus:outline-none data-[state=open]:animate-contentShow">
+          <div ref={animationParent}>
+            {isLoading && <LoadingSpinner />}
+            {!isLoading && !isError && !lastSchedule ? (
+              <>
+                <Dialog.Title className="flex select-none items-center justify-start gap-2 text-2xl font-semibold text-zinc-200">
+                  <CalendarDaysIcon className="inline-block h-6 w-6" />
+                  <p>Schedule Date</p>
+                </Dialog.Title>
+                <Dialog.Description className="text-md select-none tracking-tight text-white">
+                  Set a date range for a new schedule and click save.
+                </Dialog.Description>
+                <div className="my-2 flex w-full items-center justify-between border-y border-zinc-800 p-4">
+                  <div>
+                    <p className="text-lg font-semibold">From:</p>
+                    <input
+                      type="date"
+                      value={startDate.toISOString().split("T")[0]}
+                      onChange={(e) => {
+                        setStartDate(new Date(e.target.value));
+                      }}
+                      className="rounded bg-zinc-800 p-2 outline-none ring-2 ring-zinc-700 transition duration-100 hover:ring hover:ring-zinc-600 focus:ring-2 focus:ring-amber-700"
+                    />
+                  </div>
+                  <ArrowRightIcon className="h-6 w-6" />
+                  <div>
+                    <p className="text-lg font-semibold">To:</p>
+                    <input
+                      type="date"
+                      value={endDate.toISOString().split("T")[0]}
+                      onChange={(e) => {
+                        setEndDate(new Date(e.target.value));
+                      }}
+                      className="rounded bg-zinc-800 p-2 outline-none ring-2 ring-zinc-700 transition duration-100 hover:ring hover:ring-zinc-600 focus:ring-2 focus:ring-amber-700"
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end gap-2">
+                  <Dialog.Close asChild>
+                    <button
+                      onClick={() => {
+                        no && no();
+                      }}
+                      className={`min-w-[3em] select-none rounded  p-2 text-center outline-none transition-all duration-100 ${
+                        highlightNo
+                          ? "bg-amber-700 hover:bg-amber-600 focus:bg-amber-600"
+                          : "bg-zinc-700 hover:bg-zinc-600 focus:bg-zinc-600"
+                      } `}
+                    >
+                      Cancel
+                    </button>
+                  </Dialog.Close>
+
+                  <Dialog.Close asChild>
+                    <button
+                      className={`min-w-[3em] select-none rounded  ${
+                        highlightYes
+                          ? "bg-amber-700 hover:bg-amber-600 focus:bg-amber-600"
+                          : "bg-zinc-700 hover:bg-zinc-600 focus:bg-zinc-600"
+                      } bg-gradient-to-br p-2 text-center outline-none transition-all duration-100`}
+                      onClick={() => {
+                        if (lastSchedule !== undefined) {
+                          updateSchedule(startDate, endDate);
+                        } else {
+                          newSchedule(startDate, endDate);
+                        }
+                      }}
+                    >
+                      Save
+                    </button>
+                  </Dialog.Close>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center gap-4">
+                <LoadingSpinner />
+                Applying Changes...
+              </div>
+            )}
+            {isError && (
+              <>
+                <Dialog.Title className="flex select-none items-center justify-start gap-2 text-2xl font-semibold text-zinc-200">
+                  <CalendarDaysIcon className="inline-block h-6 w-6" />
+                  <p>Schedule Date</p>
+                </Dialog.Title>
+                <Dialog.Description className="text-md select-none tracking-tight text-white">
+                  Set a date range for a new schedule and click save.
+                </Dialog.Description>
+                <div className="px-2 py-10 italic text-red-500">
+                  Error Loading Data. Please Try again later.
+                </div>
+              </>
+            )}
+          </div>
+        </Dialog.Content>
+        {/* </div> */}
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };
 

@@ -16,6 +16,7 @@ import { permissionsKeyRouter } from "./routers/permissionsKey";
 import { versioningRouter } from "./routers/versioning";
 import { reactionsRouter } from "./routers/LogReactions";
 import { logMessageReplies } from "./routers/logMessageReplies";
+import { timeSchedulingRouter } from "./routers/timeScheduling";
 
 /**
  * This is the primary router for your server.
@@ -40,6 +41,7 @@ export const appRouter = createTRPCRouter({
   versioning: versioningRouter,
   reactions: reactionsRouter,
   logReplies: logMessageReplies,
+  timeScheduling: timeSchedulingRouter,
 });
 
 // export type definition of API

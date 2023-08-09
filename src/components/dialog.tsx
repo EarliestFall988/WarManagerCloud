@@ -3,6 +3,10 @@ import { type ReactNode } from "react";
 import { TextareaComponent } from "./input";
 import { useState, useMemo } from "react";
 import { LoadingSpinner } from "./loading";
+import {
+  PencilSquareIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/24/solid";
 
 export const DialogComponent: React.FC<{
   trigger: ReactNode;
@@ -32,8 +36,9 @@ export const DialogComponent: React.FC<{
         <Dialog.Overlay className="fixed inset-0 top-0 z-30 backdrop-blur-lg data-[state=open]:animate-overlayShow md:bg-black/20" />
         {/* <div className="fixed top-0 data-[state=open]:animate-contentShow inset-0 z-30 flex items-center justify-center"> */}
         <Dialog.Content className="fixed left-[50%] top-[50%] z-30 max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-black p-[25px] focus:outline-none data-[state=open]:animate-contentShow">
-          <Dialog.Title className="select-none text-2xl font-semibold text-zinc-200">
-            {title}
+          <Dialog.Title className="flex select-none items-center justify-start gap-2 text-2xl font-semibold text-zinc-200">
+            <QuestionMarkCircleIcon className="h-6 w-6" />
+            <p>{title}</p>
           </Dialog.Title>
           <Dialog.Description className="text-md select-none tracking-tight text-white">
             {description || ""}
@@ -119,8 +124,9 @@ export const DialogComponentManualOpenClose: React.FC<{
           }}
           className="fixed left-[50%] top-[50%] z-30 max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-black p-[25px] focus:outline-none data-[state=open]:animate-contentShow"
         >
-          <Dialog.Title className="select-none text-2xl font-semibold text-zinc-200">
-            {title}
+          <Dialog.Title className="flex select-none items-center justify-start gap-2 text-2xl font-semibold text-zinc-200">
+            <QuestionMarkCircleIcon className="inline-block h-6 w-6" />
+            <p>{title}</p>
           </Dialog.Title>
           <Dialog.Description className="text-md select-none tracking-tight text-white">
             {description || ""}
@@ -200,8 +206,9 @@ export const EditModalComponent: React.FC<{
           }}
           className="fixed left-[50%] top-[50%] z-30 max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-black p-[25px] focus:outline-none data-[state=open]:animate-contentShow"
         >
-          <Dialog.Title className="select-none text-2xl font-semibold text-zinc-200">
-            {title}
+          <Dialog.Title className="flex select-none items-center justify-start text-2xl font-semibold text-zinc-200">
+            <PencilSquareIcon className="inline-block h-6 w-6" />
+            <p>{title}</p>
           </Dialog.Title>
           <TextareaComponent
             disabled={false}

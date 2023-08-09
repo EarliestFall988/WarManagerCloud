@@ -167,11 +167,15 @@ model ScheduleHistory {
   updatedAt DateTime @updatedAt
 
   notes String @db.Text
+  committed Boolean @default(false)
 
   exportLink ExportLink[]
 
   ScheduleHistoryItems ScheduleHistoryItem[]
   blueprint            Blueprint             @relation(fields: [blueprintId], references: [id])
+
+  defaultStartDate DateTime
+  defaultEndDate   DateTime
 
   blueprintId String @db.VarChar(255)
 

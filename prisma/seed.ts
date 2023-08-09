@@ -1,4 +1,4 @@
-import { Log, PrismaClient } from "@prisma/client";
+import { Log, LogReaction, LogReply, PrismaClient } from "@prisma/client";
 import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
@@ -20,10 +20,19 @@ async function main() {
 
   const sectors = await prisma.sector.findMany({});
 
-  console.log("\tdeleting all projects and crew members...\n");
+  console.log(
+    "\tdeleting all projects, schedule items, links, logs, blueprints, and crew members...\n"
+  );
+
+  await prisma.scheduleHistoryItem.deleteMany({});
+  await prisma.scheduleHistory.deleteMany({});
+  await prisma.blueprint.deleteMany({});
+  await prisma.exportLink.deleteMany({});
 
   await prisma.project.deleteMany({});
   await prisma.crewMember.deleteMany({});
+  await prisma.logReaction.deleteMany({});
+  await prisma.logReply.deleteMany({});
   await prisma.log.deleteMany({});
 
   console.log("\tcreating projects and crew members...\n");
@@ -50,8 +59,42 @@ async function main() {
     .map(createLog)
     .filter((log) => log !== null && log !== undefined);
 
-  await prisma.log.createMany({
-    data: logs,
+  logs.map(async (log) => {
+    const res = await prisma.log.create({
+      data: {
+        ...log,
+      },
+    });
+
+    const reactions = createLogReactions();
+    const replies = createLogReplies();
+
+    reactions.map(async (r) => {
+      if (res.id === undefined) throw new Error("log id is undefined");
+      await prisma.logReaction.create({
+        data: {
+          ...r,
+          log: {
+            connect: {
+              id: res.id,
+            },
+          },
+        },
+      });
+    });
+
+    replies.map(async (r) => {
+      await prisma.logReply.create({
+        data: {
+          ...r,
+          log: {
+            connect: {
+              id: res.id,
+            },
+          },
+        },
+      });
+    });
   });
 
   console.log("\tconnecting projects and crew members to sectors...\n");
@@ -95,19 +138,24 @@ main()
 
 const createLog = () => {
   return {
-    action:  faker.helpers.arrayElement(['url', 'url', 'external url', '']),
-    authorId: "user_2QORhpe7PBgTKw1uWGH0SSIJMsO",
+    action: faker.helpers.arrayElement(["url", "url", "external url", ""]),
+    authorId: getAuthor(),
     category: faker.helpers.arrayElement([
       "blueprint",
       "sector",
       "crewMember",
       "project",
-      'schedule',
-      'announcement',
+      "schedule",
+      "announcement",
     ]),
     createdAt: faker.date.past(),
     data: "",
     description: faker.lorem.paragraph(),
+    editedMessage: faker.helpers.arrayElement([
+      faker.lorem.paragraph(),
+      "",
+      "",
+    ]),
     name: faker.company.catchPhrase(),
     severity: faker.helpers.arrayElement(["info", "moderate", "critical"]),
     updatedAt: faker.date.past(),
@@ -117,10 +165,10 @@ const createLog = () => {
 
 const createCrewMember = () => {
   return {
-    authorId: "user_2QORhpe7PBgTKw1uWGH0SSIJMsO",
+    authorId: getAuthor(),
     name: faker.person.firstName() + " " + faker.person.lastName(),
     position: faker.person.jobTitle(),
-    description: faker.person.jobType(),
+    description: faker.person.bio(),
 
     phone: faker.phone.number(),
     email: faker.helpers.arrayElement([
@@ -151,7 +199,7 @@ const createCrewMember = () => {
 
 const createProject = () => {
   return {
-    authorId: "user_2QORhpe7PBgTKw1uWGH0SSIJMsO",
+    authorId: getAuthor(),
     name: faker.helpers.arrayElement([
       `${faker.company.name()}`,
       `${faker.company.name()} on ${faker.location.streetAddress()}`,
@@ -206,4 +254,51 @@ const createProject = () => {
     state: faker.location.state(),
     zip: faker.location.zipCode(),
   };
+};
+
+const createLogReactions = () => {
+  const res = faker.number.int({ min: 0, max: 5 });
+
+  const logReactions = [];
+  for (let i = 0; i < res; i++) {
+    const aut = getAuthor();
+    logReactions.push({
+      authorId: aut,
+      reaction: faker.helpers.arrayElement(["👍", "❤️", "🚀", "🔥"]),
+    });
+  }
+
+  return logReactions;
+};
+
+const createLogReplies = () => {
+  const res = faker.number.int({ min: 0, max: 2 });
+
+  const logReplies = [];
+  for (let i = 0; i < res; i++) {
+    const aut = getAuthor();
+    logReplies.push({
+      authorId: aut,
+      message: faker.lorem.paragraph(),
+      editedMessage: faker.helpers.arrayElement([
+        faker.lorem.paragraph(),
+        "",
+        "",
+      ]),
+    });
+  }
+
+  // console.log(logReplies);
+
+  return logReplies;
+};
+
+const getAuthor = () => {
+  return faker.helpers.arrayElement([
+    "user_2S9yAC71mJaqEyRi43xN5AtXNGJ",
+    "user_2QORhpe7PBgTKw1uWGH0SSIJMsO",
+    "user_2R7WFE7ikyHXaCKM8xr8m4ilrJ2",
+    "user_2TAMsSNVKhWniXZ5LRZizdYUWNV",
+    "user_2TAMh3ThQTK7a09w9Z0TpNybPg7",
+  ]);
 };
