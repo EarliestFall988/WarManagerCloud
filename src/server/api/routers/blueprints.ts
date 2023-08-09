@@ -409,6 +409,8 @@ export const blueprintsRouter = createTRPCRouter({
               authorId,
               notes: "",
               blueprintId: blueprint.id,
+              defaultStartDate: input.startDate.toISOString(),
+              defaultEndDate: input.endDate.toISOString(),
             },
           });
 

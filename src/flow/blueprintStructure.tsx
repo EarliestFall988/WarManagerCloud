@@ -2,7 +2,6 @@ import { type Node } from "reactflow";
 import useNodesStateSynced, { GetNodes, nodesMap } from "./useNodesStateSynced";
 import useLiveData from "./databank";
 import {
-  ArrowDownIcon,
   ArrowLeftIcon,
   ArrowPathIcon,
   ArrowRightIcon,
@@ -174,6 +173,32 @@ const Ribbon: React.FC<{
 
   const [animationSaveParent] = useAutoAnimate();
 
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+
+  const getNextMonday = (anyDate: Date) => {
+    const dayOfWeek = anyDate.getDay();
+    const aux = dayOfWeek ? 1 : -6; //if it is sunday or not
+    const nextMonday = new Date();
+    nextMonday.setDate(anyDate.getDate() - dayOfWeek + aux + 7);
+    return nextMonday;
+  };
+
+  const get5DaysFromNow = (anyDate: Date) => {
+    const dayOfWeek = anyDate.getDay();
+    const aux = dayOfWeek ? 1 : -6; //if it is sunday or not
+    const nextMonday = new Date();
+    nextMonday.setDate(anyDate.getDate() - dayOfWeek + aux + 4);
+    return nextMonday;
+  };
+
+  const [startDate, setStartDate] = useState(getNextMonday(d));
+  const [endDate, setEndDate] = useState(get5DaysFromNow(getNextMonday(d)));
+
+  const [lastSchedule, setLastSchedule] = useState<
+    ScheduleHistory | undefined
+  >();
+
   const backButton = () => {
     if (history.length > 0) router.back();
     else void router.push(`/dashboard/blueprints`);
@@ -183,6 +208,8 @@ const Ribbon: React.FC<{
 
   const [goToGantt, setGoToGantt] = useState(false);
   const [back, setBack] = useState(false);
+
+  const [onUpdateSchedule, setOnUpdateSchedule] = useState(false);
 
   const { mutate, isLoading: isSaving } = api.blueprints.save.useMutation({
     onSuccess: (data) => {
@@ -211,17 +238,40 @@ const Ribbon: React.FC<{
       blueprintId,
     });
 
-  console.log(data);
+  const { mutate: deleteTimeSchedule } =
+    api.timeScheduling.deleteTimeSchedules.useMutation({
+      onSuccess: () => {
+        toast.success("Schedule deleted successfully");
 
-  const getLastUncommittedSchedule = () => {
-    if (!data) return undefined;
+        if (onUpdateSchedule) {
+          setOnUpdateSchedule(false);
+          void router.push(`/blueprints/${blueprintId}/gantt`);
+        }
+      },
+      onError: (error) => {
+        toast.error("Error deleting schedule");
+        console.log("error deleting schedule", error);
+      },
+    });
 
-    const lastSchedule = data[0];
+  useMemo(() => {
+    const getLastUncommittedSchedule = () => {
+      if (!data) return undefined;
 
-    if (lastSchedule?.committed) return undefined;
+      const lastSchedule = data[0];
 
-    return lastSchedule;
-  };
+      if (lastSchedule?.committed) return undefined;
+
+      return lastSchedule;
+    };
+
+    setLastSchedule(getLastUncommittedSchedule());
+
+    if (lastSchedule) {
+      setStartDate(new Date(lastSchedule.defaultStartDate));
+      setEndDate(new Date(lastSchedule.defaultEndDate));
+    }
+  }, [lastSchedule, data]);
 
   const onSave = useCallback(
     (startDate: Date, endDate: Date, setDates?: boolean) => {
@@ -358,11 +408,13 @@ const Ribbon: React.FC<{
             </button>
           </TooltipComponent>
           <div className="flex items-center rounded border-green-600 bg-green-700 ">
-            <DateScheduleDialog
-              getLastUncommittedSchedule={getLastUncommittedSchedule}
+            <NextButton
+              lastSchedule={lastSchedule}
               isLoading={isLoading}
               isError={isError}
-              updateSchedule={(s, e) => {
+              updateSchedule={(id, s, e) => {
+                setOnUpdateSchedule(true);
+                deleteTimeSchedule({ id });
                 OnScheduleTime(s, e);
               }}
               blueprintId={blueprintId}
@@ -370,27 +422,148 @@ const Ribbon: React.FC<{
                 OnScheduleTime(s, e);
               }}
               highlightYes
+              startDate={startDate}
+              endDate={endDate}
+              setStartDate={(e) => {
+                setStartDate(e);
+              }}
+              setEndDate={(e) => {
+                setEndDate(e);
+              }}
+              goToGantt={goToGantt}
+              isSaving={isSaving}
+              SaveChanges={() => {
+                onSave(startDate, endDate);
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const NextButton: React.FC<{
+  description?: string;
+  newSchedule: (startDate: Date, endDate: Date) => void;
+  updateSchedule: (id: string, startDate: Date, endDate: Date) => void;
+  lastSchedule: ScheduleHistory | undefined;
+  SaveChanges: () => void;
+  no?: () => void;
+  highlightYes?: boolean;
+  highlightNo?: boolean;
+  blueprintId: string;
+  isLoading: boolean;
+  isError: boolean;
+  startDate: Date;
+  endDate: Date;
+  setStartDate: (e: Date) => void;
+  setEndDate: (e: Date) => void;
+  isSaving: boolean;
+  goToGantt: boolean;
+}> = ({
+  newSchedule,
+  updateSchedule,
+  blueprintId,
+  isLoading,
+  isError,
+  lastSchedule,
+  startDate,
+  endDate,
+  setStartDate,
+  setEndDate,
+  isSaving,
+  goToGantt,
+  SaveChanges,
+}) => {
+  const lastUncommittedScheduleExists =
+    lastSchedule !== undefined && lastSchedule.committed === false;
+
+  const router = useRouter();
+
+  const [animationParent] = useAutoAnimate({ duration: 100 });
+
+  const saving = isSaving && goToGantt;
+
+  return (
+    <div ref={animationParent}>
+      {saving ? (
+        <p className="p-2">Saving...</p>
+      ) : (
+        <>
+          {!lastUncommittedScheduleExists && (
+            <DateScheduleDialog
+              lastSchedule={lastSchedule}
+              isLoading={isLoading}
+              isError={isError}
+              updateSchedule={(id, s, e) => {
+                updateSchedule(id, s, e);
+              }}
+              blueprintId={blueprintId}
+              newSchedule={(s, e) => {
+                newSchedule(s, e);
+              }}
+              highlightYes
+              startDate={startDate}
+              endDate={endDate}
+              setStartDate={(e) => {
+                setStartDate(e);
+              }}
+              setEndDate={(e) => {
+                setEndDate(e);
+              }}
             >
               <div
                 className={`flex cursor-pointer items-center gap-2 rounded p-2 text-white transition duration-300 hover:bg-green-600 focus:bg-green-600`}
               >
-                {isSaving && goToGantt ? (
-                  <p>Saving...</p>
-                ) : (
-                  <>
-                    <p>Next</p>
-                    <ArrowRightIcon className="h-5 w-5" />
-                  </>
-                )}
+                <p>Next</p>
+                <ArrowRightIcon className="h-5 w-5" />
               </div>
             </DateScheduleDialog>
-            {/* <div className="h-8 w-1 border-r border-green-500" />
-            <div className="h-8 w-1" />
-            <button className="gap-2 rounded p-2 transition duration-200 hover:bg-green-600 focus:bg-green-600">
-              <ChevronDownIcon className="h-6 w-6" />
-            </button> */}
-          </div>
-        </div>
+          )}
+          {lastUncommittedScheduleExists && (
+            <div className="flex items-center justify-start">
+              <button
+                onClick={() => {
+                  SaveChanges();
+                  void router.push(`/blueprints/${blueprintId}/gantt`);
+                }}
+                className="rounded p-2 hover:bg-green-600 focus:bg-green-600"
+              >
+                Next
+              </button>
+              <div className="h-8 w-1 border-r border-zinc-400" />
+              <div className="h-8 w-1" />
+              <DateScheduleDialog
+                lastSchedule={lastSchedule}
+                isLoading={isLoading}
+                isError={isError}
+                updateSchedule={(id, s, e) => {
+                  updateSchedule(id, s, e);
+                }}
+                blueprintId={blueprintId}
+                newSchedule={(s, e) => {
+                  newSchedule(s, e);
+                }}
+                highlightYes
+                startDate={startDate}
+                endDate={endDate}
+                setStartDate={(e) => {
+                  setStartDate(e);
+                }}
+                setEndDate={(e) => {
+                  setEndDate(e);
+                }}
+              >
+                <div
+                  className={`flex h-full cursor-pointer items-center gap-2 rounded p-2 text-white transition duration-300 hover:bg-green-600 focus:bg-green-600`}
+                >
+                  <ChevronDownIcon className="h-5 w-5" />
+                </div>
+              </DateScheduleDialog>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -400,14 +573,18 @@ export const DateScheduleDialog: React.FC<{
   children: React.ReactNode;
   description?: string;
   newSchedule: (startDate: Date, endDate: Date) => void;
-  updateSchedule: (startDate: Date, endDate: Date) => void;
-  getLastUncommittedSchedule: () => undefined | ScheduleHistory;
+  updateSchedule: (id: string, startDate: Date, endDate: Date) => void;
+  lastSchedule: ScheduleHistory | undefined;
   no?: () => void;
   highlightYes?: boolean;
   highlightNo?: boolean;
   blueprintId: string;
   isLoading: boolean;
   isError: boolean;
+  startDate: Date;
+  endDate: Date;
+  setStartDate: (e: Date) => void;
+  setEndDate: (e: Date) => void;
 }> = ({
   children,
   newSchedule,
@@ -417,39 +594,13 @@ export const DateScheduleDialog: React.FC<{
   highlightNo,
   isLoading,
   isError,
-  getLastUncommittedSchedule,
+  lastSchedule,
+  startDate,
+  endDate,
+  setStartDate,
+  setEndDate,
 }) => {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-
-  const getNextMonday = (anyDate: Date) => {
-    const dayOfWeek = anyDate.getDay();
-    const aux = dayOfWeek ? 1 : -6; //if it is sunday or not
-    const nextMonday = new Date();
-    nextMonday.setDate(anyDate.getDate() - dayOfWeek + aux + 7);
-    return nextMonday;
-  };
-
-  const get5DaysFromNow = (anyDate: Date) => {
-    const dayOfWeek = anyDate.getDay();
-    const aux = dayOfWeek ? 1 : -6; //if it is sunday or not
-    const nextMonday = new Date();
-    nextMonday.setDate(anyDate.getDate() - dayOfWeek + aux + 4);
-    return nextMonday;
-  };
-
-  const [startDate, setStartDate] = useState(getNextMonday(d));
-  const [endDate, setEndDate] = useState(get5DaysFromNow(getNextMonday(d)));
-
   const [animationParent] = useAutoAnimate();
-
-  const [lastSchedule, setLastSchedule] = useState<
-    ScheduleHistory | undefined
-  >();
-
-  useMemo(() => {
-    setLastSchedule(getLastUncommittedSchedule());
-  }, [getLastUncommittedSchedule]);
 
   return (
     <Dialog.Root>
@@ -519,7 +670,9 @@ export const DateScheduleDialog: React.FC<{
                       } bg-gradient-to-br p-2 text-center outline-none transition-all duration-100`}
                       onClick={() => {
                         if (lastSchedule !== undefined) {
-                          updateSchedule(startDate, endDate);
+                          const sch = lastSchedule as ScheduleHistory;
+
+                          updateSchedule(sch.id, startDate, endDate);
                         } else {
                           newSchedule(startDate, endDate);
                         }

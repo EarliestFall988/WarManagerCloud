@@ -74,8 +74,8 @@ const NewBlueprintPage: NextPage = () => {
 
     toast.loading("Creating Blueprint...", { duration: 1000 });
 
-    mutate({ name, description });
-  }, [name, description, mutate]);
+    mutate({ name, description, liveData });
+  }, [name, description, mutate, liveData]);
 
   //redirect if the user is not found
   if (!user) {

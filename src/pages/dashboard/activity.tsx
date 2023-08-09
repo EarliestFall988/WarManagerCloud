@@ -22,7 +22,7 @@ import {
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useRef, useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { DashboardMenu } from "~/components/dashboardMenu";
 
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
@@ -40,7 +40,6 @@ import TooltipComponent from "~/components/Tooltip";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { utils, writeFileXLSX } from "xlsx";
 import {
-  DialogComponent,
   DialogComponentManualOpenClose,
   EditModalComponent,
 } from "~/components/dialog";
@@ -1290,9 +1289,6 @@ const LogDrawer: React.FC<{
 
   const [message, setMessage] = useState("");
 
-
-  console.log(data?.logReactions);
-
   const reactions = data?.logReactions.filter(
     (x) => x.user?.email !== userEmail
   );
@@ -1324,8 +1320,6 @@ const LogDrawer: React.FC<{
       message,
     });
   };
-
-  console.log(reactions);
 
   return (
     <div ref={animationParent}>

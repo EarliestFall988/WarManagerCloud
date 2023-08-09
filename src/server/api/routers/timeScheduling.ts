@@ -112,4 +112,42 @@ export const timeSchedulingRouter = createTRPCRouter({
 
       return result;
     }),
+
+  updateTimeSchedules: privateProcedure
+    .input(
+      z
+        .object({
+          id: z.string(),
+          startTime: z.string(),
+          endTime: z.string(),
+          projectId: z.string(),
+          crewId: z.string().optional(),
+          equipmentId: z.string().optional(),
+          notes: z.string(),
+        })
+        .array()
+    )
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await rateLimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the rate limit, try again in a minute",
+        });
+      }
+
+      const result = ctx.prisma.scheduleHistoryItem.updateMany({
+        where: {
+          id: {
+            in: input.map((item) => item.id),
+          },
+        },
+        data: input,
+      });
+
+      return result;
+    }),
 });

@@ -6,6 +6,7 @@ import {
   ArrowLeftIcon,
   ArrowPathIcon,
   ArrowRightIcon,
+  CalendarIcon,
   CloudArrowUpIcon,
   ListBulletIcon,
 } from "@heroicons/react/24/solid";
@@ -15,6 +16,8 @@ import { api } from "~/utils/api";
 import { SwitchComponent } from "~/components/input";
 import TooltipComponent from "~/components/Tooltip";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { type ScheduleHistoryItem } from "@prisma/client";
+import { LoadingSpinner } from "~/components/loading";
 
 const GanttPage: NextPage = () => {
   const { query } = useRouter();
@@ -22,16 +25,26 @@ const GanttPage: NextPage = () => {
   const id = (query.blueprintid || "") as string;
 
   const [animationSaveParent] = useAutoAnimate();
-  const isSaving = false;
 
   const [view, setView] = React.useState<ViewMode>(ViewMode.Day);
   const [viewString, setViewString] = React.useState<string>("day");
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [isChecked, setIsChecked] = React.useState(true);
 
-  const { data } = api.blueprints.getOneByIdWithScheduleInfo.useQuery({
-    blueprintId: id,
-  });
+  const { data, isLoading } =
+    api.blueprints.getOneByIdWithScheduleInfo.useQuery({
+      blueprintId: id,
+    });
+
+  const { mutate: UpdateTimeScheduleItems, isLoading: isSavingChanges } =
+    api.timeScheduling.updateTimeSchedules.useMutation({
+      onSuccess: (data) => {
+        console.log(data);
+      },
+      onError: (e) => {
+        console.log(e);
+      },
+    });
 
   useMemo(() => {
     if (data == undefined) return [];
@@ -225,14 +238,54 @@ const GanttPage: NextPage = () => {
     else void router.push("/dashboard/blueprints");
   };
 
+  const SaveChanges = useCallback(() => {
+    if (data == undefined) return;
+
+    const result = [] as ScheduleHistoryItem[];
+
+    const scheduleHistories = data.scheduleHistories;
+    const latestScheduleHistory = scheduleHistories[0]?.ScheduleHistoryItems;
+
+    tasks.map((task) => {
+      if (task.type === "task") {
+        latestScheduleHistory?.find((history) => {
+          if (history.crewId === task.id) {
+            result.push({
+              ...history,
+              startTime: task.start.toISOString(),
+              endTime: task.end.toISOString(),
+            });
+          }
+        });
+      }
+    });
+
+    const res = result.map((item) => {
+      return {
+        id: item.id,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        projectId: item.projectId,
+        crewId: item.crewId || "",
+        equipmentId: item.equipmentId || "",
+        notes: "",
+      };
+    });
+
+    UpdateTimeScheduleItems(res);
+  }, [data, tasks, UpdateTimeScheduleItems]);
+
   return (
     <>
       <Head>
-        <title>Time Scheduling for {data?.name} | War Manager</title>
+        {data?.name && (
+          <title>Time Scheduling for {data?.name} | War Manager</title>
+        )}
+        {!data?.name && <title>Time Scheduling | War Manager</title>}
       </Head>
       <main className="no-global-styles">
         <div className="min-h-[100vh] w-full bg-zinc-800 text-black">
-          <div className="flex w-full items-center justify-between p-2">
+          <div className="fixed top-0 z-20 flex w-full items-center justify-between border-b border-zinc-600 bg-zinc-800/90 p-2 backdrop-blur">
             <div className="flex items-center gap-2">
               <button
                 onClick={Back}
@@ -240,10 +293,16 @@ const GanttPage: NextPage = () => {
               >
                 <ArrowLeftIcon className="h-5 w-5" />
               </button>
-
-              <h2 className="text-large font-semibold text-white">
-                {data?.name} - Time Scheduling
-              </h2>
+              {data?.name && (
+                <h2 className="text-large font-semibold text-white">
+                  {data?.name} - Time Scheduling
+                </h2>
+              )}
+              {!data?.name && (
+                <h2 className="text-large font-semibold text-white">
+                  Time Scheduling
+                </h2>
+              )}
             </div>
             <div className="flex gap-2">
               <SwitchComponent
@@ -274,13 +333,13 @@ const GanttPage: NextPage = () => {
               >
                 <button
                   className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-                  onClick={() => {
-                    // onSave(new Date(), new Date());
-                  }}
+                  onClick={SaveChanges}
                 >
                   <div ref={animationSaveParent}>
-                    {!isSaving && <CloudArrowUpIcon className="h-6 w-6" />}
-                    {isSaving && (
+                    {!isSavingChanges && (
+                      <CloudArrowUpIcon className="h-6 w-6" />
+                    )}
+                    {isSavingChanges && (
                       <div className="flex flex-col-reverse items-center justify-center sm:flex-row sm:gap-2">
                         <ArrowPathIcon className="h-6 w-6 animate-spin rounded-full text-white" />
                       </div>
@@ -288,27 +347,44 @@ const GanttPage: NextPage = () => {
                   </div>
                 </button>
               </TooltipComponent>
-              <button className="flex items-center justify-start gap-2 rounded border border-transparent bg-green-600 p-2 font-semibold text-zinc-200 transition duration-200 hover:scale-105 hover:border-zinc-300 hover:bg-green-500 focus:bg-green-500  ">
-                <p>Next</p>
-                <ArrowRightIcon className="h-5 w-5" />
+              <button className="flex items-center justify-start gap-2 rounded bg-green-600 p-2 font-semibold text-zinc-200 transition duration-200 hover:scale-105  hover:bg-green-500 focus:bg-green-500  ">
+                <CalendarIcon className="h-6 w-6" />
+                <p>Commit Schedule</p>
               </button>
             </div>
           </div>
-          {tasks.length > 0 && (
-            <div className="bg-white">
-              <Gantt
-                tasks={tasks}
-                viewMode={view}
-                onDateChange={handleTaskChange}
-                onDelete={handleTaskDelete}
-                onProgressChange={handleProgressChange}
-                onDoubleClick={handleDblClick}
-                onClick={handleClick}
-                onSelect={handleSelect}
-                onExpanderClick={handleExpanderClick}
-                listCellWidth={isChecked ? "155px" : ""}
-                columnWidth={columnWidth}
-              />
+          {tasks.length > 0 && !isSavingChanges && (
+            <>
+              <div className="h-16 bg-zinc-800" />
+              <div className="bg-white">
+                <Gantt
+                  tasks={tasks}
+                  viewMode={view}
+                  onDateChange={handleTaskChange}
+                  onDelete={handleTaskDelete}
+                  onProgressChange={handleProgressChange}
+                  onDoubleClick={handleDblClick}
+                  onClick={handleClick}
+                  onSelect={handleSelect}
+                  onExpanderClick={handleExpanderClick}
+                  listCellWidth={isChecked ? "155px" : ""}
+                  columnWidth={columnWidth}
+                />
+              </div>
+            </>
+          )}
+          {(isSavingChanges || isLoading) && (
+            <div className="flex min-h-[90vh] w-full items-center justify-center bg-zinc-900 text-white">
+              <LoadingSpinner />
+            </div>
+          )}
+          {tasks.length === 0 && !isSavingChanges && !isLoading && (
+            <div className="flex min-h-[94vh] w-full flex-col items-center justify-center gap-2 bg-zinc-900  text-white">
+              <p className="text-lg font-semibold">Nothing to schedule</p>
+              <button className="flex items-center justify-center gap-1 rounded bg-zinc-700 p-2 transition duration-100 hover:bg-zinc-600 focus:bg-zinc-600">
+                <ArrowLeftIcon className="h-5 w-5" />
+                <p>Back</p>
+              </button>
             </div>
           )}
         </div>
@@ -316,133 +392,6 @@ const GanttPage: NextPage = () => {
     </>
   );
 };
-
-// function useTasks(blueprintId: string) {
-//   const { data } = api.blueprints.getOneByIdWithScheduleInfo.useQuery({
-//     blueprintId,
-//   });
-
-//   useMemo(() => {
-//     if (data == undefined) return [];
-
-//     const projects = data.projects;
-
-//     const t = [] as Task[];
-
-//     projects.map((p) => {
-//       const project = {
-//         start: new Date(),
-//         end: new Date(),
-//         name: p.name,
-//         id: p.id,
-//         progress: p.percentComplete,
-//         type: "project",
-//         hideChildren: false,
-//         displayOrder: 1,
-//       } as Task;
-//       t.push(project);
-//     });
-
-//     setTasks(t);
-//   }, [data]);
-
-//   console.log(tasks);
-
-// const currentDate = new Date();
-// tasks: Task[] = [
-//   {
-//     start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
-//     end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 15),
-//     name: "Some Project",
-//     id: "ProjectSample",
-//     progress: 25,
-//     type: "project",
-//     hideChildren: false,
-//     displayOrder: 1,
-//   },
-//   {
-//     start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
-//     end: new Date(
-//       currentDate.getFullYear(),
-//       currentDate.getMonth(),
-//       2,
-//       12,
-//       28
-//     ),
-//     name: "Idea",
-//     id: "Task 0",
-//     progress: 45,
-//     type: "task",
-//     project: "ProjectSample",
-//     displayOrder: 2,
-//   },
-//   {
-//     start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 2),
-//     end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 4, 0, 0),
-//     name: "Research",
-//     id: "Task 1",
-//     progress: 25,
-//     // dependencies: ["Task 0"],
-//     type: "task",
-//     project: "ProjectSample",
-//     displayOrder: 3,
-//   },
-//   {
-//     start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 4),
-//     end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 8, 0, 0),
-//     name: "Discussion with team",
-//     id: "Task 2",
-//     progress: 10,
-//     dependencies: ["Task 1"],
-//     type: "task",
-//     project: "ProjectSample",
-//     displayOrder: 4,
-//   },
-//   {
-//     start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 8),
-//     end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 9, 0, 0),
-//     name: "Developing",
-//     id: "Task 3",
-//     progress: 2,
-//     dependencies: ["Task 2"],
-//     type: "task",
-//     project: "ProjectSample",
-//     displayOrder: 5,
-//   },
-//   {
-//     start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 8),
-//     end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 10),
-//     name: "Review",
-//     id: "Task 4",
-//     type: "task",
-//     progress: 70,
-//     dependencies: ["Task 2"],
-//     project: "ProjectSample",
-//     displayOrder: 6,
-//   },
-//   {
-//     start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 15),
-//     end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 15),
-//     name: "Release",
-//     id: "Task 6",
-//     progress: currentDate.getMonth(),
-//     type: "milestone",
-//     dependencies: ["Task 4"],
-//     project: "ProjectSample",
-//     displayOrder: 7,
-//   },
-//   {
-//     start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 18),
-//     end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 19),
-//     name: "Party Time",
-//     id: "Task 9",
-//     progress: 0,
-//     isDisabled: true,
-//     type: "task",
-//   },
-// ];
-//   return tasks;
-// }
 
 function getStartEndDateForProject(tasks: Task[], projectId: string) {
   const projectTasks = tasks.filter((t) => t.project === projectId);
