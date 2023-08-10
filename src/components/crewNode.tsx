@@ -280,7 +280,7 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
                         name: "Medical Card",
                         backgroundColor: "#77ee77",
                       }}
-                      style="text-[0.3rem] bg-zinc-900"
+                      style="fade-y-long bg-zinc-900 text-[0.3rem] hover:text-[0.31rem] duration-200 transition"
                     />
                   )}
               </div>
