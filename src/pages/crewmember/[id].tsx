@@ -163,8 +163,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   });
 
   const setMedicalCardDates = useCallback((signed?: Date, exp?: Date) => {
-    if (isLoading || !data) return;
-
+    
     let startDate = new Date(Date.now());
     let expirationDate = new Date(
       new Date(Date.now()).setFullYear(new Date().getFullYear() + 2)
@@ -262,7 +261,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     if (data.sector) {
       setSectors([data.sector]);
     }
-  }, [data, setMedicalCardDates]);
+  }, [data, setMedicalCardDates, isLoading, deletingCrew]);
 
   const getTagsStringArray = useCallback(() => {
     const tagsStringArray = [] as string[];
