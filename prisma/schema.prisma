@@ -116,6 +116,9 @@ model CrewMember {
 
   tags Tag[]
 
+  medicalCardSignedDate     DateTime?
+  medicalCardExpirationDate DateTime?
+
   wage   Float @default(0)
   burden Float @default(0)
   rate   Float @default(0)
@@ -166,7 +169,7 @@ model ScheduleHistory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  notes String @db.Text
+  notes     String  @db.Text
   committed Boolean @default(false)
 
   exportLink ExportLink[]
