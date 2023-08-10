@@ -238,13 +238,23 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
                               </div>
                             </div>
                           )}
-                          {wageNumber != 0 && (
+                          {burdenNumber != 0 && (
                             <div className="flex items-center gap-2">
                               <div className="text-sm">
                                 <span className="font-thin text-zinc-400">
                                   Burden
                                 </span>{" "}
                                 ${burdenNumber.toLocaleString()}
+                              </div>
+                            </div>
+                          )}
+                          {info.medicalCardExpDate && (
+                            <div className="flex items-center gap-2">
+                              <div className="text-sm">
+                                <span className="font-thin text-zinc-400">
+                                  Med Card Exp.
+                                </span>{" "}
+                                {info.medicalCardExpDate.toLocaleDateString()}
                               </div>
                             </div>
                           )}

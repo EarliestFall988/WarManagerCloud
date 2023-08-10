@@ -13,6 +13,7 @@ import {
   DocumentTextIcon,
   EllipsisHorizontalIcon,
   IdentificationIcon,
+  InformationCircleIcon,
   PresentationChartBarIcon,
   TrashIcon,
   WrenchScrewdriverIcon,
@@ -440,12 +441,12 @@ const ToolbarComponent: React.FC<{
           <ArrowUturnRightIcon className="h-6 w-6" />
         </button>
       </TooltipComponent>
-      <TooltipComponent content="Details" side="right">
+      <TooltipComponent content="View Project or Crew Details" side="right">
         <button
           className="rounded bg-zinc-600 bg-gradient-to-br p-2 py-4 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500 sm:py-2"
           onClick={GoToDetails}
         >
-          <EllipsisHorizontalIcon className="h-6 w-6" />
+          <InformationCircleIcon className="h-6 w-6" />
         </button>
       </TooltipComponent>
     </div>
