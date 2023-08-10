@@ -97,7 +97,7 @@ model CrewMember {
 
   medicalCardSignedDate DateTime?
   medicalCardExpDate    DateTime?
-  
+
   authorId String
   sectorId String?
   sector   Sector?   @relation(fields: [sectorId], references: [id])
@@ -279,6 +279,7 @@ model Tag {
   backgroundColor String       @db.VarChar(255)
   type            String       @db.VarChar(255)
   authorId        String
+  systemTag       Boolean      @default(false)
   CrewMembers     CrewMember[]
   projects        Project[]
   blueprints      Blueprint[]

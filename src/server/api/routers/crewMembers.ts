@@ -7,7 +7,7 @@ import { TRPCError } from "@trpc/server";
 
 import isMobilePhone from "validator/lib/isMobilePhone";
 import { clerkClient } from "@clerk/nextjs";
-import { type Prisma } from "@prisma/client";
+import { Tag, type Prisma } from "@prisma/client";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -249,7 +249,7 @@ export const crewMembersRouter = createTRPCRouter({
         ...oldCrewMember,
       };
 
-      const disconnectTags = oldCrewMember?.tags?.filter((tag) => {
+      let disconnectTags = oldCrewMember?.tags?.filter((tag) => {
         return !input.tags?.includes(tag.id);
       });
 
@@ -271,11 +271,49 @@ export const crewMembersRouter = createTRPCRouter({
         | undefined
         | null;
 
-      console.log(input.includesMedicalCard);
+      let tags = input.tags;
 
       if (input.includesMedicalCard === false) {
         medicalCardExpDate = null;
         medicalCardSignedDate = null;
+
+        console.log(
+          "does not include medical card:",
+          input.includesMedicalCard
+        );
+
+        const medicalCardTag = await ctx.prisma.tag.findFirst({
+          where: {
+            name: "Med Card",
+          },
+        });
+
+        console.log("medical card tag found:", medicalCardTag);
+
+        if (medicalCardTag) {
+          if (!disconnectTags) {
+            disconnectTags = [] as Tag[];
+          }
+
+          disconnectTags?.push({
+            ...medicalCardTag,
+          });
+
+          console.log("disconnect tags:", disconnectTags);
+          tags = tags.filter((tag) => tag !== medicalCardTag.id);
+        }
+      } else {
+        if (medicalCardExpDate && medicalCardSignedDate) {
+          const medicalCardTag = await ctx.prisma.tag.findFirst({
+            where: {
+              name: "Med Card",
+            },
+          });
+
+          console.log("medical card tag found:", medicalCardTag);
+
+          tags.push(medicalCardTag?.id as string);
+        }
       }
 
       const crewMember = await ctx.prisma.crewMember.update({
@@ -661,11 +699,21 @@ export const crewMembersRouter = createTRPCRouter({
         | undefined
         | null;
 
-      console.log(input.includesMedicalCard);
-
       if (input.includesMedicalCard === false) {
         medicalCardExpDate = null;
         medicalCardSignedDate = null;
+      }
+
+      const tags = input.tags;
+
+      if (medicalCardExpDate && medicalCardSignedDate) {
+        const medicalCardTag = await ctx.prisma.tag.findFirst({
+          where: {
+            name: "Med Card",
+          },
+        });
+
+        tags.push(medicalCardTag?.id as string);
       }
 
       const crewMember = await ctx.prisma.crewMember.create({
@@ -692,7 +740,7 @@ export const crewMembersRouter = createTRPCRouter({
           medicalCardExpDate: medicalCardExpDate,
           medicalCardSignedDate: medicalCardSignedDate,
           tags: {
-            connect: input.tags?.map((tag) => ({
+            connect: tags.map((tag) => ({
               id: tag,
             })),
           },

@@ -1,6 +1,7 @@
 import {
   ArrowPathRoundedSquareIcon,
   ChevronUpDownIcon,
+  CodeBracketSquareIcon,
   DocumentIcon,
   EllipsisVerticalIcon,
   PlusIcon,
@@ -21,6 +22,8 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import type { Tag } from "@prisma/client";
 import { SimpleDropDown } from "~/components/dropdown";
 import { DialogComponent } from "~/components/dialog";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import Image from "next/image";
 dayjs.extend(relativeTime);
 
 const TagWizard: React.FC<{ editTag?: Tag }> = ({ editTag }) => {
@@ -435,6 +438,8 @@ const TagsPage: NextPage = () => {
     setNewPanelOpen(!newPanelOpen);
   }, [newPanelOpen, setNewPanelOpen]);
 
+  const [animationParent] = useAutoAnimate();
+
   const {
     data,
     isLoading: loading,
@@ -443,17 +448,18 @@ const TagsPage: NextPage = () => {
     name: searchTerm,
   });
 
-  console.log(data);
-
   //   const loading = true;
 
   return (
-    <main className="min-h-[100vh] overflow-x-hidden bg-zinc-800">
+    <main
+      ref={animationParent}
+      className="min-h-[100vh] overflow-x-hidden bg-zinc-900"
+    >
       <NewItemPageHeader title="Tags" />
       <div className="flex gap-2 border-b border-zinc-700 p-2">
         <input
           type="text"
-          className="w-full rounded-md border border-zinc-500 bg-zinc-700 p-2 text-white outline-none transition-all duration-100 hover:bg-zinc-600 focus:ring-1 focus:ring-amber-600"
+          className="w-full rounded-md border border-zinc-600 bg-zinc-800 p-2 text-white outline-none transition-all duration-100 hover:bg-zinc-700 focus:ring-1 focus:ring-amber-600"
           placeholder="Search for a tag"
           autoFocus
           value={searchTerm}
@@ -494,8 +500,8 @@ const TagsPage: NextPage = () => {
 
 const TagCard: React.FC<{ tag: TagType }> = ({ tag }) => {
   return (
-    <div className="flex select-none  justify-between gap-2 rounded border border-zinc-700 p-2">
-      <div className="flex items-center justify-start gap-2">
+    <div className="flex select-none  justify-between gap-2 border-b border-zinc-700 p-2">
+      <div className="flex w-1/4 items-center justify-start gap-2">
         <div className="flex items-center gap-2"></div>
         <div>
           <div className="flex items-center gap-2 py-1">
@@ -527,17 +533,34 @@ const TagCard: React.FC<{ tag: TagType }> = ({ tag }) => {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-center"></div>
-      <div className="flex gap-1">
-        <div className="hidden items-center gap-1 md:flex">
-          <p className="text-sm text-zinc-300"> {tag.user?.email}</p>
-          <p className="hidden text-sm text-zinc-300 md:block">
-            {" • "}
-            {dayjs(tag.updatedAt || tag.createdAt).fromNow()}
-          </p>
+      <div className="flex w-1/4 items-center justify-start gap-1">
+        <div className="hidden items-center justify-start gap-1 md:flex">
+          {tag.user ? (
+            <div className="flex items-center gap-2">
+              <Image
+                src={tag.user.profilePicture || ""}
+                alt={`${tag.user.email || "unknown"}\'s profile picture.`}
+                width={30}
+                height={30}
+                className="rounded-full"
+              />
+              <p className="text-sm text-zinc-300"> {tag.user?.email}</p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-zinc-300">
+              <CodeBracketSquareIcon className="h-7 w-7 text-amber-600" />
+              <p>War Manager Tag</p>
+            </div>
+          )}
+
           {/* <TagOptions /> */}
         </div>
-
+      </div>
+      <div className="flex items-center justify-center">
+        <p className="hidden text-sm text-zinc-300 md:block">
+          {/* {" • "} */}
+          {dayjs(tag.updatedAt || tag.createdAt).fromNow()}
+        </p>
         <SimpleDropDown
           trigger={
             <button className="flex items-center justify-center p-2">
@@ -553,6 +576,14 @@ const TagCard: React.FC<{ tag: TagType }> = ({ tag }) => {
 };
 
 const TagOptions: React.FC<{ tag: Tag }> = ({ tag }) => {
+  if (tag.systemTag) {
+    return (
+      <div>
+        Unfortunately you cannot edit this tag as it is managed by War Manager.
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-start justify-start gap-1">
       <TagWizard editTag={tag} />

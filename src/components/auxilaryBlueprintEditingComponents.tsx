@@ -474,6 +474,7 @@ export const CrewList = (props: { blueprintId: string }) => {
                             } has a valid medical card on file. (Expires: ${crew.medicalCardExpDate.toLocaleDateString()}).`,
                             name: "Medical Card",
                             backgroundColor: "#77ee77",
+                            systemTag: false,
                           }}
                           style="text-xs"
                         />

@@ -122,6 +122,7 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
                                       } has a valid medical card on file. (Expires: ${info.medicalCardExpDate.toLocaleDateString()}).`,
                                       name: "Medical Card",
                                       backgroundColor: "#77ee77",
+                                      systemTag: false,
                                     }}
                                     style="text-xs"
                                   />
@@ -279,6 +280,7 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
                         } has a valid medical card on file. (Expires: ${info.medicalCardExpDate.toLocaleDateString()}).`,
                         name: "Medical Card",
                         backgroundColor: "#77ee77",
+                        systemTag: false,
                       }}
                       style="fade-y-long bg-zinc-900 text-[0.3rem] hover:text-[0.31rem] duration-200 transition"
                     />

@@ -238,6 +238,19 @@ export const tagsRouter = createTRPCRouter({
         });
       }
 
+      const tag = await ctx.prisma.tag.findFirst({
+        where: {
+          id: input.id,
+        },
+      });
+
+      if (tag?.systemTag) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot delete a system tag.",
+        });
+      }
+
       const result = ctx.prisma.tag.delete({
         where: {
           id: input.id,

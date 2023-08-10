@@ -16,7 +16,7 @@ import { type NextPage } from "next";
 import Link from "next/link";
 import { type FC, useCallback, useState } from "react";
 import { toast } from "react-hot-toast";
-import { TagBubble } from "~/components/TagComponent";
+import { TagBubble, TagBubblesHandler, TagType } from "~/components/TagComponent";
 import { TagsPopover } from "~/components/TagDropdown";
 import { SimpleDropDown } from "~/components/dropdown";
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
@@ -208,9 +208,11 @@ const CrewMemberItem: FC<{
     toast.success(`${type}Copied to clipboard`);
   }, []);
 
-  const generateID = () => {
-    return Math.random().toString(36);
-  };
+  const tagData = tags.map((tag) => {
+    return {
+      tag: tag,
+    } as TagType
+  });
 
   return (
     <div
@@ -238,7 +240,8 @@ const CrewMemberItem: FC<{
             <p className="truncate text-lg font-semibold text-white ">
               {crewMember.name}
             </p>
-            {(tags.length > 0 ||
+            <TagBubblesHandler tags={tagData} />
+            {/* {(tags.length > 0 ||
               (crewMember.medicalCardExpDate &&
                 crewMember.medicalCardSignedDate)) && (
               <div className="flex flex-wrap gap-1 ">
@@ -260,12 +263,13 @@ const CrewMemberItem: FC<{
                         } has a valid medical card on file. (Expires: ${crewMember.medicalCardExpDate.toLocaleDateString()}).`,
                         name: "Medical Card",
                         backgroundColor: "#77ee77",
+                        systemTag: false, 
                       }}
                       style="text-xs"
                     />
                   )}
               </div>
-            )}
+            )} */}
           </div>
           <div className="flex flex-wrap items-center gap-1 text-sm">
             <p className="min-w-[0em] truncate text-zinc-300 ">
