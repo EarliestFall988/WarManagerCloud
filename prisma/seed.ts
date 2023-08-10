@@ -1,4 +1,10 @@
-import { Log, LogReaction, LogReply, PrismaClient } from "@prisma/client";
+import {
+  CrewMember,
+  Log,
+  LogReaction,
+  LogReply,
+  PrismaClient,
+} from "@prisma/client";
 import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
@@ -69,32 +75,32 @@ async function main() {
     const reactions = createLogReactions();
     const replies = createLogReplies();
 
-    reactions.map(async (r) => {
-      if (res.id === undefined) throw new Error("log id is undefined");
-      await prisma.logReaction.create({
-        data: {
-          ...r,
-          log: {
-            connect: {
-              id: res.id,
-            },
-          },
-        },
-      });
-    });
+    // reactions.map(async (r) => {
+    //   if (res.id === undefined) throw new Error("log id is undefined");
+    //   await prisma.logReaction.create({
+    //     data: {
+    //       ...r,
+    //       log: {
+    //         connect: {
+    //           id: res.id,
+    //         },
+    //       },
+    //     },
+    //   });
+    // });
 
-    replies.map(async (r) => {
-      await prisma.logReply.create({
-        data: {
-          ...r,
-          log: {
-            connect: {
-              id: res.id,
-            },
-          },
-        },
-      });
-    });
+    // replies.map(async (r) => {
+    //   await prisma.logReply.create({
+    //     data: {
+    //       ...r,
+    //       log: {
+    //         connect: {
+    //           id: res.id,
+    //         },
+    //       },
+    //     },
+    //   });
+    // });
   });
 
   console.log("\tconnecting projects and crew members to sectors...\n");
@@ -164,6 +170,16 @@ const createLog = () => {
 };
 
 const createCrewMember = () => {
+  const num = faker.number.float({ min: 0, max: 50 });
+
+  let signedMedCardDate = undefined as Date | undefined;
+  let medCardExpDate = undefined as Date | undefined;
+
+  if (num > 35) {
+    signedMedCardDate = faker.date.past();
+    medCardExpDate = faker.date.future();
+  }
+
   return {
     authorId: getAuthor(),
     name: faker.person.firstName() + " " + faker.person.lastName(),
@@ -194,6 +210,8 @@ const createCrewMember = () => {
     rate: faker.number.float({ min: 0, max: 10 }),
     hours: faker.number.float({ min: 0, max: 50 }),
     total: faker.number.float({ min: 0, max: 50 }),
+    medicalCardExpDate: medCardExpDate,
+    medicalCardSignedDate: signedMedCardDate,
   };
 };
 
