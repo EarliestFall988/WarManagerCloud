@@ -12,11 +12,15 @@ import { CloudArrowUpIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
 import { type Sector, type Tag } from "@prisma/client";
 import { TagsMultiselectDropdown } from "~/components/TagDropdown";
-import { ButtonCallToActionComponent, ButtonDeleteAction, InputComponent, PhoneEmailComponent, TextareaComponent } from "~/components/input";
-
+import {
+  ButtonCallToActionComponent,
+  ButtonDeleteAction,
+  InputComponent,
+  PhoneEmailComponent,
+  TextareaComponent,
+} from "~/components/input";
 
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
-
   const [crewName, setCrewName] = useState("");
   const [position, setPosition] = useState("");
   const [description, setDescription] = useState("");
@@ -25,6 +29,9 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [wage, setWage] = useState("0");
   const [burden, setBurden] = useState("0");
   const [rating, setRating] = useState("5");
+  const [medicalCardSignedDate, setMedicalCardSignedDate] = useState<Date>();
+  const [medicalCardExpirationDate, setMedicalCardExpirationDate] =
+    useState<Date>();
 
   const [tags, setTags] = useState<Tag[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
@@ -39,6 +46,10 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [ratingError, setRatingError] = useState("");
   const [sectorError, setSectorError] = useState("");
 
+  const [medicalCardSignedDateError, setMedicalCardSignedDateError] =
+    useState("");
+  const [medicalCardExpirationDateError, setMedicalCardExpirationDateError] =
+    useState("");
 
   const router = useRouter();
 
@@ -60,17 +71,17 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       if (!errorMessage) {
         toast.error(e.message);
         return;
-      }
-      else {
-        toast.error("There were a few errors, please check the form and try again.")
+      } else {
+        toast.error(
+          "There were a few errors, please check the form and try again."
+        );
       }
 
       for (const key in errorMessage) {
         // toast.error(errorMessage?[key][0] || "there was an api error");
-        const keyMessage = errorMessage[key]
+        const keyMessage = errorMessage[key];
 
         if (keyMessage) {
-
           const message = keyMessage[0] || "";
 
           switch (key) {
@@ -101,32 +112,36 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
             case "sectors":
               setSectorError(message);
               break;
+            case "medicalCardSignedDate":
+              setMedicalCardSignedDateError(message);
+              break;
+            case "medicalCardExpirationDate":
+              setMedicalCardExpirationDateError(message);
+              break;
             default:
               break;
           }
-        }
-        else {
+        } else {
           toast.error("Something went wrong! Please try again later");
         }
       }
     },
   });
 
+  const { mutate: deleteCrewMemberMutation, isLoading: deletingCrew } =
+    api.crewMembers.delete.useMutation({
+      onSuccess: (data) => {
+        toast.success(`${data.name} (${data.position}) deleted successfully!`);
+        void crewContext.invalidate();
+        void tagsContext.invalidate();
+        void router.back();
+      },
 
-  const { mutate: deleteCrewMemberMutation, isLoading: deletingCrew } = api.crewMembers.delete.useMutation({
-    onSuccess: (data) => {
-      toast.success(`${data.name} (${data.position}) deleted successfully!`);
-      void crewContext.invalidate();
-      void tagsContext.invalidate();
-      void router.back();
-    },
-
-    onError: (e) => {
-      console.log("Error deleting crew member", e.message);
-      toast.error("Something went wrong! Please try again later");
-    }
-  });
-
+      onError: (e) => {
+        console.log("Error deleting crew member", e.message);
+        toast.error("Something went wrong! Please try again later");
+      },
+    });
 
   const { data, isLoading } = api.crewMembers.getById.useQuery({
     crewMemberId: id,
@@ -134,9 +149,9 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
 
   const deleteCrewMember = useCallback(() => {
     deleteCrewMemberMutation({
-      crewMemberId: id
+      crewMemberId: id,
     });
-  }, [deleteCrewMemberMutation, id])
+  }, [deleteCrewMemberMutation, id]);
 
   useMemo(() => {
     if (data == null) return;
@@ -173,13 +188,22 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     }
 
     if (data.tags) {
-      setTags(data.tags)
+      setTags(data.tags);
+    }
+
+    if (data.medicalCardSignedDate) {
+      const theDate = data.medicalCardSignedDate as Date;
+      setMedicalCardSignedDate(theDate);
+    }
+
+    if (data.medicalCardExpDate !== null) {
+      const theDate = data.medicalCardExpDate as Date;
+      setMedicalCardExpirationDate(theDate);
     }
 
     if (data.sector) {
       setSectors([data.sector]);
     }
-
   }, [data]);
 
   if (isLoading)
@@ -190,7 +214,6 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     );
 
   if (!data) {
-
     toast.error("Could not fetch data - please try again later.");
 
     return (
@@ -206,7 +229,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       tagsStringArray.push(tag.id);
     });
     return tagsStringArray;
-  }
+  };
 
   const getSectorsIds = () => {
     const sectorsIdsArray = [] as string[];
@@ -214,10 +237,9 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       sectorsIdsArray.push(s.id);
     });
     return sectorsIdsArray;
-  }
+  };
 
   const save = () => {
-
     setCrewNameError("");
 
     setDescriptionError("");
@@ -235,6 +257,9 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
 
     setSectorError("");
 
+    setMedicalCardSignedDateError("");
+    setMedicalCardExpirationDateError("");
+
     mutation.mutate({
       crewMemberId: data.id,
       name: crewName,
@@ -246,10 +271,12 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       wage: parseFloat(wage),
       burden: parseFloat(burden),
       rating: parseInt(rating),
-      sectors: getSectorsIds()
+      sectors: getSectorsIds(),
+      medicalCardExpirationDate,
+      medicalCardSignedDate,
     });
     toast.loading("Saving changes...", { duration: 1000 });
-  }
+  };
 
   return (
     <>
@@ -259,17 +286,30 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="min-h-screen bg-zinc-900">
-        <NewItemPageHeader title={`${data.name} `} context={'crew'} save={save} saving={mutation.isLoading || isLoading} deleting={deletingCrew} />
+        <NewItemPageHeader
+          title={`${data.name} `}
+          context={"crew"}
+          save={save}
+          saving={mutation.isLoading || isLoading}
+          deleting={deletingCrew}
+        />
         <div className="flex items-center justify-center">
           <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-3/5">
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Name</h1>
-              <InputComponent type={"text"} error={crewNameError} value={crewName} onChange={(e) => setCrewName(e.currentTarget.value)} disabled={isLoading || mutation.isLoading} autoFocus />
+              <InputComponent
+                type={"text"}
+                error={crewNameError}
+                value={crewName}
+                onChange={(e) => setCrewName(e.currentTarget.value)}
+                disabled={isLoading || mutation.isLoading}
+                autoFocus
+              />
             </div>
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold ">Position</h1>
               <select
-                className="w-full ring-2 ring-zinc-700 rounded p-2 outline-none text-zinc-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800"
+                className="w-full rounded bg-zinc-800 p-2 text-zinc-200 outline-none ring-2 ring-zinc-700 transition-all duration-100 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 focus:ring-2 focus:ring-amber-700"
                 placeholder="Name"
                 value={position}
                 disabled={isLoading || mutation.isLoading}
@@ -285,16 +325,24 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                 <option value="Subcontractor">Subcontractor</option>
                 <option value="Other">Other</option>
               </select>
-              <p className="p-1 text-red-500 tracking-tight">{positionError}</p>
+              <p className="p-1 tracking-tight text-red-500">{positionError}</p>
             </div>
 
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Tags</p>
-              <TagsMultiselectDropdown type={"crews and sectors"} savedTags={tags} savedSectors={sectors} onSetSectors={setSectors} onSetTags={setTags} />
+              <TagsMultiselectDropdown
+                type={"crews and sectors"}
+                savedTags={tags}
+                savedSectors={sectors}
+                onSetSectors={setSectors}
+                onSetTags={setTags}
+              />
               {sectorError && (
                 <>
-                  <div className="h-[3px] rounded bg-red-500 translate-y-1"></div>
-                  <p className="p-1 text-red-500 tracking-tight">{sectorError}</p>
+                  <div className="h-[3px] translate-y-1 rounded bg-red-500"></div>
+                  <p className="p-1 tracking-tight text-red-500">
+                    {sectorError}
+                  </p>
                 </>
               )}
             </div>
@@ -302,45 +350,120 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Phone Number</p>
 
-              <PhoneEmailComponent type={"tel"} error={phoneError} value={phone} onChange={(e) => setPhone(e.currentTarget.value)} disabled={isLoading || mutation.isLoading} />
+              <PhoneEmailComponent
+                type={"tel"}
+                error={phoneError}
+                value={phone}
+                onChange={(e) => setPhone(e.currentTarget.value)}
+                disabled={isLoading || mutation.isLoading}
+              />
             </div>
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Email</p>
 
-              <PhoneEmailComponent type={"email"} error={emailError} value={email} onChange={(e) => setEmail(e.currentTarget.value)} disabled={isLoading || mutation.isLoading} />
+              <PhoneEmailComponent
+                type={"email"}
+                error={emailError}
+                value={email}
+                onChange={(e) => setEmail(e.currentTarget.value)}
+                disabled={isLoading || mutation.isLoading}
+              />
             </div>
             <div className="w-full p-2" />
 
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Wage</p>
 
-              <InputComponent type={"number"} error={wageError} value={wage} onChange={(e) => setWage(e.currentTarget.value)} disabled={isLoading || mutation.isLoading} />
+              <InputComponent
+                type={"number"}
+                error={wageError}
+                value={wage}
+                onChange={(e) => setWage(e.currentTarget.value)}
+                disabled={isLoading || mutation.isLoading}
+              />
             </div>
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Burden</p>
 
-
-              <InputComponent type={"decimal"} error={burdenError} value={burden} onChange={(e) => setBurden(e.currentTarget.value)} disabled={isLoading || mutation.isLoading} />
+              <InputComponent
+                type={"decimal"}
+                error={burdenError}
+                value={burden}
+                onChange={(e) => setBurden(e.currentTarget.value)}
+                disabled={isLoading || mutation.isLoading}
+              />
             </div>
             <div className="w-full p-2" />
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Rating</p>
 
-              <InputComponent type={"number"} error={ratingError} value={rating} onChange={(e) => setRating(e.currentTarget.value)} disabled={isLoading || mutation.isLoading} />
+              <InputComponent
+                type={"number"}
+                error={ratingError}
+                value={rating}
+                onChange={(e) => setRating(e.currentTarget.value)}
+                disabled={isLoading || mutation.isLoading}
+              />
+            </div>
+            <div className="w-full p-2" />
+            <div className="w-full p-2">
+              <p className="py-1 text-lg font-semibold">Med Card Signed Date</p>
+              {medicalCardSignedDate && (
+                <InputComponent
+                  type={"date"}
+                  error={ratingError}
+                  value={medicalCardSignedDate?.toDateString()}
+                  onChange={(e) => setRating(e.currentTarget.value)}
+                  disabled={isLoading || mutation.isLoading}
+                />
+              )}
+            </div>
+            <div className="w-full p-2">
+              <p className="py-1 text-lg font-semibold">
+                Med Card Expiration Date
+              </p>
+              {medicalCardExpirationDate && (
+                <InputComponent
+                  type={"date"}
+                  error={ratingError}
+                  value={medicalCardExpirationDate?.toDateString()}
+                  onChange={(e) => setRating(e.currentTarget.value)}
+                  disabled={isLoading || mutation.isLoading}
+                />
+              )}
             </div>
             <div className="w-full p-2 ">
               <h1 className="text-lg font-semibold">Notes</h1>
 
-              <TextareaComponent error={descriptionError} value={description} onChange={(e) => setDescription(e.currentTarget.value)} disabled={isLoading || mutation.isLoading} />
+              <TextareaComponent
+                error={descriptionError}
+                value={description}
+                onChange={(e) => setDescription(e.currentTarget.value)}
+                disabled={isLoading || mutation.isLoading}
+              />
             </div>
 
-            <div className="w-full pb-5 font-semibold p-2">
-              <ButtonCallToActionComponent onClick={save} disabled={isLoading || mutation.isLoading || deletingCrew} >
-                {mutation.isLoading ? <LoadingSpinner /> : (<><p>Save</p> <CloudArrowUpIcon className="ml-2 h-5 w-5" /> </>)}
+            <div className="w-full p-2 pb-5 font-semibold">
+              <ButtonCallToActionComponent
+                onClick={save}
+                disabled={isLoading || mutation.isLoading || deletingCrew}
+              >
+                {mutation.isLoading ? (
+                  <LoadingSpinner />
+                ) : (
+                  <>
+                    <p>Save</p> <CloudArrowUpIcon className="ml-2 h-5 w-5" />{" "}
+                  </>
+                )}
               </ButtonCallToActionComponent>
-
             </div>
-            <ButtonDeleteAction title={"Are you sure you want to delete this crew member?"} description="The crew member will not be recoverable after you delete it." loading={deletingCrew} yes={deleteCrewMember} disabled={isLoading || mutation.isLoading || deletingCrew} />
+            <ButtonDeleteAction
+              title={"Are you sure you want to delete this crew member?"}
+              description="The crew member will not be recoverable after you delete it."
+              loading={deletingCrew}
+              yes={deleteCrewMember}
+              disabled={isLoading || mutation.isLoading || deletingCrew}
+            />
           </div>
         </div>
       </main>
