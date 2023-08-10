@@ -209,6 +209,7 @@ export const crewMembersRouter = createTRPCRouter({
 
         medicalCardSignedDate: z.date().optional(),
         medicalCardExpirationDate: z.date().optional(),
+        includesMedicalCard: z.boolean(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -261,6 +262,22 @@ export const crewMembersRouter = createTRPCRouter({
 
       const sector = input.sectors[0];
 
+      let medicalCardExpDate = input.medicalCardExpirationDate as
+        | Date
+        | undefined
+        | null;
+      let medicalCardSignedDate = input.medicalCardSignedDate as
+        | Date
+        | undefined
+        | null;
+
+      console.log(input.includesMedicalCard);
+
+      if (input.includesMedicalCard === false) {
+        medicalCardExpDate = null;
+        medicalCardSignedDate = null;
+      }
+
       const crewMember = await ctx.prisma.crewMember.update({
         where: {
           id: input.crewMemberId,
@@ -275,6 +292,8 @@ export const crewMembersRouter = createTRPCRouter({
           burden: input.burden,
           rating: input.rating.toString().trim(),
           sectorId: sector,
+          medicalCardExpDate: medicalCardExpDate,
+          medicalCardSignedDate: medicalCardSignedDate,
           tags: {
             disconnect: disconnectTags?.map((tag) => ({
               id: tag.id,
@@ -585,6 +604,7 @@ export const crewMembersRouter = createTRPCRouter({
           .max(10, "The rating must be less than or equal to 10."),
         medicalCardSignedDate: z.date().optional(),
         medicalCardExpirationDate: z.date().optional(),
+        includesMedicalCard: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -632,6 +652,22 @@ export const crewMembersRouter = createTRPCRouter({
 
       const sector = input.sectors[0];
 
+      let medicalCardExpDate = input.medicalCardExpirationDate as
+        | Date
+        | undefined
+        | null;
+      let medicalCardSignedDate = input.medicalCardSignedDate as
+        | Date
+        | undefined
+        | null;
+
+      console.log(input.includesMedicalCard);
+
+      if (input.includesMedicalCard === false) {
+        medicalCardExpDate = null;
+        medicalCardSignedDate = null;
+      }
+
       const crewMember = await ctx.prisma.crewMember.create({
         data: {
           authorId,
@@ -653,6 +689,8 @@ export const crewMembersRouter = createTRPCRouter({
           total: 0,
 
           sectorId: sector,
+          medicalCardExpDate: medicalCardExpDate,
+          medicalCardSignedDate: medicalCardSignedDate,
           tags: {
             connect: input.tags?.map((tag) => ({
               id: tag,

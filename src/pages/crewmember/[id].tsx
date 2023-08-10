@@ -8,7 +8,7 @@ import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
-import { CloudArrowUpIcon } from "@heroicons/react/24/solid";
+import { CloudArrowUpIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
 import { type Sector, type Tag } from "@prisma/client";
 import { TagsMultiselectDropdown } from "~/components/TagDropdown";
@@ -20,6 +20,8 @@ import {
   TextareaComponent,
 } from "~/components/input";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { DialogComponent } from "~/components/dialog";
+import { inc } from "semver";
 
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [medCardAnimationParent] = useAutoAnimate();
@@ -35,6 +37,16 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [medicalCardSignedDate, setMedicalCardSignedDate] = useState<string>();
   const [medicalCardExpirationDate, setMedicalCardExpirationDate] =
     useState<string>();
+
+  const [includeMedicalCard, setIncludeMedicalCard] = useState(false);
+
+  const clearMedicalCard = useCallback(() => {
+    setMedicalCardExpirationDate(undefined);
+    setMedicalCardSignedDate(undefined);
+    setIncludeMedicalCard(false);
+
+    console.log(includeMedicalCard);
+  }, []);
 
   const [tags, setTags] = useState<Tag[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
@@ -150,23 +162,33 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     crewMemberId: id,
   });
 
-  const setMedicalCardDates = useCallback(() => {
-    const startDate = new Date(Date.now());
-    const expirationDate = new Date(
+  const setMedicalCardDates = useCallback((signed?: Date, exp?: Date) => {
+    if (isLoading || !data) return;
+
+    let startDate = new Date(Date.now());
+    let expirationDate = new Date(
       new Date(Date.now()).setFullYear(new Date().getFullYear() + 2)
     );
 
-    let startMonth = startDate.getMonth().toString();
+    if (signed) {
+      startDate = signed;
+    }
+
+    if (exp) {
+      expirationDate = exp;
+    }
+
+    let startMonth = (startDate.getMonth() + 1).toString();
     if (startMonth.length === 1) {
       startMonth = `0${startMonth}`;
     }
 
     let startDay = startDate.getDate().toString();
     if (startDay.length === 1) {
-      startDay = `${startDay}`;
+      startDay = `0${startDay}`;
     }
 
-    let expirationMonth = expirationDate.getMonth().toString();
+    let expirationMonth = (expirationDate.getMonth() + 1).toString();
     if (expirationMonth.length === 1) {
       expirationMonth = `0${expirationMonth}`;
     }
@@ -175,6 +197,8 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     if (expirationDay.length === 1) {
       expirationDay = `0${expirationDay}`;
     }
+
+    setIncludeMedicalCard(true);
 
     setMedicalCardSignedDate(
       `${startDate.getFullYear()}-${startMonth}-${startDay}`
@@ -191,7 +215,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   }, [deleteCrewMemberMutation, id]);
 
   useMemo(() => {
-    if (data == null) return;
+    if (data == null || isLoading || deletingCrew) return;
 
     if (data.name) {
       setCrewName(data.name);
@@ -228,55 +252,37 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       setTags(data.tags);
     }
 
-    if (data.medicalCardSignedDate) {
-      const theDate = data.medicalCardSignedDate.toLocaleDateString();
-      setMedicalCardSignedDate(theDate);
-    }
+    if (data.medicalCardSignedDate && data.medicalCardExpDate) {
+      const signed = data.medicalCardSignedDate;
+      const exp = data.medicalCardExpDate;
 
-    if (data.medicalCardExpDate) {
-      const theDate = data.medicalCardExpDate.toLocaleDateString();
-      setMedicalCardExpirationDate(theDate);
+      setMedicalCardDates(signed, exp);
     }
 
     if (data.sector) {
       setSectors([data.sector]);
     }
-  }, [data]);
+  }, [data, setMedicalCardDates]);
 
-  if (isLoading)
-    return (
-      <div>
-        <LoadingPage />
-      </div>
-    );
-
-  if (!data) {
-    toast.error("Could not fetch data - please try again later.");
-
-    return (
-      <div>
-        <LoadingPage />
-      </div>
-    );
-  }
-
-  const getTagsStringArray = () => {
+  const getTagsStringArray = useCallback(() => {
     const tagsStringArray = [] as string[];
     tags.forEach((tag) => {
       tagsStringArray.push(tag.id);
     });
     return tagsStringArray;
-  };
+  }, [tags]);
 
-  const getSectorsIds = () => {
+  const getSectorsIds = useCallback(() => {
     const sectorsIdsArray = [] as string[];
     sectors.forEach((s) => {
       sectorsIdsArray.push(s.id);
     });
     return sectorsIdsArray;
-  };
+  }, [sectors]);
 
-  const save = () => {
+  const save = useCallback(() => {
+    if (data == null) return;
+
     setCrewNameError("");
 
     setDescriptionError("");
@@ -316,6 +322,18 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
         ? new Date(medicalCardSignedDate)
         : undefined;
 
+    const medExp = medCardExpirationDate
+      ? new Date(
+          medCardExpirationDate?.setDate(medCardExpirationDate.getDate() + 1)
+        )
+      : undefined;
+
+    const medSign = medCardSignedDate
+      ? new Date(medCardSignedDate.setDate(medCardSignedDate.getDate() + 1))
+      : undefined;
+
+    console.log(includeMedicalCard, "includeMedicalCard");
+
     mutation.mutate({
       crewMemberId: data.id,
       name: crewName,
@@ -328,11 +346,45 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       burden: parseFloat(burden),
       rating: parseInt(rating),
       sectors: getSectorsIds(),
-      medicalCardExpirationDate: medCardExpirationDate,
-      medicalCardSignedDate: medCardSignedDate,
+      medicalCardExpirationDate: medExp,
+      medicalCardSignedDate: medSign,
+      includesMedicalCard: includeMedicalCard,
     });
     toast.loading("Saving changes...", { duration: 1000 });
-  };
+  }, [
+    crewName,
+    description,
+    email,
+    medicalCardExpirationDate,
+    medicalCardSignedDate,
+    mutation,
+    phone,
+    position,
+    rating,
+    wage,
+    burden,
+    data,
+    getSectorsIds,
+    getTagsStringArray,
+    includeMedicalCard,
+  ]);
+
+  if (isLoading)
+    return (
+      <div>
+        <LoadingPage />
+      </div>
+    );
+
+  if (!data) {
+    toast.error("Could not fetch data - please try again later.");
+
+    return (
+      <div>
+        <LoadingPage />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -465,7 +517,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
               ref={medCardAnimationParent}
               className="w-full rounded border border-zinc-700"
             >
-              <p className="px-1 text-2xl">Medical Cards</p>
+              <p className="px-1 text-2xl font-semibold">Med Card</p>
               {medicalCardSignedDate && medicalCardExpirationDate ? (
                 <>
                   <div className="w-full p-2" />
@@ -478,9 +530,11 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
 
                         <InputComponent
                           type={"date"}
-                          error={ratingError}
+                          error={medicalCardSignedDateError}
                           value={medicalCardSignedDate}
-                          onChange={(e) => setRating(e.currentTarget.value)}
+                          onChange={(e) => {
+                            setMedicalCardSignedDate(e.currentTarget.value);
+                          }}
                           disabled={isLoading || mutation.isLoading}
                         />
                       </>
@@ -494,30 +548,35 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                         </p>
                         <InputComponent
                           type={"date"}
-                          error={ratingError}
+                          error={medicalCardExpirationDateError}
                           value={medicalCardExpirationDate}
-                          onChange={(e) => setRating(e.currentTarget.value)}
+                          onChange={(e) => {
+                            setMedicalCardExpirationDate(e.currentTarget.value);
+                          }}
                           disabled={isLoading || mutation.isLoading}
                         />
                       </>
                     )}
                   </div>
                   <div className="w-full p-2">
-                    <button
-                      onClick={() => {
-                        setMedicalCardSignedDate("");
-                        setMedicalCardExpirationDate("");
-                      }}
-                      className="rounded bg-amber-700 p-2"
-                    >
-                      Cancel
-                    </button>
+                    <DialogComponent
+                      yes={clearMedicalCard}
+                      title="Remove Medical Card Information"
+                      description="Are you sure you want to remove the medical card information?"
+                      trigger={
+                        <div className="flex items-center justify-center gap-2 rounded bg-red-700 p-2 text-center hover:cursor-pointer">
+                          <TrashIcon className="h-5 w-5 text-white" />
+                          <p>Remove Medical Card Information</p>
+                        </div>
+                      }
+                    />
                   </div>
                 </>
               ) : (
                 <div className="w-full p-1">
                   <button
                     onClick={() => {
+                      setIncludeMedicalCard(true);
                       setMedicalCardDates();
                     }}
                     className="rounded bg-amber-700 p-2"

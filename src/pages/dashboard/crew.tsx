@@ -140,9 +140,11 @@ const CrewMembersPage: NextPage = () => {
             className="flex flex-col items-start justify-start gap-1 border-t border-zinc-700 p-2 text-gray-100"
           >
             {isLoading ? (
-              <div className="flex flex-col gap-2 w-full h-[100vh] justify-center items-center">
+              <div className="flex h-[100vh] w-full flex-col items-center justify-center gap-2">
                 <LoadingSpinner />
-                <p className="text-zinc-600 font-semibold" >Loading Crew Members</p>
+                <p className="font-semibold text-zinc-600">
+                  Loading Crew Members
+                </p>
               </div>
             ) : loadingCrewError || !crewData ? (
               <div className="flex w-full flex-col items-center justify-center gap-2 rounded p-2">
@@ -177,7 +179,6 @@ const CrewMembersPage: NextPage = () => {
                   </div>
                 )}
 
-
                 <div className="h-20"></div>
                 <button
                   onClick={scrollToTop}
@@ -207,9 +208,13 @@ const CrewMemberItem: FC<{
     toast.success(`${type}Copied to clipboard`);
   }, []);
 
+  const generateID = () => {
+    return Math.random().toString(36);
+  };
+
   return (
     <div
-      className="flex w-full cursor-pointer select-none rounded-sm bg-zinc-700 hover:bg-zinc-600 transition-all duration-100"
+      className="flex w-full cursor-pointer select-none rounded-sm bg-zinc-700 transition-all duration-100 hover:bg-zinc-600"
       key={crewMember.id}
     >
       <Link
@@ -219,9 +224,9 @@ const CrewMemberItem: FC<{
       >
         {/* <UserCircleIcon className="hidden h-10 w-10 flex-1 text-zinc-300 md:block" /> */}
         <div className="flex flex-grow flex-col text-left text-white md:max-w-[40%] lg:w-1/3">
-          <div className="flex gap-2 justify-start items-center">
+          <div className="flex items-center justify-start gap-2">
             {sector && (
-              <p className="truncate text-xs text-zinc-100 font-semibold bg-zinc-500 px-2 rounded-full ">
+              <p className="truncate rounded-full bg-zinc-500 px-2 text-xs font-semibold text-zinc-100 ">
                 {sector?.name}
               </p>
             )}
@@ -233,11 +238,32 @@ const CrewMemberItem: FC<{
             <p className="truncate text-lg font-semibold text-white ">
               {crewMember.name}
             </p>
-            {tags.length > 0 && (
+            {(tags.length > 0 ||
+              (crewMember.medicalCardExpDate &&
+                crewMember.medicalCardSignedDate)) && (
               <div className="flex flex-wrap gap-1 ">
                 {tags.map((tag) => (
                   <TagBubble tag={tag} key={tag.id} style="text-xs" />
                 ))}
+                {crewMember.medicalCardExpDate &&
+                  crewMember.medicalCardExpDate > new Date() &&
+                  crewMember.medicalCardSignedDate && (
+                    <TagBubble
+                      tag={{
+                        authorId: "sys",
+                        createdAt: new Date(),
+                        id: generateID(),
+                        type: "crew",
+                        updatedAt: new Date(),
+                        description: `${
+                          crewMember.name
+                        } has a valid medical card on file. (Expires: ${crewMember.medicalCardExpDate.toLocaleDateString()}).`,
+                        name: "Medical Card",
+                        backgroundColor: "#77ee77",
+                      }}
+                      style="text-xs"
+                    />
+                  )}
               </div>
             )}
           </div>
