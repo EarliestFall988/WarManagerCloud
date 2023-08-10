@@ -101,6 +101,7 @@ const useBlueprintStore = create<BlueprintState>((set) => ({
     updatedAt: new Date(),
     authorId: "",
     pinned: false,
+    live: false,
   },
 
   isLoading: true,
