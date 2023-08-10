@@ -459,6 +459,25 @@ export const CrewList = (props: { blueprintId: string }) => {
                     {crew.tags.map((tag) => (
                       <TagBubble key={tag.id} tag={tag} />
                     ))}
+                    {crew.medicalCardExpDate &&
+                      crew.medicalCardExpDate > new Date() &&
+                      crew.medicalCardSignedDate && (
+                        <TagBubble
+                          tag={{
+                            authorId: "sys",
+                            createdAt: new Date(),
+                            id: Math.random().toString(36),
+                            type: "crew",
+                            updatedAt: new Date(),
+                            description: `${
+                              crew.name
+                            } has a valid medical card on file. (Expires: ${crew.medicalCardExpDate.toLocaleDateString()}).`,
+                            name: "Medical Card",
+                            backgroundColor: "#77ee77",
+                          }}
+                          style="text-xs"
+                        />
+                      )}
                   </div>
                 </div>
               </Link>

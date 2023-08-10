@@ -35,7 +35,6 @@ interface crewNodeInput {
 //     tags: Tag[];
 
 const CrewNode = ({ data, selected }: crewNodeInput) => {
-
   const { crewData, isLoading } = useLiveData();
 
   const info = crewData.find((crew) => crew.id == data.id);
@@ -108,6 +107,25 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
                                   style="text-xs"
                                 />
                               ))}
+                              {info.medicalCardExpDate &&
+                                info.medicalCardExpDate > new Date() &&
+                                info.medicalCardSignedDate && (
+                                  <TagBubble
+                                    tag={{
+                                      authorId: "sys",
+                                      createdAt: new Date(),
+                                      id: Math.random().toString(36),
+                                      type: "crew",
+                                      updatedAt: new Date(),
+                                      description: `${
+                                        info.name
+                                      } has a valid medical card on file. (Expires: ${info.medicalCardExpDate.toLocaleDateString()}).`,
+                                      name: "Medical Card",
+                                      backgroundColor: "#77ee77",
+                                    }}
+                                    style="text-xs"
+                                  />
+                                )}
                             </div>
                           )}
                         </div>
@@ -246,6 +264,25 @@ const CrewNode = ({ data, selected }: crewNodeInput) => {
                     tooltipDelayDuration={500}
                   />
                 ))}
+                {info.medicalCardExpDate &&
+                  info.medicalCardExpDate > new Date() &&
+                  info.medicalCardSignedDate && (
+                    <TagBubble
+                      tag={{
+                        authorId: "sys",
+                        createdAt: new Date(),
+                        id: Math.random().toString(36),
+                        type: "crew",
+                        updatedAt: new Date(),
+                        description: `${
+                          info.name
+                        } has a valid medical card on file. (Expires: ${info.medicalCardExpDate.toLocaleDateString()}).`,
+                        name: "Medical Card",
+                        backgroundColor: "#77ee77",
+                      }}
+                      style="text-[0.3rem] bg-zinc-900"
+                    />
+                  )}
               </div>
             )}
           </div>
