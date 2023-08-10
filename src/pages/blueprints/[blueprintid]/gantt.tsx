@@ -1,10 +1,11 @@
 import { type NextPage } from "next";
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useMemo, useCallback } from "react";
 import { ViewMode, Gantt, type Task } from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
+  ArrowRightIcon,
   CalendarIcon,
   CloudArrowUpIcon,
   ListBulletIcon,
@@ -23,6 +24,7 @@ import {
 } from "@prisma/client";
 import { LoadingSpinner } from "~/components/loading";
 import { toast } from "react-hot-toast";
+import { DialogComponent } from "~/components/dialog";
 
 type ScheduleItemType = ScheduleHistoryItem & {
   project: Project;
@@ -41,7 +43,13 @@ const GanttPage: NextPage = () => {
   const [viewString, setViewString] = React.useState<string>("day");
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [isChecked, setIsChecked] = React.useState(true);
-  const [scheduleData, setScheduleData] = React.useState<ScheduleItemType[]>();
+  const [goBackAfterSave, setGoBackAfterSave] = React.useState(false);
+  const [goToCommitAfterSave, setGoToCommitAfterSave] = React.useState(false);
+  // const [scheduleData, setScheduleData] = React.useState<ScheduleItemType[]>();
+  const Back = () => {
+    if (window.history.length > 0) router.back();
+    else void router.push("/dashboard/blueprints");
+  };
 
   const blueprintContext = api.useContext().blueprints;
   const timeScheduleContext = api.useContext().timeScheduling;
@@ -51,9 +59,9 @@ const GanttPage: NextPage = () => {
       blueprintId: id,
     });
 
-  if (scheduleData === undefined && data !== undefined) {
-    setScheduleData(data?.scheduleHistories[0]?.ScheduleHistoryItems);
-  }
+  // if (scheduleData === undefined && data !== undefined) {
+  //   setScheduleData(data?.scheduleHistories[0]?.ScheduleHistoryItems);
+  // }
 
   const {
     mutate: UpdateTimeScheduleItems,
@@ -64,6 +72,16 @@ const GanttPage: NextPage = () => {
       console.log(data);
       void blueprintContext.invalidate();
       void timeScheduleContext.invalidate();
+
+      if (goBackAfterSave) {
+        setGoBackAfterSave(false);
+        Back();
+      }
+
+      if (goToCommitAfterSave) {
+        setGoToCommitAfterSave(false);
+        void router.push(`/dashboard/blueprints/${id}/commit`);
+      }
     },
     onError: (e) => {
       console.log(e);
@@ -71,10 +89,13 @@ const GanttPage: NextPage = () => {
     },
   });
 
-  useEffect(() => {
-    if (scheduleData == undefined || scheduleData.length === 0) return;
+  useMemo(() => {
+    if (data === undefined || data?.scheduleHistories === undefined) return;
 
-    const latestScheduleHistory = scheduleData;
+    const latestScheduleHistory =
+      data?.scheduleHistories[0]?.ScheduleHistoryItems;
+
+    if (tasks.length !== 0) return;
 
     const t = [] as Task[];
 
@@ -123,6 +144,16 @@ const GanttPage: NextPage = () => {
         if (loc > -1) {
           t.splice(loc + 1, 0, crew);
         }
+
+        const project = t.find((b) => b.id === p.project.id);
+        if (project !== undefined && project !== null) {
+          if (project?.end < end) {
+            project.end = end;
+          }
+          if (project.start > start) {
+            project.start = start;
+          }
+        }
       }
 
       if (p.equipment !== undefined && p.equipment !== null) {
@@ -143,11 +174,21 @@ const GanttPage: NextPage = () => {
         if (loc > -1) {
           t.splice(loc + 1, 0, equipment);
         }
+
+        const project = t.find((b) => b.id === p.project.id);
+        if (project !== undefined && project !== null) {
+          if (project?.end < end) {
+            project.end = end;
+          }
+          if (project.start > start) {
+            project.start = start;
+          }
+        }
       }
     });
 
     setTasks(t);
-  }, [scheduleData, data]);
+  }, [data, tasks]);
 
   let columnWidth = 65;
 
@@ -266,11 +307,6 @@ const GanttPage: NextPage = () => {
     console.log("On expander click Id:" + task.id);
   };
 
-  const Back = () => {
-    if (window.history.length > 0) router.back();
-    else void router.push("/dashboard/blueprints");
-  };
-
   const SaveChanges = useCallback(() => {
     if (data == undefined) return;
 
@@ -329,12 +365,22 @@ const GanttPage: NextPage = () => {
         <div className="min-h-[100vh] w-full bg-zinc-800 text-black">
           <div className="fixed top-0 z-20 flex w-full items-center justify-between border-b border-zinc-600 bg-zinc-800/90 p-2 backdrop-blur">
             <div className="flex items-center gap-2">
-              <button
-                onClick={Back}
-                className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
-              >
-                <ArrowLeftIcon className="h-5 w-5" />
-              </button>
+              <DialogComponent
+                title="Save Changes?"
+                description="Do you want to save changes?"
+                yes={() => {
+                  setGoToCommitAfterSave(false);
+                  setGoBackAfterSave(true);
+                  SaveChanges();
+                }}
+                no={Back}
+                highlightYes
+                trigger={
+                  <button className="rounded bg-zinc-600 bg-gradient-to-br p-2 text-white transition-all duration-100 hover:scale-105 hover:bg-zinc-500">
+                    <ArrowLeftIcon className="h-5 w-5" />
+                  </button>
+                }
+              />
               {data?.name && (
                 <h2 className="text-large font-semibold text-white">
                   {data?.name} - Time Scheduling
@@ -346,7 +392,7 @@ const GanttPage: NextPage = () => {
                 </h2>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="hidden gap-2 md:flex">
               <SwitchComponent
                 onCheckedChange={(e) => {
                   setIsChecked(e);
@@ -389,13 +435,20 @@ const GanttPage: NextPage = () => {
                   </div>
                 </button>
               </TooltipComponent>
-              <button className="flex items-center justify-start gap-2 rounded bg-green-600 p-2 font-semibold text-zinc-200 transition duration-200 hover:scale-105  hover:bg-green-500 focus:bg-green-500  ">
-                <CalendarIcon className="h-6 w-6" />
-                <p>Commit Schedule</p>
+              <button
+                onClick={() => {
+                  setGoToCommitAfterSave(true);
+                  setGoBackAfterSave(false);
+                  SaveChanges();
+                }}
+                className="flex items-center justify-start gap-2 rounded bg-green-600 p-2 font-semibold text-zinc-200 transition duration-200 hover:scale-105  hover:bg-green-500 focus:bg-green-500  "
+              >
+                <p>Next</p>
+                <ArrowRightIcon className="h-5 w-5" />
               </button>
             </div>
           </div>
-          {tasks.length > 0 && !isSavingChanges && (
+          {tasks.length > 0 && (
             <>
               <div className="h-16 bg-zinc-800" />
               <div className="bg-white">
@@ -415,7 +468,7 @@ const GanttPage: NextPage = () => {
               </div>
             </>
           )}
-          {(isSavingChanges || isLoading) && (
+          {isLoading && (
             <div className="flex min-h-[105vh] w-full items-center justify-center bg-zinc-900 text-white">
               <LoadingSpinner />
             </div>
