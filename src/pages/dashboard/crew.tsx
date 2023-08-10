@@ -16,7 +16,9 @@ import { type NextPage } from "next";
 import Link from "next/link";
 import { type FC, useCallback, useState } from "react";
 import { toast } from "react-hot-toast";
-import { TagBubble, TagBubblesHandler, TagType } from "~/components/TagComponent";
+import {
+  TagBubblesHandler,
+} from "~/components/TagComponent";
 import { TagsPopover } from "~/components/TagDropdown";
 import { SimpleDropDown } from "~/components/dropdown";
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
@@ -208,12 +210,6 @@ const CrewMemberItem: FC<{
     toast.success(`${type}Copied to clipboard`);
   }, []);
 
-  const tagData = tags.map((tag) => {
-    return {
-      tag: tag,
-    } as TagType
-  });
-
   return (
     <div
       className="flex w-full cursor-pointer select-none rounded-sm bg-zinc-700 transition-all duration-100 hover:bg-zinc-600"
@@ -240,7 +236,7 @@ const CrewMemberItem: FC<{
             <p className="truncate text-lg font-semibold text-white ">
               {crewMember.name}
             </p>
-            <TagBubblesHandler tags={tagData} />
+            <TagBubblesHandler tags={tags} crew={crewMember} mode="crew" />
             {/* {(tags.length > 0 ||
               (crewMember.medicalCardExpDate &&
                 crewMember.medicalCardSignedDate)) && (

@@ -28,7 +28,7 @@ import Link from "next/link";
 import { toast } from "react-hot-toast";
 import TooltipComponent from "./Tooltip";
 import * as Tabs from "@radix-ui/react-tabs";
-import { TagBubble } from "./TagComponent";
+import { TagBubble, TagBubblesHandler } from "./TagComponent";
 import { ScheduleItem } from "./ScheduleItem";
 import { DialogComponent } from "./dialog";
 import { useRouter } from "next/router";
@@ -456,29 +456,12 @@ export const CrewList = (props: { blueprintId: string }) => {
                     </p>
                   </div>
                   <div className="flex h-10 w-1/2 flex-wrap items-start justify-start gap-1 overflow-clip text-xs">
-                    {crew.tags.map((tag) => (
-                      <TagBubble key={tag.id} tag={tag} />
-                    ))}
-                    {crew.medicalCardExpDate &&
-                      crew.medicalCardExpDate > new Date() &&
-                      crew.medicalCardSignedDate && (
-                        <TagBubble
-                          tag={{
-                            authorId: "sys",
-                            createdAt: new Date(),
-                            id: Math.random().toString(36),
-                            type: "crew",
-                            updatedAt: new Date(),
-                            description: `${
-                              crew.name
-                            } has a valid medical card on file. (Expires: ${crew.medicalCardExpDate.toLocaleDateString()}).`,
-                            name: "Medical Card",
-                            backgroundColor: "#77ee77",
-                            systemTag: false,
-                          }}
-                          style="text-xs"
-                        />
-                      )}
+                    <TagBubblesHandler
+                      tags={crew.tags}
+                      mode="crew"
+                      crew={crew}
+                      style="bg-zinc-800/50"
+                    />
                   </div>
                 </div>
               </Link>

@@ -1,4 +1,4 @@
-import type { Tag } from "@prisma/client";
+import type { CrewMember, Project, Tag } from "@prisma/client";
 import TooltipComponent from "./Tooltip";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -9,14 +9,46 @@ export type TagType = {
   children?: React.ReactNode;
 };
 
-export const TagBubblesHandler: React.FC<{ tags: TagType[] }> = ({ tags }) => {
+export const TagBubblesHandler: React.FC<{
+  tags: Tag[];
+  style?: string;
+  crew?: CrewMember;
+  project?: Project;
+  mode: "crew" | "project";
+}> = ({ tags, style, crew, mode }) => {
   if (tags.length === 0) return <div></div>;
 
-  console.log(tags);
+  const tagBubbles = tags.map((t) => {
+    if (mode === "crew") {
+      if (crew?.medicalCardExpDate && t.name === "Med Card") {
+        t.description = `Med Card expires on ${new Date(
+          crew.medicalCardExpDate
+        ).toLocaleDateString()}`;
+
+        return {
+          tag: t,
+          style: style,
+          tooltipDelayDuration: 100,
+        } as TagType;
+      }
+
+      return {
+        tag: t,
+        style: style,
+        tooltipDelayDuration: 100,
+      } as TagType;
+    }
+    return {
+      tag: t,
+      style: style,
+      tooltipDelayDuration: 100,
+    } as TagType;
+  });
+
   return (
     <div className="flex flex-wrap gap-1">
-      {tags.map((t) => (
-        <TagBubble key={t.tag.id} tag={t.tag} />
+      {tagBubbles.map((t) => (
+        <TagBubble key={t.tag.id} tag={t.tag} style={t.style} />
       ))}
     </div>
   );

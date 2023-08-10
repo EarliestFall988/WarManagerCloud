@@ -46,11 +46,7 @@ import { type Node } from "reactflow";
 //   nodesMap,
 // } from "~/flow/useNodesStateSynced";
 import { GetEdges } from "~/flow/useEdgesStateSynced";
-import  {
-  DeleteNode,
-  GetNodes,
-  nodesMap,
-} from "~/flow/useNodesStateSynced";
+import { DeleteNode, GetNodes, nodesMap } from "~/flow/useNodesStateSynced";
 
 const BlueprintGUI = () => {
   const { isLoaded, isSignedIn } = useUser();
@@ -158,9 +154,7 @@ const BlueprintGUI = () => {
           {blueprint ? (
             <>
               {/* <FlowWithProvider blueprintId={blueprintId} /> */}
-              <BlueprintFlowProvider
-                blueprintId={blueprintId}
-              />
+              <BlueprintFlowProvider blueprintId={blueprintId} />
               <Panels blueprint={blueprint} />
               <CostingComponent blueprintId={blueprint.id} />
             </>
@@ -168,9 +162,7 @@ const BlueprintGUI = () => {
             <LoadingPage />
           )}
         </div>
-        <ToolbarComponent
-          blueprintId={blueprintId}
-        />
+        <ToolbarComponent blueprintId={blueprintId} />
       </main>
     </>
   );
@@ -185,7 +177,7 @@ const Ribbon: React.FC<{
   const router = useRouter();
 
   return (
-    <div className="absolute inset-0 top-0 z-20 flex h-12 w-full items-center justify-between bg-zinc-700 p-1 text-gray-100 drop-shadow-md ">
+    <div className="absolute inset-0 top-0 z-20 flex h-12 w-full items-center justify-between bg-zinc-700/70 p-1 text-gray-100 drop-shadow-md backdrop-blur ">
       <div className="flex w-1/2 items-center justify-start gap-4 sm:w-1/3">
         <TooltipComponent content="Back" side="bottom">
           <button

@@ -23,9 +23,7 @@ import projectNode from "~/components/projectNode";
 import noteNode from "~/components/noteNode";
 import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
-import useNodesStateSynced, {
-  nodesMap,
-} from "~/flow/useNodesStateSynced";
+import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
 import { toast } from "react-hot-toast";
 import useLiveData from "./databank";
 // import getDoc, { Init, isLoaded } from "./flowDocument";
@@ -207,7 +205,7 @@ const Flow: React.FC<{
   );
 
   return (
-    <div className="h-[100vh] w-full bg-zinc-800 " ref={reactFlowWrapper}>
+    <div className="h-[100vh] w-full bg-zinc-900 " ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         nodeTypes={nodeTypes}
@@ -229,19 +227,19 @@ const Flow: React.FC<{
         // onNodeClick={onNodeClick}
         proOptions={proOptions}
         snapToGrid={true}
-        snapGrid={[10, 10]}
+        snapGrid={[20, 20]}
         selectNodesOnDrag={true}
       >
         {" "}
         <Background
           id="1"
-          gap={10}
+          gap={20}
           color="#333333"
           variant={BackgroundVariant.Cross}
         />
         <Background
           id="2"
-          gap={100}
+          gap={200}
           offset={1}
           color="#444444"
           variant={BackgroundVariant.Lines}
