@@ -19,8 +19,11 @@ import {
   PhoneEmailComponent,
   TextareaComponent,
 } from "~/components/input";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
+  const [medCardAnimationParent] = useAutoAnimate();
+
   const [crewName, setCrewName] = useState("");
   const [position, setPosition] = useState("");
   const [description, setDescription] = useState("");
@@ -29,9 +32,9 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [wage, setWage] = useState("0");
   const [burden, setBurden] = useState("0");
   const [rating, setRating] = useState("5");
-  const [medicalCardSignedDate, setMedicalCardSignedDate] = useState<Date>();
+  const [medicalCardSignedDate, setMedicalCardSignedDate] = useState<string>();
   const [medicalCardExpirationDate, setMedicalCardExpirationDate] =
-    useState<Date>();
+    useState<string>();
 
   const [tags, setTags] = useState<Tag[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
@@ -147,6 +150,40 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     crewMemberId: id,
   });
 
+  const setMedicalCardDates = useCallback(() => {
+    const startDate = new Date(Date.now());
+    const expirationDate = new Date(
+      new Date(Date.now()).setFullYear(new Date().getFullYear() + 2)
+    );
+
+    let startMonth = startDate.getMonth().toString();
+    if (startMonth.length === 1) {
+      startMonth = `0${startMonth}`;
+    }
+
+    let startDay = startDate.getDate().toString();
+    if (startDay.length === 1) {
+      startDay = `${startDay}`;
+    }
+
+    let expirationMonth = expirationDate.getMonth().toString();
+    if (expirationMonth.length === 1) {
+      expirationMonth = `0${expirationMonth}`;
+    }
+
+    let expirationDay = expirationDate.getDate().toString();
+    if (expirationDay.length === 1) {
+      expirationDay = `0${expirationDay}`;
+    }
+
+    setMedicalCardSignedDate(
+      `${startDate.getFullYear()}-${startMonth}-${startDay}`
+    );
+    setMedicalCardExpirationDate(
+      `${expirationDate.getFullYear()}-${expirationMonth}-${expirationDay}`
+    );
+  }, []);
+
   const deleteCrewMember = useCallback(() => {
     deleteCrewMemberMutation({
       crewMemberId: id,
@@ -192,12 +229,12 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     }
 
     if (data.medicalCardSignedDate) {
-      const theDate = data.medicalCardSignedDate as Date;
+      const theDate = data.medicalCardSignedDate.toLocaleDateString();
       setMedicalCardSignedDate(theDate);
     }
 
-    if (data.medicalCardExpDate !== null) {
-      const theDate = data.medicalCardExpDate as Date;
+    if (data.medicalCardExpDate) {
+      const theDate = data.medicalCardExpDate.toLocaleDateString();
       setMedicalCardExpirationDate(theDate);
     }
 
@@ -260,6 +297,25 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     setMedicalCardSignedDateError("");
     setMedicalCardExpirationDateError("");
 
+    const medCardExpirationDate =
+      medicalCardExpirationDate &&
+      medicalCardExpirationDate !== "Invalid Date" &&
+      medicalCardExpirationDate !== "NaN-NaN-NaN" &&
+      medicalCardExpirationDate !== "undefined-undefined-undefined" &&
+      medicalCardExpirationDate !== "null-null-null" &&
+      medicalCardExpirationDate.length > 0
+        ? new Date(medicalCardExpirationDate)
+        : undefined;
+    const medCardSignedDate =
+      medicalCardSignedDate &&
+      medicalCardSignedDate !== "Invalid Date" &&
+      medicalCardSignedDate !== "NaN-NaN-NaN" &&
+      medicalCardSignedDate !== "undefined-undefined-undefined" &&
+      medicalCardSignedDate !== "null-null-null" &&
+      medicalCardSignedDate.length > 0
+        ? new Date(medicalCardSignedDate)
+        : undefined;
+
     mutation.mutate({
       crewMemberId: data.id,
       name: crewName,
@@ -272,8 +328,8 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       burden: parseFloat(burden),
       rating: parseInt(rating),
       sectors: getSectorsIds(),
-      medicalCardExpirationDate,
-      medicalCardSignedDate,
+      medicalCardExpirationDate: medCardExpirationDate,
+      medicalCardSignedDate: medCardSignedDate,
     });
     toast.loading("Saving changes...", { duration: 1000 });
   };
@@ -405,31 +461,70 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                 disabled={isLoading || mutation.isLoading}
               />
             </div>
-            <div className="w-full p-2" />
-            <div className="w-full p-2">
-              <p className="py-1 text-lg font-semibold">Med Card Signed Date</p>
-              {medicalCardSignedDate && (
-                <InputComponent
-                  type={"date"}
-                  error={ratingError}
-                  value={medicalCardSignedDate?.toDateString()}
-                  onChange={(e) => setRating(e.currentTarget.value)}
-                  disabled={isLoading || mutation.isLoading}
-                />
-              )}
-            </div>
-            <div className="w-full p-2">
-              <p className="py-1 text-lg font-semibold">
-                Med Card Expiration Date
-              </p>
-              {medicalCardExpirationDate && (
-                <InputComponent
-                  type={"date"}
-                  error={ratingError}
-                  value={medicalCardExpirationDate?.toDateString()}
-                  onChange={(e) => setRating(e.currentTarget.value)}
-                  disabled={isLoading || mutation.isLoading}
-                />
+            <div
+              ref={medCardAnimationParent}
+              className="w-full rounded border border-zinc-700"
+            >
+              <p className="px-1 text-2xl">Medical Cards</p>
+              {medicalCardSignedDate && medicalCardExpirationDate ? (
+                <>
+                  <div className="w-full p-2" />
+                  <div className="w-full p-2">
+                    {medicalCardSignedDate && (
+                      <>
+                        <p className="py-1 text-lg font-semibold">
+                          Med Card Signed Date
+                        </p>
+
+                        <InputComponent
+                          type={"date"}
+                          error={ratingError}
+                          value={medicalCardSignedDate}
+                          onChange={(e) => setRating(e.currentTarget.value)}
+                          disabled={isLoading || mutation.isLoading}
+                        />
+                      </>
+                    )}
+                  </div>
+                  <div className="w-full p-2">
+                    {medicalCardExpirationDate && (
+                      <>
+                        <p className="py-1 text-lg font-semibold">
+                          Med Card Expiration Date
+                        </p>
+                        <InputComponent
+                          type={"date"}
+                          error={ratingError}
+                          value={medicalCardExpirationDate}
+                          onChange={(e) => setRating(e.currentTarget.value)}
+                          disabled={isLoading || mutation.isLoading}
+                        />
+                      </>
+                    )}
+                  </div>
+                  <div className="w-full p-2">
+                    <button
+                      onClick={() => {
+                        setMedicalCardSignedDate("");
+                        setMedicalCardExpirationDate("");
+                      }}
+                      className="rounded bg-amber-700 p-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="w-full p-1">
+                  <button
+                    onClick={() => {
+                      setMedicalCardDates();
+                    }}
+                    className="rounded bg-amber-700 p-2"
+                  >
+                    Add Medical Card Information
+                  </button>
+                </div>
               )}
             </div>
             <div className="w-full p-2 ">
