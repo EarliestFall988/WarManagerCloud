@@ -95,8 +95,6 @@ export const timeSchedulingRouter = createTRPCRouter({
         },
       });
 
-      console.log(filters);
-
       const scheduleItems = await ctx.prisma.scheduleHistoryItem.findMany({
         where: {
           AND: [
@@ -137,8 +135,6 @@ export const timeSchedulingRouter = createTRPCRouter({
           endTime: true,
         },
       });
-
-      console.log(input.searchTerm, scheduleItems);
 
       return {
         ...result,
