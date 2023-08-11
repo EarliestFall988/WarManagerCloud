@@ -10,11 +10,10 @@ import { NodeResizer } from "reactflow";
 // import * as HoverCard from "@radix-ui/react-hover-card";
 import HoverCardComponent from "./HoverCard";
 // import type { Tag } from "@prisma/client";
-import { TagBubble, TagBubblesHandler } from "./TagComponent";
+import { TagBubblesHandler } from "./TagComponent";
 
 import useLiveData from "~/flow/databank";
 import { LoadingSpinner } from "./loading";
-import { h } from "vue";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import TooltipComponent from "./Tooltip";
 
