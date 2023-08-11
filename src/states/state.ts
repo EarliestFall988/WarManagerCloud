@@ -102,6 +102,7 @@ const useBlueprintStore = create<BlueprintState>((set) => ({
     authorId: "",
     pinned: false,
     live: false,
+    markAsDeleted: false,
   },
 
   isLoading: true,
