@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
+      - development
   pull_request:
     branches:
       - main
-      - development
 
 env:
     DATABASE_URL: "https://fake.com"
