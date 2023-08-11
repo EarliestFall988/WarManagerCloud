@@ -126,6 +126,7 @@ model Blueprint {
   projects          Project[]
   scheduleHistories ScheduleHistory[]
   notes             Note[]
+  markAsDeleted     Boolean?          @default(false)
 
   @@index([authorId])
 }

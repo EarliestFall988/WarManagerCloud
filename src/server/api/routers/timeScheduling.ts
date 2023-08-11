@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { createTRPCRouter, privateProcedure } from "../trpc";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
 
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
+import { Prisma } from "@prisma/client";
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
   token: "AX_sAdsdfsgODM5ZjExZGEtMmmVjNmE345445kGVmZTk5MzQ=",
@@ -18,6 +19,132 @@ export const timeSchedulingRouter = createTRPCRouter({
   /*
    *   SCHEDULE HISTORY SETS
    */
+
+  getTimeScheduleById: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        searchTerm: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const filters: Prisma.ScheduleHistoryItemWhereInput = {};
+
+      if (input.searchTerm !== undefined && input.searchTerm?.length > 3) {
+        filters.OR = [
+          {
+            crew: {
+              name: {
+                contains: input.searchTerm,
+              },
+            },
+          },
+          {
+            crew: {
+              position: {
+                contains: input.searchTerm,
+              },
+            },
+          },
+          {
+            crew: {
+              phone: {
+                contains: input.searchTerm,
+              },
+            },
+          },
+          {
+            project: {
+              name: {
+                contains: input.searchTerm,
+              },
+            },
+          },
+          {
+            project: {
+              address: {
+                contains: input.searchTerm,
+              },
+            },
+          },
+          {
+            project: {
+              state: {
+                contains: input.searchTerm,
+              },
+            },
+          },
+          {
+            project: {
+              city: {
+                contains: input.searchTerm,
+              },
+            },
+          },
+        ];
+      }
+
+      const result = await ctx.prisma.scheduleHistory.findFirst({
+        where: {
+          id: input.id,
+        },
+        select: {
+          createdAt: true,
+          defaultStartDate: true,
+          defaultEndDate: true,
+        },
+      });
+
+      console.log(filters);
+
+      const scheduleItems = await ctx.prisma.scheduleHistoryItem.findMany({
+        where: {
+          AND: [
+            {
+              scheduleHistoryId: input.id,
+            },
+            {
+              ...filters,
+            },
+          ],
+        },
+        select: {
+          project: {
+            select: {
+              id: true,
+              name: true,
+              address: true,
+              city: true,
+              state: true,
+            },
+          },
+          crew: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              position: true,
+            },
+          },
+          equipment: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            },
+          },
+          startTime: true,
+          endTime: true,
+        },
+      });
+
+      console.log(input.searchTerm, scheduleItems);
+
+      return {
+        ...result,
+        ScheduleHistoryItems: scheduleItems,
+      };
+    }),
 
   getTimeSchedulesByBlueprintId: privateProcedure
     .input(
@@ -37,7 +164,6 @@ export const timeSchedulingRouter = createTRPCRouter({
 
       return result;
     }),
-
   deleteTimeSchedules: privateProcedure
     .input(
       z.object({

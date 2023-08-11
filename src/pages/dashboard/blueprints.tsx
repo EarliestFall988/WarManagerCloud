@@ -26,6 +26,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { DialogComponent } from "~/components/dialog";
 import { toast } from "react-hot-toast";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useRouter } from "next/router";
 
 dayjs.extend(relativeTime);
 
@@ -33,6 +34,8 @@ const BlueprintsListPage: NextPage = () => {
   const { isSignedIn, isLoaded } = useUser();
 
   const [animationParent] = useAutoAnimate();
+
+  const router = useRouter();
 
   const [blueprintSearchTerm, setBlueprintSearchTerm] = useState("");
 
@@ -196,11 +199,38 @@ const BlueprintsListPage: NextPage = () => {
                 </>
               )
             )}
-            {data?.length === 0 && (
+            {data?.length === 0 && blueprintSearchTerm.length > 0 && (
               <div className="flex flex-col items-center justify-center gap-2">
                 <p className="text-xl font-bold text-zinc-300">
                   No Blueprints matching your search{" "}
                   {`'${blueprintSearchTerm}'`}
+                </p>
+              </div>
+            )}
+            {data?.length === 0 &&
+              blueprintSearchTerm.length === 0 &&
+              navigator.onLine && (
+                <div className="flex min-h-[90vh] select-none flex-col items-center justify-center gap-2 tracking-tight">
+                  <div className="flex w-5/6 flex-col items-center justify-center gap-2 rounded p-2">
+                    <p className="font-semibold text-zinc-300">
+                      No Blueprints Exist
+                    </p>
+                    <button
+                      onClick={() => {
+                        void router.push("/blueprints/new");
+                      }}
+                      className="flex items-center justify-center gap-2 rounded bg-amber-800 p-2 transition duration-100 hover:bg-amber-700"
+                    >
+                      <PlusIcon className="h-6 w-6" />
+                      <p>Create New Blueprint</p>
+                    </button>
+                  </div>
+                </div>
+              )}
+            {data?.length === 0 && !navigator.onLine && (
+              <div className="flex min-h-[90vh] flex-col items-center justify-center gap-2">
+                <p className="font-semibold text-zinc-300">
+                  {" It looks like you're Offline :("}
                 </p>
               </div>
             )}

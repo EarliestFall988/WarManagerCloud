@@ -80,7 +80,7 @@ const GanttPage: NextPage = () => {
 
       if (goToCommitAfterSave) {
         setGoToCommitAfterSave(false);
-        void router.push(`/dashboard/blueprints/${id}/commit`);
+        void router.push(`/blueprints/${id}/commit`);
       }
     },
     onError: (e) => {

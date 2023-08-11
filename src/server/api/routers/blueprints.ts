@@ -165,7 +165,9 @@ export const blueprintsRouter = createTRPCRouter({
       },
     });
 
-    return blueprints;
+    return blueprints.filter((blueprint) => {
+      return blueprint.markAsDeleted === false;
+    });
   }),
 
   search: privateProcedure
@@ -182,7 +184,11 @@ export const blueprintsRouter = createTRPCRouter({
             updatedAt: "desc",
           },
         });
-        return addUserToBlueprints(blueprints);
+        return addUserToBlueprints(
+          blueprints.filter((b) => {
+            return b.markAsDeleted === false;
+          })
+        );
       }
 
       const blueprints = await ctx.prisma.blueprint.findMany({
@@ -197,7 +203,11 @@ export const blueprintsRouter = createTRPCRouter({
         },
       });
 
-      return addUserToBlueprints(blueprints);
+      const blueprintsToView = blueprints.filter((blueprint) => {
+        return blueprint.markAsDeleted === false;
+      });
+
+      return addUserToBlueprints(blueprintsToView);
     }),
 
   getOneById: privateProcedure
@@ -656,20 +666,41 @@ export const blueprintsRouter = createTRPCRouter({
         });
       }
 
-      const blueprint = await ctx.prisma.blueprint.delete({
+      let blueprint = null as Blueprint | null;
+
+      const timeSchedules = await ctx.prisma.scheduleHistory.findMany({
         where: {
-          id: input.blueprintId,
+          blueprintId: input.blueprintId,
         },
       });
 
+      if (timeSchedules.length > 0) {
+        blueprint = await ctx.prisma.blueprint.update({
+          where: {
+            id: input.blueprintId,
+          },
+          data: {
+            live: false,
+            markAsDeleted: true,
+          },
+        });
+      } else {
+        blueprint = await ctx.prisma.blueprint.delete({
+          where: {
+            id: input.blueprintId,
+          },
+        });
+      }
       await ctx.prisma.log.create({
         data: {
           action: "url",
           category: "blueprint",
-          name: `Deleted \"${blueprint.name}\"`,
+          name: `Deleted \"${blueprint?.name || "unknown blueprint"}\"`,
           authorId: authorId,
           url: `/#`,
-          description: `Blueprint \"${blueprint.name}\" was deleted by ${email}`,
+          description: `Blueprint \"${
+            blueprint?.name || "unknown blueprint"
+          }\" was deleted by ${email}`,
           severity: "critical",
         },
       });
