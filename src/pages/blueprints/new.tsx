@@ -8,11 +8,21 @@ import { useUser } from "@clerk/nextjs";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import SignInModal from "~/components/signInPage";
 import { useRouter } from "next/router";
-import { ButtonCallToActionComponent } from "~/components/input";
+import {
+  ButtonCallToActionComponent,
+  SwitchComponentWithErrorInput,
+} from "~/components/input";
+import {
+  CheckBadgeIcon,
+  PaintBrushIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/24/solid";
+import TooltipComponent from "~/components/Tooltip";
 
 const NewBlueprintPage: NextPage = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [liveData, setLiveData] = useState<boolean>(true);
 
   const { user } = useUser();
 
@@ -57,17 +67,15 @@ const NewBlueprintPage: NextPage = () => {
   });
 
   const save = useCallback(() => {
-
     if (name.length < 3) {
       toast.error("A blueprint title must have at least three characters");
       return;
     }
 
-    toast.loading("Creating Blueprint...", { duration: 1000 })
+    toast.loading("Creating Blueprint...", { duration: 1000 });
 
-    mutate({ name, description });
-  }, [name, description, mutate]);
-
+    mutate({ name, description, liveData });
+  }, [name, description, mutate, liveData]);
 
   //redirect if the user is not found
   if (!user) {
@@ -79,15 +87,21 @@ const NewBlueprintPage: NextPage = () => {
 
   return (
     <div className="min-h-[100vh] bg-zinc-900">
-      <NewItemPageHeader title="New Blueprint" context="blueprints" save={() => save()} />
+      <NewItemPageHeader
+        title="New Blueprint"
+        context="blueprints"
+        save={() => save()}
+      />
       <div
         className="m-auto flex flex-col md:w-1/2"
-      // onSubmit={() => mutate({ name, description, nodes, edges })}
+        // onSubmit={() => mutate({ name, description, nodes, edges })}
       >
         <div className="w-full p-2">
-          <p className="py-1 text-lg font-semibold">Blueprint Title</p>
+          <p className="select-none py-1 text-lg font-semibold">
+            Blueprint Title
+          </p>
           <input
-            className="w-full ring-2 ring-zinc-700 rounded p-2 outline-none text-zinc-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800"
+            className="w-full rounded bg-zinc-800 p-2 text-zinc-200 outline-none ring-2 ring-zinc-700 transition-all duration-100 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 focus:ring-2 focus:ring-amber-700"
             type="text"
             placeholder="Name"
             disabled={isCreating}
@@ -97,15 +111,49 @@ const NewBlueprintPage: NextPage = () => {
           />
         </div>
         <div className="w-full p-2">
-          <p className="py-1 text-lg font-semibold">Blueprint Description</p>
+          <p className="select-none py-1 text-lg font-semibold">
+            Blueprint Description
+          </p>
           <input
-            className="w-full ring-2 ring-zinc-700 rounded p-2 outline-none text-zinc-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 duration-100 transition-all focus:ring-2 focus:ring-amber-700 bg-zinc-800"
+            className="w-full rounded bg-zinc-800 p-2 text-zinc-200 outline-none ring-2 ring-zinc-700 transition-all duration-100 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 focus:ring-2 focus:ring-amber-700"
             type="text"
             placeholder="Description"
             disabled={isCreating}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+        </div>
+        <div className="w-full p-2">
+          <div className="flex items-center gap-1">
+            <p className="select-none py-1 text-lg font-semibold">
+              Live Data or Zen Mode?
+            </p>
+            <TooltipComponent
+              content="Live Data (recommended) will show the latest data in the blueprint. Zen Mode will show the blueprint without checking for scheduling conflicts or showing some of the latest data."
+              side="right"
+            >
+              <QuestionMarkCircleIcon className="h-6 w-6 text-zinc-200" />
+            </TooltipComponent>
+          </div>
+          <SwitchComponentWithErrorInput
+            checked={liveData}
+            onCheckedChange={setLiveData}
+            className="bg-zinc-800"
+          >
+            {liveData ? (
+              <>
+                <div className="w-30 flex gap-2">
+                  <CheckBadgeIcon className="h-6 w-6 text-zinc-200" />
+                  <p className="w-20 text-zinc-200">Live Data</p>
+                </div>
+              </>
+            ) : (
+              <div className="w-30 flex gap-2">
+                <PaintBrushIcon className="h-6 w-6 text-zinc-200" />
+                <p className="w-20 text-zinc-200">Zen Mode</p>
+              </div>
+            )}
+          </SwitchComponentWithErrorInput>
         </div>
         <div className="p-2" />
         <div className="w-full p-2">
@@ -120,7 +168,8 @@ const NewBlueprintPage: NextPage = () => {
           <ButtonCallToActionComponent
             disabled={isCreating}
             disableToolTip={true}
-            onClick={() => save()} >
+            onClick={() => save()}
+          >
             {isCreating ? <LoadingSpinner /> : <p>Create Blueprint</p>}
           </ButtonCallToActionComponent>
         </div>

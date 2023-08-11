@@ -10,11 +10,13 @@ import type {
 } from "@prisma/client";
 import type { Edge, Node } from "reactflow";
 import {
+  CheckBadgeIcon,
   CloudArrowUpIcon,
   Cog6ToothIcon,
   FireIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
+  PaintBrushIcon,
   PlusIcon,
   QueueListIcon,
   RocketLaunchIcon,
@@ -33,10 +35,11 @@ import { ScheduleItem } from "./ScheduleItem";
 import { DialogComponent } from "./dialog";
 import { useRouter } from "next/router";
 import { GetNodes } from "~/flow/useNodesStateSynced";
-import { GetListOfNodesSortedByColumn } from "~/flow/flow";
 import useLiveData from "~/flow/databank";
 import { getCrewCost } from "~/flow/costing";
 import { useUser } from "@clerk/nextjs";
+import { GetListOfNodesSortedByColumn } from "~/flow/blueprintStructure";
+import { SwitchComponentWithErrorInput } from "./input";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -837,6 +840,10 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
     blueprint.description
   );
 
+  const live = blueprint.live || false;
+
+  const [liveData, setLiveData] = useState<boolean>(live);
+
   const context = api.useContext().blueprints;
   const router = useRouter();
 
@@ -857,8 +864,8 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
   const { mutate: mutateUpdate, isLoading: isUpdating } =
     api.blueprints.updateDetails.useMutation({
       onSuccess: () => {
-        console.log("Blueprint Updated");
         toast.success("Blueprint Updated");
+        void router.reload();
         void context.invalidate();
       },
 
@@ -883,8 +890,15 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
       blueprintId: blueprint.id,
       name: blueprintName,
       description: blueprintDescription,
+      live: liveData,
     });
-  }, [blueprint.id, blueprintName, blueprintDescription, mutateUpdate]);
+  }, [
+    blueprint.id,
+    blueprintName,
+    blueprintDescription,
+    mutateUpdate,
+    liveData,
+  ]);
 
   if (!blueprint) return <div></div>;
 
@@ -896,6 +910,8 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
       </div>
     );
   }
+
+  console.log("live data from aux", liveData);
 
   return (
     <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
@@ -971,6 +987,27 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
                   }}
                   className="w-full rounded p-1 text-zinc-700 outline-none hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600"
                 />
+              </div>
+              <div>
+                <p className="font-semibold">Live Data or Zen Mode</p>
+                <SwitchComponentWithErrorInput
+                  checked={liveData}
+                  onCheckedChange={setLiveData}
+                >
+                  {liveData ? (
+                    <>
+                      <div className="w-30 flex gap-2">
+                        <CheckBadgeIcon className="h-6 w-6 text-zinc-200" />
+                        <p className="w-20 text-zinc-200">Live Data</p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-30 flex gap-2">
+                      <PaintBrushIcon className="h-6 w-6 text-zinc-200" />
+                      <p className="w-20 text-zinc-200">Zen Mode</p>
+                    </div>
+                  )}
+                </SwitchComponentWithErrorInput>
               </div>
               <div className="py-2">
                 <button

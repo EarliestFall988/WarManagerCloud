@@ -332,7 +332,7 @@ export const DashboardMenu = () => {
         }  md:fixed md:flex`}
       >
         <div className="flex w-full select-none flex-col items-center justify-start">
-          <TooltipComponent content="See it all in context" side="right">
+          <TooltipComponent content="Hub" side="right">
             <button
               onClick={() => {
                 // void router.push("/dashboard?context=Projects");
@@ -451,7 +451,7 @@ export const DashboardMenu = () => {
             toggleOpen ? "" : "select-none items-center justify-center"
           } truncate whitespace-nowrap`}
         >
-          <TooltipComponent content="View content to help show off new features troubleshoot problems." side="right">
+          <TooltipComponent content="Tips and Troubleshoot" side="right">
             <button
               onClick={() => {
                 setContext("Help");

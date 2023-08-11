@@ -21,7 +21,6 @@ import {
 } from "~/components/input";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { DialogComponent } from "~/components/dialog";
-import { inc } from "semver";
 
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [medCardAnimationParent] = useAutoAnimate();
@@ -148,7 +147,6 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
       onSuccess: (data) => {
         toast.success(`${data.name} (${data.position}) deleted successfully!`);
         void crewContext.invalidate();
-        void tagsContext.invalidate();
         void router.back();
       },
 
@@ -163,7 +161,6 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   });
 
   const setMedicalCardDates = useCallback((signed?: Date, exp?: Date) => {
-    
     let startDate = new Date(Date.now());
     let expirationDate = new Date(
       new Date(Date.now()).setFullYear(new Date().getFullYear() + 2)
@@ -400,10 +397,25 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
           saving={mutation.isLoading || isLoading}
           deleting={deletingCrew}
         />
+        <NewItemPageHeader
+          title={`${data.name} `}
+          context={"crew"}
+          save={save}
+          saving={mutation.isLoading || isLoading}
+          deleting={deletingCrew}
+        />
         <div className="flex items-center justify-center">
           <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-3/5">
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Name</h1>
+              <InputComponent
+                type={"text"}
+                error={crewNameError}
+                value={crewName}
+                onChange={(e) => setCrewName(e.currentTarget.value)}
+                disabled={isLoading || mutation.isLoading}
+                autoFocus
+              />
               <InputComponent
                 type={"text"}
                 error={crewNameError}
@@ -433,10 +445,18 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                 <option value="Other">Other</option>
               </select>
               <p className="p-1 tracking-tight text-red-500">{positionError}</p>
+              <p className="p-1 tracking-tight text-red-500">{positionError}</p>
             </div>
 
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Tags</p>
+              <TagsMultiselectDropdown
+                type={"crews and sectors"}
+                savedTags={tags}
+                savedSectors={sectors}
+                onSetSectors={setSectors}
+                onSetTags={setTags}
+              />
               <TagsMultiselectDropdown
                 type={"crews and sectors"}
                 savedTags={tags}
@@ -476,6 +496,10 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                 disabled={isLoading || mutation.isLoading}
               />
             </div>
+
+            {/* <div className="w-full p-2">
+              <p className="py-1 text-lg font-semibold">Projects</p>
+            </div> */}
             <div className="w-full p-2" />
 
             <div className="w-full p-2">

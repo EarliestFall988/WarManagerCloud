@@ -1,9 +1,11 @@
 import {
   ArrowLongUpIcon,
   ArrowPathIcon,
+  CheckBadgeIcon,
   ClipboardDocumentIcon,
   EllipsisVerticalIcon,
   FlagIcon,
+  PaintBrushIcon,
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
@@ -159,6 +161,7 @@ const BlueprintsListPage: NextPage = () => {
                                   updatedAt={blueprint.updatedAt}
                                   description={blueprint.description}
                                   userEmail={blueprint.user?.email}
+                                  liveData={blueprint.live || false}
                                 />
                               ))}
                             </div>
@@ -176,6 +179,7 @@ const BlueprintsListPage: NextPage = () => {
                           updatedAt={blueprint.updatedAt}
                           description={blueprint.description}
                           userEmail={blueprint.user?.email}
+                          liveData={blueprint.live || false}
                         />
                       ))}
                     </div>
@@ -214,7 +218,8 @@ const BlueprintListItem: React.FC<{
   description: string;
   updatedAt: Date;
   userEmail: string | undefined;
-}> = ({ id, name, pinned, description, updatedAt, userEmail }) => {
+  liveData: boolean;
+}> = ({ id, name, pinned, description, updatedAt, userEmail, liveData }) => {
   const copy = (text: string, type: string) => {
     void navigator.clipboard.writeText(text);
     toast.success(`${type} copied to clipboard`);
@@ -281,9 +286,25 @@ const BlueprintListItem: React.FC<{
                 </TooltipComponent>
               </div>
             )}
-            <h2 className="truncate text-left text-lg font-semibold tracking-tight">
-              {name}
-            </h2>
+            <div className="flex items-center gap-1 truncate text-left text-lg font-semibold tracking-tight">
+              <p className="w-full truncate">{name}</p>
+              {liveData && (
+                <TooltipComponent
+                  content="This blueprint is evaluated for scheduling conflicts with other blueprints."
+                  side="bottom"
+                >
+                  <CheckBadgeIcon className="h-4 w-4 text-zinc-400" />
+                </TooltipComponent>
+              )}
+              {!liveData && (
+                <TooltipComponent
+                  content="This blueprint is not evaluated for scheduling conflicts with other blueprints."
+                  side="bottom"
+                >
+                  <PaintBrushIcon className="h-4 w-4 text-zinc-400" />
+                </TooltipComponent>
+              )}
+            </div>
           </div>
           {userEmail && (
             <div className="flex items-start justify-start gap-1 font-normal text-zinc-300">

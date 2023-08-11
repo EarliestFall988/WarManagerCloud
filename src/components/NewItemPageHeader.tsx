@@ -1,7 +1,13 @@
-import { ArrowLeftIcon, CloudArrowUpIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  CloudArrowUpIcon,
+  LinkIcon,
+} from "@heroicons/react/24/solid";
 import TooltipComponent from "./Tooltip";
 import { useRouter } from "next/router";
 import { LoadingSpinner } from "./loading";
+import { toast } from "react-hot-toast";
 
 export const NewItemPageHeader: React.FC<{
   title: string;
@@ -14,7 +20,6 @@ export const NewItemPageHeader: React.FC<{
   const router = useRouter();
 
   const back = () => {
-
     if (cancel !== undefined) {
       cancel();
     }
@@ -32,20 +37,43 @@ export const NewItemPageHeader: React.FC<{
     void router.push("/dashboard/activity"); //default to activity
   };
 
+  const reloadPage = () => {
+    void router.reload();
+  };
+
+  const share = () => {
+    const url = window.location.href;
+    void navigator.clipboard.writeText(url);
+    toast.success("Copied URL to clipboard!");
+  };
+
   return (
     <>
-      <div className="fixed top-0 z-20 flex w-full select-none items-center justify-between border-b border-zinc-700 bg-zinc-800/90 p-2 text-center text-lg font-semibold shadow-lg backdrop-blur-md">
-        <TooltipComponent content="Back" side="bottom">
-          <button
-            disabled={saving}
-            className="rounded p-2 hover:bg-zinc-600 disabled:text-zinc-400"
-            onClick={() => {
-              back();
-            }}
-          >
-            <ArrowLeftIcon className="h-6 w-6" />
-          </button>
-        </TooltipComponent>
+      <div className="fixed top-0 z-20 flex w-full select-none items-center justify-between border-b border-zinc-700 bg-zinc-800/60 p-2 text-center text-lg font-semibold shadow-lg backdrop-blur-md">
+        <div className="flex gap-1">
+          <TooltipComponent content="Back" side="bottom">
+            <button
+              disabled={saving}
+              className="rounded p-2 hover:bg-zinc-600 disabled:text-zinc-400"
+              onClick={() => {
+                back();
+              }}
+            >
+              <ArrowLeftIcon className="h-6 w-6" />
+            </button>
+          </TooltipComponent>
+          <TooltipComponent content="Reload" side="bottom">
+            <button
+              disabled={saving}
+              className="rounded p-2 hover:bg-zinc-600 disabled:text-zinc-400"
+              onClick={() => {
+                reloadPage();
+              }}
+            >
+              <ArrowPathIcon className="h-6 w-6" />
+            </button>
+          </TooltipComponent>
+        </div>
         {!saving && !deleting && (
           <h1 className="fade-x w-2/3 truncate text-[1rem] sm:text-lg">
             {title}
@@ -62,6 +90,17 @@ export const NewItemPageHeader: React.FC<{
           </h1>
         )}
         <div className="flex items-center gap-2">
+          <TooltipComponent content="Share" side="bottom">
+            <button
+              disabled={saving}
+              className="rounded p-2 hover:bg-zinc-600 disabled:text-zinc-400"
+              onClick={() => {
+                share();
+              }}
+            >
+              <LinkIcon className="h-6 w-6" />
+            </button>
+          </TooltipComponent>
           {save !== undefined && (
             <TooltipComponent content="Save Changes" side="bottom">
               <button

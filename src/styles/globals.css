@@ -9,11 +9,11 @@ body {
 
 *::-webkit-scrollbar {
   width: 12px;
-  /* width of the entire scrollbar */
 }
 
 *::-webkit-scrollbar-track {
   @apply bg-zinc-900;
+  display: none;
 }
 
 *::-webkit-scrollbar-thumb {
@@ -21,6 +21,7 @@ body {
   @apply rounded-sm;
   @apply hover:bg-zinc-600;
 }
+
 
 @keyframes slideUpAndFade {
   from {
