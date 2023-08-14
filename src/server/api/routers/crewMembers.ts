@@ -131,6 +131,17 @@ export const crewMembersRouter = createTRPCRouter({
         include: {
           tags: true,
           sector: true,
+          schedules: {
+            include: {
+              project: {
+                include: {
+                  sectors: true,
+                  tags: true,
+                }
+              }
+            },
+          },
+          blueprints: true,
         },
       });
 

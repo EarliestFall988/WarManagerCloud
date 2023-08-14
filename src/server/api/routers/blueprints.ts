@@ -342,19 +342,6 @@ export const blueprintsRouter = createTRPCRouter({
         });
       }
 
-      const oldBlueprint = await ctx.prisma.blueprint.findFirst({
-        where: {
-          id: input.blueprintId,
-        },
-        include: {
-          projects: true,
-          crewMembers: true,
-        },
-      });
-
-      const oldProjects = oldBlueprint?.projects || ([] as Project[]);
-      const oldCrews = oldBlueprint?.crewMembers || ([] as CrewMember[]);
-
       if (input.live) {
         const res = JSON.parse(input.flowInstanceData) as blueprintFlowType;
         //checking if the blueprint is supposed to be live data...
@@ -367,6 +354,31 @@ export const blueprintsRouter = createTRPCRouter({
         //     // console.log("crew", crew);
         //   });
         // });
+
+        const oldBlueprint = await ctx.prisma.blueprint.findFirst({
+          where: {
+            id: input.blueprintId,
+          },
+          include: {
+            projects: true,
+            crewMembers: true,
+          },
+        });
+
+        const oldProjects =
+          oldBlueprint?.projects.filter((proj) => {
+            return !structure.projects.find((p) => {
+              return p.id === proj.id;
+            });
+          }) || ([] as Project[]);
+        const oldCrews =
+          oldBlueprint?.crewMembers.filter((c) => {
+            return !structure.projects.find((p) => {
+              return p.crew.find((crew) => {
+                return crew.id === c.id;
+              });
+            });
+          }) || ([] as CrewMember[]);
 
         const crews = [] as { id: string }[];
 
@@ -472,7 +484,7 @@ export const blueprintsRouter = createTRPCRouter({
 
         return blueprint;
       } else {
-        //ELSE STATEMENT HERE>>>>>>>>>>>>>
+        //ELSE STATEMENT HERE>>>>>>>>>>>>> we don't really need this if else distinction anymore
         const blueprint = await ctx.prisma.blueprint.update({
           where: {
             id: input.blueprintId,
@@ -706,5 +718,91 @@ export const blueprintsRouter = createTRPCRouter({
       });
 
       return blueprint;
+    }),
+
+  findProjectConflicts: privateProcedure
+    .input(
+      z.object({
+        id: z.string().array(),
+        excludeBlueprint: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const allProjects = await ctx.prisma.blueprint.findMany({
+        where: {
+          live: true,
+          id: {
+            not: input.excludeBlueprint,
+          },
+        },
+        select: {
+          projects: true,
+        },
+      });
+
+      return input.id.map((id) => {
+        allProjects.find((blueprint) => {
+          blueprint.projects.find((p) => {
+            const pId = p.id;
+            if (pId === id) {
+              const proj = ctx.prisma.project
+                .findFirst({
+                  where: {
+                    id: id,
+                  },
+                  select: {
+                    name: true,
+                  },
+                })
+                .then((p) => {
+                  console.log("\n\n\nconflict found: ", p?.name, "\n\n\n");
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+
+              return {
+                id: id,
+                conflict: true,
+              };
+            }
+          });
+        });
+
+        return {
+          id: id,
+          conflict: false,
+        };
+      });
+    }),
+
+  findCrewConflicts: privateProcedure
+    .input(
+      z
+        .object({
+          id: z.string(),
+        })
+        .array()
+    )
+    .query(async ({ ctx, input }) => {
+      const allCrews = await ctx.prisma.blueprint.findMany({
+        where: {
+          live: true,
+        },
+        select: {
+          crewMembers: true,
+        },
+      });
+
+      return input.filter((crew) => {
+        allCrews.find((blueprint) => {
+          blueprint.crewMembers.find((c) => {
+            const id = c.id;
+            if (id === crew.id) return true;
+          });
+        });
+
+        return false;
+      });
     }),
 });

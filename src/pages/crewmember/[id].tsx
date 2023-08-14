@@ -8,7 +8,11 @@ import { NewItemPageHeader } from "~/components/NewItemPageHeader";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
-import { CloudArrowUpIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowRightIcon,
+  CloudArrowUpIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
 import { type Sector, type Tag } from "@prisma/client";
 import { TagsMultiselectDropdown } from "~/components/TagDropdown";
@@ -21,6 +25,7 @@ import {
 } from "~/components/input";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { DialogComponent } from "~/components/dialog";
+import { ProjectCard } from "~/components/dashboardCards";
 
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [medCardAnimationParent] = useAutoAnimate();
@@ -45,7 +50,7 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
     setIncludeMedicalCard(false);
 
     console.log(includeMedicalCard);
-  }, []);
+  }, [includeMedicalCard]);
 
   const [tags, setTags] = useState<Tag[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
@@ -397,25 +402,10 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
           saving={mutation.isLoading || isLoading}
           deleting={deletingCrew}
         />
-        <NewItemPageHeader
-          title={`${data.name} `}
-          context={"crew"}
-          save={save}
-          saving={mutation.isLoading || isLoading}
-          deleting={deletingCrew}
-        />
         <div className="flex items-center justify-center">
           <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-3/5">
             <div className="w-full p-2">
               <h1 className="text-lg font-semibold">Name</h1>
-              <InputComponent
-                type={"text"}
-                error={crewNameError}
-                value={crewName}
-                onChange={(e) => setCrewName(e.currentTarget.value)}
-                disabled={isLoading || mutation.isLoading}
-                autoFocus
-              />
               <InputComponent
                 type={"text"}
                 error={crewNameError}
@@ -445,18 +435,10 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                 <option value="Other">Other</option>
               </select>
               <p className="p-1 tracking-tight text-red-500">{positionError}</p>
-              <p className="p-1 tracking-tight text-red-500">{positionError}</p>
             </div>
 
             <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Tags</p>
-              <TagsMultiselectDropdown
-                type={"crews and sectors"}
-                savedTags={tags}
-                savedSectors={sectors}
-                onSetSectors={setSectors}
-                onSetTags={setTags}
-              />
               <TagsMultiselectDropdown
                 type={"crews and sectors"}
                 savedTags={tags}
@@ -475,6 +457,18 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
             </div>
 
             <div className="w-full p-2">
+              <p className="py-1 text-lg font-semibold">Email</p>
+
+              <PhoneEmailComponent
+                type={"email"}
+                error={emailError}
+                value={email}
+                onChange={(e) => setEmail(e.currentTarget.value)}
+                disabled={isLoading || mutation.isLoading}
+              />
+            </div>
+
+            <div className="w-full p-2">
               <p className="py-1 text-lg font-semibold">Phone Number</p>
 
               <PhoneEmailComponent
@@ -485,16 +479,59 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                 disabled={isLoading || mutation.isLoading}
               />
             </div>
-            <div className="w-full p-2">
-              <p className="py-1 text-lg font-semibold">Email</p>
 
-              <PhoneEmailComponent
-                type={"email"}
-                error={emailError}
-                value={email}
-                onChange={(e) => setEmail(e.currentTarget.value)}
+            <div className="w-full p-2 ">
+              <h1 className="text-lg font-semibold">Notes</h1>
+
+              <TextareaComponent
+                error={descriptionError}
+                value={description}
+                onChange={(e) => setDescription(e.currentTarget.value)}
                 disabled={isLoading || mutation.isLoading}
               />
+            </div>
+
+            <div className="w-full p-2 ">
+              <h1 className="select-none text-lg font-semibold">
+                Project History
+              </h1>
+              <div className="w-full rounded border border-zinc-800 p-2">
+                {data.schedules.length === 0 ? (
+                  <div>
+                    <p className="select-none text-center text-lg font-semibold">
+                      No project history.
+                    </p>
+                    <p className="select-none text-center text-zinc-400">
+                      Create a Schedule with this crew member to add a project.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {data.schedules.map((schedule, index) => (
+                      <div
+                        key={schedule.id + " " + index.toString()}
+                        className="flex flex-col gap-1"
+                      >
+                        <div className="flex items-center justify-start gap-2 text-lg font-semibold">
+                          <p>
+                            {new Date(schedule.startTime).toLocaleDateString()}
+                          </p>
+                          <ArrowRightIcon className="h-3 w-3 text-zinc-200" />
+                          <p>
+                            {new Date(schedule.endTime).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <ProjectCard
+                          project={schedule.project}
+                          tags={schedule.project.tags}
+                          sectors={schedule.project.sectors}
+                          index={index}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* <div className="w-full p-2">
@@ -538,7 +575,11 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
             </div>
             <div
               ref={medCardAnimationParent}
-              className="w-full rounded border border-zinc-700"
+              className={`w-full rounded ${
+                medicalCardSignedDate && medicalCardExpirationDate
+                  ? "border border-zinc-800"
+                  : "border border-transparent"
+              } p-1`}
             >
               <p className="px-1 text-2xl font-semibold">Med Card</p>
               {medicalCardSignedDate && medicalCardExpirationDate ? (
@@ -608,16 +649,6 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                   </button>
                 </div>
               )}
-            </div>
-            <div className="w-full p-2 ">
-              <h1 className="text-lg font-semibold">Notes</h1>
-
-              <TextareaComponent
-                error={descriptionError}
-                value={description}
-                onChange={(e) => setDescription(e.currentTarget.value)}
-                disabled={isLoading || mutation.isLoading}
-              />
             </div>
 
             <div className="w-full p-2 pb-5 font-semibold">

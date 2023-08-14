@@ -13,6 +13,7 @@ import {
   CheckBadgeIcon,
   CloudArrowUpIcon,
   Cog6ToothIcon,
+  ExclamationTriangleIcon,
   FireIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
@@ -53,7 +54,7 @@ const onDragStart = (
 
 type filterProjectsProp = {
   nodes: Node[];
-  data: (Project & { tags: Tag[] })[] | undefined;
+  data: (Project & { tags: Tag[] } & { sectors: Sector[] })[] | undefined;
 };
 
 const FilterProjects = ({ nodes, data }: filterProjectsProp) => {
@@ -71,6 +72,36 @@ const FilterProjects = ({ nodes, data }: filterProjectsProp) => {
     )
       return false;
     return true;
+  });
+};
+
+const HandleProjectsWithConflicts = (
+  projects: (Project & { tags: Tag[] } & { sectors: Sector[] })[] | undefined,
+  blueprintId: string
+) => {
+  const {
+    data: projectsWithConflicts,
+    isLoading: loadingConflictData,
+    isError: errorConflictData,
+  } = api.blueprints.findProjectConflicts.useQuery({
+    id: projects?.map((project) => project.id) || [],
+    excludeBlueprint: blueprintId,
+  });
+
+  if (loadingConflictData) return undefined;
+
+  if (errorConflictData) return undefined;
+
+  if (projectsWithConflicts === undefined || projects === undefined)
+    return undefined;
+
+  return projectsWithConflicts.map((project) => {
+    const projectToReturn = projects.find((p) => p.id === project.id);
+    if (projectToReturn === undefined) return undefined;
+    return {
+      ...projectToReturn,
+      conflict: project.conflict,
+    };
   });
 };
 
@@ -102,14 +133,21 @@ export const ProjectsList = (props: { blueprintId: string }) => {
   const getProjectsToView = () => {
     if (nodeMode === "all" && !isLoadingProjects && !isErrorProjects) {
       return (
-        searchedProjects ||
-        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] })[])
+        HandleProjectsWithConflicts(searchedProjects, props.blueprintId) ||
+        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
+          conflict: boolean;
+        })[])
       );
     } else if (nodeMode === "notOnBlueprint") {
-      return FilterProjects({
-        nodes: blueprintNodes,
-        data: searchedProjects,
-      }) as (Project & { tags: Tag[] } & { sectors: Sector[] })[];
+      return HandleProjectsWithConflicts(
+        FilterProjects({
+          nodes: blueprintNodes,
+          data: searchedProjects,
+        }),
+        props.blueprintId
+      ) as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
+        conflict: boolean;
+      })[];
     } else if (nodeMode === "onlyOnBlueprint") {
       const nodes = blueprintNodes.filter(
         (node) => node.type === "projectNode"
@@ -123,11 +161,15 @@ export const ProjectsList = (props: { blueprintId: string }) => {
       });
 
       return (
-        projects ||
-        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] })[])
+        HandleProjectsWithConflicts(projects, props.blueprintId) ||
+        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
+          conflict: boolean;
+        })[])
       );
     } else {
-      return [] as (Project & { tags: Tag[] } & { sectors: Sector[] })[];
+      return [] as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
+        conflict: boolean;
+      })[];
     }
   };
 
@@ -215,53 +257,68 @@ export const ProjectsList = (props: { blueprintId: string }) => {
             {projectsToView?.length === 0 && (
               <NothingToDisplayNotice context="projects" />
             )}
-            {projectsToView?.map((project) => (
-              <Link key={project.id} href={`/projects/${project.id}`}>
-                <div
-                  className="flex items-end justify-between border-b border-zinc-600 p-1 px-2 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
-                  draggable={draggable}
-                  onDragStart={(event) => onDragStart(event, "p-" + project.id)}
-                >
-                  <div className="w-full truncate">
-                    <div className="flex w-full items-center justify-start gap-2">
-                      <p className="truncate text-xs font-normal text-zinc-300">
-                        {project.jobNumber}
-                      </p>
-                      <p className="truncate text-xs font-normal text-zinc-300">
-                        {project.sectors.map((sector) => (
-                          <p key={sector.id}>{sector.name}</p>
-                        ))}
-                      </p>
-                    </div>
+            {projectsToView?.map((project) => {
+              if (project !== undefined)
+                return (
+                  <Link key={project.id} href={`/projects/${project.id}`}>
+                    <div
+                      className="flex items-end justify-between border-b border-zinc-600 p-1 px-2 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
+                      draggable={draggable}
+                      onDragStart={(event) =>
+                        onDragStart(event, "p-" + project.id)
+                      }
+                    >
+                      <div className="w-full truncate">
+                        <div className="flex w-full items-center justify-start gap-2">
+                          {project.conflict && (
+                            <div>
+                              <TooltipComponent
+                                content="This project has a conflict"
+                                side="top"
+                              >
+                                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
+                              </TooltipComponent>
+                            </div>
+                          )}
+                          <p className="truncate text-xs font-normal text-zinc-300">
+                            {project.jobNumber}
+                          </p>
+                          <p className="truncate text-xs font-normal text-zinc-300">
+                            {project.sectors.map((sector) => (
+                              <p key={sector.id}>{sector.name}</p>
+                            ))}
+                          </p>
+                        </div>
 
-                    <div className="text-md flex flex-grow flex-wrap items-center justify-start gap-1 truncate font-semibold">
-                      {project.name}
-                      {project.tags.map((tag) => (
-                        <TagBubble
-                          key={tag.id}
-                          tag={tag}
-                          style={"text-xs font-normal"}
-                        />
-                      ))}
-                    </div>
+                        <div className="text-md flex flex-grow flex-wrap items-center justify-start gap-1 truncate font-semibold">
+                          {project.name}
+                          {project.tags.map((tag) => (
+                            <TagBubble
+                              key={tag.id}
+                              tag={tag}
+                              style={"text-xs font-normal"}
+                            />
+                          ))}
+                        </div>
 
-                    <p className="truncate text-xs font-normal text-zinc-300">
-                      {project.city && project.state && (
-                        <>
-                          {project.city}, {project.state}
-                        </>
-                      )}
-                      {!project.city && !project.state && (
-                        <span className="text-zinc-400">N/A</span>
-                      )}
-                    </p>
-                  </div>
-                  {/* <p className="hidden w-1/2 text-sm font-normal italic tracking-tight text-zinc-300 sm:flex">
+                        <p className="truncate text-xs font-normal text-zinc-300">
+                          {project.city && project.state && (
+                            <>
+                              {project.city}, {project.state}
+                            </>
+                          )}
+                          {!project.city && !project.state && (
+                            <span className="text-zinc-400">N/A</span>
+                          )}
+                        </p>
+                      </div>
+                      {/* <p className="hidden w-1/2 text-sm font-normal italic tracking-tight text-zinc-300 sm:flex">
                     {project.description}
                   </p> */}
-                </div>
-              </Link>
-            ))}
+                    </div>
+                  </Link>
+                );
+            })}
             {projectsToView?.length === 0 && nodeMode === "notOnBlueprint" && (
               <AllOnBlueprintNotice context="projects" />
             )}
