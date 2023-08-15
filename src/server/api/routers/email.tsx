@@ -5,7 +5,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { TRPCError } from "@trpc/server";
 import * as mail from "@sendgrid/mail";
 import { render } from "@react-email/render";
-import { Template } from "../../helpers/emailTemplateComponent";
+import { Template } from "../../helpers/_emailTemplateComponent";
 import { clerkClient } from "@clerk/nextjs";
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { DefaultArgs } from "@prisma/client/runtime/library";
