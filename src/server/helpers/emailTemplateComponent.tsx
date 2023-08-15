@@ -13,7 +13,6 @@ import { Link } from "@react-email/link";
 import { Preview } from "@react-email/preview";
 import { Section } from "@react-email/section";
 import { Column } from "@react-email/column";
-import { link } from "fs";
 
 const GetHTMLEmailTemplate = (
   title: string,
@@ -133,9 +132,9 @@ export const Template = (props: {
                 {props.title}
               </Heading>
               <Section className="mt-[15px] text-left">
-                <Text>Hi, {props.name ? props.name : "War Manager User"}</Text>
+                <Text>Hi, {props.name ? props.name : ""}</Text>
               </Section>
-              <Text className="mx-auto my-0 w-full text-center">
+              <Text className="w-full">
                 {props.content}
               </Text>
               <Section className="mb-[32px] mt-[32px] text-center">
@@ -163,7 +162,7 @@ export const Template = (props: {
                 </Section>
                 <Text className="text-xs text-zinc-500">
                   This email was intended for <Link>{props.recipient}</Link> by
-                  War Manager from Jr & Company Roofing Contractors. If you
+                  War Manager from Jr & Company Roofing Contractors. <br/>If you
                   believe you have received this message in error, please
                   dispose this message immediately and reach out to support at{" "}
                   <span className="text-zinc-800">

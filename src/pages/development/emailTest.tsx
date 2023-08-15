@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { api } from "~/utils/api";
 import { useState } from "react";
 import { render } from "@react-email/render";
+import { Template } from "~/components/emailTemplateComponent";
 
 const EmailTest: NextPage = () => {
   const [emailTitle, setEmailTitle] = useState("");
@@ -22,7 +23,8 @@ const EmailTest: NextPage = () => {
     content: string,
     recipient: string,
     callToActionTitle: string,
-    link: string
+    link: string,
+    name: string
   ) => {
     return render(
       <Template
@@ -31,6 +33,7 @@ const EmailTest: NextPage = () => {
         content={content}
         link={link}
         recipient={recipient}
+        name={name}
       />,
       {
         pretty: true,
@@ -43,7 +46,8 @@ const EmailTest: NextPage = () => {
     content: string,
     recipient: string,
     callToActionTitle: string,
-    link: string
+    link: string,
+    name: string
   ) => {
     return render(
       <Template
@@ -52,6 +56,7 @@ const EmailTest: NextPage = () => {
         content={content}
         link={link}
         recipient={recipient}
+        name={name}
       />,
       {
         plainText: true,
@@ -65,31 +70,34 @@ const EmailTest: NextPage = () => {
       content: string,
       recipient: string,
       callToActionTitle: string,
-      link: string
+      link: string,
+      name: string
     ) => {
       const html = GetHTMLEmailTemplate(
         title,
         content,
         recipient,
         callToActionTitle,
-        link
+        link,
+        name
       );
       const text = GetTextEmailTemplate(
         title,
         content,
         recipient,
         callToActionTitle,
-        link
+        link,
+        name
       );
 
-      console.log(html);
-      console.log(text);
+      // console.log(html);
+      // console.log(text);
       mutate({
-        from: "taylor.howell@jrcousa.com",
-        subject: "War Manager Test Email using react email",
-        text,
-        html,
+        subject: title,
         to: recipient,
+        callToAction: callToActionTitle,
+        content: content,
+        link: link,
       });
     },
     [mutate]
@@ -144,11 +152,12 @@ const EmailTest: NextPage = () => {
       <button
         onClick={() => {
           runEmailTest(
-            emailTitle,
-            emailcontent,
-            emailRecipient,
-            emailCTATitle,
-            emailLink
+            "Test Email",
+            "It looks like you were assigned a new task by Andrew Kaiser. Please click the button below to view the task.",
+            "taylor.howell@jrcousa.com",
+            "Check it out",
+            "https://cloud.warmanager.net/dashboard/activity",
+            "Taylor"
           );
         }}
       >
@@ -160,71 +169,71 @@ const EmailTest: NextPage = () => {
 
 export default EmailTest;
 
-import { Button } from "@react-email/button";
-import { Hr } from "@react-email/hr";
-import { Html } from "@react-email/html";
-import { Text } from "@react-email/text";
-import { Heading } from "@react-email/heading";
-import { Img } from "@react-email/img";
-import { Head } from "@react-email/head";
-import { Font } from "@react-email/font";
-import { Tailwind } from "@react-email/tailwind";
-import { Container } from "@react-email/container";
-import { Link } from "@react-email/link";
-export const Template = (props: {
-  title: string;
-  content: string;
-  recipient: string;
-  callToActionTitle: string;
-  link: string;
-}) => {
-  return (
-    <>
-      <Head>
-        <title>{props.title}</title>
-        <Font
-          fontFamily="Roboto"
-          fallbackFontFamily="Verdana"
-          webFont={{
-            url: "https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2",
-            format: "woff2",
-          }}
-          fontWeight={400}
-          fontStyle="normal"
-        />
-      </Head>
-      <Html lang="en">
-        <Tailwind>
-          <Container className="rounded p-2">
-            <Heading className="text-center text-2xl p-2" as="h1">
-              {props.title}
-            </Heading>
-            <Text className="w-full text-center text-lg p-2">{props.content}</Text>
-            <Button
-              className="rounded bg-amber-600 p-2 w-full text-center font-semibold text-white"
-              href={props.link}
-            >
-              {props.callToActionTitle}
-            </Button>
-          </Container>
-          <Hr />
-          <Container className="m-auto flex w-full items-center justify-center gap-2 rounded bg-zinc-100 p-2 text-xs text-zinc-600">
-            <Img
-              src="https://warmanagerstorage.blob.core.windows.net/wmcontainerstorage/Installer%20Website/PWA%20Icons/android-launchericon-48-48.png"
-              alt="logo"
-              width={24}
-              height={24}
-            />
-            <Text className="text-sm italic">
-              This email was automatically sent to {props.recipient} by War
-              Manager. If you believe you have received this message in error or
-              have any questions, please reach out to our support team at{" "}
-              <Link>taylor.howell@jrcousa.com</Link>. We appreciate your
-              understanding.
-            </Text>
-          </Container>
-        </Tailwind>
-      </Html>
-    </>
-  );
-};
+// import { Button } from "@react-email/button";
+// import { Hr } from "@react-email/hr";
+// import { Html } from "@react-email/html";
+// import { Text } from "@react-email/text";
+// import { Heading } from "@react-email/heading";
+// import { Img } from "@react-email/img";
+// import { Head } from "@react-email/head";
+// import { Font } from "@react-email/font";
+// import { Tailwind } from "@react-email/tailwind";
+// import { Container } from "@react-email/container";
+// import { Link } from "@react-email/link";
+// export const Template = (props: {
+//   title: string;
+//   content: string;
+//   recipient: string;
+//   callToActionTitle: string;
+//   link: string;
+// }) => {
+//   return (
+//     <>
+//       <Head>
+//         <title>{props.title}</title>
+//         <Font
+//           fontFamily="Roboto"
+//           fallbackFontFamily="Verdana"
+//           webFont={{
+//             url: "https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2",
+//             format: "woff2",
+//           }}
+//           fontWeight={400}
+//           fontStyle="normal"
+//         />
+//       </Head>
+//       <Html lang="en">
+//         <Tailwind>
+//           <Container className="rounded p-2">
+//             <Heading className="text-center text-2xl p-2" as="h1">
+//               {props.title}
+//             </Heading>
+//             <Text className="w-full text-center text-lg p-2">{props.content}</Text>
+//             <Button
+//               className="rounded bg-amber-600 p-2 w-full text-center font-semibold text-white"
+//               href={props.link}
+//             >
+//               {props.callToActionTitle}
+//             </Button>
+//           </Container>
+//           <Hr />
+//           <Container className="m-auto flex w-full items-center justify-center gap-2 rounded bg-zinc-100 p-2 text-xs text-zinc-600">
+//             <Img
+//               src="https://warmanagerstorage.blob.core.windows.net/wmcontainerstorage/Installer%20Website/PWA%20Icons/android-launchericon-48-48.png"
+//               alt="logo"
+//               width={24}
+//               height={24}
+//             />
+//             <Text className="text-sm italic">
+//               This email was automatically sent to {props.recipient} by War
+//               Manager. If you believe you have received this message in error or
+//               have any questions, please reach out to our support team at{" "}
+//               <Link>taylor.howell@jrcousa.com</Link>. We appreciate your
+//               understanding.
+//             </Text>
+//           </Container>
+//         </Tailwind>
+//       </Html>
+//     </>
+//   );
+// };
