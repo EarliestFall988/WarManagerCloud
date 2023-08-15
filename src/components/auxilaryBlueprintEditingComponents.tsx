@@ -40,7 +40,8 @@ import useLiveData from "~/flow/databank";
 import { getCrewCost } from "~/flow/costing";
 import { useUser } from "@clerk/nextjs";
 import { GetListOfNodesSortedByColumn } from "~/flow/blueprintStructure";
-import { SwitchComponentWithErrorInput } from "./input";
+import { SwitchComponent, SwitchComponentWithErrorInput } from "./input";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -95,25 +96,50 @@ const HandleProjectsWithConflicts = (
   if (projectsWithConflicts === undefined || projects === undefined)
     return undefined;
 
-  return projectsWithConflicts.map((project) => {
-    const projectToReturn = projects.find((p) => p.id === project.id);
-    if (projectToReturn === undefined) return undefined;
+  const archiveProject = projectsWithConflicts.find((project) => {
+    const res = projects.find((p) => p.name === "archive")?.name;
+
     return {
-      ...projectToReturn,
+      name: res,
       conflict: project.conflict,
     };
   });
+
+  console.log(archiveProject);
+
+  const res = projectsWithConflicts.map((conflictData) => {
+    const projectToReturn = projects.find((p) => p.id === conflictData.id);
+
+    console.log(conflictData.conflict, projectToReturn?.name || "err");
+
+    return {
+      ...projectToReturn,
+      conflict: conflictData.conflict,
+      blueprint: conflictData.blueprint,
+    };
+  });
+
+  return res;
 };
 
-export const ProjectsList = (props: { blueprintId: string }) => {
+export const ProjectsList = (props: {
+  blueprintId: string;
+  liveBlueprint: boolean;
+}) => {
   useScript(
     "https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"
   );
 
+  const [
+    filterOutProjectsOnOtherBlueprints,
+    setFilterOutProjectsOnOtherBlueprints,
+  ] = useState(false);
   const [search, setSearch] = useState("");
   const [nodeMode, setNodeMode] = useState<
     "all" | "notOnBlueprint" | "onlyOnBlueprint"
   >("notOnBlueprint");
+
+  const [animationParent] = useAutoAnimate();
 
   // const { data, isLoading, isError } = api.projects.getAll.useQuery();
   const { projectData: data, isError, isLoading } = useLiveData();
@@ -136,7 +162,7 @@ export const ProjectsList = (props: { blueprintId: string }) => {
         HandleProjectsWithConflicts(searchedProjects, props.blueprintId) ||
         ([] as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
           conflict: boolean;
-        })[])
+        } & { blueprint: Blueprint | undefined })[])
       );
     } else if (nodeMode === "notOnBlueprint") {
       return HandleProjectsWithConflicts(
@@ -147,7 +173,7 @@ export const ProjectsList = (props: { blueprintId: string }) => {
         props.blueprintId
       ) as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
         conflict: boolean;
-      })[];
+      } & { blueprint: Blueprint | undefined })[];
     } else if (nodeMode === "onlyOnBlueprint") {
       const nodes = blueprintNodes.filter(
         (node) => node.type === "projectNode"
@@ -164,12 +190,12 @@ export const ProjectsList = (props: { blueprintId: string }) => {
         HandleProjectsWithConflicts(projects, props.blueprintId) ||
         ([] as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
           conflict: boolean;
-        })[])
+        } & { blueprint: Blueprint | undefined })[])
       );
     } else {
       return [] as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
         conflict: boolean;
-      })[];
+      } & { blueprint: Blueprint | undefined })[];
     }
   };
 
@@ -242,49 +268,87 @@ export const ProjectsList = (props: { blueprintId: string }) => {
           </TooltipComponent>
         </div>
       </div>
-      <div className="flex flex-col items-end border-b border-zinc-600 p-1 py-2">
+      <div className="flex items-center gap-2 border-b border-zinc-600 p-1 py-2">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           type="search"
-          className="w-full rounded bg-zinc-100 p-1 text-zinc-600 placeholder:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 active:outline-none"
+          className="w-full rounded bg-zinc-600 p-1 text-zinc-100 outline-none ring-2 ring-zinc-500 transition duration-100 placeholder:text-zinc-300 hover:ring hover:ring-zinc-400 focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
           placeholder="Search..."
         />
+        {props.liveBlueprint &&
+          (nodeMode === "notOnBlueprint" || nodeMode === "all") && (
+            <TooltipComponent
+              content="Filter out Projects on other blueprints"
+              side="top"
+            >
+              <SwitchComponent
+                checked={filterOutProjectsOnOtherBlueprints}
+                onCheckedChange={(e) => {
+                  setFilterOutProjectsOnOtherBlueprints(e);
+                }}
+              >
+                <CheckBadgeIcon className="h-5 w-5 text-zinc-100" />
+              </SwitchComponent>
+            </TooltipComponent>
+          )}
       </div>
-      <div className="flex flex-col gap-1 pr-1">
+      <div ref={animationParent} className="flex flex-col gap-1 pr-1">
         {!(isLoading || isLoadingProjects) && (
           <>
-            {projectsToView?.length === 0 && (
-              <NothingToDisplayNotice context="projects" />
-            )}
+            {projectsToView === undefined ||
+              (projectsToView?.length === 0 && (
+                <NothingToDisplayNotice context="projects" />
+              ))}
             {projectsToView?.map((project) => {
-              if (project !== undefined)
+              if (
+                project !== undefined &&
+                project.id !== undefined &&
+                ((filterOutProjectsOnOtherBlueprints && !project.conflict) ||
+                  !filterOutProjectsOnOtherBlueprints)
+              )
                 return (
                   <Link key={project.id} href={`/projects/${project.id}`}>
                     <div
                       className="flex items-end justify-between border-b border-zinc-600 p-1 px-2 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
                       draggable={draggable}
                       onDragStart={(event) =>
-                        onDragStart(event, "p-" + project.id)
+                        onDragStart(event, "p-" + (project.id || "err"))
                       }
                     >
                       <div className="w-full truncate">
                         <div className="flex w-full items-center justify-start gap-2">
                           {project.conflict && (
-                            <div>
+                            <button
+                              onClick={(e) => {
+                                if (!project.blueprint?.id) {
+                                  toast.error("Something went wrong");
+                                }
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.open(
+                                  window.location.origin + "/blueprints/" + (project.blueprint?.id || ""),
+                                  "_blank",
+                                );
+                              }}
+                            >
                               <TooltipComponent
-                                content="This project has a conflict"
+                                content={`This project is on ${
+                                  project.blueprint
+                                    ? `the blueprint \'${project.blueprint.name}\'`
+                                    : "another blueprint"
+                                }`}
                                 side="top"
                               >
                                 <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
                               </TooltipComponent>
-                            </div>
+                            </button>
                           )}
                           <p className="truncate text-xs font-normal text-zinc-300">
                             {project.jobNumber}
                           </p>
                           <p className="truncate text-xs font-normal text-zinc-300">
-                            {project.sectors.map((sector) => (
+                            {project.sectors?.map((sector) => (
                               <p key={sector.id}>{sector.name}</p>
                             ))}
                           </p>
@@ -292,7 +356,7 @@ export const ProjectsList = (props: { blueprintId: string }) => {
 
                         <div className="text-md flex flex-grow flex-wrap items-center justify-start gap-1 truncate font-semibold">
                           {project.name}
-                          {project.tags.map((tag) => (
+                          {project.tags?.map((tag) => (
                             <TagBubble
                               key={tag.id}
                               tag={tag}

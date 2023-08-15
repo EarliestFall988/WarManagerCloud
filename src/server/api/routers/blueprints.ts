@@ -735,45 +735,43 @@ export const blueprintsRouter = createTRPCRouter({
             not: input.excludeBlueprint,
           },
         },
-        select: {
+        include: {
           projects: true,
         },
       });
 
-      return input.id.map((id) => {
+      const result = [] as {
+        id: string;
+        conflict: boolean;
+        blueprint: Blueprint | undefined;
+      }[];
+
+      input.id.map((id) => {
         allProjects.find((blueprint) => {
           blueprint.projects.find((p) => {
             const pId = p.id;
-            if (pId === id) {
-              const proj = ctx.prisma.project
-                .findFirst({
-                  where: {
-                    id: id,
-                  },
-                  select: {
-                    name: true,
-                  },
-                })
-                .then((p) => {
-                  console.log("\n\n\nconflict found: ", p?.name, "\n\n\n");
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-
-              return {
+            if (pId === id && result.find((r) => r.id === id) === undefined) {
+              result.push({
                 id: id,
                 conflict: true,
-              };
+                blueprint,
+              });
             }
           });
         });
 
-        return {
-          id: id,
-          conflict: false,
-        };
+        if (result.find((r) => r.id === id) === undefined) {
+          result.push({
+            id: id,
+            conflict: false,
+            blueprint: undefined,
+          });
+        }
       });
+
+      console.log(result);
+
+      return result;
     }),
 
   findCrewConflicts: privateProcedure

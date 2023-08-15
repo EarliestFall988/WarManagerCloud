@@ -15,10 +15,7 @@ import {
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
 
-import {
-  LoadingPage,
-  LoadingPage2,
-} from "~/components/loading";
+import { LoadingPage, LoadingPage2 } from "~/components/loading";
 import {
   CrewList,
   ExportBlueprint,
@@ -104,7 +101,7 @@ const BlueprintGUI = () => {
             name={blueprint?.name}
             description={blueprint?.description}
             id={blueprintId}
-            liveData={(blueprint?.live || false)}
+            liveData={blueprint?.live || false}
           />
           {blueprint ? (
             <>
@@ -129,15 +126,13 @@ const Ribbon: React.FC<{
   id?: string;
   liveData?: boolean;
 }> = ({ name, description, id, liveData }) => {
-  
-
   const BpStructureComponent = dynamic(
     () => import("../../flow/blueprintStructure"),
     {
       ssr: false,
     }
   );
- 
+
   return (
     <BpStructureComponent
       blueprintId={id || ""}
@@ -178,7 +173,12 @@ const Panels: React.FC<{
     >
       <div className="w-full overflow-y-auto overflow-x-hidden ">
         {toggle === "GetLink" && <ExportBlueprint blueprintId={blueprint.id} />}
-        {toggle === "Project" && <ProjectsList blueprintId={blueprint.id} />}
+        {toggle === "Project" && (
+          <ProjectsList
+            blueprintId={blueprint.id}
+            liveBlueprint={blueprint.live || false}
+          />
+        )}
         {toggle === "Employee" && <CrewList blueprintId={blueprint.id} />}
         {toggle === "Stats" && <Stats blueprint={blueprint} />}
         {toggle == "More" && <More blueprint={blueprint} />}
