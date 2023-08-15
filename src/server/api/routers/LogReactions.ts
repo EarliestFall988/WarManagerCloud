@@ -7,7 +7,7 @@ import { TRPCError } from "@trpc/server";
 import { clerkClient } from "@clerk/nextjs";
 import { type LogReaction } from "@prisma/client";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
-import { sendEmail } from "./email";
+// import { sendEmail } from "./email";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -132,23 +132,23 @@ export const reactionsRouter = createTRPCRouter({
         },
       });
 
-      const user = await clerkClient.users.getUser(authorId);
-      const userEmail = user?.emailAddresses[0]?.emailAddress;
+      // const user = await clerkClient.users.getUser(authorId);
+      // const userEmail = user?.emailAddresses[0]?.emailAddress;
 
-      if (userEmail !== null && userEmail !== undefined) {
-        await sendEmail(
-          {
-            to: userEmail,
-            subject: "New Reaction on your Activity",
-            callToAction: "View Activity",
-            content: `Someone reacted with ${input.reaction} to your activity \"${log.name}\"`,
-            link: `https://cloud.warmanager.net/dashboard/activity?search=${input.logId}`,
-          },
-          ctx
-        ).then((result) => {
-          return result;
-        });
-      }
+      // if (userEmail !== null && userEmail !== undefined) {
+      //   await sendEmail(
+      //     {
+      //       to: userEmail,
+      //       subject: "New Reaction on your Activity",
+      //       callToAction: "View Activity",
+      //       content: `Someone reacted with ${input.reaction} to your activity \"${log.name}\"`,
+      //       link: `https://cloud.warmanager.net/dashboard/activity?search=${input.logId}`,
+      //     },
+      //     ctx
+      //   ).then((result) => {
+      //     return result;
+      //   });
+      // }
 
       return reaction;
     }),
