@@ -1,68 +1,20 @@
 import { type NextPage } from "next";
 import { useCallback } from "react";
 import { api } from "~/utils/api";
-import { useState } from "react";
-import { render } from "@react-email/render";
-import { Template } from "~/components/emailTemplateComponent";
+import { useUser } from "@clerk/nextjs";
 
 const EmailTest: NextPage = () => {
-  const [emailTitle, setEmailTitle] = useState("");
-  const [emailcontent, setEmailContent] = useState("");
-  const [emailRecipient, setEmailRecipient] = useState("");
-  const [emailCTATitle, setEmailCTATitle] = useState("");
-  const [emailLink, setEmailLink] = useState("");
-
   const { mutate } = api.emailing.sendEmail.useMutation({
     onSuccess: () => {
       console.log("email sent");
     },
   });
 
-  const GetHTMLEmailTemplate = (
-    title: string,
-    content: string,
-    recipient: string,
-    callToActionTitle: string,
-    link: string,
-    name: string
-  ) => {
-    return render(
-      <Template
-        callToActionTitle={callToActionTitle}
-        title={title}
-        content={content}
-        link={link}
-        recipient={recipient}
-        name={name}
-      />,
-      {
-        pretty: true,
-      }
-    );
-  };
-
-  const GetTextEmailTemplate = (
-    title: string,
-    content: string,
-    recipient: string,
-    callToActionTitle: string,
-    link: string,
-    name: string
-  ) => {
-    return render(
-      <Template
-        callToActionTitle={callToActionTitle}
-        title={title}
-        content={content}
-        link={link}
-        recipient={recipient}
-        name={name}
-      />,
-      {
-        plainText: true,
-      }
-    );
-  };
+  const { mutate: sendMessage } = api.messaging.sendMessage.useMutation({
+    onSuccess: () => {
+      console.log("message sent");
+    },
+  });
 
   const runEmailTest = useCallback(
     (
@@ -70,28 +22,8 @@ const EmailTest: NextPage = () => {
       content: string,
       recipient: string,
       callToActionTitle: string,
-      link: string,
-      name: string
+      link: string
     ) => {
-      const html = GetHTMLEmailTemplate(
-        title,
-        content,
-        recipient,
-        callToActionTitle,
-        link,
-        name
-      );
-      const text = GetTextEmailTemplate(
-        title,
-        content,
-        recipient,
-        callToActionTitle,
-        link,
-        name
-      );
-
-      // console.log(html);
-      // console.log(text);
       mutate({
         subject: title,
         to: recipient,
@@ -103,51 +35,29 @@ const EmailTest: NextPage = () => {
     [mutate]
   );
 
+  const SendTextMessage = (message: string, phoneNumber: string) => {
+    sendMessage({
+      message,
+      phoneNumber,
+    });
+  };
+
+  const user = useUser();
+
+  if (
+    (user?.user?.emailAddresses[0]?.emailAddress || "") !==
+    "taylor.howell@jrcousa.com"
+  ) {
+    return (
+      <div>
+        <h1>Unauthorized</h1>
+      </div>
+    );
+  }
+
   return (
     <>
       <h1>Email Test</h1>
-      <div className="grid grid-cols-2 gap-2 text-black">
-        <input
-          className="rounded p-2"
-          type="text"
-          placeholder="Email Title"
-          onChange={(e) => {
-            setEmailTitle(e.target.value);
-          }}
-        />
-        <input
-          className="rounded p-2"
-          type="text"
-          placeholder="Email Content"
-          onChange={(e) => {
-            setEmailContent(e.target.value);
-          }}
-        />
-        <input
-          className="rounded p-2"
-          type="text"
-          placeholder="Email Recipient"
-          onChange={(e) => {
-            setEmailRecipient(e.target.value);
-          }}
-        />
-        <input
-          className="rounded p-2"
-          type="text"
-          placeholder="Email CTA Title"
-          onChange={(e) => {
-            setEmailCTATitle(e.target.value);
-          }}
-        />
-        <input
-          className="rounded p-2"
-          type="text"
-          placeholder="Email Link"
-          onChange={(e) => {
-            setEmailLink(e.target.value);
-          }}
-        />
-      </div>
 
       <button
         onClick={() => {
@@ -156,12 +66,22 @@ const EmailTest: NextPage = () => {
             "It looks like you were assigned a new task by Andrew Kaiser. Please click the button below to view the task.",
             "taylor.howell@jrcousa.com",
             "Check it out",
-            "https://cloud.warmanager.net/dashboard/activity",
-            "Taylor"
+            "https://cloud.warmanager.net/dashboard/activity"
           );
         }}
       >
         Send Email
+      </button>
+      <div className="my-10" />
+      <button
+        onClick={() => {
+          SendTextMessage(
+            "It looks like you were assigned a new task by Andrew Kaiser. Please click the button below to view the task.",
+            "+19137497477"
+          );
+        }}
+      >
+        Send Message
       </button>
     </>
   );

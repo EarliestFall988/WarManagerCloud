@@ -131,6 +131,17 @@ model Blueprint {
   @@index([authorId])
 }
 
+model MessagingContent {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  content   String   @db.Text()
+  type      String   @db.VarChar(255)
+
+  authorId String
+
+  @@index([authorId])
+}
+
 model ScheduleHistory {
   id                   String                @id @default(cuid())
   createdAt            DateTime              @default(now())

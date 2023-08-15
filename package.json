@@ -76,6 +76,7 @@
     "reactflow": "^11.7.2",
     "semver": "^7.5.3",
     "superjson": "1.12.2",
+    "twilio": "^4.15.0",
     "validator": "^13.9.0",
     "workbox-window": "^7.0.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz",
