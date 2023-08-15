@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import { clerkClient } from "@clerk/nextjs";
 import { type LogReaction } from "@prisma/client";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
+import { sendEmail } from "./email";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -19,7 +20,6 @@ const rateLimit = new Ratelimit({
 });
 
 const addUserToReactions = async (reactions: LogReaction[]) => {
-
   const users = await clerkClient.users
     .getUserList()
     .then((users) => {
@@ -132,6 +132,24 @@ export const reactionsRouter = createTRPCRouter({
         },
       });
 
+      const user = await clerkClient.users.getUser(authorId);
+      const userEmail = user?.emailAddresses[0]?.emailAddress;
+
+      if (userEmail !== null && userEmail !== undefined) {
+        await sendEmail(
+          {
+            to: userEmail,
+            subject: "New Reaction on your Activity",
+            callToAction: "View Activity",
+            content: `Someone reacted with ${input.reaction} to your activity \"${log.name}\"`,
+            link: `https://cloud.warmanager.net/dashboard/activity?search=${input.logId}`,
+          },
+          ctx
+        ).then((result) => {
+          return result;
+        });
+      }
+
       return reaction;
     }),
 
@@ -142,7 +160,6 @@ export const reactionsRouter = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
-
       const log = await ctx.prisma.log.findFirst({
         where: {
           id: input.logId,
@@ -152,7 +169,7 @@ export const reactionsRouter = createTRPCRouter({
         },
       });
 
-      return addUserToReactions(log?.logReactions ?? [] as LogReaction[]);
+      return addUserToReactions(log?.logReactions ?? ([] as LogReaction[]));
     }),
 
   deleteReaction: privateProcedure

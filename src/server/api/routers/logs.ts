@@ -372,6 +372,11 @@ export const logsRouter = createTRPCRouter({
       if (input.search.length > 0) {
         filters.OR = [
           {
+            id: {
+              equals: input.search,
+            },
+          },
+          {
             name: {
               contains: input.search,
             },

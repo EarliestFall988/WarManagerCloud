@@ -22,7 +22,7 @@ import {
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React, {  useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useEffect, useState } from "react";
 import { DashboardMenu } from "~/components/dashboardMenu";
 
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
@@ -61,10 +61,23 @@ const RecentActivityPage: NextPage = () => {
 
   const [filter, setFilter] = useState<DropdownTagType[]>([]);
   const [search, setSearch] = useState<string>("");
-  const [announcementCount, setAnnouncementCount] = useState<number>(0);
+  // const [announcementCount, setAnnouncementCount] = useState<number>(0);
   // const [page, setPage] = useState<number>(1);
   // const [pageSize, setPageSize] = useState<number>(10);
   // const [sort, setSort] = useState<string>("createdAt:DESC");
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const searchTerm = router.query.search;
+    if (
+      searchTerm !== undefined &&
+      typeof searchTerm === "string" &&
+      searchTerm.trim().length > 0
+    ) {
+      setSearch(searchTerm);
+    }
+  }, [router.query.search]);
 
   const context = api.useContext().logs;
 
@@ -76,6 +89,29 @@ const RecentActivityPage: NextPage = () => {
     filter: filter.map((f) => f.value),
     search,
   });
+
+  // useEffect(() => {
+  //   if (search !== searchTrigger) {
+  //     void router.push({
+  //       query: {
+  //         search: search.trim().length > 0 ? search : undefined,
+  //       },
+  //     });
+
+  //     setSearchTrigger(search);
+  //   }
+  // }, [search, searchTrigger, router]);
+
+  // const setSearchTerm = useCallback(
+  //   (search: string) => {
+  //     void router.push({
+  //       query: {
+  //         search,
+  //       },
+  //     });
+  //   },
+  //   [router]
+  // );
 
   const [animationParent] = useAutoAnimate();
 
@@ -122,6 +158,7 @@ const RecentActivityPage: NextPage = () => {
 
   const clear = () => {
     setFilter([]);
+    // setSearch("");
     setSearch("");
     setClearfilters(true);
   };
@@ -1289,9 +1326,6 @@ const LogDrawer: React.FC<{
 
   const [message, setMessage] = useState("");
 
-
-
-
   const reactions = data?.logReactions.filter(
     (x) => x.user?.email !== userEmail
   );
@@ -1323,7 +1357,6 @@ const LogDrawer: React.FC<{
       message,
     });
   };
-
 
   return (
     <div ref={animationParent}>
