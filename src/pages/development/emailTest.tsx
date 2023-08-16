@@ -1,46 +1,44 @@
 import { type NextPage } from "next";
-import { useCallback } from "react";
-import { api } from "~/utils/api";
 import { useUser } from "@clerk/nextjs";
 
 const EmailTest: NextPage = () => {
-  const { mutate } = api.emailing.sendEmail.useMutation({
-    onSuccess: () => {
-      console.log("email sent");
-    },
-  });
+  // const { mutate } = api.emailing.sendEmail.useMutation({
+  //   onSuccess: () => {
+  //     console.log("email sent");
+  //   },
+  // });
 
-  const { mutate: sendMessage } = api.messaging.sendMessage.useMutation({
-    onSuccess: () => {
-      console.log("message sent");
-    },
-  });
+  // const { mutate: sendMessage } = api.messaging.sendMessage.useMutation({
+  //   onSuccess: () => {
+  //     console.log("message sent");
+  //   },
+  // });
 
-  const runEmailTest = useCallback(
-    (
-      title: string,
-      content: string,
-      recipient: string,
-      callToActionTitle: string,
-      link: string
-    ) => {
-      mutate({
-        subject: title,
-        to: recipient,
-        callToAction: callToActionTitle,
-        content: content,
-        link: link,
-      });
-    },
-    [mutate]
-  );
+  // const runEmailTest = useCallback(
+  //   (
+  //     title: string,
+  //     content: string,
+  //     recipient: string,
+  //     callToActionTitle: string,
+  //     link: string
+  //   ) => {
+  //     mutate({
+  //       subject: title,
+  //       to: recipient,
+  //       callToAction: callToActionTitle,
+  //       content: content,
+  //       link: link,
+  //     });
+  //   },
+  //   [mutate]
+  // );
 
-  const SendTextMessage = (message: string, phoneNumber: string) => {
-    sendMessage({
-      message,
-      phoneNumber,
-    });
-  };
+  // const SendTextMessage = (message: string, phoneNumber: string) => {
+  //   sendMessage({
+  //     message,
+  //     phoneNumber,
+  //   });
+  // };
 
   const user = useUser();
 
@@ -61,13 +59,13 @@ const EmailTest: NextPage = () => {
 
       <button
         onClick={() => {
-          runEmailTest(
-            "Test Email",
-            "It looks like you were assigned a new task by Andrew Kaiser. Please click the button below to view the task.",
-            "taylor.howell@jrcousa.com",
-            "Check it out",
-            "https://cloud.warmanager.net/dashboard/activity"
-          );
+          // runEmailTest(
+          //   "Test Email",
+          //   "It looks like you were assigned a new task by Andrew Kaiser. Please click the button below to view the task.",
+          //   "taylor.howell@jrcousa.com",
+          //   "Check it out",
+          //   "https://cloud.warmanager.net/dashboard/activity"
+          // );
         }}
       >
         Send Email
@@ -75,10 +73,10 @@ const EmailTest: NextPage = () => {
       <div className="my-10" />
       <button
         onClick={() => {
-          SendTextMessage(
-            "It looks like you were assigned a new task by Andrew Kaiser. Please click the button below to view the task.",
-            "+19137497477"
-          );
+          // SendTextMessage(
+          //   "It looks like you were assigned a new task by Andrew Kaiser. Please click the button below to view the task.",
+          //   "+19137497477"
+          // );
         }}
       >
         Send Message

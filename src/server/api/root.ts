@@ -17,8 +17,6 @@ import { versioningRouter } from "./routers/versioning";
 import { reactionsRouter } from "./routers/LogReactions";
 import { logMessageReplies } from "./routers/logMessageReplies";
 import { timeSchedulingRouter } from "./routers/timeScheduling";
-import { emailSenderRouter } from "./routers/email";
-import { messagingRouter } from "./routers/messaging";
 
 /**
  * This is the primary router for your server.
@@ -44,8 +42,7 @@ export const appRouter = createTRPCRouter({
   reactions: reactionsRouter,
   logReplies: logMessageReplies,
   timeScheduling: timeSchedulingRouter,
-  emailing: emailSenderRouter,
-  messaging: messagingRouter,
+
 });
 
 // export type definition of API
