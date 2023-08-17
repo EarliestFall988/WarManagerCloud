@@ -15,9 +15,11 @@ export const SendCTAEmail = async (
     clerkAuthorIds = clerkAuthorIds.filter((id) => id !== sender);
   }
 
+  const uniqueIds = [...new Set(clerkAuthorIds)];
+
   const users = (await clerkClient.users.getUserList())
     .filter((user) => {
-      return clerkAuthorIds.find((id) => id === user.id);
+      return uniqueIds.find((id) => id === user.id);
     })
     .map((user) => {
       return {

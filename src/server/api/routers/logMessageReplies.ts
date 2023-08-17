@@ -161,22 +161,6 @@ export const logMessageReplies = createTRPCRouter({
       const title = `New Reply to your ${type}`;
       const cta = `View ${type}`;
 
-      // const description =
-      //   type === "Activity"
-      //     ? `${log.name.toString()}`
-      //     : `\"${
-      //         log.editedMessage
-      //           ? `${
-      //               log.editedMessage.toString().length > 40
-      //                 ? log.editedMessage.toString().substring(0, 40) + "..."
-      //                 : log.editedMessage.toString()
-      //             }`
-      //           : `${
-      //               log.description.toString().length > 40
-      //                 ? log.description.toString().substring(0, 40) + "..."
-      //                 : log.description.toString()
-      //             }`
-      //       }\"`;
 
       const message = `${
         someone ? someone : "Someone"
@@ -188,15 +172,10 @@ export const logMessageReplies = createTRPCRouter({
         ids.push(log.authorId); // add the author of the log to the list of people to send the email to (for testing purposes)
       }
 
-      console.log(ids);
-
-      //filter duplicate ids in the ids array so multiple emails are not sent to the same user
-      const uniqueIds = [...new Set(ids)];
-
-      console.log(uniqueIds);
+      // console.log(uniqueIds);
 
       const sendEmail = SendCTAEmail(
-        uniqueIds,
+        ids,
         title,
         message,
         cta,
