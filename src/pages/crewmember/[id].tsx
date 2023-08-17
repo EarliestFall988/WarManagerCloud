@@ -25,7 +25,7 @@ import {
 } from "~/components/input";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { DialogComponent } from "~/components/dialog";
-import { ProjectCard } from "~/components/dashboardCards";
+import { BlueprintListItem, ProjectCard } from "~/components/dashboardCards";
 
 const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
   const [medCardAnimationParent] = useAutoAnimate();
@@ -493,8 +493,12 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
 
             <div className="w-full p-2 ">
               <h1 className="select-none text-lg font-semibold">
-                Project History
+                Project Working History
               </h1>
+              <p className="pb-2 text-sm tracking-tight text-zinc-300">
+                War Manager cross references the schedules and infers which
+                projects {data.name} has worked or is working on.
+              </p>
               <div className="w-full rounded border border-zinc-800 p-2">
                 {data.schedules.length === 0 ? (
                   <div>
@@ -529,6 +533,52 @@ const SingleCrewMemberPage: NextPage<{ id: string }> = ({ id }) => {
                         />
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="w-full p-2 ">
+              <h1 className="select-none text-lg font-semibold">
+                Current{" "}
+                {data.blueprints.length === 1 ? "Blueprint" : "Blueprints"}
+              </h1>
+              <p className="pb-2 text-sm tracking-tight text-zinc-300">
+                Find out where {data.name} currently appears on any blueprints.
+              </p>
+              <div className="w-full rounded border border-zinc-800 p-2">
+                {data.blueprints.filter((b) => b.markAsDeleted === false)
+                  .length === 0 ? (
+                  <div>
+                    <p className="select-none text-center text-lg font-semibold">
+                      {data.name} does not appear on any blueprints.
+                    </p>
+                    <p className="select-none text-center text-zinc-400">
+                      Add {data.name} to a blueprint.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {data.blueprints
+                      .filter((b) => b.markAsDeleted === false)
+                      .map((blueprint, index) => (
+                        <div
+                          key={blueprint.id + " " + index.toString()}
+                          className="flex flex-col gap-1"
+                        >
+                          <div>
+                            <BlueprintListItem
+                              id={blueprint.id}
+                              description={blueprint.description}
+                              liveData={blueprint.live || false}
+                              name={blueprint.name}
+                              pinned={blueprint.pinned || false}
+                              updatedAt={blueprint.updatedAt}
+                              userEmail={""}
+                            />
+                          </div>
+                        </div>
+                      ))}
                   </div>
                 )}
               </div>

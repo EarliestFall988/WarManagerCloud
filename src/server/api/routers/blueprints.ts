@@ -35,7 +35,7 @@ type structure = {
   remainingNodes: remainingNode[];
 };
 
-const addUserToBlueprints = async (blueprints: Blueprint[]) => {
+export const addUserToBlueprints = async (blueprints: Blueprint[]) => {
   const users = await clerkClient.users
     .getUserList()
     .then((users) => {

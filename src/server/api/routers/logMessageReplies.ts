@@ -60,6 +60,9 @@ export const logMessageReplies = createTRPCRouter({
         where: {
           id: input.logId,
         },
+        include: {
+          logReplys: true,
+        },
       });
 
       if (!log) {
@@ -68,6 +71,10 @@ export const logMessageReplies = createTRPCRouter({
           message: "Log not found",
         });
       }
+
+      // const reply = log.logReplys.find(
+      //   (logReply) => logReply.authorId === authorId && logReply.id === input.id
+      // );
 
       const logReply = await ctx.prisma.logReply.create({
         data: {
@@ -81,6 +88,43 @@ export const logMessageReplies = createTRPCRouter({
           },
         },
       });
+
+      let replyMessage = input.message;
+
+      if (replyMessage.length > 40) {
+        replyMessage = replyMessage.substring(0, 40) + "...";
+      }
+
+      const type = log.category === "announcement" ? "Post" : "Activity";
+      const someone = (await clerkClient.users.getUser(authorId))
+        .emailAddresses[0]?.emailAddress;
+
+      const title = `New Reply to your ${type}`;
+      const cta = `View ${type}`;
+
+      const message = `${
+        someone ? someone : "Someone"
+      } replied with \"${replyMessage}\"`;
+
+      const ids = log.logReplys.map((reaction) => reaction.authorId);
+
+      if (process.env.VERSION_TYPE === "DEV") {
+        ids.push(log.authorId); // add the author of the log to the list of people to send the email to (for testing purposes)
+      }
+
+      // console.log(uniqueIds);
+
+      const sendEmail = SendCTAEmail(
+        ids,
+        title,
+        message,
+        cta,
+        `https://cloud.warmanager.net/dashboard/activity?search=${input.logId}`,
+        log.authorId,
+        process.env.VERSION_TYPE !== "DEV"
+      );
+
+      console.log(sendEmail);
 
       return logReply;
     }),
@@ -147,44 +191,6 @@ export const logMessageReplies = createTRPCRouter({
           },
         },
       });
-
-      let replyMessage = input.message;
-
-      if (replyMessage.length > 40) {
-        replyMessage = replyMessage.substring(0, 40) + "...";
-      }
-
-      const type = log.category === "announcement" ? "Post" : "Activity";
-      const someone = (await clerkClient.users.getUser(authorId))
-        .emailAddresses[0]?.emailAddress;
-
-      const title = `New Reply to your ${type}`;
-      const cta = `View ${type}`;
-
-
-      const message = `${
-        someone ? someone : "Someone"
-      } replied with \"${replyMessage}\"`;
-
-      const ids = log.logReplys.map((reaction) => reaction.authorId);
-
-      if (process.env.VERSION_TYPE === "DEV") {
-        ids.push(log.authorId); // add the author of the log to the list of people to send the email to (for testing purposes)
-      }
-
-      // console.log(uniqueIds);
-
-      const sendEmail = SendCTAEmail(
-        ids,
-        title,
-        message,
-        cta,
-        `https://cloud.warmanager.net/dashboard/activity?search=${input.logId}`,
-        log.authorId,
-        process.env.VERSION_TYPE !== "DEV"
-      );
-
-      console.log(sendEmail);
 
       return logReply;
     }),

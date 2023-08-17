@@ -4,6 +4,7 @@ import {
   ArrowLongUpIcon,
   ArrowPathRoundedSquareIcon,
   ArrowUpRightIcon,
+  Bars3Icon,
   ChatBubbleLeftEllipsisIcon,
   ExclamationTriangleIcon,
   FunnelIcon,
@@ -46,6 +47,7 @@ import {
 import { type LogReaction, type LogReply } from "@prisma/client";
 import * as Popover from "@radix-ui/react-popover";
 import Linkify from "linkify-react";
+import { useUpdateNodeInternals } from "reactflow";
 
 dayjs.extend(relativeTime);
 
@@ -178,7 +180,7 @@ const RecentActivityPage: NextPage = () => {
     <main className="flex min-h-[100vh] bg-zinc-900">
       <DashboardMenu />
       <div className="w-full">
-        <div className="fixed top-0 z-10 w-full bg-zinc-900/80 p-2 backdrop-blur md:w-[94%] lg:w-[96%]">
+        <div className="fixed top-0 z-10 w-full p-2 backdrop-blur md:w-[94%] lg:w-[96%]">
           <div className="flex items-center justify-between">
             <h1 className="select-none p-2 text-2xl font-semibold">Timeline</h1>
             <div className="flex gap-2">
@@ -367,23 +369,57 @@ const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
   const [animationParent] = useAutoAnimate();
   return (
     <>
-      <div className="m-auto flex items-center justify-end p-2 sm:w-full lg:w-[50vw]">
-        <TooltipComponent content="Create Message" side="top">
-          <button
-            className="flex rounded p-1 text-zinc-500 transition-all duration-100 hover:scale-110 hover:text-zinc-300"
-            onClick={() => {
-              ToggleMessageInput();
-            }}
-          >
-            <PencilSquareIcon className="h-6 w-6" />
-          </button>
-        </TooltipComponent>
-        <TooltipComponent content="Refresh" side="top">
+      <div className="m-auto flex items-center justify-end gap-2 p-2 sm:w-full lg:w-[50vw]">
+        {/* <TooltipComponent content="Refresh" side="top">
           <button
             className="flex gap-2 rounded p-1 text-zinc-500 transition-all duration-100 hover:scale-110 hover:text-zinc-300"
             onClick={refresh}
           >
             <ArrowPathRoundedSquareIcon className="h-6 w-6" />
+          </button>
+        </TooltipComponent> */}
+        <div className="hidden">
+          <div className="hidden w-full items-center justify-between md:flex">
+            <button className="w-1/5 rounded border-b-4 border-zinc-500 bg-zinc-700 p-1 text-center">
+              Focused
+            </button>
+            <button className="w-1/5 rounded border-b-4 border-amber-500 bg-zinc-700 p-1 text-center">
+              All
+            </button>
+            <button className="w-1/5 rounded border-b-4 border-zinc-500 bg-zinc-700 p-1 text-center">
+              Bookmarks
+            </button>
+            <button className="w-1/5 rounded border-b-4 border-zinc-500 bg-zinc-700 p-1 text-center">
+              Assigned Tasks
+            </button>
+          </div>
+          <button className="flex w-full items-center justify-center rounded bg-zinc-700 p-2 md:hidden">
+            <Bars3Icon className="h-6 w-6" />
+          </button>
+        </div>
+        <TooltipComponent
+          content={`${
+            isAnnouncementInputVisible ? "Close Post Input" : "Create Post"
+          }`}
+          side="top"
+        >
+          <button
+            className={`flex gap-2 rounded  ${
+              isAnnouncementInputVisible
+                ? "hover:bg-red-600 focus:bg-red-600"
+                : "bg-amber-700 hover:bg-amber-600 focus:bg-amber-600"
+            }  p-2 text-zinc-200 transition duration-100  hover:text-zinc-50  focus:text-zinc-50`}
+            onClick={() => {
+              ToggleMessageInput();
+            }}
+          >
+            <div className="flex items-center justify-center gap-2">
+              {!isAnnouncementInputVisible && (
+                <PencilSquareIcon className="h-6 w-6" />
+              )}
+
+              {isAnnouncementInputVisible && <XMarkIcon className="h-6 w-6" />}
+            </div>
           </button>
         </TooltipComponent>
       </div>
@@ -391,11 +427,13 @@ const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
         {isAnnouncementInputVisible && (
           <div className="m-auto h-[25vh] p-1 sm:w-full lg:w-[50vw]">
             <div className="flex gap-2">
-              <p className="pb-1 text-sm text-zinc-500">{userEmail}</p>
-              <p className="pb-1 text-sm text-zinc-500">{"|"}</p>
               <p className="pb-1 text-sm text-zinc-500">
-                {dayjs(Date.now()).fromNow()}
+                {userEmail === user?.emailAddresses[0]?.emailAddress
+                  ? "You"
+                  : userEmail}
               </p>
+              <p className="pb-1 text-sm text-zinc-500">{"|"}</p>
+              <p className="pb-1 text-sm text-zinc-500">right now</p>
             </div>
             <TextareaComponent
               autoFocus
@@ -1367,7 +1405,6 @@ const LogDrawer: React.FC<{
       message,
     });
   };
-
 
   return (
     <div ref={animationParent}>
