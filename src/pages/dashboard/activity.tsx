@@ -786,6 +786,16 @@ const ActivityListItem: React.FC<activityListItemType> = ({
     setReplyCount(replyCount + 1);
   };
 
+  const getUser = () => {
+    // console.log(getUser);
+
+    if (user?.emailAddresses[0]?.emailAddress === author) {
+      return "You";
+    }
+
+    return author;
+  };
+
   return (
     <div
       className={`flex flex-col   ${
@@ -840,7 +850,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
                     )}
                   </div>
                 )}
-                <p className="text-sm text-zinc-500">{author}</p>
+                <p className="text-sm text-zinc-500">{getUser()}</p>
                 <p className="text-sm text-zinc-500">|</p>
                 <p className="text-sm text-zinc-500">
                   {dayjs(actionTime).fromNow()}
@@ -902,7 +912,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
             <Popover.Trigger
               onClick={(e) => {
                 e.preventDefault();
-                console.log("clicked reaction button");
+                // console.log("clicked reaction button");
                 setShowReactions(!showReactions);
               }}
             >
@@ -913,7 +923,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
               >
                 <TooltipComponent
                   content={`React to this ${
-                    category === "announcement" ? "message" : "log"
+                    category === "announcement" ? "post" : "activity"
                   }`}
                   side="top"
                 >
@@ -1208,7 +1218,7 @@ const ProjectComponent: React.FC<{ url: string; id: string }> = ({
   return <div>{url}</div>;
 };
 const CrewComponent: React.FC<{ url: string; id: string }> = ({ url, id }) => {
-  console.log(id);
+  // console.log(id);
 
   const { data, isLoading } = api.crewMembers.getById.useQuery({
     crewMemberId: id,
@@ -1358,6 +1368,7 @@ const LogDrawer: React.FC<{
     });
   };
 
+
   return (
     <div ref={animationParent}>
       <div
@@ -1370,7 +1381,7 @@ const LogDrawer: React.FC<{
             className="flex items-center gap-1 rounded text-zinc-300"
           >
             <p>{myReaction.reaction}</p>
-            <p className="text-sm text-zinc-300">{userEmail}</p>
+            <p className="text-sm text-zinc-300">You</p>
           </div>
         )}
         {!isLoading &&
@@ -1383,7 +1394,13 @@ const LogDrawer: React.FC<{
             >
               <p>{reaction.reaction}</p>
               <p className="text-sm text-zinc-300">
-                {reaction.user?.email || "<unknown>"}
+                {reaction.user?.email
+                  ? `${
+                      reaction.user.email === userEmail
+                        ? "You"
+                        : reaction.user.email
+                    }`
+                  : "<unknown>"}
               </p>
             </div>
           ))}
@@ -1414,7 +1431,15 @@ const LogDrawer: React.FC<{
                     <div key={reply.id} className="w-full">
                       <ReplyComponent
                         reply={reply}
-                        email={reply.user?.email || "<unknown>"}
+                        email={
+                          reply.user?.email
+                            ? `${
+                                reply.user.email === userEmail
+                                  ? "You"
+                                  : reply.user.email
+                              }`
+                            : "<unknown>"
+                        }
                         logId={id}
                       />
                     </div>
@@ -1432,11 +1457,9 @@ const LogDrawer: React.FC<{
             <div>
               <div className="flex translate-x-[-0.4rem] items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-amber-700" />
-                <p className="pb-1 text-sm text-zinc-500">{userEmail}</p>
+                <p className="pb-1 text-sm text-zinc-500">You</p>
                 <p className="pb-1 text-sm text-zinc-500">{"|"}</p>
-                <p className="pb-1 text-sm text-zinc-500">
-                  {dayjs(Date.now()).fromNow()}
-                </p>
+                <p className="pb-1 text-sm text-zinc-500">right now</p>
               </div>
               <div className="pl-2">
                 <TextareaComponent

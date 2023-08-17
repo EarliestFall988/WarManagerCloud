@@ -42,7 +42,6 @@ export const appRouter = createTRPCRouter({
   reactions: reactionsRouter,
   logReplies: logMessageReplies,
   timeScheduling: timeSchedulingRouter,
-
 });
 
 // export type definition of API

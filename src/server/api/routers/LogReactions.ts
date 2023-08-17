@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import { clerkClient } from "@clerk/nextjs";
 import { type LogReaction } from "@prisma/client";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
+import { SendCTAEmail } from "~/server/helpers/sendEmailHelper";
 // import { sendEmail } from "./email";
 
 const redis = new Redis({
@@ -132,10 +133,71 @@ export const reactionsRouter = createTRPCRouter({
         },
       });
 
+      const type = log.category === "announcement" ? "Post" : "Activity";
+      const someone = (await clerkClient.users.getUser(authorId))
+        .emailAddresses[0]?.emailAddress;
+
+      const title = `New Reaction to your ${type}`;
+      const cta = `View ${type}`;
+
+      const description =
+        type === "Activity"
+          ? `${log.name.toString()}`
+          : `\"${
+              log.editedMessage
+                ? `${
+                    log.editedMessage.toString().length > 40
+                      ? log.editedMessage.toString().substring(0, 40) + "..."
+                      : log.editedMessage.toString()
+                  }`
+                : `${
+                    log.description.toString().length > 40
+                      ? log.description.toString().substring(0, 40) + "..."
+                      : log.description.toString()
+                  }`
+            }\"`;
+
+      const message = `${someone ? someone : "Someone"} reacted with ${
+        input.reaction
+      } to your ${type.toLowerCase()}: ${description}`;
+
+      const sendEmail = SendCTAEmail(
+        [log.authorId],
+        title,
+        message,
+        cta,
+        `https://cloud.warmanager.net/dashboard/activity?search=${input.logId}`
+      );
+
+      console.log(sendEmail);
+
+      // const apiKey = process.env.MSG_API_KEY;
+
       // const user = await clerkClient.users.getUser(authorId);
       // const userEmail = user?.emailAddresses[0]?.emailAddress;
 
-      // if (userEmail !== null && userEmail !== undefined) {
+      // if (userEmail !== null && userEmail !== undefined && apiKey !== null && apiKey !== undefined) {
+      //   await fetch("https://wm-messaging-service.vercel.app/api/v1/email", {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       key: apiKey,
+      //       content: [
+      //         {
+      //       to: userEmail,
+      //       subject: "New Reaction on your Activity",
+      //       content: `Someone reacted with ${input.reaction} to your activity \"${log.name}\"`,
+      //       cta: "View Activity",
+      //       link: `https://cloud.warmanager.net/dashboard/activity?search=${input.logId}`,
+      //       personalName: user?.firstName || undefined,
+      //         },
+      //       ],
+      //     }),
+      //   }).then((res) => console.log(res));
+      // }
+
       //   await sendEmail(
       //     {
       //       to: userEmail,
