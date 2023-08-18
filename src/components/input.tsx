@@ -142,6 +142,8 @@ export const TextareaComponent: React.FC<{
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   autoFocus?: boolean;
   className?: string;
+  ref?: React.Ref<HTMLTextAreaElement>;
+  enterKeyPressed?: () => void;
 }> = ({
   value,
   error,
@@ -150,10 +152,20 @@ export const TextareaComponent: React.FC<{
   onChange,
   autoFocus,
   className,
+  ref,
+  enterKeyPressed,
 }) => {
   return (
     <>
       <textarea
+        onKeyUp={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            enterKeyPressed && enterKeyPressed();
+          }
+
+        }}
+        ref={ref}
         className={
           textareaStyle +
           " " +
@@ -251,7 +263,7 @@ export const SwitchComponent: React.FC<{
     >
       {children}
       <Switch.Root
-        className="relative focus:ring-2 focus:ring-black h-[25px] w-[42px] cursor-default rounded-full bg-black/30 shadow-[0_2px_10px] shadow-black/20 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none data-[state=checked]:bg-amber-700"
+        className="relative h-[25px] w-[42px] cursor-default rounded-full bg-black/30 shadow-[0_2px_10px] shadow-black/20 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none focus:ring-2 focus:ring-black data-[state=checked]:bg-amber-700"
         onCheckedChange={(e) => {
           onCheckedChange(e);
         }}
@@ -274,9 +286,7 @@ export const SwitchComponentWithErrorInput: React.FC<{
       <SwitchComponent
         checked={checked}
         onCheckedChange={onCheckedChange}
-        className={` ${style} ${
-          className || ""
-        }`}
+        className={` ${style} ${className || ""}`}
       >
         {children}
       </SwitchComponent>

@@ -118,6 +118,15 @@ export const usersRouter = createTRPCRouter({
         })
         .filter((u) => u !== null);
 
+      if (searchTerm === undefined || searchTerm.length < 1) {
+        result.push("everyone");
+      } else if (searchTerm.length >= 1) {
+        const everyone = "everyone";
+        if (everyone.startsWith(searchTerm)) {
+          result.push(everyone);
+        }
+      }
+
       return result;
     }),
 });

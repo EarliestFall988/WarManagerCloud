@@ -24,7 +24,13 @@ import {
 import { type NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useCallback, useMemo, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useMemo,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
 import { DashboardMenu } from "~/components/dashboardMenu";
 
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
@@ -52,8 +58,6 @@ import * as linkify from "linkifyjs";
 import "linkify-plugin-mention";
 
 dayjs.extend(relativeTime);
-
-const mentionRegex = /(^|[ ])@([^- @]([-w])+)?$/;
 
 const RecentActivityPage: NextPage = () => {
   const { isSignedIn, isLoaded } = useUser();
@@ -327,7 +331,11 @@ const RecentActivityPage: NextPage = () => {
   );
 };
 
-const MentionBar: React.FC<{ mention: string }> = ({ mention }) => {
+const MentionBar: React.FC<{
+  mention: string;
+  addMention: (e: string, removeLength: number) => void;
+  pickFirst: boolean;
+}> = ({ mention, addMention, pickFirst }) => {
   const {
     data,
     isLoading: isLoadingUsers,
@@ -344,7 +352,7 @@ const MentionBar: React.FC<{ mention: string }> = ({ mention }) => {
     if (data.length > 0) {
       let res = [] as (string | null)[];
 
-      if (data.length > 3) {
+      if (data.length > 2) {
         const str1 = data[0] as string | null;
         const str2 = data[1] as string | null;
         const str3 = data[2] as string | null;
@@ -362,28 +370,53 @@ const MentionBar: React.FC<{ mention: string }> = ({ mention }) => {
     }
   }, [data]);
 
+  const selectMention = (
+    mention: string | null | undefined,
+    mentionLength: number
+  ) => {
+    if (mention === null) return;
+    if (mention === undefined) return;
+    if (mention === "") return;
+
+    addMention(mention, mentionLength);
+  };
+
   if (isLoadingUsers || isError) {
     return (
       <div
         className={`flex w-full ${
           isLoadingUsers ? "animate-pulse" : ""
-        } items-center justify-center gap-2 rounded-full border border-zinc-600 bg-zinc-700 font-semibold text-zinc-300`}
+        } items-center justify-center gap-2 rounded-full font-semibold text-zinc-300`}
       >
         {isLoadingUsers && <p>Loading Mentions...</p>}
-        {isLoadingUsers && (
-          <p className="text-red-500">Error Loading Mentions</p>
-        )}
+        {isError && <p className="text-red-500">Error Loading Mentions</p>}
       </div>
     );
+  }
+
+  if (
+    pickFirst &&
+    result !== undefined &&
+    result !== null &&
+    result.length >= 1
+  ) {
+    selectMention(result[0], mention.length);
   }
 
   return (
     <div className="flex w-full items-center justify-start gap-2">
       {result
         ?.filter((r) => r !== null)
-        .map((res) => (
+        .map((res, index) => (
           <button
-            className="flex w-1/4 items-center justify-center rounded-full border border-zinc-600 bg-zinc-700"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              selectMention(res, mention.length);
+            }}
+            className={`flex w-1/4 items-center ${
+              index === 0 ? "border border-amber-600" : "border border-zinc-600"
+            } justify-center rounded-full `}
             key={res}
           >
             {res}
@@ -400,6 +433,9 @@ const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
   const [message, setMessage] = useState("");
   const [mention, setMention] = useState("");
   const [mentionBarEnabled, setMentionBarEnabled] = useState<boolean>(false);
+  const [pickFirst, setPickFirst] = useState<boolean>(false);
+
+  const inputContainer = useRef<HTMLTextAreaElement>(null);
 
   const { mutate, isLoading } = api.logs.create.useMutation({
     onSuccess: () => {
@@ -415,11 +451,11 @@ const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
   });
 
   useEffect(() => {
-    const regex = new RegExp("(^|[ ])@([^- @]([-w])+)?$", "gm");
+    const mentionRegex = /(^|[ ])@([\w])(([-\w])+)?$/gm;
+
+    const regex = new RegExp(mentionRegex);
 
     const result = regex.exec(message);
-
-    console.log(message, result);
 
     let setMentionEnabled = false; //trigger to enable the mention bar when useful
 
@@ -427,10 +463,15 @@ const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
       const mentionOfInterest = result[0];
 
       if (mentionOfInterest !== undefined) {
-        const name =
+        let name = (
           mentionOfInterest?.length > 0
             ? mentionOfInterest?.substring(1, mentionOfInterest.length - 1)
-            : mentionOfInterest;
+            : mentionOfInterest
+        ).trim();
+
+        if (name.startsWith("@")) {
+          name = name.substring(1);
+        }
 
         setMention(name);
         setMentionBarEnabled(true);
@@ -537,6 +578,7 @@ const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
               <p className="pb-1 text-sm text-zinc-500">right now</p>
             </div>
             <TextareaComponent
+              ref={inputContainer}
               autoFocus
               error=""
               placeholder="What's on your mind?"
@@ -545,9 +587,40 @@ const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
               onChange={(e) => {
                 setMessage(e.target.value);
               }}
+              enterKeyPressed={() => {
+                if (mentionBarEnabled) {
+                  setMessage(message.substring(0, message.length - 1));
+                  setPickFirst(true);
+                }
+              }}
             />
             <div className="flex select-none justify-between gap-2">
-              {mentionBarEnabled ? <MentionBar mention={mention} /> : <div />}
+              {mentionBarEnabled ? (
+                <MentionBar
+                  addMention={(e, len) => {
+                    console.log(message, len, e);
+
+                    const newMessage = message.substring(
+                      0,
+                      message.length - len - 1
+                    );
+
+                    setPickFirst(false);
+
+                    setMessage(newMessage + e + " ");
+                    if (
+                      inputContainer !== undefined ||
+                      inputContainer !== null
+                    ) {
+                      inputContainer.current?.focus();
+                    }
+                  }}
+                  mention={mention}
+                  pickFirst={pickFirst}
+                />
+              ) : (
+                <div />
+              )}
               <button
                 onClick={postMessage}
                 className="flex items-center justify-center gap-1 rounded bg-amber-700 p-2 font-semibold outline-none transition duration-100 hover:bg-amber-500 focus:bg-amber-500 "
