@@ -2,6 +2,7 @@ import { useUser } from "@clerk/nextjs";
 import {
   ArrowDownTrayIcon,
   ArrowLongUpIcon,
+  ArrowPathIcon,
   ArrowPathRoundedSquareIcon,
   ArrowUpRightIcon,
   Bars3Icon,
@@ -47,9 +48,12 @@ import {
 import { type LogReaction, type LogReply } from "@prisma/client";
 import * as Popover from "@radix-ui/react-popover";
 import Linkify from "linkify-react";
-import { useUpdateNodeInternals } from "reactflow";
+import * as linkify from "linkifyjs";
+import "linkify-plugin-mention";
 
 dayjs.extend(relativeTime);
+
+const mentionRegex = /(^|[ ])@([^- @]([-w])+)?$/;
 
 const RecentActivityPage: NextPage = () => {
   const { isSignedIn, isLoaded } = useUser();
@@ -323,11 +327,79 @@ const RecentActivityPage: NextPage = () => {
   );
 };
 
+const MentionBar: React.FC<{ mention: string }> = ({ mention }) => {
+  const {
+    data,
+    isLoading: isLoadingUsers,
+    isError,
+  } = api.users.searchForUsersMention.useQuery({
+    searchTerm: mention,
+  });
+
+  const [result, setResult] = useState<(string | null)[] | undefined>();
+
+  useEffect(() => {
+    if (data === undefined || data === null) return;
+
+    if (data.length > 0) {
+      let res = [] as (string | null)[];
+
+      if (data.length > 3) {
+        const str1 = data[0] as string | null;
+        const str2 = data[1] as string | null;
+        const str3 = data[2] as string | null;
+
+        res.push(str1);
+        res.push(str2);
+        res.push(str3);
+      } else {
+        res = data;
+      }
+
+      setResult(res);
+    } else {
+      setResult(undefined);
+    }
+  }, [data]);
+
+  if (isLoadingUsers || isError) {
+    return (
+      <div
+        className={`flex w-full ${
+          isLoadingUsers ? "animate-pulse" : ""
+        } items-center justify-center gap-2 rounded-full border border-zinc-600 bg-zinc-700 font-semibold text-zinc-300`}
+      >
+        {isLoadingUsers && <p>Loading Mentions...</p>}
+        {isLoadingUsers && (
+          <p className="text-red-500">Error Loading Mentions</p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex w-full items-center justify-start gap-2">
+      {result
+        ?.filter((r) => r !== null)
+        .map((res) => (
+          <button
+            className="flex w-1/4 items-center justify-center rounded-full border border-zinc-600 bg-zinc-700"
+            key={res}
+          >
+            {res}
+          </button>
+        ))}
+    </div>
+  );
+};
+
 const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
   const [isAnnouncementInputVisible, setIsAnnouncementInputVisible] =
     useState(false);
 
   const [message, setMessage] = useState("");
+  const [mention, setMention] = useState("");
+  const [mentionBarEnabled, setMentionBarEnabled] = useState<boolean>(false);
 
   const { mutate, isLoading } = api.logs.create.useMutation({
     onSuccess: () => {
@@ -341,6 +413,35 @@ const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
       toast.error("Error creating announcement");
     },
   });
+
+  useEffect(() => {
+    const regex = new RegExp("(^|[ ])@([^- @]([-w])+)?$", "gm");
+
+    const result = regex.exec(message);
+
+    console.log(message, result);
+
+    let setMentionEnabled = false; //trigger to enable the mention bar when useful
+
+    if (result !== null && result.length > 0) {
+      const mentionOfInterest = result[0];
+
+      if (mentionOfInterest !== undefined) {
+        const name =
+          mentionOfInterest?.length > 0
+            ? mentionOfInterest?.substring(1, mentionOfInterest.length - 1)
+            : mentionOfInterest;
+
+        setMention(name);
+        setMentionBarEnabled(true);
+        setMentionEnabled = true;
+      }
+    }
+
+    if (!setMentionEnabled) {
+      setMentionBarEnabled(false);
+    }
+  }, [message]);
 
   const { user } = useUser();
   const userEmail = user?.emailAddresses[0]?.emailAddress || "<unknown email>";
@@ -445,7 +546,8 @@ const ActivityTopButtons: React.FC<{ refresh: () => void }> = ({ refresh }) => {
                 setMessage(e.target.value);
               }}
             />
-            <div className="flex select-none justify-end">
+            <div className="flex select-none justify-between gap-2">
+              {mentionBarEnabled ? <MentionBar mention={mention} /> : <div />}
               <button
                 onClick={postMessage}
                 className="flex items-center justify-center gap-1 rounded bg-amber-700 p-2 font-semibold outline-none transition duration-100 hover:bg-amber-500 focus:bg-amber-500 "
@@ -1205,6 +1307,20 @@ const MessageComponent: React.FC<{ data: string }> = ({ data }) => {
               }
             }
             return <ExternalLink href={href} />;
+          },
+          mention: ({ attributes, content }) => {
+            const { href, ...props } = attributes as {
+              href: string;
+              props: any;
+            };
+            return (
+              <Link
+                href={"/settings/users"}
+                className="cursor-pointer rounded text-amber-500 hover:bg-zinc-700"
+              >
+                {content}
+              </Link>
+            );
           },
         },
       }}
