@@ -29,11 +29,14 @@ export const SendCTAEmail = async (
     })
     .filter((user) => user.emailAddress !== undefined);
 
+  const onlySendOutToTestEmail = false;
+
   if (apiKey !== null && apiKey !== undefined && users.length > 0) {
     const content = users.map((user) => {
-      const recieverAddress = (process.env.VERSION_TYPE = "DEV"
-        ? "taylor.howell@jrcousa.com"
-        : `${user.emailAddress || ""}`);
+      const recieverAddress = (process.env.VERSION_TYPE =
+        "DEV" && onlySendOutToTestEmail
+          ? "taylor.howell@jrcousa.com"
+          : `${user.emailAddress || ""}`);
 
       return {
         to: recieverAddress,
