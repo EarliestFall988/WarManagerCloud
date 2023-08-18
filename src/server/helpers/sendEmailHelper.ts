@@ -31,8 +31,12 @@ export const SendCTAEmail = async (
 
   if (apiKey !== null && apiKey !== undefined && users.length > 0) {
     const content = users.map((user) => {
+      const recieverAddress = (process.env.VERSION_TYPE = "DEV"
+        ? "taylor.howell@jrcousa.com"
+        : `${user.emailAddress || ""}`);
+
       return {
-        to: user.emailAddress,
+        to: recieverAddress,
         subject,
         content: message || "You have a new notification",
         cta: cta || "View Activity",
@@ -41,6 +45,8 @@ export const SendCTAEmail = async (
       };
     });
 
+    console.log(content);
+
     await fetch("https://wm-messaging-service.vercel.app/api/v1/email", {
       method: "POST",
       headers: {
@@ -48,8 +54,78 @@ export const SendCTAEmail = async (
       },
       body: JSON.stringify({
         key: apiKey,
-        content,
+        content: content.filter((c) => c !== undefined && c !== null),
       }),
     }).then((res) => console.log(res));
   }
+};
+
+export const HandleMentions = async (text: string, logId: string) => {
+  const mentionRegex = /(^|[ ])@([\w])(([-\w])+)?/m;
+
+  const stringTokens = text.split(" ");
+
+  const companyEmailDomain = process.env.COMPANY_EMAIL_DOMAIN;
+
+  if (companyEmailDomain === undefined) {
+    throw new Error("Company email domain is undefined");
+  }
+
+  const mentions = [] as string[];
+
+  stringTokens.forEach((token) => {
+    const result = token.match(mentionRegex);
+
+    if (result) {
+      mentions.push(result[0]);
+    }
+  });
+
+  console.log(mentions);
+
+  const emails = mentions.map((mention) => {
+    const emailName =
+      mention.substring(1, mention.length).replace("-", ".") +
+      "@" +
+      companyEmailDomain;
+    return emailName;
+  });
+
+  const users = await clerkClient.users.getUserList();
+
+  const userIds = users
+    .filter((user) => {
+      const emailAddress = user.emailAddresses[0]?.emailAddress;
+
+      let found = false;
+
+      if (emailAddress !== null && emailAddress !== undefined) {
+        emails.find((email) => {
+          console.log("email", `\'${email}\'`, `\'${emailAddress}\'`);
+          if (email === emailAddress) {
+            console.log("found email", email, emailAddress);
+            found = true;
+          }
+        });
+      }
+
+      return found;
+    })
+    .map((user) => {
+      return user.id;
+    });
+
+  console.log("user ids", userIds);
+
+  const messageToShow = text.length > 40 ? text.substring(0, 40) + "..." : text;
+
+  console.log("message to show", messageToShow);
+
+  const emailSendResult = await SendCTAEmail(
+    userIds,
+    "Someone Mentioned You",
+    `It looks like someone mentioned you in a post: \"${messageToShow}\" Click the button below to view the post.`,
+    "View Post",
+    `https://cloud.warmanager.net/dashboard/activity?search=${logId}`
+  );
 };

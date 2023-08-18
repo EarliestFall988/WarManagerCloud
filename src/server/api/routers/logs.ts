@@ -8,6 +8,7 @@ import type { Prisma, Log, LogReaction, LogReply } from "@prisma/client";
 import { clerkClient } from "@clerk/nextjs";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
 import { env } from "process";
+import { HandleMentions, SendCTAEmail } from "~/server/helpers/sendEmailHelper";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -455,6 +456,10 @@ export const logsRouter = createTRPCRouter({
         },
       });
 
+      if (input.category === "announcement") {
+        await HandleMentions(input.description, newLog.id);
+      }
+
       return addUserToLogs([newLog]);
     }),
 
@@ -499,6 +504,12 @@ export const logsRouter = createTRPCRouter({
           editedMessage: checkLog.description,
         },
       });
+
+      console.log("updated log data", log);
+
+      if (log.category === "announcement") {
+        await HandleMentions(input.message, log.id);
+      }
 
       return addUserToLogs([log]);
     }),
@@ -546,3 +557,5 @@ export const logsRouter = createTRPCRouter({
       };
     }),
 });
+
+

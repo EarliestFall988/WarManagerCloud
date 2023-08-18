@@ -2,7 +2,6 @@ import { useUser } from "@clerk/nextjs";
 import {
   ArrowDownTrayIcon,
   ArrowLongUpIcon,
-  ArrowPathIcon,
   ArrowPathRoundedSquareIcon,
   ArrowUpRightIcon,
   Bars3Icon,
@@ -1558,6 +1557,11 @@ const LogDrawer: React.FC<{
   const [animationParent1] = useAutoAnimate();
   const [animationParent2] = useAutoAnimate();
 
+  const [mention, setMention] = useState("");
+  const [mentionBarEnabled, setMentionBarEnabled] = useState<boolean>(false);
+  const [pickFirst, setPickFirst] = useState<boolean>(false);
+  const inputContainer = useRef<HTMLTextAreaElement>(null);
+
   const { user } = useUser();
   const userEmail = user?.emailAddresses[0]?.emailAddress || "<unknown email>";
 
@@ -1582,6 +1586,40 @@ const LogDrawer: React.FC<{
         toast.error("Failed to create reply");
       },
     });
+
+  useEffect(() => {
+    const mentionRegex = /(^|[ ])@([\w])(([-\w])+)?$/gm;
+
+    const regex = new RegExp(mentionRegex);
+
+    const result = regex.exec(message);
+
+    let setMentionEnabled = false; //trigger to enable the mention bar when useful
+
+    if (result !== null && result.length > 0) {
+      const mentionOfInterest = result[0];
+
+      if (mentionOfInterest !== undefined) {
+        let name = (
+          mentionOfInterest?.length > 0
+            ? mentionOfInterest?.substring(1, mentionOfInterest.length - 1)
+            : mentionOfInterest
+        ).trim();
+
+        if (name.startsWith("@")) {
+          name = name.substring(1);
+        }
+
+        setMention(name);
+        setMentionBarEnabled(true);
+        setMentionEnabled = true;
+      }
+    }
+
+    if (!setMentionEnabled) {
+      setMentionBarEnabled(false);
+    }
+  }, [message]);
 
   const createReply = () => {
     if (message.trim().length === 0) {
@@ -1689,20 +1727,54 @@ const LogDrawer: React.FC<{
               </div>
               <div className="pl-2">
                 <TextareaComponent
+                  ref={inputContainer}
+                  autoFocus
+                  error=""
+                  placeholder="What's on your mind?"
                   disabled={false}
+                  value={message}
                   onChange={(e) => {
                     setMessage(e.target.value);
                   }}
-                  value={message}
-                  error=""
-                  placeholder="What's on your mind?"
+                  enterKeyPressed={() => {
+                    if (mentionBarEnabled) {
+                      setMessage(message.substring(0, message.length - 1));
+                      setPickFirst(true);
+                    }
+                  }}
                 />
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-between">
+                  {mentionBarEnabled ? (
+                    <MentionBar
+                      mention={mention}
+                      pickFirst={pickFirst}
+                      addMention={(e, len) => {
+                        console.log(message, len, e);
+
+                        const newMessage = message.substring(
+                          0,
+                          message.length - len - 1
+                        );
+
+                        setPickFirst(false);
+
+                        setMessage(newMessage + e + " ");
+                        if (
+                          inputContainer !== undefined ||
+                          inputContainer !== null
+                        ) {
+                          inputContainer.current?.focus();
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div />
+                  )}
                   <button
                     onClick={() => {
                       createReply();
                     }}
-                    className="flex items-center justify-center gap-2 rounded bg-amber-700 p-2 hover:bg-amber-600 focus:bg-amber-600"
+                    className="flex outline-none items-center justify-center gap-2 rounded bg-amber-700 p-2 hover:bg-amber-600 focus:bg-amber-600"
                   >
                     {creating && <LoadingSpinner />}
                     {!creating && (
