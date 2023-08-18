@@ -1343,6 +1343,8 @@ const MessageComponent: React.FC<{ data: string }> = ({ data }) => {
               return <div></div>;
             }
 
+            console.log(href);
+
             const isInternal =
               href.startsWith("/") ||
               href.startsWith(localHostName) ||
