@@ -8,7 +8,7 @@ import type { Prisma, Log, LogReaction, LogReply } from "@prisma/client";
 import { clerkClient } from "@clerk/nextjs";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
 import { env } from "process";
-import { HandleMentions, SendCTAEmail } from "~/server/helpers/sendEmailHelper";
+import { HandleMentions } from "~/server/helpers/sendEmailHelper";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -557,5 +557,3 @@ export const logsRouter = createTRPCRouter({
       };
     }),
 });
-
-
