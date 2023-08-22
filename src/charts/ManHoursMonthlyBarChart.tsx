@@ -1,4 +1,4 @@
-import { type ReactEChartsProps } from "./React-Echarts";
+import { type ReactEChartsProps } from "./ManHoursMonthlyChartComponent";
 
 // const xAxisData = [];
 const data1 = [0, 4, 12, 25, 29, 51, 2, 25, 9, 11, 54, 15, 0];

@@ -5,10 +5,15 @@ import {
   ArrowPathRoundedSquareIcon,
   ArrowUpRightIcon,
   Bars3Icon,
+  ChartBarIcon,
   ChatBubbleLeftEllipsisIcon,
+  ChatBubbleLeftRightIcon,
   ExclamationTriangleIcon,
+  FilmIcon,
   FunnelIcon,
   HandThumbUpIcon,
+  InboxStackIcon,
+  MagnifyingGlassIcon,
   MegaphoneIcon,
   PaperAirplaneIcon,
   PencilIcon,
@@ -58,6 +63,49 @@ import "linkify-plugin-mention";
 
 dayjs.extend(relativeTime);
 
+export const TitleBar = () => {
+  const [animationParent] = useAutoAnimate();
+
+  const router = useRouter();
+
+  const [route, setRoute] = useState<string>("");
+
+  useEffect(() => {
+    console.log(router.route);
+
+    if (router.route.endsWith("activity")) setRoute("activity");
+    if (router.route.endsWith("stats")) setRoute("stats");
+  }, [router.route]);
+
+  return (
+    <div
+      ref={animationParent}
+      className="flex items-center justify-center gap-2"
+    >
+      <Link href={"/dashboard/activity"} className="cursor-pointer">
+        <div
+          className={`m-2 flex select-none items-center justify-center gap-2 border-b-2 px-1 text-2xl font-semibold ${
+            route === "activity" ? "border-amber-700" : "border-transparent"
+          }`}
+        >
+          <ChatBubbleLeftRightIcon className="h-5 w-5" />
+          <h1>Activity</h1>
+        </div>
+      </Link>
+      <Link href={"/dashboard/activity/stats"} className="hover:cursor-pointer">
+        <div
+          className={`m-2 flex select-none items-center justify-center gap-2 border-b-2 px-1 text-2xl font-semibold ${
+            route === "stats" ? "border-amber-700" : "border-transparent"
+          }`}
+        >
+          <ChartBarIcon className="h-5 w-5" />
+          <h1>Stats</h1>
+        </div>
+      </Link>
+    </div>
+  );
+};
+
 const RecentActivityPage: NextPage = () => {
   const { isSignedIn, isLoaded } = useUser();
 
@@ -70,6 +118,9 @@ const RecentActivityPage: NextPage = () => {
 
   const [filter, setFilter] = useState<DropdownTagType[]>([]);
   const [search, setSearch] = useState<string>("");
+
+  const [showSearch, setShowSearch] = useState<boolean>(false);
+
   // const [announcementCount, setAnnouncementCount] = useState<number>(0);
   // const [page, setPage] = useState<number>(1);
   // const [pageSize, setPageSize] = useState<number>(10);
@@ -187,13 +238,30 @@ const RecentActivityPage: NextPage = () => {
     <main className="flex min-h-[100vh] bg-zinc-900">
       <DashboardMenu />
       <div className="w-full">
-        <div className="fixed top-0 z-10 w-full p-2 backdrop-blur md:w-[94%] lg:w-[96%]">
-          <div className="flex items-center justify-between">
-            <h1 className="select-none p-2 text-2xl font-semibold">Timeline</h1>
+        <div className="fixed top-0 z-10 w-full border-b border-zinc-700 p-2 backdrop-blur md:w-[94%] lg:w-[96%]">
+          <div className="flex flex-wrap items-center justify-between">
+            <TitleBar />
             <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowSearch((prev) => !prev);
+                }}
+                className="flex gap-2 rounded bg-zinc-800 p-2"
+              >
+                {!showSearch && (
+                  <>
+                    <MagnifyingGlassIcon className="h-6 w-6" />
+                  </>
+                )}
+                {showSearch && (
+                  <>
+                    <XMarkIcon className="h-6 w-6" />
+                  </>
+                )}
+              </button>
               <TooltipComponent content="Refresh" side="bottom">
                 <button
-                  className="text-200 flex gap-2 rounded bg-zinc-800 p-1"
+                  className="text-200 flex gap-2 rounded bg-zinc-800 p-2"
                   onClick={refresh}
                 >
                   <ArrowPathRoundedSquareIcon className="h-6 w-6" />
@@ -204,41 +272,66 @@ const RecentActivityPage: NextPage = () => {
                 side="bottom"
               >
                 <button
-                  className="text-200 flex gap-2 rounded bg-zinc-800 p-1"
+                  className="text-200 flex gap-2 rounded bg-zinc-800 p-2"
                   onClick={DownloadLogXLSX}
                 >
                   <ArrowDownTrayIcon className="h-6 w-6" />
                 </button>
               </TooltipComponent>
-              <div className="block lg:hidden">
+              {/* <div className="block lg:hidden">
                 <button
                   className="text-200 flex gap-2 rounded bg-zinc-800 p-1"
                   onClick={toggleFilter}
                 >
                   <FunnelIcon className="h-6 w-6" />
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
-          <div>
-            <InputComponent
-              placeholder="search"
-              autoFocus
-              onChange={(e) => setSearch(e.currentTarget.value)}
-              value={search}
-              disabled={false}
-            />
-            <FilterAndSearch
-              setClearFilters={() => {
-                setClearfilters(false);
+          <div
+            ref={animationParent}
+            className="flex flex-row-reverse items-start justify-center gap-2"
+          >
+            {/* <button
+              onClick={() => {
+                setShowSearch((prev) => !prev);
               }}
-              onClose={() => {
-                setIsFilterVisible(false);
-              }}
-              clearFilters={isClearFilters}
-              visible={isFilterVisible}
-              onFilter={setFilter}
-            />
+              className="flex gap-2 rounded bg-zinc-800 p-2"
+            >
+              {!showSearch && (
+                <>
+                  <p>Search</p>
+                  <MagnifyingGlassIcon className="h-6 w-6" />
+                </>
+              )}
+              {showSearch && (
+                <>
+                  <XMarkIcon className="h-6 w-6" />
+                </>
+              )}
+            </button> */}
+            {showSearch && (
+              <div className="w-full">
+                <InputComponent
+                  placeholder="search"
+                  autoFocus
+                  onChange={(e) => setSearch(e.currentTarget.value)}
+                  value={search}
+                  disabled={false}
+                />
+                <FilterAndSearch
+                  setClearFilters={() => {
+                    setClearfilters(false);
+                  }}
+                  onClose={() => {
+                    setIsFilterVisible(false);
+                  }}
+                  clearFilters={isClearFilters}
+                  visible={isFilterVisible}
+                  onFilter={setFilter}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -1776,7 +1869,7 @@ const LogDrawer: React.FC<{
                     onClick={() => {
                       createReply();
                     }}
-                    className="flex outline-none items-center justify-center gap-2 rounded bg-amber-700 p-2 hover:bg-amber-600 focus:bg-amber-600"
+                    className="flex items-center justify-center gap-2 rounded bg-amber-700 p-2 outline-none hover:bg-amber-600 focus:bg-amber-600"
                   >
                     {creating && <LoadingSpinner />}
                     {!creating && (

@@ -1,10 +1,12 @@
 import {
   ArrowDownTrayIcon,
   ArrowLongUpIcon,
+  ChartBarSquareIcon,
   EllipsisVerticalIcon,
   FunnelIcon,
   PlusIcon,
   TagIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
 import { type Sector, type Tag } from "@prisma/client";
 import { type NextPage } from "next";
@@ -23,7 +25,6 @@ import SignInModal from "~/components/signInPage";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { ProjectCard } from "~/components/dashboardCards";
-
 
 const ProjectMenu = () => (
   <>
@@ -107,48 +108,50 @@ const ProjectsPage: NextPage = () => {
     <main className="flex min-h-[100vh] bg-zinc-900">
       <DashboardMenu />
       <div className="w-full">
-        <div className="flex w-full items-center justify-between gap-1 p-2">
-          <div className="flex w-full gap-1">
-            <input
-              type="search"
-              value={projectSearchTerm}
-              onChange={(e) => setProjectsSearchTerm(e.target.value)}
-              placeholder="search projects by name, job code, or address"
-              className="w-full rounded bg-zinc-800 p-2 outline-none ring-1 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-700 focus:ring-amber-700 sm:w-3/5"
-            />
-            {/* <TooltipComponent content="Filter Tags" side="bottom"> */}
-            <TagsPopover
-              savedTags={filter}
-              savedSectors={sectors}
-              type={"projects and sectors"}
-              onSetTags={setFilter}
-              onSetSectors={setSectors}
-            >
-              <button
-                onClick={() => {
-                  setFilterOpen(!filterOpen);
-                }}
-                className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+        <div className="w-full">
+          <div className="flex w-full items-center justify-between gap-1 p-2">
+            <div className="flex w-full gap-1">
+              <input
+                type="search"
+                value={projectSearchTerm}
+                onChange={(e) => setProjectsSearchTerm(e.target.value)}
+                placeholder="search projects by name, job code, or address"
+                className="w-full rounded bg-zinc-800 p-2 outline-none ring-1 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-700 focus:ring-amber-700 sm:w-3/5"
+              />
+              {/* <TooltipComponent content="Filter Tags" side="bottom"> */}
+              <TagsPopover
+                savedTags={filter}
+                savedSectors={sectors}
+                type={"projects and sectors"}
+                onSetTags={setFilter}
+                onSetSectors={setSectors}
               >
-                <FunnelIcon className="h-6 w-6 text-zinc-100" />
-              </button>
-            </TagsPopover>
-            {/* </TooltipComponent> */}
-          </div>
-          <div className="hidden gap-1 md:flex">
-            <ProjectMenu />
-          </div>
-          <SimpleDropDown
-            trigger={
-              <div className="flex items-center justify-center p-2 md:hidden">
-                <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
-              </div>
-            }
-          >
-            <div className="flex gap-1">
+                <button
+                  onClick={() => {
+                    setFilterOpen(!filterOpen);
+                  }}
+                  className="flex cursor-pointer items-center justify-center rounded bg-zinc-700 p-2 text-center transition-all duration-100 hover:bg-amber-700"
+                >
+                  <FunnelIcon className="h-6 w-6 text-zinc-100" />
+                </button>
+              </TagsPopover>
+              {/* </TooltipComponent> */}
+            </div>
+            <div className="hidden gap-1 md:flex">
               <ProjectMenu />
             </div>
-          </SimpleDropDown>
+            <SimpleDropDown
+              trigger={
+                <div className="flex items-center justify-center p-2 md:hidden">
+                  <EllipsisVerticalIcon className="h-6 w-6 text-zinc-100" />
+                </div>
+              }
+            >
+              <div className="flex gap-1">
+                <ProjectMenu />
+              </div>
+            </SimpleDropDown>
+          </div>
         </div>
         <div className="w-full overflow-y-auto overflow-x-hidden ">
           <div
@@ -214,6 +217,5 @@ const ProjectsPage: NextPage = () => {
     </main>
   );
 };
-
 
 export default ProjectsPage;

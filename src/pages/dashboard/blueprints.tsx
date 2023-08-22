@@ -1,13 +1,7 @@
 import {
   ArrowLongUpIcon,
-  // ArrowPathIcon,
-  // CheckBadgeIcon,
-  // ClipboardDocumentIcon,
-  // EllipsisVerticalIcon,
-  // FlagIcon,
-  // PaintBrushIcon,
+  CalendarDaysIcon,
   PlusIcon,
-  // TrashIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import type { NextPage } from "next";
@@ -105,6 +99,11 @@ const BlueprintsListPage: NextPage = () => {
               >
                 <PlusIcon className="h-6 w-6" />
               </Link>
+            </TooltipComponent>
+            <TooltipComponent content="View Schedules" side="bottom">
+              <button className="rounded bg-zinc-700 p-2 outline-none transition duration-100 hover:bg-amber-700 focus:bg-amber-700">
+                <CalendarDaysIcon className="h-6 w-6 text-zinc-200" />
+              </button>
             </TooltipComponent>
           </div>
           <div ref={animationParent} className="h-full w-full">
@@ -226,7 +225,5 @@ const BlueprintsListPage: NextPage = () => {
     </>
   );
 };
-
-
 
 export default BlueprintsListPage;

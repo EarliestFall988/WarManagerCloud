@@ -1076,4 +1076,86 @@ export const projectsRouter = createTRPCRouter({
 
     await ctx.prisma.project.deleteMany();
   }),
+
+  projectDateRangeCount: privateProcedure
+    .input(
+      z.object({
+        sectorId: z.string().optional(),
+        startDate: z.date(),
+        endDate: z.date(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const filters = {} as Prisma.ProjectWhereInput;
+
+      if (input.sectorId) {
+        filters.sectors = {
+          some: {
+            id: input.sectorId,
+          },
+        };
+      }
+
+      filters.startDate = {
+        lte: input.endDate,
+      };
+
+      filters.endDate = {
+        gte: input.startDate,
+      };
+
+      const projects = await ctx.prisma.project.findMany({
+        where: filters,
+        select: {
+          id: true,
+          name: true,
+          jobNumber: true,
+          TotalManHours: true,
+          startDate: true,
+          endDate: true,
+          sectors: true,
+        },
+        orderBy: [
+          {
+            updatedAt: "desc",
+          },
+          {
+            name: "asc",
+          },
+        ],
+      });
+
+      const result = [] as {
+        month: number;
+        year: number;
+        manHourCount: number;
+      }[];
+
+      const i = input.startDate;
+
+      while (i <= input.endDate) {
+        console.log(i);
+
+        const manHoursCount = projects
+          .filter((x) => i >= x.startDate && i <= x.endDate)
+          .reduce((acc, curr) => {
+            return acc + curr.TotalManHours;
+          }, 0);
+
+        result.push({
+          month: i.getMonth(),
+          year: i.getFullYear(),
+          manHourCount: manHoursCount,
+        });
+
+        if (i.getMonth() === 11) {
+          i.setFullYear(i.getFullYear() + 1);
+          i.setMonth(0);
+        } else {
+          i.setMonth(i.getMonth() + 1);
+        }
+      }
+
+      return result;
+    }),
 });

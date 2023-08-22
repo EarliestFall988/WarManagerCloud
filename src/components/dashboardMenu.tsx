@@ -286,7 +286,7 @@ export const DashboardMenu = () => {
       setContext("Home");
     }
 
-    if (router.pathname === "/dashboard/activity") {
+    if (router.pathname === "/dashboard/activity" || router.pathname === "/dashboard/activity/stats") {
       setContext("Activity");
     }
 
