@@ -33,13 +33,13 @@ export const SendCTAEmail = async (
 
   if (apiKey !== null && apiKey !== undefined && users.length > 0) {
     const content = users.map((user) => {
-      const recieverAddress = (process.env.VERSION_TYPE =
+      const receiverAddress = (process.env.VERSION_TYPE =
         "DEV" && onlySendOutToTestEmail
           ? "taylor.howell@jrcousa.com"
           : `${user.emailAddress || ""}`);
 
       return {
-        to: recieverAddress,
+        to: receiverAddress,
         subject,
         content: message || "You have a new notification",
         cta: cta || "View Activity",
@@ -86,7 +86,7 @@ export const SendMessageToDeveloper = async (
     },
   ];
 
-  console.log(content);
+  // console.log(content);
 
   const result = await fetch(
     "https://wm-messaging-service.vercel.app/api/v1/email",
