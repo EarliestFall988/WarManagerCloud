@@ -48,7 +48,7 @@ export const SendCTAEmail = async (
       };
     });
 
-    console.log(content);
+    // console.log(content);
 
     await fetch("https://wm-messaging-service.vercel.app/api/v1/email", {
       method: "POST",
@@ -61,6 +61,48 @@ export const SendCTAEmail = async (
       }),
     }).then((res) => console.log(res));
   }
+};
+
+export const SendMessageToDeveloper = async (
+  title: string,
+  message: string
+) => {
+  console.log("sending message to developer");
+
+  const apiKey = process.env.MSG_API_KEY;
+
+  if (apiKey === undefined) {
+    throw new Error("API Key is undefined");
+  }
+
+  const content = [
+    {
+      to: "taylor.howell@jrcousa.com",
+      subject: `Someone sent you a message from the \'send a quick message\' in the help page: ${title}`,
+      content: message,
+      cta: "View Activity",
+      link: `https://cloud.warmanager.net/dashboard/activity`,
+      personalName: "",
+    },
+  ];
+
+  console.log(content);
+
+  const result = await fetch(
+    "https://wm-messaging-service.vercel.app/api/v1/email",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        key: apiKey,
+        content: content.filter((c) => c !== undefined && c !== null),
+      }),
+    }
+  ).then((res) => console.log(res));
+
+  return result;
 };
 
 export const HandleMentions = async (text: string, logId: string) => {
@@ -118,7 +160,7 @@ export const HandleMentions = async (text: string, logId: string) => {
       return user.id;
     });
 
-  console.log("user ids", userIds);
+  // console.log("user ids", userIds);
 
   const messageToShow = text.length > 40 ? text.substring(0, 40) + "..." : text;
 
