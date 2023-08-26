@@ -6,6 +6,7 @@ import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
 import { clerkClient } from "@clerk/nextjs";
 import { type Prisma } from "@prisma/client";
+import { math } from "lib0";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -1077,32 +1078,32 @@ export const projectsRouter = createTRPCRouter({
     await ctx.prisma.project.deleteMany();
   }),
 
-  projectDateRangeCount: privateProcedure
+  projectManHoursRangeCount: privateProcedure
     .input(
       z.object({
-        sectorId: z.string().optional(),
-        startDate: z.date(),
-        endDate: z.date(),
+        monthCount: z.number().min(1).max(12),
       })
     )
     .query(async ({ ctx, input }) => {
       const filters = {} as Prisma.ProjectWhereInput;
 
-      if (input.sectorId) {
-        filters.sectors = {
-          some: {
-            id: input.sectorId,
-          },
-        };
-      }
+      // if (input.sectorId) {
+      //   filters.sectors = {
+      //     some: {
+      //       id: input.sectorId,
+      //     },
+      //   };
+      // }
 
-      filters.startDate = {
-        lte: input.endDate,
-      };
+      // filters.startDate = {
+      //   lte: input.endDate,
+      // };
 
-      filters.endDate = {
-        gte: input.startDate,
-      };
+      // filters.endDate = {
+      //   gte: input.startDate,
+      // };
+
+      const sectors = await ctx.prisma.sector.findMany();
 
       const projects = await ctx.prisma.project.findMany({
         where: filters,
@@ -1125,28 +1126,113 @@ export const projectsRouter = createTRPCRouter({
         ],
       });
 
-      const result = [] as {
-        month: number;
-        year: number;
-        manHourCount: number;
+      // const result = [] as ManHourResult[];
+
+      const resultsBySector = [] as {
+        id: string;
+        name: string;
+        result: ManHourResult[];
       }[];
 
-      const i = input.startDate;
-
-      while (i <= input.endDate) {
-        console.log(i);
-
-        const manHoursCount = projects
-          .filter((x) => i >= x.startDate && i <= x.endDate)
-          .reduce((acc, curr) => {
-            return acc + curr.TotalManHours;
-          }, 0);
-
-        result.push({
-          month: i.getMonth(),
-          year: i.getFullYear(),
-          manHourCount: manHoursCount,
+      for (const sector of sectors) {
+        const result = [] as ManHourResult[];
+        resultsBySector.push({
+          id: sector.id,
+          name: sector.name,
+          result,
         });
+      }
+
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + input.monthCount);
+
+      if (endDate.getMonth() > 11) {
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        endDate.setMonth(endDate.getMonth() - 12);
+      }
+
+      const i = startDate;
+
+      while (i <= endDate) {
+        // console.log(i);
+
+        const filteredProjects = projects.filter((x) => {
+          if (x.startDate && x.endDate) {
+            return (
+              x.startDate.getFullYear() <= i.getFullYear() &&
+              x.startDate.getMonth() <= i.getMonth() &&
+              x.endDate.getFullYear() >= i.getFullYear() &&
+              x.endDate.getMonth() >= i.getMonth()
+            );
+          }
+          return false;
+        });
+
+        const foundSectors = [] as string[];
+
+        for (const proj of filteredProjects) {
+          const sector = sectors.find((x) => x.id === proj?.sectors[0]?.id);
+
+          if (sector) {
+            foundSectors.push(sector.id);
+            const result = resultsBySector.find(
+              (x) => x.id === sector.id
+            )?.result;
+
+            if (result) {
+              const month = result.find(
+                (x) => x.month === i.getMonth() && x.year === i.getFullYear()
+              );
+
+              const start = startDate.getTime();
+              const end = endDate.getTime();
+
+              const timeResult = end - start;
+
+              let months = math.round(timeResult / (1000 * 60 * 60 * 24 * 30));
+
+              if (months === 0) {
+                months = 1;
+              }
+
+              const projManHours = proj.TotalManHours / months;
+
+
+              if (month) {
+                month.manHourCount += projManHours;
+              } else {
+                result.push({
+                  month: i.getMonth(),
+                  year: i.getFullYear(),
+                  manHourCount: projManHours,
+                });
+              }
+            }
+          }
+        }
+
+        for (const sector of sectors) {
+          if (!foundSectors.includes(sector.id)) {
+            const result = resultsBySector.find(
+              (x) => x.id === sector.id
+            )?.result;
+
+            if (result) {
+              const month = result.find(
+                (x) => x.month === i.getMonth() && x.year === i.getFullYear()
+              );
+
+              if (!month) {
+                result.push({
+                  month: i.getMonth(),
+                  year: i.getFullYear(),
+                  manHourCount: 0,
+                });
+              }
+            }
+          }
+        }
 
         if (i.getMonth() === 11) {
           i.setFullYear(i.getFullYear() + 1);
@@ -1156,6 +1242,12 @@ export const projectsRouter = createTRPCRouter({
         }
       }
 
-      return result;
+      return resultsBySector;
     }),
 });
+
+export type ManHourResult = {
+  month: number;
+  year: number;
+  manHourCount: number;
+};

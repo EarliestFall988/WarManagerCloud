@@ -22,6 +22,15 @@ export function ReactECharts({
 }: ReactEChartsProps): JSX.Element {
   const chartRef = useRef<HTMLDivElement>(null);
 
+  // const { data } = api.projects.projectManHoursRangeCount.useQuery({
+  //   startDate: new Date(Date.now()),
+  //   endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30 * 6),
+  // });
+
+  // useEffect(() => {
+  //   console.log("manhours data", data);
+  // }, [data]);
+
   useEffect(() => {
     // Initialize chart
     let chart: ECharts | undefined;
@@ -65,12 +74,12 @@ export function ReactECharts({
   return (
     <div
       className={`${
-        width ? width : "w-5/12"
+        width ? width : "w-full"
       } b flex min-w-[90vw] items-center rounded-sm p-1 lg:min-w-fit`}
     >
       <div
         ref={chartRef}
-        style={{ width: "100%", height: "200px", ...style }}
+        style={{ width: "100%", height: "300px", ...style }}
       />
     </div>
   );

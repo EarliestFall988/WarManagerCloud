@@ -226,7 +226,7 @@ const createProject = () => {
 
     TotalManHours: faker.number.float({ min: 0, max: 1000000 }),
     startDate: faker.date.past(),
-    endDate: faker.date.soon(),
+    endDate: faker.date.future(),
     status: faker.helpers.arrayElement([
       "100% Complete",
       "Awaiting Phase 2",

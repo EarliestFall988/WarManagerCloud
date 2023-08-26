@@ -9,10 +9,7 @@ import {
   ChatBubbleLeftEllipsisIcon,
   ChatBubbleLeftRightIcon,
   ExclamationTriangleIcon,
-  FilmIcon,
-  FunnelIcon,
   HandThumbUpIcon,
-  InboxStackIcon,
   MagnifyingGlassIcon,
   MegaphoneIcon,
   PaperAirplaneIcon,
@@ -71,8 +68,6 @@ export const TitleBar = () => {
   const [route, setRoute] = useState<string>("");
 
   useEffect(() => {
-    console.log(router.route);
-
     if (router.route.endsWith("activity")) setRoute("activity");
     if (router.route.endsWith("stats")) setRoute("stats");
   }, [router.route]);
@@ -136,6 +131,7 @@ const RecentActivityPage: NextPage = () => {
       searchTerm.trim().length > 0
     ) {
       setSearch(searchTerm);
+      setShowSearch(true);
     }
   }, [router.query.search]);
 
