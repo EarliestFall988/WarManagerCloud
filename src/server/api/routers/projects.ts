@@ -1198,7 +1198,6 @@ export const projectsRouter = createTRPCRouter({
 
               const projManHours = proj.TotalManHours / months;
 
-
               if (month) {
                 month.manHourCount += projManHours;
               } else {
@@ -1244,6 +1243,80 @@ export const projectsRouter = createTRPCRouter({
 
       return resultsBySector;
     }),
+
+  projectAverageRatings: privateProcedure.query(async ({ ctx }) => {
+    const sectors = await ctx.prisma.sector.findMany({
+      select: {
+        id: true,
+        name: true,
+        Projects: {
+          select: {
+            profitabilityRating: true,
+            customerRating: true,
+            safetyRating: true,
+            qualityRating: true,
+            staffingRating: true,
+          },
+        },
+      },
+    });
+
+    const result = [] as {
+      sectorName: string;
+      avgProfitabilityRating: number;
+      avgCustomerRating: number;
+      avgSafetyRating: number;
+      avgQualityRating: number;
+      avgStaffingRating: number;
+    }[];
+
+    for (const sector of sectors) {
+      const sectorName = sector.name;
+
+      const profitabilityRating = sector.Projects.reduce(
+        (acc, curr) => acc + Number(curr.profitabilityRating),
+        0
+      );
+
+      const customerRating = sector.Projects.reduce(
+        (acc, curr) => acc + Number(curr.customerRating),
+        0
+      );
+
+      const safetyRating = sector.Projects.reduce(
+        (acc, curr) => acc + Number(curr.safetyRating),
+        0
+      );
+
+      const qualityRating = sector.Projects.reduce(
+        (acc, curr) => acc + Number(curr.qualityRating),
+        0
+      );
+
+      const staffingRating = sector.Projects.reduce(
+        (acc, curr) => acc + Number(curr.staffingRating),
+        0
+      );
+
+      const avgProfitabilityRating =
+        profitabilityRating / sector.Projects.length;
+      const avgCustomerRating = customerRating / sector.Projects.length;
+      const avgSafetyRating = safetyRating / sector.Projects.length;
+      const avgQualityRating = qualityRating / sector.Projects.length;
+      const avgStaffingRating = staffingRating / sector.Projects.length;
+
+      result.push({
+        sectorName,
+        avgProfitabilityRating,
+        avgCustomerRating,
+        avgSafetyRating,
+        avgQualityRating,
+        avgStaffingRating,
+      });
+    }
+
+    return result;
+  }),
 });
 
 export type ManHourResult = {

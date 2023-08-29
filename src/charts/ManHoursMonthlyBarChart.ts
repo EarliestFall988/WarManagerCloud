@@ -55,7 +55,7 @@ const useManHoursDataChart = (monthCount: number) => {
     });
   }, [data]);
 
-  console.log(projectData); 
+  // console.log(projectData);
 
   useMemo(() => {
     const months = [
@@ -150,16 +150,17 @@ const useManHoursDataChart = (monthCount: number) => {
         emphasis: {
           focus: "series",
         },
-        animationEasing: "cubicInOut",
-        animationDelay: function (idx: number) {
-          return idx * 50 + index * 50;
+        animationEasingUpdate: "sinusoidalInOut",
+        animationDelayUpdate: function (idx: number) {
+          return idx * 100 + (10 - index * 50) + 100;
         },
         name: item.name,
         data: item.result.map((item) => item.manHourCount),
       };
     }),
-    animationDelayUpdate: function (idx) {
-      return idx * 50;
+    animationEasingUpdate: "sinusoidalInOut",
+    animationDelayUpdate: function (idx: number) {
+      return idx * 100 + 100;
     },
   };
 

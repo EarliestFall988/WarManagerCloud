@@ -45,7 +45,7 @@ const useCrewMemberRatingBySectorDataChart = () => {
     );
     setSectorDatalayers(sectorLayers);
 
-    setXAxisData(result.map((item) => item.name));
+    setXAxisData(result.map((item) => item.name + " rating"));
   }, [data]);
 
   // const xAxisData = [] as string[];
@@ -84,14 +84,23 @@ const useCrewMemberRatingBySectorDataChart = () => {
         },
       },
     },
-    tooltip: {},
+    tooltip: {
+      valueFormatter(value) {
+        return value.toString() + " people";
+      },
+    },
     xAxis: {
       // data: xAxisData,
       // show: false,
       // deduplication: true,
-      // splitLine: {
-      //   show: false,
-      // },
+      show: true,
+      splitLine: {
+        show: true,
+        lineStyle: {
+          color: "#555",
+          type: "solid",
+        },
+      },
     },
     yAxis: {
       data: xAxisData,
@@ -106,26 +115,40 @@ const useCrewMemberRatingBySectorDataChart = () => {
     series: sectorDatalayers?.map((item, index) => {
       return {
         type: "bar",
-        name: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"][index],
+        name: [
+          "0 rating",
+          "1 rating",
+          "2 rating",
+          "3 rating",
+          "4 rating",
+          "5 rating",
+          "6 rating",
+          "7 rating",
+          "8 rating",
+          "9 rating",
+          "10 rating",
+        ][index],
         stack: "x",
         emphasis: {
           focus: "series",
         },
         label: {
           show: true,
-          position: "insideRight",
+          position: "insideLeft",
+          valueAnimation: true,
+          verticalAlign: "middle",
         },
-        animationEasing: "exponentialInOut",
-        animationDelay: function (idx: number) {
-          return idx * 100;
+        animationEasingUpdate: "sinusoidalInOut",
+        animationDelayUpdate: function (idx: number) {
+          return idx * 100 + (10 - index * 50) + 100;
         },
-        animationEasingUpdate: "exponentialInOut",
         data: item.data,
       };
     }),
-    animationEasingUpdate: "exponentialInOut",
+    animationThreshold: 100,
+    animationEasingUpdate: "backInOut",
     animationDelayUpdate: function (idx) {
-      return idx * 50;
+      return idx * 100;
     },
   };
 

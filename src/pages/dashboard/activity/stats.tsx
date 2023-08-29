@@ -5,10 +5,12 @@ import { TitleBar } from "../activity";
 import { ReactECharts } from "../../../charts/ManHoursMonthlyChartComponent";
 import useManHoursDataChart from "../../../charts/ManHoursMonthlyBarChart";
 import useCrewMemberRatingBySectorDataChart from "~/charts/CrewMemberRatingBySector";
+import useCompanyRatingsRadar from "~/charts/CompanyRatingsRadar";
 
 export const StatsPage: NextPage = () => {
   const options = useManHoursDataChart(6);
   const crewRatingOptions = useCrewMemberRatingBySectorDataChart();
+  const companyRatingsRadar = useCompanyRatingsRadar();
 
   return (
     <main className="flex h-[100vh] bg-zinc-900">
@@ -26,13 +28,35 @@ export const StatsPage: NextPage = () => {
           </div>
           <div className="py-10">
             <div className="flex w-full items-center justify-center p-2 text-lg font-semibold">
-              <p>Average Crew Rating By Sector</p>
+              <p>Crew Ratings By Sector</p>
             </div>
             <ReactECharts
               option={crewRatingOptions}
               height={8}
               width="w-full"
             />
+          </div>
+          <div className="flex w-full flex-wrap items-center justify-around">
+            <div className="w-1/2 py-10">
+              <div className="flex w-full items-center justify-center p-2 text-lg font-semibold">
+                <p>Average Overall Ratings</p>
+              </div>
+              <ReactECharts
+                option={companyRatingsRadar}
+                height={8}
+                width="w-full"
+              />
+            </div>
+            {/* <div className="w-1/2 py-10">
+              <div className="flex w-full items-center justify-center p-2 text-lg font-semibold">
+                <p>Average Ratings by Sector</p>
+              </div>
+              <ReactECharts
+                option={companyRatingsRadar}
+                height={8}
+                width="w-full"
+              />
+            </div> */}
           </div>
         </div>
       </div>
