@@ -2,17 +2,16 @@ import { api } from "~/utils/api";
 import { type ReactEChartsProps } from "./ManHoursMonthlyChartComponent";
 
 import { useMemo, useState } from "react";
-import { set } from "lib0/encoding";
 
-type data = {
-  name: string;
-  id: string;
-  avg: number;
-  data: {
-    rating: number;
-    amount: number;
-  }[];
-};
+// type data = {
+//   name: string;
+//   id: string;
+//   avg: number;
+//   data: {
+//     rating: number;
+//     amount: number;
+//   }[];
+// };
 
 type sectorDataLayer = {
   name: string;
@@ -20,7 +19,7 @@ type sectorDataLayer = {
 };
 
 const useCrewMemberRatingBySectorDataChart = () => {
-  const [crewData, setCrewData] = useState<data[]>([]);
+  // const [crewData, setCrewData] = useState<data[]>([]);
   const [sectorDatalayers, setSectorDatalayers] = useState<sectorDataLayer[]>(
     []
   );
@@ -29,7 +28,7 @@ const useCrewMemberRatingBySectorDataChart = () => {
   const { data } = api.crewMembers.crewMemberPerformanceBySector.useQuery();
 
   useMemo(() => {
-    setCrewData([]);
+    // setCrewData([]);
     setSectorDatalayers([]);
 
     if (data === undefined) return;
@@ -38,7 +37,7 @@ const useCrewMemberRatingBySectorDataChart = () => {
     const layers = data.layers;
 
     const result = d.filter((item) => item !== undefined || item !== null);
-    setCrewData(result);
+    // setCrewData(result);
 
     const sectorLayers = layers.filter(
       (item) => item !== undefined || item !== null
