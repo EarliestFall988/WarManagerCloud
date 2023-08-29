@@ -146,7 +146,7 @@ const useManHoursDataChart = (monthCount: number) => {
     },
     series: projectData?.map((item, index) => {
       return {
-        type: "bar",
+        type: "line",
         emphasis: {
           focus: "series",
         },

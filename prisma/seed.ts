@@ -4,9 +4,9 @@ import { faker } from "@faker-js/faker";
 const prisma = new PrismaClient();
 
 async function main() {
-  const projectsAmount = 30;
-  const crewMembersAmount = 40;
-  const logsAmount = 100;
+  const projectsAmount = 50;
+  const crewMembersAmount = 300;
+  const logsAmount = 20;
 
   if (
     process.env.DATABASE_URL === undefined ||
@@ -69,32 +69,32 @@ async function main() {
     const reactions = createLogReactions();
     const replies = createLogReplies();
 
-    // reactions.map(async (r) => {
-    //   if (res.id === undefined) throw new Error("log id is undefined");
-    //   await prisma.logReaction.create({
-    //     data: {
-    //       ...r,
-    //       log: {
-    //         connect: {
-    //           id: res.id,
-    //         },
-    //       },
-    //     },
-    //   });
-    // });
+    reactions.map(async (r) => {
+      if (res.id === undefined) throw new Error("log id is undefined");
+      await prisma.logReaction.create({
+        data: {
+          ...r,
+          log: {
+            connect: {
+              id: res.id,
+            },
+          },
+        },
+      });
+    });
 
-    // replies.map(async (r) => {
-    //   await prisma.logReply.create({
-    //     data: {
-    //       ...r,
-    //       log: {
-    //         connect: {
-    //           id: res.id,
-    //         },
-    //       },
-    //     },
-    //   });
-    // });
+    replies.map(async (r) => {
+      await prisma.logReply.create({
+        data: {
+          ...r,
+          log: {
+            connect: {
+              id: res.id,
+            },
+          },
+        },
+      });
+    });
   });
 
   console.log("\tconnecting projects and crew members to sectors...\n");

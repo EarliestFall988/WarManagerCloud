@@ -137,8 +137,8 @@ export const crewMembersRouter = createTRPCRouter({
                 include: {
                   sectors: true,
                   tags: true,
-                }
-              }
+                },
+              },
             },
           },
           blueprints: true,
@@ -826,4 +826,93 @@ export const crewMembersRouter = createTRPCRouter({
 
       return crewMember;
     }),
+
+  crewMemberPerformanceBySector: privateProcedure.query(async ({ ctx }) => {
+    const sectors = await ctx.prisma.sector.findMany({
+      select: {
+        name: true,
+        id: true,
+        CrewMembers: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    const data = [] as {
+      name: string;
+      id: string;
+      avg: number;
+      data: {
+        rating: number;
+        amount: number;
+      }[];
+    }[];
+
+    const layers = [] as {
+      name: string;
+      data: number[];
+    }[];
+
+    for (let i = 0; i < 11; i++) {
+      layers.push({
+        name: i.toString(),
+        data: [],
+      });
+    }
+
+    sectors.map((sector) => {
+      const crewMembers = sector.CrewMembers;
+
+      const sumResult = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      let average = 0;
+
+      crewMembers?.forEach((crewMember) => {
+        const crewmemberRating = parseInt(crewMember.rating);
+        console.log("crewmemberRating:", crewmemberRating);
+        if (crewmemberRating >= 0 && crewmemberRating <= 10)
+          sumResult[crewmemberRating] += 1;
+        else sumResult[0] += 1;
+
+        average += crewmemberRating;
+      });
+
+      average = average / crewMembers?.length || 1;
+
+      sumResult.forEach((item, index) => {
+        const dataPoint = data.find((x) => x.id === sector.id);
+        if (dataPoint === undefined) {
+          data.push({
+            avg: average,
+            id: sector.id,
+            name: sector.name,
+            data: [],
+          });
+        }
+
+        dataPoint?.data.push({
+          amount: item,
+          rating: index,
+        });
+
+        layers[index]?.data.push(item);
+      });
+
+      // return {
+      //   name: sector.name,
+      //   id: sector.id,
+      //   average,
+      //   result: sumResult,
+      //   data,
+      // };
+    });
+
+    // console.log(data);
+    data.forEach((item) => {
+      console.log(item.name);
+      console.log(item.data);
+    });
+
+    return { data, layers };
+  }),
 });

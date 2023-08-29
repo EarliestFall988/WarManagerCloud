@@ -10,6 +10,7 @@ export interface ReactEChartsProps {
   loading?: boolean;
   theme?: "light" | "dark";
   width?: string;
+  height: number;
 }
 
 export function ReactECharts({
@@ -19,6 +20,7 @@ export function ReactECharts({
   loading,
   theme,
   width,
+  height,
 }: ReactEChartsProps): JSX.Element {
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -79,7 +81,11 @@ export function ReactECharts({
     >
       <div
         ref={chartRef}
-        style={{ width: "100%", height: "300px", ...style }}
+        style={{
+          width: "100%",
+          height: `${height ? (height * 50).toString() : "300"}px`,
+          ...style,
+        }}
       />
     </div>
   );
