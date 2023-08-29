@@ -869,7 +869,7 @@ export const crewMembersRouter = createTRPCRouter({
 
       crewMembers?.forEach((crewMember) => {
         const crewmemberRating = parseInt(crewMember.rating);
-        console.log("crewmemberRating:", crewmemberRating);
+
         if (crewmemberRating >= 0 && crewmemberRating <= 10)
           sumResult[crewmemberRating] += 1;
         else sumResult[0] += 1;
@@ -908,10 +908,10 @@ export const crewMembersRouter = createTRPCRouter({
     });
 
     // console.log(data);
-    data.forEach((item) => {
-      console.log(item.name);
-      console.log(item.data);
-    });
+    // data.forEach((item) => {
+    //   console.log(item.name);
+    //   console.log(item.data);
+    // });
 
     return { data, layers };
   }),

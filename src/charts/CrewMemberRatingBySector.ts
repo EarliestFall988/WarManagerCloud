@@ -106,7 +106,7 @@ const useCrewMemberRatingBySectorDataChart = () => {
     series: sectorDatalayers?.map((item, index) => {
       return {
         type: "bar",
-        name: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"][index],
+        name: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"][index],
         stack: "x",
         emphasis: {
           focus: "series",
