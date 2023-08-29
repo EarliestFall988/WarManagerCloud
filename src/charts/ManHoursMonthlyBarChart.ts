@@ -129,6 +129,11 @@ const useManHoursDataChart = (monthCount: number) => {
       },
     },
     tooltip: {},
+    dataZoom: [
+      {
+        type: "inside",
+      },
+    ],
     xAxis: {
       data: xAxisData,
       splitLine: {

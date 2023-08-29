@@ -60,7 +60,6 @@ const useCompanyRatingsRadar = () => {
       },
     },
     radar: {
-      shape: "circle",
       indicator: xAxisData,
       splitArea: {
         show: true,

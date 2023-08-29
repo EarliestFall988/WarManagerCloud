@@ -83,9 +83,16 @@ const useCrewMemberRatingBySectorDataChart = () => {
         },
       },
     },
+    dataZoom: [
+      {
+        type: "inside",
+      },
+    ],
     tooltip: {
       valueFormatter(value) {
-        return value.toString() + " people";
+        if (value !== undefined && value !== null)
+          return value.toString() + " people";
+        return "0 people";
       },
     },
     xAxis: {
