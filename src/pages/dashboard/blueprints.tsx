@@ -101,9 +101,12 @@ const BlueprintsListPage: NextPage = () => {
               </Link>
             </TooltipComponent>
             <TooltipComponent content="View Schedules" side="bottom">
-              <button className="rounded bg-zinc-700 p-2 outline-none transition duration-100 hover:bg-amber-700 focus:bg-amber-700">
+              <Link
+                href="/schedules/all"
+                className="rounded bg-zinc-700 p-2 outline-none transition duration-100 hover:cursor-pointer hover:bg-amber-700 focus:bg-amber-700"
+              >
                 <CalendarDaysIcon className="h-6 w-6 text-zinc-200" />
-              </button>
+              </Link>
             </TooltipComponent>
           </div>
           <div ref={animationParent} className="h-full w-full">

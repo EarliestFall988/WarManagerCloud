@@ -153,7 +153,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         color="#da640a"
         height={4}
         showOnShallow={false}
-        options={{ easing: "ease", speed: 500, showSpinner: false }}
+        options={{ easing: "ease", speed: 500, showSpinner: false,  }}
       />
 
       <ClerkProvider
