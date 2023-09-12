@@ -13,7 +13,7 @@ const AllPage: NextPage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
 
   const [animationParent] = useAutoAnimate();
 
@@ -45,7 +45,7 @@ const AllPage: NextPage = () => {
 
   return (
     <main className="min-h-[100vh] w-full bg-zinc-900">
-      <div className=" fixed top-0 flex h-14 w-full items-center justify-between bg-zinc-900/50 backdrop-blur p-2">
+      <div className=" fixed top-0 flex h-14 w-full items-center justify-between bg-zinc-900/50 p-2 backdrop-blur">
         <div className="flex w-full gap-2 md:w-1/2">
           <button
             onClick={back}

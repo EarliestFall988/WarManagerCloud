@@ -6,13 +6,13 @@ import { ReactECharts } from "../../../charts/ManHoursMonthlyChartComponent";
 import useManHoursDataChart from "../../../charts/ManHoursMonthlyBarChart";
 import useCrewMemberRatingBySectorDataChart from "~/charts/CrewMemberRatingBySector";
 import useCompanyRatingsRadar from "~/charts/CompanyRatingsRadar";
-import useCompanyMedianRatingsRadar from "~/charts/CompanyMedianRatingsGauge";
+// import useCompanyMedianRatingsRadar from "~/charts/CompanyMedianRatingsGauge";
 
 export const StatsPage: NextPage = () => {
   const options = useManHoursDataChart(6);
   const crewRatingOptions = useCrewMemberRatingBySectorDataChart();
   const companyRatingsRadar = useCompanyRatingsRadar();
-  const medianRatings = useCompanyMedianRatingsRadar();
+  // const medianRatings = useCompanyMedianRatingsRadar();
 
   return (
     <main className="flex h-[100vh] bg-zinc-900">
@@ -49,12 +49,12 @@ export const StatsPage: NextPage = () => {
                 width="w-full"
               />
             </div>
-            <div className="w-1/2 py-10">
+            {/* <div className="w-1/2 py-10">
               <div className="flex w-full items-center justify-center p-2 text-lg font-semibold">
                 <p>Median Company Ratings</p>
               </div>
               <ReactECharts option={medianRatings} height={10} width="w-full" />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

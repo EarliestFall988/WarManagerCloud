@@ -1,11 +1,6 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import {
-  type GetStaticPropsContext,
-  type GetStaticProps,
-  type NextPage,
-} from "next";
+import { type NextPage } from "next";
 import { LoadingSpinner } from "~/components/loading";
-import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 
 import { useState, useMemo } from "react";

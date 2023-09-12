@@ -20,7 +20,6 @@ type projectCrewType = {
 
 type crewType = CrewMember & { start: Date; end: Date };
 type equipmentType = Equipment & { start: Date; end: Date };
-
 const CommitPage: NextPage = () => {
   const router = useRouter();
 
@@ -97,9 +96,9 @@ const CommitPage: NextPage = () => {
           context="blueprints"
         />
         <div className="flex flex-col items-center justify-start">
-          <div className="w-1/2">
+          <div className="w-full md:w-2/3 lg:w-1/2">
             {schedule.map((s) => (
-              <div className="w-full  p-2" key={s.project.id}>
+              <div className="w-full p-2" key={s.project.id}>
                 <div className="flex items-center justify-start gap-2 rounded bg-zinc-800 p-2">
                   <WrenchScrewdriverIcon className="h-6 w-6" />
                   <div>
@@ -140,7 +139,12 @@ const CommitPage: NextPage = () => {
             ))}
           </div>
           <div className="h-20" />
-          <button className="flex w-1/2 items-center justify-center gap-1 rounded bg-amber-700 p-2 font-semibold transition duration-100 hover:bg-amber-600">
+          <button
+            onClick={() => {
+              console.log("test");
+            }}
+            className="flex w-2/3 items-center justify-center gap-1 rounded bg-amber-700 p-2 font-semibold transition duration-100 hover:bg-amber-600 md:w-1/2"
+          >
             Commit Changes
             <CloudArrowUpIcon className="h-6 w-6" />
           </button>

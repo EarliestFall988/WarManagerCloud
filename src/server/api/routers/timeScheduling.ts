@@ -4,7 +4,7 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "@prisma/client";
+import { type Prisma } from "@prisma/client";
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
   token: "AX_sAdsdfsgODM5ZjExZGEtMmmVjNmE345445kGVmZTk5MzQ=",

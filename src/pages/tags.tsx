@@ -476,8 +476,10 @@ const TagsPage: NextPage = () => {
         </TooltipComponent>
       </div>
       {newPanelOpen && <TagWizard />}
-      <div className="p-2">
-        <h2 className="select-none pb-2 text-2xl font-semibold">Tags</h2>
+      <div className="m-auto w-full md:border-x border-zinc-700 md:w-11/12">
+        <h2 className=" select-none border-b border-zinc-700 p-2 text-2xl font-semibold">
+          Tags
+        </h2>
         {loading && (
           <div className="flex h-20 w-full items-center justify-center">
             <LoadingSpinner />
