@@ -6,7 +6,6 @@ import {
   ArrowLeftIcon,
   ArrowPathIcon,
   ArrowRightIcon,
-  CalendarIcon,
   CloudArrowUpIcon,
   ListBulletIcon,
 } from "@heroicons/react/24/solid";
@@ -263,6 +262,16 @@ const GanttPage: NextPage = () => {
         return;
       }
 
+      if (project.start === undefined || project.start === null) {
+        console.log("cannot find the start");
+        return;
+      }
+
+      if (project.end === undefined || project.end === null) {
+        console.log("cannot find the end time");
+        return;
+      }
+
       if (
         project.start.getTime() !== start.getTime() ||
         project.end.getTime() !== end.getTime()
@@ -352,6 +361,20 @@ const GanttPage: NextPage = () => {
 
     UpdateTimeScheduleItems(res);
   }, [data, tasks, UpdateTimeScheduleItems]);
+
+  console.log(tasks);
+
+  if (tasks.length > 0) {
+    tasks.filter((task) => {
+      console.log(task.start.getTime(), task.end.getTime());
+
+      if (task.start.getTime() && task.end.getTime()) {
+        return true;
+      }
+
+      return false;
+    });
+  }
 
   return (
     <>
@@ -448,11 +471,11 @@ const GanttPage: NextPage = () => {
               </button>
             </div>
           </div>
-          {tasks.length > 0 && (
+          {tasks.length !== 0 && (
             <>
               <div className="h-16 bg-zinc-800" />
               <div className="bg-white">
-                <Gantt
+                {/* <Gantt
                   tasks={tasks}
                   viewMode={view}
                   onDateChange={handleTaskChange}
@@ -464,7 +487,7 @@ const GanttPage: NextPage = () => {
                   onExpanderClick={handleExpanderClick}
                   listCellWidth={isChecked ? "155px" : ""}
                   columnWidth={columnWidth}
-                />
+                /> */}
               </div>
             </>
           )}

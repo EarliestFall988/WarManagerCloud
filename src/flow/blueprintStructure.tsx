@@ -416,7 +416,7 @@ const Ribbon: React.FC<{
               </div>
             </button>
           </TooltipComponent>
-          <div className="flex items-center rounded border-green-600 bg-green-700 ">
+          {/* <div className="flex items-center rounded border-green-600 bg-green-700 ">
             <NextButton
               lastSchedule={lastSchedule}
               isLoading={isLoading}
@@ -452,7 +452,7 @@ const Ribbon: React.FC<{
                 onSave(startDate, endDate);
               }}
             />
-          </div>
+          </div> */}
         </div>
       )}
     </div>
