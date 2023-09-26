@@ -1977,7 +1977,7 @@ export const ReplyComponent: React.FC<{
           )}
         </div>
       </div>
-      <div className="pl-3">
+      <div className="pl-3 pb-5">
         <MessageComponent data={reply.message} />
       </div>
     </>
