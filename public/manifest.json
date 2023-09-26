@@ -1,7 +1,7 @@
 {
   "start_url": "/dashboard",
   "id": "/dashboard",
-  "name": "War Manager Production Cloud Service",
+  "name": "War Manager",
   "short_name": "War Manager",
   "description": "War Manager enables you to stay organized and keep your team on the same page.",
   "icons": [
@@ -35,7 +35,32 @@
   "background_color": "black",
   "orientation": "portrait",
   "display": "standalone",
-  "display_override": [
-    "tabbed"
+  "display_override": ["tabbed"],
+  "shortcuts": [
+    {
+      "name": "Hub",
+      "url": "/dashboard/activity",
+      "description": "List of events planned for today"
+    },
+    {
+      "name": "Blueprints",
+      "url": "/dashboard/blueprints"
+    },
+    {
+      "name": "Crew",
+      "url": "/dashboard/crew"
+    },
+    {
+      "name": "Projects",
+      "url": "/dashboard/projects"
+    },
+    {
+      "name": "Settings",
+      "url": "/settings/sectors"
+    },
+    {
+      "name": "Helpful Tips",
+      "url": "/dashboard/help"
+    }
   ]
 }

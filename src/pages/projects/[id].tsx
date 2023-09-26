@@ -329,8 +329,6 @@ const EditProjectPage = function ({ id }: { id: string }) {
     toast.loading("Saving changes...", { duration: 2000 });
   };
 
-  console.log(project);
-
   return (
     <>
       <Head>

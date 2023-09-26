@@ -29,14 +29,13 @@ interface IProjectInput {
 //     tags: Tag[];
 
 const ProjectNode = ({ data, selected }: IProjectInput) => {
-
   const { projectData, isLoading } = useLiveData();
 
-  const info = projectData.find((crew) => crew.id == data.id);
+  const info = projectData.find((node) => node.id == data.id);
 
   if (!data || isLoading) return <LoadingSpinner />;
 
-  if (!info) return <div className="bg-red-500/30 rounded-sm p-2 text-[0.5em]">err</div>;
+  if (!info) return <div className="rounded-sm bg-red-500/30 p-2">err</div>;
 
   if (typeof selected !== "boolean") return <>err</>;
 
@@ -56,14 +55,12 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
   return (
     <>
       <div className="h-full w-full">
-        <div className="flex h-full w-full cursor-move rounded-sm border border-transparent bg-zinc-700 px-1 text-zinc-100 transition-all duration-100 hover:border-amber-800">
-          <div className="h-full w-full">
+        <div className="flex h-full w-full cursor-move rounded-lg bg-zinc-700 px-1 text-zinc-100 ring-2 ring-zinc-700 transition-all duration-100 hover:ring hover:ring-zinc-700">
+          <div className="h-16 w-72">
             <HoverCardComponent
               editURL={`/projects/${data.id}`}
               trigger={
-                <button
-                  className="fixed bottom-0 right-0 z-10 h-3 w-3 -translate-x-1 -translate-y-1 text-amber-600/40"
-                >
+                <button className="fixed bottom-0 right-0 z-10 h-6 w-6 -translate-x-1 -translate-y-1 text-amber-600/40">
                   <WrenchScrewdriverIcon />
                 </button>
               }
@@ -160,11 +157,13 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
                 </div>
               }
             />
-            <p className="z-30 w-full truncate text-[0.55rem]">{info.name}</p>
+            <p className="z-30 w-full truncate text-lg font-semibold">
+              {info.name}
+            </p>
             {info.tags && (
-              <div className="flex flex-wrap items-center justify-start gap-[2px] rounded">
+              <div className="flex flex-wrap items-center justify-start gap-2 rounded">
                 {info.city && info.state && (
-                  <p className="z-30 text-[0.45rem] italic tracking-tight text-white/70">
+                  <p className="z-30 italic tracking-tight text-white/70">
                     {info.city}, {info.state}
                   </p>
                 )}
@@ -182,10 +181,18 @@ const ProjectNode = ({ data, selected }: IProjectInput) => {
         </div>
 
         <NodeResizer
-          color="#ff5555"
+          handleStyle={{
+            width: 10,
+            height: 10,
+            borderRadius: 2,
+            backgroundColor: "#ccc",
+            color: "#ccc",
+            borderColor: "#ccc",
+          }}
+          lineStyle={{ borderColor: "#777", borderWidth: 2 }}
           isVisible={selected}
-          minWidth={100}
-          minHeight={30}
+          minWidth={120}
+          minHeight={50}
         />
       </div>
     </>

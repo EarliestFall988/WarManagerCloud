@@ -10,11 +10,14 @@ import type {
 } from "@prisma/client";
 import type { Edge, Node } from "reactflow";
 import {
+  CheckBadgeIcon,
   CloudArrowUpIcon,
   Cog6ToothIcon,
+  ExclamationTriangleIcon,
   FireIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
+  PaintBrushIcon,
   PlusIcon,
   QueueListIcon,
   RocketLaunchIcon,
@@ -28,15 +31,17 @@ import Link from "next/link";
 import { toast } from "react-hot-toast";
 import TooltipComponent from "./Tooltip";
 import * as Tabs from "@radix-ui/react-tabs";
-import { TagBubble } from "./TagComponent";
+import { TagBubble, TagBubblesHandler } from "./TagComponent";
 import { ScheduleItem } from "./ScheduleItem";
 import { DialogComponent } from "./dialog";
 import { useRouter } from "next/router";
 import { GetNodes } from "~/flow/useNodesStateSynced";
-import { GetListOfNodesSortedByColumn } from "~/flow/flow";
 import useLiveData from "~/flow/databank";
 import { getCrewCost } from "~/flow/costing";
 import { useUser } from "@clerk/nextjs";
+import { GetListOfNodesSortedByColumn } from "~/flow/blueprintStructure";
+import { SwitchComponent, SwitchComponentWithErrorInput } from "./input";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const onDragStart = (
   event: React.DragEvent<HTMLDivElement>,
@@ -50,7 +55,7 @@ const onDragStart = (
 
 type filterProjectsProp = {
   nodes: Node[];
-  data: (Project & { tags: Tag[] })[] | undefined;
+  data: (Project & { tags: Tag[] } & { sectors: Sector[] })[] | undefined;
 };
 
 const FilterProjects = ({ nodes, data }: filterProjectsProp) => {
@@ -71,15 +76,70 @@ const FilterProjects = ({ nodes, data }: filterProjectsProp) => {
   });
 };
 
-export const ProjectsList = (props: { blueprintId: string }) => {
+const HandleProjectsWithConflicts = (
+  projects: (Project & { tags: Tag[] } & { sectors: Sector[] })[] | undefined,
+  blueprintId: string
+) => {
+  const {
+    data: projectsWithConflicts,
+    isLoading: loadingConflictData,
+    isError: errorConflictData,
+  } = api.blueprints.findProjectConflicts.useQuery({
+    id: projects?.map((project) => project.id) || [],
+    excludeBlueprint: blueprintId,
+  });
+
+  if (loadingConflictData) return undefined;
+
+  if (errorConflictData) return undefined;
+
+  if (projectsWithConflicts === undefined || projects === undefined)
+    return undefined;
+
+  const archiveProject = projectsWithConflicts.find((project) => {
+    const res = projects.find((p) => p.name === "archive")?.name;
+
+    return {
+      name: res,
+      conflict: project.conflict,
+    };
+  });
+
+  console.log(archiveProject);
+
+  const res = projectsWithConflicts.map((conflictData) => {
+    const projectToReturn = projects.find((p) => p.id === conflictData.id);
+
+    console.log(conflictData.conflict, projectToReturn?.name || "err");
+
+    return {
+      ...projectToReturn,
+      conflict: conflictData.conflict,
+      blueprint: conflictData.blueprint,
+    };
+  });
+
+  return res;
+};
+
+export const ProjectsList = (props: {
+  blueprintId: string;
+  liveBlueprint: boolean;
+}) => {
   useScript(
     "https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"
   );
 
+  const [
+    filterOutProjectsOnOtherBlueprints,
+    setFilterOutProjectsOnOtherBlueprints,
+  ] = useState(false);
   const [search, setSearch] = useState("");
   const [nodeMode, setNodeMode] = useState<
     "all" | "notOnBlueprint" | "onlyOnBlueprint"
   >("notOnBlueprint");
+
+  const [animationParent] = useAutoAnimate();
 
   // const { data, isLoading, isError } = api.projects.getAll.useQuery();
   const { projectData: data, isError, isLoading } = useLiveData();
@@ -99,14 +159,21 @@ export const ProjectsList = (props: { blueprintId: string }) => {
   const getProjectsToView = () => {
     if (nodeMode === "all" && !isLoadingProjects && !isErrorProjects) {
       return (
-        searchedProjects ||
-        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] })[])
+        HandleProjectsWithConflicts(searchedProjects, props.blueprintId) ||
+        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
+          conflict: boolean;
+        } & { blueprint: Blueprint | undefined })[])
       );
     } else if (nodeMode === "notOnBlueprint") {
-      return FilterProjects({
-        nodes: blueprintNodes,
-        data: searchedProjects,
-      }) as (Project & { tags: Tag[] } & { sectors: Sector[] })[];
+      return HandleProjectsWithConflicts(
+        FilterProjects({
+          nodes: blueprintNodes,
+          data: searchedProjects,
+        }),
+        props.blueprintId
+      ) as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
+        conflict: boolean;
+      } & { blueprint: Blueprint | undefined })[];
     } else if (nodeMode === "onlyOnBlueprint") {
       const nodes = blueprintNodes.filter(
         (node) => node.type === "projectNode"
@@ -120,11 +187,15 @@ export const ProjectsList = (props: { blueprintId: string }) => {
       });
 
       return (
-        projects ||
-        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] })[])
+        HandleProjectsWithConflicts(projects, props.blueprintId) ||
+        ([] as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
+          conflict: boolean;
+        } & { blueprint: Blueprint | undefined })[])
       );
     } else {
-      return [] as (Project & { tags: Tag[] } & { sectors: Sector[] })[];
+      return [] as (Project & { tags: Tag[] } & { sectors: Sector[] } & {
+        conflict: boolean;
+      } & { blueprint: Blueprint | undefined })[];
     }
   };
 
@@ -197,68 +268,121 @@ export const ProjectsList = (props: { blueprintId: string }) => {
           </TooltipComponent>
         </div>
       </div>
-      <div className="flex flex-col items-end border-b border-zinc-600 p-1 py-2">
+      <div className="flex items-center gap-2 border-b border-zinc-600 p-1 py-2">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           type="search"
-          className="w-full rounded bg-zinc-100 p-1 text-zinc-600 placeholder:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 active:outline-none"
+          className="w-full rounded bg-zinc-600 p-1 text-zinc-100 outline-none ring-2 ring-zinc-500 transition duration-100 placeholder:text-zinc-300 hover:ring hover:ring-zinc-400 focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
           placeholder="Search..."
         />
+        {props.liveBlueprint &&
+          (nodeMode === "notOnBlueprint" || nodeMode === "all") && (
+            <TooltipComponent
+              content="Filter out Projects on other blueprints"
+              side="top"
+            >
+              <SwitchComponent
+                checked={filterOutProjectsOnOtherBlueprints}
+                onCheckedChange={(e) => {
+                  setFilterOutProjectsOnOtherBlueprints(e);
+                }}
+              >
+                <CheckBadgeIcon className="h-5 w-5 text-zinc-100" />
+              </SwitchComponent>
+            </TooltipComponent>
+          )}
       </div>
-      <div className="flex flex-col gap-1 pr-1">
+      <div ref={animationParent} className="flex flex-col gap-1 pr-1">
         {!(isLoading || isLoadingProjects) && (
           <>
-            {projectsToView?.length === 0 && (
-              <NothingToDisplayNotice context="projects" />
-            )}
-            {projectsToView?.map((project) => (
-              <Link key={project.id} href={`/projects/${project.id}`}>
-                <div
-                  className="flex items-end justify-between border-b border-zinc-600 p-1 px-2 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
-                  draggable={draggable}
-                  onDragStart={(event) => onDragStart(event, "p-" + project.id)}
-                >
-                  <div className="w-full truncate">
-                    <div className="flex w-full items-center justify-start gap-2">
-                      <p className="truncate text-xs font-normal text-zinc-300">
-                        {project.jobNumber}
-                      </p>
-                      <p className="truncate text-xs font-normal text-zinc-300">
-                        {project.sectors.map((sector) => (
-                          <p key={sector.id}>{sector.name}</p>
-                        ))}
-                      </p>
-                    </div>
+            {projectsToView === undefined ||
+              (projectsToView?.length === 0 && (
+                <NothingToDisplayNotice context="projects" />
+              ))}
+            {projectsToView?.map((project) => {
+              if (
+                project !== undefined &&
+                project.id !== undefined &&
+                ((filterOutProjectsOnOtherBlueprints && !project.conflict) ||
+                  !filterOutProjectsOnOtherBlueprints)
+              )
+                return (
+                  <Link key={project.id} href={`/projects/${project.id}`}>
+                    <div
+                      className="flex items-end justify-between border-b border-zinc-600 p-1 px-2 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
+                      draggable={draggable}
+                      onDragStart={(event) =>
+                        onDragStart(event, "p-" + (project.id || "err"))
+                      }
+                    >
+                      <div className="w-full truncate">
+                        <div className="flex w-full items-center justify-start gap-2">
+                          {project.conflict && (
+                            <button
+                              onClick={(e) => {
+                                if (!project.blueprint?.id) {
+                                  toast.error("Something went wrong");
+                                }
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.open(
+                                  window.location.origin + "/blueprints/" + (project.blueprint?.id || ""),
+                                  "_blank",
+                                );
+                              }}
+                            >
+                              <TooltipComponent
+                                content={`This project is on ${
+                                  project.blueprint
+                                    ? `the blueprint \'${project.blueprint.name}\'`
+                                    : "another blueprint"
+                                }`}
+                                side="top"
+                              >
+                                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
+                              </TooltipComponent>
+                            </button>
+                          )}
+                          <p className="truncate text-xs font-normal text-zinc-300">
+                            {project.jobNumber}
+                          </p>
+                          <p className="truncate text-xs font-normal text-zinc-300">
+                            {project.sectors?.map((sector) => (
+                              <p key={sector.id}>{sector.name}</p>
+                            ))}
+                          </p>
+                        </div>
 
-                    <div className="text-md flex flex-grow flex-wrap items-center justify-start gap-1 truncate font-semibold">
-                      {project.name}
-                      {project.tags.map((tag) => (
-                        <TagBubble
-                          key={tag.id}
-                          tag={tag}
-                          style={"text-xs font-normal"}
-                        />
-                      ))}
-                    </div>
+                        <div className="text-md flex flex-grow flex-wrap items-center justify-start gap-1 truncate font-semibold">
+                          {project.name}
+                          {project.tags?.map((tag) => (
+                            <TagBubble
+                              key={tag.id}
+                              tag={tag}
+                              style={"text-xs font-normal"}
+                            />
+                          ))}
+                        </div>
 
-                    <p className="truncate text-xs font-normal text-zinc-300">
-                      {project.city && project.state && (
-                        <>
-                          {project.city}, {project.state}
-                        </>
-                      )}
-                      {!project.city && !project.state && (
-                        <span className="text-zinc-400">N/A</span>
-                      )}
-                    </p>
-                  </div>
-                  {/* <p className="hidden w-1/2 text-sm font-normal italic tracking-tight text-zinc-300 sm:flex">
+                        <p className="truncate text-xs font-normal text-zinc-300">
+                          {project.city && project.state && (
+                            <>
+                              {project.city}, {project.state}
+                            </>
+                          )}
+                          {!project.city && !project.state && (
+                            <span className="text-zinc-400">N/A</span>
+                          )}
+                        </p>
+                      </div>
+                      {/* <p className="hidden w-1/2 text-sm font-normal italic tracking-tight text-zinc-300 sm:flex">
                     {project.description}
                   </p> */}
-                </div>
-              </Link>
-            ))}
+                    </div>
+                  </Link>
+                );
+            })}
             {projectsToView?.length === 0 && nodeMode === "notOnBlueprint" && (
               <AllOnBlueprintNotice context="projects" />
             )}
@@ -456,9 +580,12 @@ export const CrewList = (props: { blueprintId: string }) => {
                     </p>
                   </div>
                   <div className="flex h-10 w-1/2 flex-wrap items-start justify-start gap-1 overflow-clip text-xs">
-                    {crew.tags.map((tag) => (
-                      <TagBubble key={tag.id} tag={tag} />
-                    ))}
+                    <TagBubblesHandler
+                      tags={crew.tags}
+                      mode="crew"
+                      crew={crew}
+                      style="bg-zinc-800/50"
+                    />
                   </div>
                 </div>
               </Link>
@@ -834,6 +961,10 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
     blueprint.description
   );
 
+  const live = blueprint.live || false;
+
+  const [liveData, setLiveData] = useState<boolean>(live);
+
   const context = api.useContext().blueprints;
   const router = useRouter();
 
@@ -854,8 +985,8 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
   const { mutate: mutateUpdate, isLoading: isUpdating } =
     api.blueprints.updateDetails.useMutation({
       onSuccess: () => {
-        console.log("Blueprint Updated");
         toast.success("Blueprint Updated");
+        void router.reload();
         void context.invalidate();
       },
 
@@ -880,8 +1011,15 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
       blueprintId: blueprint.id,
       name: blueprintName,
       description: blueprintDescription,
+      live: liveData,
     });
-  }, [blueprint.id, blueprintName, blueprintDescription, mutateUpdate]);
+  }, [
+    blueprint.id,
+    blueprintName,
+    blueprintDescription,
+    mutateUpdate,
+    liveData,
+  ]);
 
   if (!blueprint) return <div></div>;
 
@@ -893,6 +1031,8 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
       </div>
     );
   }
+
+  console.log("live data from aux", liveData);
 
   return (
     <div className="mr-1 h-[60vh] w-full border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
@@ -968,6 +1108,27 @@ export const More: React.FC<{ blueprint: Blueprint }> = ({ blueprint }) => {
                   }}
                   className="w-full rounded p-1 text-zinc-700 outline-none hover:ring-2 hover:ring-zinc-500 focus:ring-2 focus:ring-amber-600"
                 />
+              </div>
+              <div>
+                <p className="font-semibold">Live Data or Zen Mode</p>
+                <SwitchComponentWithErrorInput
+                  checked={liveData}
+                  onCheckedChange={setLiveData}
+                >
+                  {liveData ? (
+                    <>
+                      <div className="w-30 flex gap-2">
+                        <CheckBadgeIcon className="h-6 w-6 text-zinc-200" />
+                        <p className="w-20 text-zinc-200">Live Data</p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-30 flex gap-2">
+                      <PaintBrushIcon className="h-6 w-6 text-zinc-200" />
+                      <p className="w-20 text-zinc-200">Zen Mode</p>
+                    </div>
+                  )}
+                </SwitchComponentWithErrorInput>
               </div>
               <div className="py-2">
                 <button

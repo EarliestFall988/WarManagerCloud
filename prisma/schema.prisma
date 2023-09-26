@@ -1,5 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
+}
 
 datasource db {
   provider     = "mysql"
@@ -7,331 +9,483 @@ datasource db {
   relationMode = "prisma"
 }
 
-generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "fullTextIndex"]
-}
-
 model Post {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-
-  content String @db.VarChar(255)
-
-  authorId String
+  content   String   @db.VarChar(255)
+  authorId  String
 
   @@index([authorId])
 }
 
 model Project {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  jobNumber   String @db.VarChar(255)
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
-  notes       String @db.Text
-
-  address String @db.VarChar(255)
-  city    String @db.VarChar(255)
-  state   String @db.VarChar(255)
-  zip     String @db.VarChar(255)
-
-  startDate       DateTime
-  endDate         DateTime
-  status          String   @db.VarChar(255)
-  percentComplete Float    @default(0)
-  completed       Boolean  @default(false)
-
-  TotalManHours Int   @default(0)
-  JobDetails    Json? @default("{}") @db.Json
-
-  laborCost         Float @default(0)
-  subContractorCost Float @default(0)
-  materialCost      Float @default(0)
-  equipmentCost     Float @default(0)
-  otherCost         Float @default(0)
-
-  safetyRating        String @db.VarChar(255)
-  qualityRating       String @db.VarChar(255)
-  staffingRating      String @db.VarChar(255)
-  profitabilityRating String @db.VarChar(255)
-  customerRating      String @db.VarChar(255)
-
-  BillDate DateTime
-
-  scopeOfWork ScopeOfWork[]
-
-  managers CrewMember[]
-  sectors  Sector[]
-
-  authorId String
-  tags     Tag[]
+  id                  String                @id @default(cuid())
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  jobNumber           String                @db.VarChar(255)
+  name                String                @db.VarChar(255)
+  description         String                @db.VarChar(255)
+  notes               String                @db.Text
+  address             String                @db.VarChar(255)
+  city                String                @db.VarChar(255)
+  state               String                @db.VarChar(255)
+  zip                 String                @db.VarChar(255)
+  startDate           DateTime
+  endDate             DateTime
+  status              String                @db.VarChar(255)
+  percentComplete     Float                 @default(0)
+  completed           Boolean               @default(false)
+  TotalManHours       Int                   @default(0)
+  JobDetails          Json?
+  laborCost           Float                 @default(0)
+  subContractorCost   Float                 @default(0)
+  materialCost        Float                 @default(0)
+  equipmentCost       Float                 @default(0)
+  otherCost           Float                 @default(0)
+  safetyRating        String                @db.VarChar(255)
+  qualityRating       String                @db.VarChar(255)
+  staffingRating      String                @db.VarChar(255)
+  profitabilityRating String                @db.VarChar(255)
+  customerRating      String                @db.VarChar(255)
+  BillDate            DateTime
+  authorId            String
+  scopeOfWork         ScopeOfWork[]
+  blueprints          Blueprint[]
+  sectors             Sector[]
+  ScheduleHistory     ScheduleHistoryItem[]
+  tags                Tag[]
 
   @@index([authorId])
-
   @@fulltext([description, notes])
   @@fulltext([name, description, notes, address, city, state, zip])
 }
 
 model ScopeOfWork {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
-
-  scope     String         @db.Text
-  materials MaterialType[]
-
-  authorId  String
-  Project   Project? @relation(fields: [projectId], references: [id])
-  projectId String?
+  id          String         @id @default(cuid())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  name        String         @db.VarChar(255)
+  description String         @db.VarChar(255)
+  scope       String         @db.Text
+  authorId    String
+  projectId   String?
+  materials   MaterialType[]
+  Project     Project?       @relation(fields: [projectId], references: [id])
 
   @@index([authorId])
   @@index([projectId])
 }
 
 model CrewMember {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name        String  @db.VarChar(255)
-  position    String  @db.VarChar(255)
-  description String? @db.VarChar(255)
-  phone       String  @db.VarChar(255)
-  email       String  @db.VarChar(255)
-  travel      String? @db.VarChar(255)
-  skills      Json?
-  rating      String  @db.VarChar(255) @default("5")
-  sector      Sector? @relation(fields: [sectorId], references: [id])
-
-  startDate      DateTime?
-  lastReviewDate DateTime?
-
-  tags Tag[]
-
-  wage   Float @default(0)
-  burden Float @default(0)
-  rate   Float @default(0)
-  hours  Float @default(0)
-  total  Float @default(0)
-
-  authorId String
-  sectorId String?
-
-  Project   Project[]
-  projectId String?
+  id                    String                @id @default(cuid())
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  name                  String                @db.VarChar(255)
+  position              String                @db.VarChar(255)
+  description           String?               @db.VarChar(255)
+  phone                 String                @db.VarChar(255)
+  email                 String                @db.VarChar(255)
+  travel                String?               @db.VarChar(255)
+  skills                Json?
+  rating                String                @default("5") @db.VarChar(255)
+  startDate             DateTime?
+  lastReviewDate        DateTime?
+  wage                  Float                 @default(0)
+  burden                Float                 @default(0)
+  rate                  Float                 @default(0)
+  hours                 Float                 @default(0)
+  total                 Float                 @default(0)
+  authorId              String
+  sectorId              String?
+  medicalCardExpDate    DateTime?
+  medicalCardSignedDate DateTime?
+  sector                Sector?               @relation(fields: [sectorId], references: [id])
+  tags                  Tag[]
+  schedules             ScheduleHistoryItem[]
+  blueprints            Blueprint[]
 
   @@index([authorId])
   @@index([sectorId])
 }
 
 model Blueprint {
+  id                String            @id @default(cuid())
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  name              String            @db.VarChar(255)
+  description       String            @db.VarChar(255)
+  pinned            Boolean?          @default(false)
+  data              String            @db.Text
+  authorId          String
+  live              Boolean?          @default(true)
+  sector            Sector[]
+  permissions       Permissions[]
+  tags              Tag[]
+  crewMembers       CrewMember[]
+  equipment         Equipment[]
+  projects          Project[]
+  scheduleHistories ScheduleHistory[]
+  notes             Note[]
+  markAsDeleted     Boolean?          @default(false)
+
+  @@index([authorId])
+}
+
+model MessagingContent {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name        String   @db.VarChar(255)
-  description String   @db.VarChar(255)
-  pinned      Boolean? @default(false)
-
-  data String @db.Text
-
-  sector      Sector[]
-  permissions Permissions[]
-  tags        Tag[]
-
-  notes Note[]
+  content   String   @db.Text()
+  type      String   @db.VarChar(255)
 
   authorId String
 
   @@index([authorId])
 }
 
+model ScheduleHistory {
+  id                   String                @id @default(cuid())
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  notes                String                @db.Text
+  authorId             String
+  blueprintId          String                @db.VarChar(255)
+  committed            Boolean               @default(false)
+  defaultEndDate       DateTime
+  defaultStartDate     DateTime
+  exportLink           ExportLink[]
+  ScheduleHistoryItems ScheduleHistoryItem[]
+  blueprint            Blueprint             @relation(fields: [blueprintId], references: [id])
+
+  @@index([blueprintId])
+  @@index([authorId])
+}
+
+model ScheduleHistoryItem {
+  id                String          @id @default(cuid())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  notes             String          @db.Text
+  startTime         String          @db.VarChar(255)
+  endTime           String          @db.VarChar(255)
+  projectId         String          @db.VarChar(255)
+  crewId            String?         @db.VarChar(255)
+  equipmentId       String?         @db.VarChar(255)
+  scheduleHistoryId String          @db.VarChar(255)
+  authorId          String
+  crew              CrewMember?     @relation(fields: [crewId], references: [id])
+  equipment         Equipment?      @relation(fields: [equipmentId], references: [id])
+  project           Project         @relation(fields: [projectId], references: [id])
+  scheduleHistory   ScheduleHistory @relation(fields: [scheduleHistoryId], references: [id])
+
+  @@index([authorId])
+  @@index([projectId])
+  @@index([crewId])
+  @@index([equipmentId])
+  @@index([scheduleHistoryId])
+}
+
 model Equipment {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name        String  @db.VarChar(255) // this is the name of the equipment, like "Manitex 40100 Crane"
-  type        String  @db.VarChar(255) // this is the type of equipment, like a crane, or a forklift
-  EquipmentId String  @db.VarChar(255) // this is some JR&Co's internal ID
-  description String? @db.VarChar(255) // this is a description of the equipment if desired
-
-  data Json? @db.Json // other data
-
-  authorId String
+  id              String                @id @default(cuid())
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  name            String                @db.VarChar(255)
+  type            String                @db.VarChar(255)
+  EquipmentId     String                @db.VarChar(255)
+  description     String?               @db.VarChar(255)
+  data            Json?
+  authorId        String
+  scheduleHistory ScheduleHistoryItem[]
+  blueprints      Blueprint[]
 
   @@index([authorId])
 }
 
 model Sector {
-  id        String   @id @unique @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name           String @unique @db.VarChar(255)
-  departmentCode String @unique @db.VarChar(255)
-  description    String @db.VarChar(255)
-
-  CrewMembers CrewMember[]
-  Blueprints  Blueprint[]
-  Projects    Project[]
-
-  authorId String
+  id             String       @id @unique @default(cuid())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  name           String       @unique @db.VarChar(255)
+  departmentCode String       @unique @db.VarChar(255)
+  description    String       @db.VarChar(255)
+  authorId       String
+  CrewMembers    CrewMember[]
+  Blueprints     Blueprint[]
+  Projects       Project[]
 
   @@index([authorId])
 }
 
 model Log {
+  id            String        @id @default(cuid())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  name          String        @db.VarChar(255)
+  description   String        @db.Text
+  editedMessage String?       @db.Text
+  url           String        @db.VarChar(255)
+  action        String        @db.VarChar(255)
+  category      String        @db.VarChar(255)
+  severity      String        @db.VarChar(255)
+  data          String?       @db.VarChar(255)
+  authorId      String
+  logReplys     LogReply[]
+  logReactions  LogReaction[]
+
+  @@index([authorId])
+}
+
+model LogReply {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  message       String   @db.VarChar(255)
+  editedMessage String   @db.VarChar(255)
+  authorId      String
+  log           Log[]
+
+  @@index([authorId])
+}
+
+model LogReaction {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  name        String  @db.VarChar(255)
-  description String  @db.VarChar(255)
-  url         String  @db.VarChar(255)
-  action      String  @db.VarChar(255)
-  category    String  @db.VarChar(255)
-  severity    String  @db.VarChar(255)
-  data        String? @db.VarChar(255)
-
-  authorId String
+  reaction  String   @db.VarChar(255)
+  authorId  String
+  log       Log[]
 
   @@index([authorId])
 }
 
 model Announcement {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  title       String @db.VarChar(255)
-  description String @db.VarChar(255)
-  reason      String @db.VarChar(255)
-  url         String @db.VarChar(255)
-  status      String @db.VarChar(255)
-
-  authorId String
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  title       String   @db.VarChar(255)
+  description String   @db.VarChar(255)
+  reason      String   @db.VarChar(255)
+  url         String   @db.VarChar(255)
+  status      String   @db.VarChar(255)
+  authorId    String
 
   @@index([authorId])
 }
 
 model Note {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
-
-  data String @db.Text
-
-  blueprint Blueprint? @relation(fields: [blueprintId], references: [id])
-
+  id          String     @id @default(cuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  name        String     @db.VarChar(255)
+  description String     @db.VarChar(255)
+  data        String     @db.Text
   authorId    String
   blueprintId String?
+  blueprint   Blueprint? @relation(fields: [blueprintId], references: [id])
 
   @@index([authorId])
   @@index([blueprintId])
 }
 
 model ExportLink {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  title       String @db.VarChar(255)
-  description String @db.VarChar(255)
-  link        String @db.VarChar(255)
-
-  authorId String
+  id                String           @id @default(cuid())
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  title             String           @db.VarChar(255)
+  description       String           @db.VarChar(255)
+  link              String           @db.VarChar(255)
+  authorId          String
+  scheduleHistoryId String?
+  scheduleHistory   ScheduleHistory? @relation(fields: [scheduleHistoryId], references: [id])
 
   @@index([authorId])
+  @@index([scheduleHistoryId])
 }
 
 model MaterialType {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
-
+  id            String       @id @default(cuid())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  name          String       @db.VarChar(255)
+  description   String       @db.VarChar(255)
   authorId      String
-  ScopeOfWork   ScopeOfWork? @relation(fields: [scopeOfWorkId], references: [id])
   scopeOfWorkId String?
+  ScopeOfWork   ScopeOfWork? @relation(fields: [scopeOfWorkId], references: [id])
 
   @@index([authorId])
   @@index([scopeOfWorkId])
 }
 
 model Permissions {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id          String          @id @default(cuid())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   name        String          @db.VarChar(255)
   description String          @db.VarChar(255)
+  authorId    String
   keywords    PermissionKey[]
-
-  authorId   String
-  users      User[]
-  blueprints Blueprint[]
+  users       User[]
+  blueprints  Blueprint[]
 
   @@index([authorId])
 }
 
 model PermissionKey {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id          String        @id @default(cuid())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   name        String        @db.VarChar(255)
   description String        @db.VarChar(255)
   color       String        @db.VarChar(255)
+  authorId    String
   Permissions Permissions[]
-
-  authorId String
 
   @@index([authorId])
 }
 
 model User {
-  id            String   @id @default(cuid())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id            String      @id @default(cuid())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   permissionsId String
-
-  clerkId     String      @unique @db.VarChar(255)
-  permissions Permissions @relation(fields: [permissionsId], references: [id])
-  role        String      @db.VarChar(255)
-
-  authorId String
+  clerkId       String      @unique @db.VarChar(255)
+  role          String      @db.VarChar(255)
+  authorId      String
+  permissions   Permissions @relation(fields: [permissionsId], references: [id])
 
   @@index([authorId])
   @@index([permissionsId])
 }
 
 model Tag {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name            String @db.VarChar(255)
-  description     String @db.VarChar(255)
-  backgroundColor String @db.VarChar(255)
-  type            String @db.VarChar(255) //crews, projects, or blueprints?
-
-  authorId String
-
-  CrewMembers CrewMember[]
-  projects    Project[]
-  blueprints  Blueprint[]
+  id              String       @id @default(cuid())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  name            String       @db.VarChar(255)
+  description     String       @db.VarChar(255)
+  backgroundColor String       @db.VarChar(255)
+  type            String       @db.VarChar(255)
+  authorId        String
+  systemTag       Boolean      @default(false)
+  CrewMembers     CrewMember[]
+  projects        Project[]
+  blueprints      Blueprint[]
 
   @@index([authorId])
+}
+
+model BlueprintToCrewMember {
+  A String
+  B String
+
+  @@unique([A, B], map: "_BlueprintToCrewMember_AB_unique")
+  @@index([B], map: "_BlueprintToCrewMember_B_index")
+  @@map("_BlueprintToCrewMember")
+}
+
+model BlueprintToEquipment {
+  A String
+  B String
+
+  @@unique([A, B], map: "_BlueprintToEquipment_AB_unique")
+  @@index([B], map: "_BlueprintToEquipment_B_index")
+  @@map("_BlueprintToEquipment")
+}
+
+model BlueprintToPermissions {
+  A String
+  B String
+
+  @@unique([A, B], map: "_BlueprintToPermissions_AB_unique")
+  @@index([B], map: "_BlueprintToPermissions_B_index")
+  @@map("_BlueprintToPermissions")
+}
+
+model BlueprintToProject {
+  A String
+  B String
+
+  @@unique([A, B], map: "_BlueprintToProject_AB_unique")
+  @@index([B], map: "_BlueprintToProject_B_index")
+  @@map("_BlueprintToProject")
+}
+
+model BlueprintToSector {
+  A String
+  B String
+
+  @@unique([A, B], map: "_BlueprintToSector_AB_unique")
+  @@index([B], map: "_BlueprintToSector_B_index")
+  @@map("_BlueprintToSector")
+}
+
+model BlueprintToTag {
+  A String
+  B String
+
+  @@unique([A, B], map: "_BlueprintToTag_AB_unique")
+  @@index([B], map: "_BlueprintToTag_B_index")
+  @@map("_BlueprintToTag")
+}
+
+model CrewMemberToTag {
+  A String
+  B String
+
+  @@unique([A, B], map: "_CrewMemberToTag_AB_unique")
+  @@index([B], map: "_CrewMemberToTag_B_index")
+  @@map("_CrewMemberToTag")
+}
+
+model LogToLogReaction {
+  A String
+  B String
+
+  @@unique([A, B], map: "_LogToLogReaction_AB_unique")
+  @@index([B], map: "_LogToLogReaction_B_index")
+  @@map("_LogToLogReaction")
+}
+
+model LogToLogReply {
+  A String
+  B String
+
+  @@unique([A, B], map: "_LogToLogReply_AB_unique")
+  @@index([B], map: "_LogToLogReply_B_index")
+  @@map("_LogToLogReply")
+}
+
+model PermissionKeyToPermissions {
+  A String
+  B String
+
+  @@unique([A, B], map: "_PermissionKeyToPermissions_AB_unique")
+  @@index([B], map: "_PermissionKeyToPermissions_B_index")
+  @@map("_PermissionKeyToPermissions")
+}
+
+model ProjectToSector {
+  A String
+  B String
+
+  @@unique([A, B], map: "_ProjectToSector_AB_unique")
+  @@index([B], map: "_ProjectToSector_B_index")
+  @@map("_ProjectToSector")
+}
+
+model ProjectToTag {
+  A String
+  B String
+
+  @@unique([A, B], map: "_ProjectToTag_AB_unique")
+  @@index([B], map: "_ProjectToTag_B_index")
+  @@map("_ProjectToTag")
+}
+
+model CrewMemberToProject {
+  A String
+  B String
+
+  @@unique([A, B], map: "_CrewMemberToProject_AB_unique")
+  @@index([B], map: "_CrewMemberToProject_B_index")
+  @@map("_CrewMemberToProject")
 }

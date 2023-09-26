@@ -1,16 +1,12 @@
 import {
   ArrowLongUpIcon,
-  ArrowPathIcon,
-  ClipboardDocumentIcon,
-  EllipsisVerticalIcon,
-  FlagIcon,
+  CalendarDaysIcon,
   PlusIcon,
-  TrashIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import type { NextPage } from "next";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import TooltipComponent from "~/components/Tooltip";
 import { LoadingPage2, LoadingSpinner } from "~/components/loading";
 import { api } from "~/utils/api";
@@ -20,10 +16,12 @@ import { DashboardMenu } from "~/components/dashboardMenu";
 import { useUser } from "@clerk/nextjs";
 import SignInModal from "~/components/signInPage";
 import Head from "next/head";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { DialogComponent } from "~/components/dialog";
-import { toast } from "react-hot-toast";
+// import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+// import { DialogComponent } from "~/components/dialog";
+// import { toast } from "react-hot-toast";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useRouter } from "next/router";
+import { BlueprintListItem } from "~/components/dashboardCards";
 
 dayjs.extend(relativeTime);
 
@@ -31,6 +29,8 @@ const BlueprintsListPage: NextPage = () => {
   const { isSignedIn, isLoaded } = useUser();
 
   const [animationParent] = useAutoAnimate();
+
+  const router = useRouter();
 
   const [blueprintSearchTerm, setBlueprintSearchTerm] = useState("");
 
@@ -100,6 +100,14 @@ const BlueprintsListPage: NextPage = () => {
                 <PlusIcon className="h-6 w-6" />
               </Link>
             </TooltipComponent>
+            <TooltipComponent content="View Schedules" side="bottom">
+              <Link
+                href="/schedules/all"
+                className="rounded bg-zinc-700 p-2 outline-none transition duration-100 hover:cursor-pointer hover:bg-amber-700 focus:bg-amber-700"
+              >
+                <CalendarDaysIcon className="h-6 w-6 text-zinc-200" />
+              </Link>
+            </TooltipComponent>
           </div>
           <div ref={animationParent} className="h-full w-full">
             {loadingBlueprints ? (
@@ -130,21 +138,6 @@ const BlueprintsListPage: NextPage = () => {
                               <p className="text-lg font-bold text-zinc-300">
                                 {getPinnedBlueprints().length} Pinned
                               </p>
-                              {/* {getPinnedBlueprints().length > 0 && (
-                        <div className="flex gap-1">
-                          <TooltipComponent content="Unpin All" side="bottom">
-                            <button
-                              onClick={() => {
-                                // void api.blueprints.unpinAll.mutateAsync();
-                                toast.success("Unpinned all blueprints");
-                              }}
-                              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-zinc-700 bg-gradient-to-br text-center transition-all duration-100 hover:bg-amber-700 sm:text-lg sm:font-semibold"
-                            >
-                              <TrashIcon className="h-6 w-6" />
-                            </button>
-                          </TooltipComponent>
-                        </div>
-                      )} */}
                             </div>
                           </div>
 
@@ -159,6 +152,7 @@ const BlueprintsListPage: NextPage = () => {
                                   updatedAt={blueprint.updatedAt}
                                   description={blueprint.description}
                                   userEmail={blueprint.user?.email}
+                                  liveData={blueprint.live || false}
                                 />
                               ))}
                             </div>
@@ -176,6 +170,7 @@ const BlueprintsListPage: NextPage = () => {
                           updatedAt={blueprint.updatedAt}
                           description={blueprint.description}
                           userEmail={blueprint.user?.email}
+                          liveData={blueprint.live || false}
                         />
                       ))}
                     </div>
@@ -192,7 +187,7 @@ const BlueprintsListPage: NextPage = () => {
                 </>
               )
             )}
-            {data?.length === 0 && (
+            {data?.length === 0 && blueprintSearchTerm.length > 0 && (
               <div className="flex flex-col items-center justify-center gap-2">
                 <p className="text-xl font-bold text-zinc-300">
                   No Blueprints matching your search{" "}
@@ -200,173 +195,37 @@ const BlueprintsListPage: NextPage = () => {
                 </p>
               </div>
             )}
+            {data?.length === 0 &&
+              blueprintSearchTerm.length === 0 &&
+              navigator.onLine && (
+                <div className="flex min-h-[90vh] select-none flex-col items-center justify-center gap-2 tracking-tight">
+                  <div className="flex w-5/6 flex-col items-center justify-center gap-2 rounded p-2">
+                    <p className="font-semibold text-zinc-300">
+                      No Blueprints Exist
+                    </p>
+                    <button
+                      onClick={() => {
+                        void router.push("/blueprints/new");
+                      }}
+                      className="flex items-center justify-center gap-2 rounded bg-amber-800 p-2 transition duration-100 hover:bg-amber-700"
+                    >
+                      <PlusIcon className="h-6 w-6" />
+                      <p>Create New Blueprint</p>
+                    </button>
+                  </div>
+                </div>
+              )}
+            {data?.length === 0 && !navigator.onLine && (
+              <div className="flex min-h-[90vh] flex-col items-center justify-center gap-2">
+                <p className="font-semibold text-zinc-300">
+                  {" It looks like you're Offline :("}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </>
-  );
-};
-
-const BlueprintListItem: React.FC<{
-  id: string;
-  pinned: boolean;
-  name: string;
-  description: string;
-  updatedAt: Date;
-  userEmail: string | undefined;
-}> = ({ id, name, pinned, description, updatedAt, userEmail }) => {
-  const copy = (text: string, type: string) => {
-    void navigator.clipboard.writeText(text);
-    toast.success(`${type} copied to clipboard`);
-  };
-
-  const [isPinned, setIsPinned] = useState<"pinning" | "unpinning" | "unknown">(
-    "unknown"
-  );
-
-  const blueprintContext = api.useContext().blueprints;
-
-  const { mutate: deleteBlueprint } = api.blueprints.delete.useMutation({
-    onSuccess: () => {
-      toast.success(`${name} deleted`);
-      void blueprintContext.invalidate();
-    },
-
-    onError: (e) => {
-      console.log(e);
-      toast.error("Something went wrong");
-    },
-  });
-
-  const { mutate } = api.blueprints.setBlueprintPined.useMutation({
-    onSuccess: () => {
-      toast.success(
-        isPinned === "pinning" ? `${name} Pinned` : `${name} unpinned`
-      );
-      setIsPinned("unknown");
-      void blueprintContext.invalidate();
-    },
-
-    onError: (error) => {
-      console.log(error);
-      toast.error("Something went wrong");
-    },
-  });
-
-  const toggleBlueprintPinned = useCallback(
-    (id: string, blueprintPinned: boolean) => {
-      setIsPinned(blueprintPinned ? "pinning" : "unpinning");
-
-      mutate({ blueprintId: id, isPinned: blueprintPinned });
-    },
-    [mutate]
-  );
-
-  return (
-    <div
-      key={id}
-      className="flex w-full select-none items-center justify-between gap-1 rounded-sm  bg-zinc-700 transition-all duration-100 hover:bg-zinc-600"
-    >
-      <Link
-        href={`/blueprints/${id}`}
-        passHref
-        className="flex w-full cursor-pointer items-center justify-between gap-1 rounded-sm p-2 "
-      >
-        <div className="w-3/2 tracking-tight md:w-3/5">
-          <div className="flex items-center justify-start gap-1">
-            {pinned && (
-              <div className="flex items-center justify-start gap-1">
-                <TooltipComponent content="Pinned" side="bottom">
-                  <FlagIcon className="h-3 w-3 text-amber-500" />
-                </TooltipComponent>
-              </div>
-            )}
-            <h2 className="truncate text-left text-lg font-semibold tracking-tight">
-              {name}
-            </h2>
-          </div>
-          {userEmail && (
-            <div className="flex items-start justify-start gap-1 font-normal text-zinc-300">
-              <p className="truncate text-sm">{userEmail}</p>
-            </div>
-          )}
-        </div>
-        <div className="hidden font-thin md:flex md:w-1/2 ">
-          <p className="w-full truncate text-ellipsis text-center">
-            {description}
-          </p>
-        </div>
-        <p className="w-1/4 truncate text-right text-xs text-zinc-300">
-          {dayjs(updatedAt).fromNow()}
-        </p>
-      </Link>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild>
-          <button className="flex w-1/12 select-none items-center justify-end rounded-sm bg-transparent p-1 outline-none transition-all duration-100 md:w-auto">
-            <EllipsisVerticalIcon className="h-6 w-6 text-zinc-300 " />
-          </button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content className="TooltipContent w-44 rounded border border-zinc-500 bg-black/50 p-3 py-2 drop-shadow-lg backdrop-blur ">
-            <DropdownMenu.DropdownMenuArrow className="fill-current text-zinc-500" />
-            <DropdownMenu.Item
-              className="selection-none flex items-center justify-start gap-2 border-b border-zinc-600 p-1 outline-none transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
-              onClick={(e) => {
-                e.preventDefault();
-                copy(
-                  `${window.location.origin}/blueprints/${id}`,
-                  "Blueprint Link "
-                );
-              }}
-            >
-              <ClipboardDocumentIcon className="h-5 w-5 text-zinc-200 " />
-              Copy Link
-            </DropdownMenu.Item>
-            <DropdownMenu.Item
-              className="selection-none flex items-center justify-start gap-2 border-b border-zinc-600 p-1 outline-none transition-all duration-100 hover:scale-105 hover:rounded-md hover:border-transparent hover:bg-zinc-700"
-              onClick={(e) => {
-                e.preventDefault();
-                toggleBlueprintPinned(id, !pinned);
-              }}
-              disabled={isPinned === "pinning" || isPinned === "unpinning"}
-            >
-              {isPinned === "unknown" && (
-                <>
-                  <FlagIcon className="h-5 w-5 text-zinc-200" />
-                  {pinned ? <p>Unpin</p> : <p>Pin</p>}
-                </>
-              )}
-              {isPinned === "pinning" && (
-                <>
-                  <ArrowPathIcon className="h-5 w-5 animate-spin text-zinc-200" />
-                  <p>Pinning...</p>
-                </>
-              )}
-              {isPinned === "unpinning" && (
-                <>
-                  <ArrowPathIcon className="h-5 w-5 animate-spin text-zinc-200" />
-                  <p>Unpinning...</p>
-                </>
-              )}
-            </DropdownMenu.Item>
-            <DialogComponent
-              title={"Are you sure you want to delete this blueprint?"}
-              description="If you click yes, it cannot be recovered."
-              yes={() => {
-                toast.loading("Deleting blueprint...", { duration: 3000 });
-                deleteBlueprint({ blueprintId: id });
-              }}
-              trigger={
-                <button className="slideUpAndFade flex w-full items-center justify-start gap-2 rounded-md p-1 text-red-400 transition-all duration-100 hover:scale-105 hover:bg-red-700/50 hover:text-white">
-                  <TrashIcon className="h-4 w-4 text-white" />
-                  Delete
-                </button>
-              }
-            />
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
-    </div>
   );
 };
 

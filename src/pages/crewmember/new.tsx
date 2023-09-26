@@ -1,10 +1,13 @@
 import { useUser } from "@clerk/nextjs";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { TrashIcon } from "@heroicons/react/24/solid";
 import { type Sector, type Tag } from "@prisma/client";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 
 import { toast } from "react-hot-toast";
+import { DialogComponent } from "~/components/dialog";
 import {
   ButtonCallToActionComponent,
   InputComponent,
@@ -20,6 +23,7 @@ import { api } from "~/utils/api";
 
 const NewCrewMemberPage: NextPage = () => {
   const router = useRouter();
+  const [medCardAnimationParent] = useAutoAnimate();
 
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
@@ -31,6 +35,17 @@ const NewCrewMemberPage: NextPage = () => {
   const [rating, setRating] = useState("5");
   const [tags, setTags] = useState([] as Tag[]);
   const [sectors, setSectors] = useState([] as Sector[]);
+  const [medicalCardSignedDate, setMedicalCardSignedDate] = useState<string>();
+  const [medicalCardExpirationDate, setMedicalCardExpirationDate] =
+    useState<string>();
+
+  const [includeMedicalCard, setIncludeMedicalCard] = useState(false);
+
+  const clearMedicalCard = useCallback(() => {
+    setMedicalCardExpirationDate(undefined);
+    setMedicalCardSignedDate(undefined);
+    setIncludeMedicalCard(false);
+  }, []);
 
   const [nameError, setNameError] = useState("");
   const [notesError, setNotesError] = useState("");
@@ -41,6 +56,11 @@ const NewCrewMemberPage: NextPage = () => {
   const [burdenError, setBurdenError] = useState("");
   const [ratingError, setRatingError] = useState("");
   const [sectorError, setSectorError] = useState("");
+
+  const [medicalCardSignedDateError, setMedicalCardSignedDateError] =
+    useState("");
+  const [medicalCardExpirationDateError, setMedicalCardExpirationDateError] =
+    useState("");
 
   // const canTravel = travel === "Yes";
   const wageNumber = parseFloat(wage);
@@ -102,6 +122,12 @@ const NewCrewMemberPage: NextPage = () => {
             case "sectors":
               setSectorError(message);
               break;
+            case "medicalCardSignedDate":
+              setMedicalCardSignedDateError(message);
+              break;
+            case "medicalCardExpirationDate":
+              setMedicalCardExpirationDateError(message);
+              break;
             default:
               break;
           }
@@ -150,7 +176,34 @@ const NewCrewMemberPage: NextPage = () => {
 
     toast.loading("Saving", { duration: 1000 });
 
-    console.log("phone", phone);
+    const medCardExpirationDate =
+      medicalCardExpirationDate &&
+      medicalCardExpirationDate !== "Invalid Date" &&
+      medicalCardExpirationDate !== "NaN-NaN-NaN" &&
+      medicalCardExpirationDate !== "undefined-undefined-undefined" &&
+      medicalCardExpirationDate !== "null-null-null" &&
+      medicalCardExpirationDate.length > 0
+        ? new Date(medicalCardExpirationDate)
+        : undefined;
+    const medCardSignedDate =
+      medicalCardSignedDate &&
+      medicalCardSignedDate !== "Invalid Date" &&
+      medicalCardSignedDate !== "NaN-NaN-NaN" &&
+      medicalCardSignedDate !== "undefined-undefined-undefined" &&
+      medicalCardSignedDate !== "null-null-null" &&
+      medicalCardSignedDate.length > 0
+        ? new Date(medicalCardSignedDate)
+        : undefined;
+
+    const medExp = medCardExpirationDate
+      ? new Date(
+          medCardExpirationDate?.setDate(medCardExpirationDate.getDate() + 1)
+        )
+      : undefined;
+
+    const medSign = medCardSignedDate
+      ? new Date(medCardSignedDate.setDate(medCardSignedDate.getDate() + 1))
+      : undefined;
 
     mutate({
       name,
@@ -163,6 +216,9 @@ const NewCrewMemberPage: NextPage = () => {
       rating: ratingNumber,
       tags: getTagsStringArray(),
       sectors: getSectorsStringArray(),
+      medicalCardExpirationDate: medExp,
+      medicalCardSignedDate: medSign,
+      includesMedicalCard: includeMedicalCard,
     });
   }, [
     name,
@@ -176,7 +232,56 @@ const NewCrewMemberPage: NextPage = () => {
     mutate,
     tags,
     sectors,
+    medicalCardExpirationDate,
+    medicalCardSignedDate,
+    includeMedicalCard,
   ]);
+
+  const setMedicalCardDates = (signed?: Date, exp?: Date) => {
+    if (isCreating) return;
+
+    let startDate = new Date(Date.now());
+    let expirationDate = new Date(
+      new Date(Date.now()).setFullYear(new Date().getFullYear() + 2)
+    );
+
+    if (signed) {
+      startDate = signed;
+    }
+
+    if (exp) {
+      expirationDate = exp;
+    }
+
+    let startMonth = (startDate.getMonth() + 1).toString();
+    if (startMonth.length === 1) {
+      startMonth = `0${startMonth}`;
+    }
+
+    let startDay = (startDate.getDate() + 1).toString();
+    if (startDay.length === 1) {
+      startDay = `0${startDay}`;
+    }
+
+    let expirationMonth = (expirationDate.getMonth() + 1).toString();
+    if (expirationMonth.length === 1) {
+      expirationMonth = `0${expirationMonth}`;
+    }
+
+    let expirationDay = (expirationDate.getDate() + 1).toString();
+    if (expirationDay.length === 1) {
+      expirationDay = `0${expirationDay}`;
+    }
+
+    setIncludeMedicalCard(true);
+
+    setMedicalCardSignedDate(
+      `${startDate.getFullYear()}-${startMonth}-${startDay}`
+    );
+    setMedicalCardExpirationDate(
+      `${expirationDate.getFullYear()}-${expirationMonth}-${expirationDay}`
+    );
+  };
 
   //redirect if the user is not found
   if (!isSignedIn && isLoaded) {
@@ -238,8 +343,8 @@ const NewCrewMemberPage: NextPage = () => {
           />
           {sectorError && (
             <>
-              <div className="h-[3px] rounded bg-red-500 translate-y-1"></div>
-              <p className="p-1 text-red-500 tracking-tight">{sectorError}</p>
+              <div className="h-[3px] translate-y-1 rounded bg-red-500"></div>
+              <p className="p-1 tracking-tight text-red-500">{sectorError}</p>
             </>
           )}
         </div>
@@ -315,6 +420,78 @@ const NewCrewMemberPage: NextPage = () => {
             placeholder="0.00"
             disabled={isCreating}
           />
+        </div>
+        <div
+          ref={medCardAnimationParent}
+          className="w-full rounded border border-zinc-700"
+        >
+          <p className="px-1 text-2xl font-semibold">Med Card</p>
+          {medicalCardSignedDate && medicalCardExpirationDate ? (
+            <>
+              <div className="w-full p-2" />
+              <div className="w-full p-2">
+                {medicalCardSignedDate && (
+                  <>
+                    <p className="py-1 text-lg font-semibold">
+                      Med Card Signed Date
+                    </p>
+
+                    <InputComponent
+                      type={"date"}
+                      error={medicalCardSignedDateError}
+                      value={medicalCardSignedDate}
+                      onChange={(e) => {
+                        setMedicalCardSignedDate(e.currentTarget.value);
+                      }}
+                      disabled={isCreating}
+                    />
+                  </>
+                )}
+              </div>
+              <div className="w-full p-2">
+                {medicalCardExpirationDate && (
+                  <>
+                    <p className="py-1 text-lg font-semibold">
+                      Med Card Expiration Date
+                    </p>
+                    <InputComponent
+                      type={"date"}
+                      error={medicalCardExpirationDateError}
+                      value={medicalCardExpirationDate}
+                      onChange={(e) =>
+                        setMedicalCardExpirationDate(e.currentTarget.value)
+                      }
+                      disabled={isCreating}
+                    />
+                  </>
+                )}
+              </div>
+              <div className="w-full p-2">
+                <DialogComponent
+                  yes={clearMedicalCard}
+                  title="Remove Medical Card Information"
+                  description="Are you sure you want to remove the medical card information?"
+                  trigger={
+                    <div className="flex items-center justify-center gap-2 rounded bg-red-700 p-2 text-center hover:cursor-pointer">
+                      <TrashIcon className="h-5 w-5 text-white" />
+                      <p>Remove Medical Card Information</p>
+                    </div>
+                  }
+                />
+              </div>
+            </>
+          ) : (
+            <div className="w-full p-1">
+              <button
+                onClick={() => {
+                  setMedicalCardDates();
+                }}
+                className="rounded bg-amber-700 p-2"
+              >
+                Add Medical Card Information
+              </button>
+            </div>
+          )}
         </div>
         <div className="w-full p-2">
           <p className="py-1 text-lg">Notes</p>

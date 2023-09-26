@@ -7,7 +7,7 @@ import { TRPCError } from "@trpc/server";
 
 import isMobilePhone from "validator/lib/isMobilePhone";
 import { clerkClient } from "@clerk/nextjs";
-import { type Prisma } from "@prisma/client";
+import { Tag, type Prisma } from "@prisma/client";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",
@@ -96,15 +96,15 @@ export const crewMembersRouter = createTRPCRouter({
               contains: input.search,
             },
           },
-        ]
+        ];
       }
 
       if (input.sectors.length > 0) {
         filters.sector = {
           id: {
-            in: input.sectors
-          }
-        }
+            in: input.sectors,
+          },
+        };
       }
 
       const result = await ctx.prisma.crewMember.findMany({
@@ -115,11 +115,10 @@ export const crewMembersRouter = createTRPCRouter({
         },
         orderBy: {
           name: "asc",
-        }
+        },
       });
 
       return result;
-
     }),
 
   getById: privateProcedure
@@ -132,8 +131,22 @@ export const crewMembersRouter = createTRPCRouter({
         include: {
           tags: true,
           sector: true,
+          schedules: {
+            include: {
+              project: {
+                include: {
+                  sectors: true,
+                  tags: true,
+                },
+              },
+            },
+          },
+          blueprints: true,
         },
       });
+
+      crewMember?.medicalCardExpDate;
+
       return crewMember;
     }),
 
@@ -180,9 +193,16 @@ export const crewMembersRouter = createTRPCRouter({
           .refine(isMobilePhone, "The phone number is invalid."),
         email: z
           .union([z.string().length(0), z.string().email()])
-          .optional().transform(e => e === "" ? null : e),
+          .optional()
+          .transform((e) => (e === "" ? null : e)),
         tags: z.array(z.string()),
-        sectors: z.array(z.string()).min(1, "A crew member must belong to a sector.").max(1, "A crew member cannot belong to more than one sector at a time."),
+        sectors: z
+          .array(z.string())
+          .min(1, "A crew member must belong to a sector.")
+          .max(
+            1,
+            "A crew member cannot belong to more than one sector at a time."
+          ),
         wage: z
           .number({ required_error: "A crew member must have a wage" })
           .min(0, "The wage must be a positive number.")
@@ -197,6 +217,10 @@ export const crewMembersRouter = createTRPCRouter({
           })
           .min(0, "The rating must be a value greater than or equal to zero.")
           .max(10, "The rating must be less than or equal to 10."),
+
+        medicalCardSignedDate: z.date().optional(),
+        medicalCardExpirationDate: z.date().optional(),
+        includesMedicalCard: z.boolean(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -236,7 +260,7 @@ export const crewMembersRouter = createTRPCRouter({
         ...oldCrewMember,
       };
 
-      const disconnectTags = oldCrewMember?.tags?.filter((tag) => {
+      let disconnectTags = oldCrewMember?.tags?.filter((tag) => {
         return !input.tags?.includes(tag.id);
       });
 
@@ -248,6 +272,60 @@ export const crewMembersRouter = createTRPCRouter({
       }
 
       const sector = input.sectors[0];
+
+      let medicalCardExpDate = input.medicalCardExpirationDate as
+        | Date
+        | undefined
+        | null;
+      let medicalCardSignedDate = input.medicalCardSignedDate as
+        | Date
+        | undefined
+        | null;
+
+      let tags = input.tags;
+
+      if (input.includesMedicalCard === false) {
+        medicalCardExpDate = null;
+        medicalCardSignedDate = null;
+
+        console.log(
+          "does not include medical card:",
+          input.includesMedicalCard
+        );
+
+        const medicalCardTag = await ctx.prisma.tag.findFirst({
+          where: {
+            name: "Med Card",
+          },
+        });
+
+        console.log("medical card tag found:", medicalCardTag);
+
+        if (medicalCardTag) {
+          if (!disconnectTags) {
+            disconnectTags = [] as Tag[];
+          }
+
+          disconnectTags?.push({
+            ...medicalCardTag,
+          });
+
+          console.log("disconnect tags:", disconnectTags);
+          tags = tags.filter((tag) => tag !== medicalCardTag.id);
+        }
+      } else {
+        if (medicalCardExpDate && medicalCardSignedDate) {
+          const medicalCardTag = await ctx.prisma.tag.findFirst({
+            where: {
+              name: "Med Card",
+            },
+          });
+
+          console.log("medical card tag found:", medicalCardTag);
+
+          tags.push(medicalCardTag?.id as string);
+        }
+      }
 
       const crewMember = await ctx.prisma.crewMember.update({
         where: {
@@ -263,6 +341,8 @@ export const crewMembersRouter = createTRPCRouter({
           burden: input.burden,
           rating: input.rating.toString().trim(),
           sectorId: sector,
+          medicalCardExpDate: medicalCardExpDate,
+          medicalCardSignedDate: medicalCardSignedDate,
           tags: {
             disconnect: disconnectTags?.map((tag) => ({
               id: tag.id,
@@ -345,55 +425,65 @@ export const crewMembersRouter = createTRPCRouter({
       }
 
       if (updatedPosition) {
-        result += `Position: ${oldCrewMember?.position || ""} -> ${crewMember.position
-          }\n`;
+        result += `Position: ${oldCrewMember?.position || ""} -> ${
+          crewMember.position
+        }\n`;
         changes++;
       }
 
       if (updatedDescription) {
-        result += `Notes: ${oldCrewMember?.description || ""} -> ${crewMember.description || ""
-          }\n`;
+        result += `Notes: ${oldCrewMember?.description || ""} -> ${
+          crewMember.description || ""
+        }\n`;
         changes++;
       }
 
       if (updatedPhone) {
-        result += `Phone: ${oldCrewMember?.phone || ""} -> ${crewMember.phone
-          }\n`;
+        result += `Phone: ${oldCrewMember?.phone || ""} -> ${
+          crewMember.phone
+        }\n`;
         changes++;
       }
 
       if (updatedEmail) {
-        result += `Email: ${oldCrewMember?.email || ""} -> ${crewMember.email
-          }\n`;
+        result += `Email: ${oldCrewMember?.email || ""} -> ${
+          crewMember.email
+        }\n`;
         changes++;
       }
 
       if (updatedWage) {
-        result += `Wage: $${oldCrewMember?.wage || ""} -> $${crewMember.wage
-          }\n`;
+        result += `Wage: $${oldCrewMember?.wage || ""} -> $${
+          crewMember.wage
+        }\n`;
         changes++;
       }
 
       if (updatedBurden) {
-        result += `Burden: $${oldCrewMember?.burden || ""} -> $${crewMember.burden
-          }\n`;
+        result += `Burden: $${oldCrewMember?.burden || ""} -> $${
+          crewMember.burden
+        }\n`;
         changes++;
       }
 
       if (updatedRating) {
-        result += `Rating: ${oldCrewMember?.rating || ""} -> ${crewMember.rating
-          }\n`;
+        result += `Rating: ${oldCrewMember?.rating || ""} -> ${
+          crewMember.rating
+        }\n`;
         changes++;
       }
 
       if (updatedTags) {
-        result += `Tags: ${oldCrewMember?.tags?.map((tag) => tag.name).join(", ") || ""
-          } -> ${crewMember.tags?.map((tag) => tag.name).join(", ")}`;
+        result += `Tags: ${
+          oldCrewMember?.tags?.map((tag) => tag.name).join(", ") || ""
+        } -> ${crewMember.tags?.map((tag) => tag.name).join(", ")}`;
         changes++;
       }
 
       if (updatedSectors) {
-        result += `Sector: ${oldCrewMember?.sector?.name || ""} -> ${crewMember.sector?.name || ""}`;
+        result += `Sector: ${oldCrewMember?.sector?.name || ""} -> ${
+          crewMember.sector?.name || ""
+        }`;
         changes++;
       }
 
@@ -404,8 +494,9 @@ export const crewMembersRouter = createTRPCRouter({
           url: `/crewmember/${crewMember.id}`,
           authorId: authorId,
           category: "crew",
-          description: `${changes} ${changes == 1 ? "change" : "changes"
-            }: \n${result}`,
+          description: `${changes} ${
+            changes == 1 ? "change" : "changes"
+          }: \n${result}`,
           severity: "moderate",
         },
       });
@@ -542,7 +633,10 @@ export const crewMembersRouter = createTRPCRouter({
           .email("The email is invalid.")
           .max(255, "Email must be less than 255 characters."),
         tags: z.array(z.string()),
-        sectors: z.array(z.string()).min(1, "A member must be assigned a sector.").max(1, "A member cannot be assigned more than one sector."),
+        sectors: z
+          .array(z.string())
+          .min(1, "A member must be assigned a sector.")
+          .max(1, "A member cannot be assigned more than one sector."),
         wage: z
           .number({ required_error: "A crew member must have a wage" })
           .min(0, "The wage must be a positive number.")
@@ -557,6 +651,9 @@ export const crewMembersRouter = createTRPCRouter({
           })
           .min(0, "The rating must be a value greater than or equal to zero.")
           .max(10, "The rating must be less than or equal to 10."),
+        medicalCardSignedDate: z.date().optional(),
+        medicalCardExpirationDate: z.date().optional(),
+        includesMedicalCard: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -599,10 +696,36 @@ export const crewMembersRouter = createTRPCRouter({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "A crew member must belong to a sector.",
-        })
+        });
       }
 
       const sector = input.sectors[0];
+
+      let medicalCardExpDate = input.medicalCardExpirationDate as
+        | Date
+        | undefined
+        | null;
+      let medicalCardSignedDate = input.medicalCardSignedDate as
+        | Date
+        | undefined
+        | null;
+
+      if (input.includesMedicalCard === false) {
+        medicalCardExpDate = null;
+        medicalCardSignedDate = null;
+      }
+
+      const tags = input.tags;
+
+      if (medicalCardExpDate && medicalCardSignedDate) {
+        const medicalCardTag = await ctx.prisma.tag.findFirst({
+          where: {
+            name: "Med Card",
+          },
+        });
+
+        tags.push(medicalCardTag?.id as string);
+      }
 
       const crewMember = await ctx.prisma.crewMember.create({
         data: {
@@ -617,7 +740,6 @@ export const crewMembersRouter = createTRPCRouter({
           rating: input.rating.toString().trim(),
           lastReviewDate: new Date(),
 
-
           wage: input.wage,
           burden: input.burden,
           travel: "",
@@ -626,8 +748,10 @@ export const crewMembersRouter = createTRPCRouter({
           total: 0,
 
           sectorId: sector,
+          medicalCardExpDate: medicalCardExpDate,
+          medicalCardSignedDate: medicalCardSignedDate,
           tags: {
-            connect: input.tags?.map((tag) => ({
+            connect: tags.map((tag) => ({
               id: tag,
             })),
           },
@@ -702,4 +826,93 @@ export const crewMembersRouter = createTRPCRouter({
 
       return crewMember;
     }),
+
+  crewMemberPerformanceBySector: privateProcedure.query(async ({ ctx }) => {
+    const sectors = await ctx.prisma.sector.findMany({
+      select: {
+        name: true,
+        id: true,
+        CrewMembers: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    const data = [] as {
+      name: string;
+      id: string;
+      avg: number;
+      data: {
+        rating: number;
+        amount: number;
+      }[];
+    }[];
+
+    const layers = [] as {
+      name: string;
+      data: number[];
+    }[];
+
+    for (let i = 0; i < 11; i++) {
+      layers.push({
+        name: i.toString(),
+        data: [],
+      });
+    }
+
+    sectors.map((sector) => {
+      const crewMembers = sector.CrewMembers;
+
+      const sumResult = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      let average = 0;
+
+      crewMembers?.forEach((crewMember) => {
+        const crewmemberRating = parseInt(crewMember.rating);
+
+        if (crewmemberRating >= 0 && crewmemberRating <= 10)
+          sumResult[crewmemberRating] += 1;
+        else sumResult[0] += 1;
+
+        average += crewmemberRating;
+      });
+
+      average = average / crewMembers?.length || 1;
+
+      sumResult.forEach((item, index) => {
+        const dataPoint = data.find((x) => x.id === sector.id);
+        if (dataPoint === undefined) {
+          data.push({
+            avg: average,
+            id: sector.id,
+            name: sector.name,
+            data: [],
+          });
+        }
+
+        dataPoint?.data.push({
+          amount: item,
+          rating: index,
+        });
+
+        layers[index]?.data.push(item);
+      });
+
+      // return {
+      //   name: sector.name,
+      //   id: sector.id,
+      //   average,
+      //   result: sumResult,
+      //   data,
+      // };
+    });
+
+    // console.log(data);
+    // data.forEach((item) => {
+    //   console.log(item.name);
+    //   console.log(item.data);
+    // });
+
+    return { data, layers };
+  }),
 });

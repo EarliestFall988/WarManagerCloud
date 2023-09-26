@@ -152,8 +152,8 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       <NextNProgress
         color="#da640a"
         height={4}
-        showOnShallow={true}
-        options={{ easing: "ease", speed: 500, showSpinner: false }}
+        showOnShallow={false}
+        options={{ easing: "ease", speed: 500, showSpinner: false,  }}
       />
 
       <ClerkProvider

@@ -30,7 +30,7 @@ const BarChartOption: ReactEChartsProps["option"] = {
     text: "All Jobs",
   },
   legend: {
-    data: ["Jobs", "bar2"],
+    data: ["Jobs"],
   },
   toolbox: {
     // y: 'bottom',

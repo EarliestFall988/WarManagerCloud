@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 const Costing: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
-  const [nodes, onNodesChange] = useNodesStateSynced(blueprintId);
+  const [nodes] = useNodesStateSynced(blueprintId);
 
   const getCrewCount = useCallback(() => {
     let count = 0;
@@ -50,13 +50,13 @@ const Costing: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
           <TooltipComponent content="burn rate at $38 avg wage" side="top">
             <div className="flex items-center rounded-2xl transition duration-200 hover:scale-110 hover:bg-amber-800 md:px-2">
               <FireIcon className="inline-block h-5 w-5 text-orange-500" />
-              <p>${(getCrewCount() * 38).toLocaleString("en")}/hour</p>
+              <p>${(getCrewCount() * 38).toLocaleString("en")}/hr</p>
             </div>
           </TooltipComponent>
           <TooltipComponent content="burn rate at $38 avg wage" side="top">
             <div className="flex items-center rounded-2xl transition duration-200 hover:scale-110 hover:bg-amber-800 md:px-2">
               <FireIcon className="inline-block h-5 w-5 text-sky-500" />
-              <p>${(getCrewCount() * 38 * 40).toLocaleString("en")}/week</p>
+              <p>${(getCrewCount() * 38 * 40).toLocaleString("en")}/wk</p>
             </div>
           </TooltipComponent>
         </div>

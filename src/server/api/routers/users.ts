@@ -7,12 +7,12 @@ import type { User as PUser } from "@prisma/client";
 // import { Redis } from "@upstash/redis";
 
 import checkIfUserIsAdmin from "~/server/helpers/userIsAdmin";
+import { z } from "zod";
 
 type UserType = {
   User: User;
   metaData: PUser | undefined;
 };
-
 
 // const redis = new Redis({
 //   url: "https://us1-merry-snake-32728.upstash.io",
@@ -81,4 +81,52 @@ export const usersRouter = createTRPCRouter({
 
     return result;
   }),
+
+  searchForUsersMention: privateProcedure
+    .input(
+      z.object({
+        searchTerm: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const users = await clerkClient.users.getUserList();
+
+      let searchTerm = input.searchTerm;
+
+      if (searchTerm.startsWith("@")) {
+        if (searchTerm.length > 1) {
+          searchTerm = searchTerm.substring(1, searchTerm.length - 1);
+        } else {
+          searchTerm = "";
+        }
+      }
+
+      const result = users
+        .map((u) => {
+          const addy = u.emailAddresses[0]?.emailAddress;
+
+          if (addy !== undefined) {
+            const mention = addy.split("@")[0]?.replace(".", "-");
+
+            if (mention !== undefined) {
+              if (searchTerm === undefined || searchTerm.length < 1)
+                return mention;
+              else if (mention.startsWith(searchTerm)) return mention;
+            }
+          }
+          return null;
+        })
+        .filter((u) => u !== null);
+
+      if (searchTerm === undefined || searchTerm.length < 1) {
+        result.push("everyone");
+      } else if (searchTerm.length >= 1) {
+        const everyone = "everyone";
+        if (everyone.startsWith(searchTerm)) {
+          result.push(everyone);
+        }
+      }
+
+      return result;
+    }),
 });

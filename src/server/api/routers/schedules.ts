@@ -74,6 +74,17 @@ export const schedulesRouter = createTRPCRouter({
   getByName: privateProcedure
     .input(z.object({ name: z.string() }))
     .query(async ({ ctx, input }) => {
+      if (!input.name || input.name.length < 3) {
+        const result = await ctx.prisma.exportLink.findMany({
+          take: 100,
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
+
+        return addUserToLinks(result);
+      }
+
       const schedules = await ctx.prisma.exportLink.findMany({
         where: {
           OR: [
@@ -178,9 +189,11 @@ export const schedulesRouter = createTRPCRouter({
           url: `${retrieveLink}`,
           authorId: authorId,
           category: "schedule",
-          description: `${input.notes || "<no description>"}`,
+          description: `${
+            input.notes ? `${input.notes}\n${retrieveLink}` : retrieveLink
+          }`,
           severity: "moderate",
-        }
+        },
       });
       return schedule;
     }),
