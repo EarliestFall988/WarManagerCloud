@@ -37,7 +37,7 @@ const Copy = (url: string) => {
 
 export const ScheduleItem: React.FC<{ data: linkWithUser }> = ({ data }) => {
   return (
-    <div className="border-b border-zinc-700 hover:border-transparent">
+    <div className="border-b  border-zinc-700 hover:border-transparent">
       <Link
         href={data.link}
         target="_blank"
