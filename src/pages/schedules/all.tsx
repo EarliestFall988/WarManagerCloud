@@ -68,7 +68,7 @@ const AllPage: NextPage = () => {
       <div className="h-14" />
       <div
         ref={animationParent}
-        className="flex w-full flex-col items-center gap-2 p-2"
+        className="flex w-full flex-col items-center gap-2 p-2 "
       >
         {!isLoading && !isError && data?.length == 0 && (
           <div className="flex h-[50vh] w-full items-center justify-center">
@@ -149,7 +149,7 @@ const Copy = (url: string) => {
 
 export const ScheduleItem: React.FC<{ data: linkWithUser }> = ({ data }) => {
   return (
-    <div className="border-b border-zinc-700 hover:border-transparent">
+    <div className="w-full border-b border-zinc-700 hover:border-transparent xl:w-3/4 3xl:w-1/2">
       <Link
         href={data.link}
         target="_blank"
@@ -183,7 +183,7 @@ export const ScheduleItem: React.FC<{ data: linkWithUser }> = ({ data }) => {
             </p>
           </div>
         </div>
-        <p className="hidden italic text-zinc-300 sm:flex sm:w-1/2">
+        <p className="hidden italic text-zinc-300 md:flex md:w-1/2">
           {data.description}
         </p>
         <TooltipComponent content="Copy link to clipboard" side="bottom">
