@@ -1,4 +1,4 @@
-import React, { type ReactNode, useCallback, useState } from "react";
+import React, { type ReactNode, useCallback, useState, useEffect } from "react";
 import { api } from "~/utils/api";
 import { LoadingSpinner } from "./loading";
 import type {
@@ -327,8 +327,10 @@ export const ProjectsList = (props: {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 window.open(
-                                  window.location.origin + "/blueprints/" + (project.blueprint?.id || ""),
-                                  "_blank",
+                                  window.location.origin +
+                                    "/blueprints/" +
+                                    (project.blueprint?.id || ""),
+                                  "_blank"
                                 );
                               }}
                             >
@@ -638,6 +640,18 @@ export const ExportBlueprint: React.FC<{ blueprintId: string }> = ({
   } = api.schedules.getByName.useQuery({
     name: searchTerm,
   });
+
+  useEffect(() => {
+    const nextMonday = new Date();
+    nextMonday.setDate(
+      nextMonday.getDate() + ((1 + 7 - nextMonday.getDay()) % 7)
+    );
+    console.log(nextMonday);
+
+    if (title === "" || title === undefined) {
+      setTitle("Blueprint for " + nextMonday.toLocaleDateString());
+    }
+  }, [title]);
 
   const context = api.useContext();
 
