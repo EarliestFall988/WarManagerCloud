@@ -21,7 +21,6 @@ import {
 } from "~/components/input";
 import { UploadDropzone } from "@uploadthing/react";
 import { type OurFileRouter } from "~/server/uploadThing";
-import { User } from "@clerk/nextjs/server";
 
 function padTo2Digits(num: number) {
   return num.toString().padStart(2, "0");

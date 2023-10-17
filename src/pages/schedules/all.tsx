@@ -48,7 +48,7 @@ const AllPage: NextPage = () => {
 
   return (
     <main className="min-h-[100vh] w-full bg-zinc-900">
-      <div className=" fixed top-0 flex h-14 w-full items-center justify-between bg-zinc-900/50 p-2 backdrop-blur">
+      <div className=" fixed top-0 z-10 flex h-14 w-full items-center justify-between bg-zinc-900/50 p-2 backdrop-blur">
         <div className="flex w-full gap-2 md:w-1/2">
           <button
             onClick={back}
@@ -149,7 +149,7 @@ const Copy = (url: string) => {
 
 export const ScheduleItem: React.FC<{ data: linkWithUser }> = ({ data }) => {
   return (
-    <div className="w-full border-b border-zinc-700 hover:border-transparent xl:w-3/4 3xl:w-1/2">
+    <div className="3xl:w-1/2 w-full border-b border-zinc-700 hover:border-transparent xl:w-3/4">
       <Link
         href={data.link}
         target="_blank"
