@@ -19,6 +19,7 @@ import {
   InputComponent,
   TextareaComponent,
 } from "~/components/input";
+import { OurUploadDropzone } from "~/components/dropZone";
 
 function padTo2Digits(num: number) {
   return num.toString().padStart(2, "0");
@@ -548,6 +549,8 @@ const EditProjectPage = function ({ id }: { id: string }) {
                 }}
               />
             </div>
+
+            <OurUploadDropzone />
 
             <div className="w-full p-2">
               <ButtonCallToActionComponent
