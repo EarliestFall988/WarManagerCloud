@@ -54,10 +54,24 @@ model Project {
   sectors             Sector[]
   ScheduleHistory     ScheduleHistoryItem[]
   tags                Tag[]
+  AttachedFiles       AttachedFiles[]
 
   @@index([authorId])
   @@fulltext([description, notes])
   @@fulltext([name, description, notes, address, city, state, zip])
+}
+
+model AttachedFiles {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  name      String    @db.VarChar(255)
+  uploadId  String    @db.VarChar(255)
+  url       String    @db.VarChar(255)
+  size      Int       @default(0)
+  authorId  String
+  Projects  Project[]
+
+  @@index([authorId])
 }
 
 model ScopeOfWork {

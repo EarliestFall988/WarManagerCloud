@@ -1,4 +1,4 @@
-import { SignedIn } from "@clerk/nextjs";
+import { SignedIn, useUser } from "@clerk/nextjs";
 import { ArrowRightIcon, CloudArrowUpIcon } from "@heroicons/react/24/solid";
 import type { Sector, Tag } from "@prisma/client";
 import * as Slider from "@radix-ui/react-slider";
@@ -19,7 +19,9 @@ import {
   InputComponent,
   TextareaComponent,
 } from "~/components/input";
-import { OurUploadDropzone } from "~/components/dropZone";
+import { UploadDropzone } from "@uploadthing/react";
+import { type OurFileRouter } from "~/server/uploadThing";
+import { User } from "@clerk/nextjs/server";
 
 function padTo2Digits(num: number) {
   return num.toString().padStart(2, "0");
@@ -33,6 +35,13 @@ function formatDate(date: Date) {
   ].join("-");
 }
 
+type attachedFileType = {
+  id: string;
+  name: string;
+  url: string;
+  size: number;
+  authorId: string;
+};
 const EditProjectPage = function ({ id }: { id: string }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -70,6 +79,8 @@ const EditProjectPage = function ({ id }: { id: string }) {
   const [startDateError, setStartDateError] = useState("");
   const [endDateError, setEndDateError] = useState("");
 
+  const [attachedFiles, setAttacedFiles] = useState([] as attachedFileType[]);
+
   const {
     data: project,
     isLoading,
@@ -84,6 +95,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
   });
 
   const router = useRouter();
+  const { user } = useUser();
 
   const projectContext = api.useContext().projects;
   const tagsContext = api.useContext().tags;
@@ -239,6 +251,10 @@ const EditProjectPage = function ({ id }: { id: string }) {
       setManHours(project.TotalManHours.toString());
     }
 
+    if (project.AttachedFiles) {
+      setAttacedFiles(project.AttachedFiles);
+    }
+
     const sectors = project.sectors;
     if (sectors) setSectors(sectors);
 
@@ -325,6 +341,7 @@ const EditProjectPage = function ({ id }: { id: string }) {
       notes,
       percentComplete,
       sectors,
+      attachedFiles: attachedFiles.map((f) => f.id),
     });
 
     toast.loading("Saving changes...", { duration: 2000 });
@@ -550,7 +567,36 @@ const EditProjectPage = function ({ id }: { id: string }) {
               />
             </div>
 
-            <OurUploadDropzone />
+            <UploadDropzone<OurFileRouter>
+              endpoint="imageUploader"
+              onClientUploadComplete={(res) => {
+                // Do something with the response
+                console.log("Files: ", res);
+                toast.success("Uploaded!");
+
+                const result = res?.map((r) => {
+                  return {
+                    id: r.key,
+                    name: r.name,
+                    url: r.url,
+                    size: r.size,
+                    authorId: user?.id ?? "",
+                  } as attachedFileType;
+                });
+
+                if (!result) return;
+
+                setAttacedFiles((prev) => [...prev, ...result]);
+                SaveChanges();
+              }}
+              onUploadError={(error: Error) => {
+                toast.error(`ERROR! ${error.message}`);
+              }}
+              onUploadBegin={(name) => {
+                // Do something once upload begins
+                toast.loading("Uploading: " + name, { duration: 1000 });
+              }}
+            />
 
             <div className="w-full p-2">
               <ButtonCallToActionComponent

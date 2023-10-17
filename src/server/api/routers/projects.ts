@@ -157,6 +157,7 @@ export const projectsRouter = createTRPCRouter({
         include: {
           tags: true,
           sectors: true,
+          AttachedFiles: true,
         },
       });
 
@@ -628,6 +629,7 @@ export const projectsRouter = createTRPCRouter({
           .array(z.string())
           .min(1, "Be sure to add a sector to your project.")
           .max(1, "Currently, only one sector is allowed."),
+        attachedFiles: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -675,6 +677,14 @@ export const projectsRouter = createTRPCRouter({
         })
         .tags();
 
+      // const filesToDisconnect = await ctx.prisma.project
+      //   .findUnique({
+      //     where: {
+      //       id: input.id,
+      //     },
+      //   })
+      //   .AttachedFiles();
+
       const sectorsToDisconnect = await ctx.prisma.project
         .findUnique({
           where: {
@@ -718,6 +728,11 @@ export const projectsRouter = createTRPCRouter({
 
             connect: input.sectors?.map((sector) => ({
               id: sector,
+            })),
+          },
+          AttachedFiles: {
+            connect: input.attachedFiles?.map((file) => ({
+              id: file,
             })),
           },
         },
