@@ -1,13 +1,14 @@
 import { useUser } from "@clerk/nextjs";
-import {
-  ArrowSmallLeftIcon,
-  CheckIcon,
-} from "@heroicons/react/24/solid";
+import { CheckIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
 
-const WhatsNew: React.FC<{setSeenFeatures: () => void}> = ({setSeenFeatures}) => {
-  const { user } = useUser();
+const WhatsNew: React.FC<{ setSeenFeatures: () => void }> = ({
+  setSeenFeatures,
+}) => {
+  const { user, isSignedIn } = useUser();
+
+  if (!user || !isSignedIn) return <div></div>;
 
   return (
     <div className="fixed top-0 z-40 flex h-screen w-screen items-center justify-center bg-black/50 backdrop-blur">
@@ -23,8 +24,8 @@ const WhatsNew: React.FC<{setSeenFeatures: () => void}> = ({setSeenFeatures}) =>
             </h1>
           )}
         </div>
-        <div className="flex h-4/5 w-4/5 flex-col items-center lg:justify-between lg:flex-row">
-          <div className="h-1/3 lg:w-1/3 flex items-center justify-center">
+        <div className="flex h-4/5 w-4/5 flex-col items-center lg:flex-row lg:justify-between">
+          <div className="flex h-1/3 items-center justify-center lg:w-1/3">
             <p className="text-2xl">
               Find all schedules by clicking on the calendar button 🎉🎉
             </p>
@@ -64,8 +65,11 @@ const WhatsNew: React.FC<{setSeenFeatures: () => void}> = ({setSeenFeatures}) =>
           {/* <button className="flex w-32 items-center justify-center rounded-sm bg-zinc-600 p-2">
             <ArrowSmallLeftIcon className="h-6 w-6 text-zinc-100" />
           </button> */}
-          <div/>
-          <button onClick={setSeenFeatures} className="flex w-32 items-center justify-center rounded-sm bg-amber-600 p-2">
+          <div />
+          <button
+            onClick={setSeenFeatures}
+            className="flex w-32 items-center justify-center rounded-sm bg-amber-600 p-2"
+          >
             <CheckIcon className="h-6 w-6 text-zinc-100" />
           </button>
         </div>
