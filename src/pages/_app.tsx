@@ -15,8 +15,12 @@ import WhatsNew from "~/components/whatsnew";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const [previousNetworkStatus, setPreviousNetworkStatus] = useState("online"); // ["online", "offline"
+
+  
   const [networkStatus, setNetworkStatus] = useState("online");
   const [showDev, setShowDev] = useState(true);
+
+  const [path, setPath] = useState("");
 
   const { data } = api.versioning.getVersionType.useQuery();
 
@@ -41,6 +45,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   useEffect(() => {
     window.addEventListener("online", () => setNetworkStatus("online"));
     window.addEventListener("offline", () => setNetworkStatus("offline"));
+    setPath(window.location.pathname);
   }, []);
 
   useEffect(() => {
@@ -185,7 +190,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             <div></div>
           </div>
         )}
-        {!seenNewFeatures && <WhatsNew setSeenFeatures={setSeenFeatures} />}
+        {!seenNewFeatures && path !== "/" && <WhatsNew setSeenFeatures={setSeenFeatures} />}
         <Component {...pageProps} />
       </ClerkProvider>
     </>
