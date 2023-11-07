@@ -1,12 +1,13 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type Tag } from "@prisma/client";
 import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
 
 async function main() {
   const projectsAmount = 50;
-  const crewMembersAmount = 300;
+  const crewMembersAmount = 200;
   const logsAmount = 20;
+  const tagCount = 10;
 
   if (
     process.env.DATABASE_URL === undefined ||
@@ -52,6 +53,10 @@ async function main() {
   await prisma.crewMember.createMany({
     data: crewMembers,
   });
+
+  // await prisma.tag.createMany({
+  //   data: CreateTags(tagCount),
+  // });
 
   console.log("\tcreating logs...\n");
 
@@ -102,11 +107,26 @@ async function main() {
   const allProjects = await prisma.project.findMany({});
   const allcrewMembers = await prisma.crewMember.findMany({});
 
+  let storedTags = await prisma.tag.findMany({});
+
+  if (storedTags == null || !storedTags) {
+    storedTags = [] as Tag[];
+  }
+
+  // console.log(storedTags);
+
   allcrewMembers.map(async (crewMember) => {
+    const tags = getRandomTags(storedTags).map((x) => x.id);
+
     await prisma.crewMember.update({
       where: { id: crewMember.id },
       data: {
         sectorId: faker.helpers.arrayElement(sectors).id,
+        tags: {
+          connect: tags?.map((tag) => ({
+            id: tag,
+          })),
+        },
       },
     });
   });
@@ -161,6 +181,23 @@ const createLog = () => {
     updatedAt: faker.date.past(),
     url: faker.internet.url(),
   };
+};
+
+const CreateTags = (number: number) => {
+  const tags = [];
+  for (let i = 0; i < number; i++) {
+    const aut = getAuthor();
+    tags.push({
+      authorId: aut,
+      name: faker.lorem.word(),
+      description: faker.lorem.paragraph(),
+      backgroundColor: faker.internet.color(),
+      systemTag: false,
+      type: faker.helpers.arrayElement(["crewMember", "project"]),
+    } as Tag);
+  }
+
+  return tags;
 };
 
 const createCrewMember = () => {
@@ -313,4 +350,30 @@ const getAuthor = () => {
     "user_2TAMsSNVKhWniXZ5LRZizdYUWNV",
     "user_2TAMh3ThQTK7a09w9Z0TpNybPg7",
   ]);
+};
+
+const getRandomTags = (tags: Tag[]) => {
+  const res = faker.number.int({ min: 0, max: tags.length / 2 });
+
+  const selectedTags = [] as Tag[];
+
+  const tagsToPush = [];
+  for (let i = 0; i < res; i++) {
+    const randomInt = faker.number.int({ min: 0, max: tags.length - 1 });
+
+    const tag = tags[randomInt];
+
+    if (tag == undefined) throw new Error("tag is undefined");
+
+    tags.filter((x) => x.id !== tag.id);
+    selectedTags.push(tag);
+
+    tagsToPush.push(tag);
+  }
+
+  selectedTags.map((tag) => {
+    tagsToPush.push(tag);
+  });
+
+  return tagsToPush;
 };
