@@ -11,6 +11,7 @@ import Head from "next/head";
 import NextNProgress from "nextjs-progressbar";
 import { useEffect, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import WhatsNew from "~/components/whatsnew";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const [previousNetworkStatus, setPreviousNetworkStatus] = useState("online"); // ["online", "offline"
@@ -20,6 +21,12 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   const { data } = api.versioning.getVersionType.useQuery();
 
   const [versionType, setVersionType] = useState("PROD");
+
+  const [seenNewFeatures, setSeenNewFeatures] = useState(false);
+
+  const setSeenFeatures = () => {
+    setSeenNewFeatures(true);
+  };
 
   useEffect(() => {
     if (data) {
@@ -153,7 +160,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         color="#da640a"
         height={4}
         showOnShallow={false}
-        options={{ easing: "ease", speed: 500, showSpinner: false,  }}
+        options={{ easing: "ease", speed: 500, showSpinner: false }}
       />
 
       <ClerkProvider
@@ -165,10 +172,8 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <Toaster position="bottom-center" />
         {versionType == "DEV" && showDev && (
           <div className="fixed bottom-0 z-40 flex w-full items-center justify-around font-semibold text-red-500/80">
-            <div className="flex gap-2 rounded bg-white/90 px-2 border-black border-2">
-              <p>
-                Developer version - anything is subject to change.
-              </p>
+            <div className="flex gap-2 rounded border-2 border-black bg-white/90 px-2">
+              <p>Developer version - anything is subject to change.</p>
               <button
                 onClick={() => {
                   setShowDev(false);
@@ -180,6 +185,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             <div></div>
           </div>
         )}
+        {!seenNewFeatures && <WhatsNew setSeenFeatures={setSeenFeatures} />}
         <Component {...pageProps} />
       </ClerkProvider>
     </>

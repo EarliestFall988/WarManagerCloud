@@ -57,6 +57,7 @@ import * as Popover from "@radix-ui/react-popover";
 import Linkify from "linkify-react";
 import * as linkify from "linkifyjs";
 import "linkify-plugin-mention";
+import WhatsNew from "~/components/whatsnew";
 
 dayjs.extend(relativeTime);
 
@@ -1977,7 +1978,7 @@ export const ReplyComponent: React.FC<{
           )}
         </div>
       </div>
-      <div className="pl-3 pb-5">
+      <div className="pb-5 pl-3">
         <MessageComponent data={reply.message} />
       </div>
     </>
