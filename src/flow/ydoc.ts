@@ -46,7 +46,7 @@ export default function getDoc(name: string) {
   if (provider !== null) return ydoc;
 
   provider = new WebrtcProvider(name, ydoc, {
-    // signaling: ["wss://yjswebrtc.gigalixirapp.com/"],
+    signaling: ["wss://yjswebrtc.gigalixirapp.com/"],
   });
 
   if (undoManager == null) {
