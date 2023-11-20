@@ -20,6 +20,7 @@ import { type NextRouter, useRouter } from "next/router";
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import Image from "next/image";
+import useSwipe from "./useSwipe";
 
 // type Props = {
 //     menuOpen?: boolean;
@@ -575,9 +576,19 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
   context,
   router,
 }) => {
+  const swipeHandlers = useSwipe({
+    onSwipedDown: () => {
+      void router.push("/dashboard/help");
+    },
+  });
+
   const { user } = useUser();
 
   const reload = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate(100);
+    }
+
     router.reload();
   };
 
@@ -592,27 +603,35 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
         </button>
         <Dialog.Root>
           <Dialog.Trigger asChild>
-            <button className="TooltipContent flex w-full gap-3 rounded-md bg-amber-700 p-3 outline-none drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
+            <button
+              onClick={() => {
+                if (navigator.vibrate) {
+                  navigator.vibrate(100);
+                }
+              }}
+              className="TooltipContent flex w-full gap-3 rounded-md bg-amber-700 p-3 outline-none drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800"
+            >
               <Bars3Icon className="h-6 w-6 text-zinc-300" />
             </button>
           </Dialog.Trigger>
           <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur-lg" />
 
-          <Dialog.Content className="menu-mobile-appear  TooltipContent fixed bottom-0 left-0 flex h-[70vh] w-[100vw] flex-col items-start justify-start rounded-lg bg-black">
-            <div className="flex w-full  items-center justify-between">
-              <div className="flex w-3/4 items-center justify-start gap-2 py-2">
-                <div className="pl-1" />
-                <Image
-                  src={user?.profileImageUrl || ""}
-                  width={32}
-                  height={32}
-                  alt="Profile Image"
-                  className="rounded-full"
-                />
-                <p className="truncate text-ellipsis text-sm font-semibold text-zinc-400">
-                  {user?.fullName}
-                </p>
-                {/* <SignOutButton>
+          <Dialog.Content {...swipeHandlers} className="menu-mobile-appear TooltipContent fixed bottom-0 left-0 flex h-[70vh] w-[100vw] flex-col items-start justify-start rounded-lg bg-black">
+            <div className="w-full h-[62vh]">
+              <div className="flex w-full  items-center justify-between">
+                <div className="flex w-3/4 items-center justify-start gap-2 py-2">
+                  <div className="pl-1" />
+                  <Image
+                    src={user?.profileImageUrl || ""}
+                    width={32}
+                    height={32}
+                    alt="Profile Image"
+                    className="rounded-full"
+                  />
+                  <p className="truncate text-ellipsis text-sm font-semibold text-zinc-400">
+                    {user?.fullName}
+                  </p>
+                  {/* <SignOutButton>
                   <div
                     className={`flex items-center justify-start text-lg p-1 transition-all duration-200`}
                   >
@@ -620,79 +639,80 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                     Sign Out
                   </div>
                 </SignOutButton> */}
+                </div>
+
+                <button onClick={reload} className="p-2">
+                  <ArrowPathIcon className="h-6 w-6" />
+                </button>
               </div>
 
-              <button onClick={reload} className="p-2">
-                <ArrowPathIcon className="h-6 w-6" />
-              </button>
-            </div>
-
-            <div className="flex h-full w-full flex-col justify-between">
-              <div className="border-t border-zinc-900 flex flex-col gap-1">
-                <MobileItemButton
-                  link="/dashboard/activity"
-                  contextName="Activity"
-                  currentContext={context}
-                >
-                  <NewspaperIcon className="h-6 w-6" />
-                  Hub
-                </MobileItemButton>
-                <MobileItemButton
-                  link="/dashboard/blueprints"
-                  contextName="Blueprints"
-                  currentContext={context}
-                >
-                  <DocumentIcon className="h-6 w-6" />
-                  Blueprints
-                </MobileItemButton>
-                <MobileItemButton
-                  link="/dashboard/crew"
-                  contextName="CrewMembers"
-                  currentContext={context}
-                >
-                  <UsersIcon className="h-6 w-6" />
-                  Crew
-                </MobileItemButton>
-                <MobileItemButton
-                  link="/dashboard/projects"
-                  contextName="Projects"
-                  currentContext={context}
-                >
-                  <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
-                </MobileItemButton>
-                <MobileItemButton
-                  link="/dashboard/equipment"
-                  contextName="Equipment"
-                  currentContext={context}
-                >
-                  <TruckIcon className="h-6 w-6 " /> Equipment
-                </MobileItemButton>
-              </div>
-              <div className="flex items-center justify-between px-5">
-                <Dialog.DialogClose asChild>
-                  <button
-                    onClick={() => {
-                      void router.push("/dashboard/help");
-                    }}
-                    className={`flex items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
-                      context === "Help"
-                        ? "bg-amber-800 hover:bg-red-700"
-                        : "hover:bg-zinc-600 "
-                    }`}
+              <div className="flex h-full w-full flex-col justify-between">
+                <div className="flex flex-col gap-1 border-t border-zinc-900">
+                  <MobileItemButton
+                    link="/dashboard/activity"
+                    contextName="Activity"
+                    currentContext={context}
                   >
-                    <QuestionMarkCircleIcon className="h-6 w-6 " />
-                  </button>
-                </Dialog.DialogClose>
-                <Dialog.DialogClose asChild>
-                  <button
-                    onClick={() => {
-                      void router.push("/settings/sectors");
-                    }}
-                    className={`flex items-center  justify-start gap-2 p-3 text-lg font-bold transition-all duration-200`}
+                    <NewspaperIcon className="h-6 w-6" />
+                    Hub
+                  </MobileItemButton>
+                  <MobileItemButton
+                    link="/dashboard/blueprints"
+                    contextName="Blueprints"
+                    currentContext={context}
                   >
-                    <Cog8ToothIcon className="h-6 w-6 " />
-                  </button>
-                </Dialog.DialogClose>
+                    <DocumentIcon className="h-6 w-6" />
+                    Blueprints
+                  </MobileItemButton>
+                  <MobileItemButton
+                    link="/dashboard/crew"
+                    contextName="CrewMembers"
+                    currentContext={context}
+                  >
+                    <UsersIcon className="h-6 w-6" />
+                    Crew
+                  </MobileItemButton>
+                  <MobileItemButton
+                    link="/dashboard/projects"
+                    contextName="Projects"
+                    currentContext={context}
+                  >
+                    <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
+                  </MobileItemButton>
+                  <MobileItemButton
+                    link="/dashboard/equipment"
+                    contextName="Equipment"
+                    currentContext={context}
+                  >
+                    <TruckIcon className="h-6 w-6 " /> Equipment
+                  </MobileItemButton>
+                </div>
+                <div className="flex items-center justify-between px-5">
+                  <Dialog.DialogClose asChild>
+                    <button
+                      onClick={() => {
+                        void router.push("/dashboard/help");
+                      }}
+                      className={`flex items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
+                        context === "Help"
+                          ? "bg-amber-800 hover:bg-red-700"
+                          : "hover:bg-zinc-600 "
+                      }`}
+                    >
+                      <QuestionMarkCircleIcon className="h-6 w-6 " />
+                    </button>
+                  </Dialog.DialogClose>
+                  <Dialog.DialogClose asChild>
+                    <button
+                      onClick={() => {
+                        void router.push("/settings/sectors");
+                      }}
+                      className={`flex items-center  justify-start gap-2 p-3 text-lg font-bold transition-all duration-200`}
+                    >
+                      <Cog8ToothIcon className="h-6 w-6 " />
+                    </button>
+                  </Dialog.DialogClose>
+                </div>
               </div>
             </div>
           </Dialog.Content>
@@ -713,17 +733,16 @@ const MobileItemButton: React.FC<{
   return (
     <Dialog.DialogClose asChild>
       <div
-        className={`flex w-full items-center justify-start text-lg px-4 font-bold transition-all duration-200 ${
+        className={`text-lg font-bold transition-all duration-200 ${
           currentContext === contextName
-            ? "bg-amber-800 hover:bg-red-700"
-            : "hover:bg-zinc-600"
+            ? "mx-1 w-[98%] rounded-2xl bg-amber-800 px-5 hover:bg-red-700 sm:w-[99%]"
+            : "w-full px-4 hover:bg-zinc-600"
         }`}
       >
         <button
           onClick={() => {
             void router.push(link);
           }}
-
           className="flex w-full items-center justify-start gap-2 py-3"
         >
           {children}
