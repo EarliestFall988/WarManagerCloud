@@ -1,12 +1,10 @@
 import {
   ArrowDownTrayIcon,
   ArrowLongUpIcon,
-  ChartBarSquareIcon,
   EllipsisVerticalIcon,
   FunnelIcon,
   PlusIcon,
   TagIcon,
-  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
 import { type Sector, type Tag } from "@prisma/client";
 import { type NextPage } from "next";

@@ -1,9 +1,10 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
   MiniMap,
+  type ReactFlowInstance,
   ReactFlowProvider,
   // applyNodeChanges,
   useReactFlow,
@@ -61,13 +62,12 @@ const proOptions = {
   hideAttribution: true,
 };
 
-
-
 // const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
 
 const Flow: React.FC<{
   blueprintId: string;
-}> = ({ blueprintId }) => {
+  blueprintData: string;
+}> = ({ blueprintId, blueprintData }) => {
   // const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore(
   //   selector,
   //   shallow
@@ -95,6 +95,14 @@ const Flow: React.FC<{
   // React.useMemo(() => {
   //   FlowChange(GetNodes(blueprintId));
   // }, [blueprintId, FlowChange]);
+
+  useMemo(() => {
+    if (blueprintData == null) return;
+
+    const data = JSON.parse(blueprintData) as ReactFlowInstance;
+
+    console.log("data", data);
+  }, [blueprintData]);
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -233,10 +241,11 @@ const Flow: React.FC<{
 
 export const FlowWithProvider: React.FC<{
   blueprintId: string;
-}> = ({ blueprintId }) => {
+  blueprintData: string;
+}> = ({ blueprintId, blueprintData }) => {
   return (
     <ReactFlowProvider>
-      <Flow blueprintId={blueprintId} />
+      <Flow blueprintId={blueprintId} blueprintData={blueprintData} />
     </ReactFlowProvider>
   );
 };

@@ -23,7 +23,7 @@ import {
   ProjectsList,
   Stats,
 } from "~/components/auxilaryBlueprintEditingComponents";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { api } from "~/utils/api";
 
 import type { Blueprint } from "@prisma/client";
@@ -32,7 +32,7 @@ ArrowUturnLeftIcon;
 import dynamic from "next/dynamic";
 import { Redo, Undo } from "~/flow/ydoc";
 import { type Node } from "reactflow";
-import { DeleteNode, nodesMap } from "~/flow/useNodesStateSynced";
+import { AddNodes, DeleteNode, nodesMap } from "~/flow/useNodesStateSynced";
 // import useNodesStateSynced, {
 //   DeleteNode,
 //   GetNodes,
@@ -48,6 +48,22 @@ const BlueprintGUI = () => {
   const { data: blueprint } = api.blueprints.getOneById.useQuery({
     blueprintId: blueprintId || "",
   });
+
+  useEffect(() => {
+
+    const blueprintData = blueprint?.data || "";
+
+    if(blueprintData === "") return;
+    if(!blueprintId || blueprintId === undefined || blueprintId === null) return;
+
+    const data = JSON.parse(blueprintData) as { nodes: Node[]; };
+
+    if(!data.nodes) return;
+
+
+    AddNodes(blueprintId, data.nodes);
+
+  },[blueprint?.data, blueprintId])
 
   if (!isLoaded) {
     return <LoadingPage2 />;
@@ -106,7 +122,7 @@ const BlueprintGUI = () => {
           {blueprint ? (
             <>
               {/* <FlowWithProvider blueprintId={blueprintId} /> */}
-              <BlueprintFlowProvider blueprintId={blueprintId} />
+              <BlueprintFlowProvider blueprintId={blueprintId} blueprintData={blueprint.data} />
               <Panels blueprint={blueprint} />
               <CostingComponent blueprintId={blueprint.id} />
             </>
