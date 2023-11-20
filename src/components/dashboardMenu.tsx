@@ -6,6 +6,7 @@ import {
   DocumentIcon,
   NewspaperIcon,
   QuestionMarkCircleIcon,
+  TruckIcon,
   UserCircleIcon,
   UsersIcon,
   WrenchScrewdriverIcon,
@@ -282,6 +283,10 @@ export const DashboardMenu = () => {
       setContext("Blueprints");
     }
 
+    if (router.pathname === "/dashboard/equipment") {
+      setContext("Equipment");
+    }
+
     if (router.pathname === "/dashboard/glance") {
       setContext("Home");
     }
@@ -425,6 +430,25 @@ export const DashboardMenu = () => {
             >
               <WrenchScrewdriverIcon className="h-6 w-6" />
               {toggleOpen && <p>Projects</p>}
+            </button>
+          </TooltipComponent>
+          <TooltipComponent content="View all Equipment" side="right">
+            <button
+              onClick={() => {
+                setContext("Equipment");
+                // void router.push("/dashboard?context=Projects");
+                void router.push("/dashboard/equipment");
+              }}
+              className={`flex w-full gap-1 p-2 font-semibold ${
+                toggleOpen ? "justify-start" : "justify-center"
+              } items-center transition-all duration-200 ${
+                context === "Equipment"
+                  ? "border border-amber-800 bg-amber-800 hover:bg-amber-700"
+                  : " border-b border-zinc-700 hover:bg-zinc-700"
+              }`}
+            >
+              <TruckIcon className="h-6 w-6" />
+              {toggleOpen && <p>Equipment</p>}
             </button>
           </TooltipComponent>
 
@@ -665,6 +689,21 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                     <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
                   </button>
                 </Dialog.DialogClose>
+                <Dialog.DialogClose asChild>
+                  <button
+                    onClick={() => {
+                      void router.push("/dashboard/equipment");
+                    }}
+                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
+                      context === "Equipment"
+                        ? "bg-amber-800 hover:bg-red-700"
+                        : "border-b border-zinc-600 hover:bg-zinc-600 "
+                    }`}
+                  >
+                    <TruckIcon className="h-6 w-6 " /> Equipment
+                  </button>
+                </Dialog.DialogClose>
+                <div className="py-4" />
                 <Dialog.DialogClose asChild>
                   <button
                     onClick={() => {

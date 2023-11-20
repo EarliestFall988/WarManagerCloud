@@ -2,6 +2,7 @@ import {
   ArrowLongUpIcon,
   CalendarDaysIcon,
   PlusIcon,
+  SignalSlashIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import type { NextPage } from "next";
@@ -118,10 +119,14 @@ const BlueprintsListPage: NextPage = () => {
                 </p>
               </div>
             ) : loadingBlueprintsError || !data ? (
-              <div className="flex w-full items-center justify-center">
-                <p className="text-lg italic text-red-500">
-                  Could not load blueprints
-                </p>
+              <div className="flex h-[30vh] bg-zinc-800 border-zinc-600 border-y flex-col w-full items-center justify-center">
+                 <div className="text-lg flex items-center justify-center gap-2">
+                  <SignalSlashIcon className="h-8 w-8 translate-y-1 text-red-500 animate-pulse" />
+                  <p className="text-3xl font-semibold text-red-500">
+                    Could not load blueprints
+                  </p>
+                </div>
+                <p>Check your internet connection.</p>
               </div>
             ) : (
               data.length > 0 && (
