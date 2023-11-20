@@ -1,5 +1,6 @@
 import {
   ArrowLeftIcon,
+  ArrowPathIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   Cog8ToothIcon,
@@ -291,7 +292,10 @@ export const DashboardMenu = () => {
       setContext("Home");
     }
 
-    if (router.pathname === "/dashboard/activity" || router.pathname === "/dashboard/activity/stats") {
+    if (
+      router.pathname === "/dashboard/activity" ||
+      router.pathname === "/dashboard/activity/stats"
+    ) {
       setContext("Activity");
     }
 
@@ -573,6 +577,10 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
 }) => {
   const { user } = useUser();
 
+  const reload = () => {
+    router.reload();
+  };
+
   return (
     <div className="fixed bottom-4 left-4 flex items-center justify-around gap-1 p-2 md:hidden">
       <div className="flex items-center justify-start gap-2">
@@ -584,15 +592,16 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
         </button>
         <Dialog.Root>
           <Dialog.Trigger asChild>
-            <button className="TooltipContent flex w-full gap-3 rounded-md bg-amber-700 p-3 drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
+            <button className="TooltipContent flex w-full gap-3 rounded-md bg-amber-700 p-3 outline-none drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800">
               <Bars3Icon className="h-6 w-6 text-zinc-300" />
             </button>
           </Dialog.Trigger>
-          <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur" />
+          <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur-lg" />
 
-          <Dialog.Content className="menu-mobile-appear TooltipContent fixed inset-0 bottom-10 m-auto flex h-[50vh] w-[70vw] flex-col items-start justify-start rounded-xl border border-zinc-900 bg-zinc-900">
-            <div className="flex w-full justify-between p-2">
-              <div className="flex w-1/2 items-center justify-start gap-1">
+          <Dialog.Content className="menu-mobile-appear TooltipContent fixed inset-0 bottom-10 m-auto flex h-[70vh] w-[70vw] flex-col items-start justify-start rounded-2xl border border-zinc-800 bg-zinc-900">
+            <div className="flex w-full items-center justify-between">
+              <div className="flex w-3/4 items-center justify-start gap-2 py-2">
+                <div className="pl-1" />
                 <Image
                   src={user?.profileImageUrl || ""}
                   width={32}
@@ -600,35 +609,26 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                   alt="Profile Image"
                   className="rounded-full"
                 />
-                {/* <p className="font-semibold">{user?.fullName}</p> */}
-              </div>
-              <div>
-                <SignOutButton>
+                <p className="truncate text-ellipsis text-sm font-semibold text-zinc-400">
+                  {user?.fullName}
+                </p>
+                {/* <SignOutButton>
                   <div
-                    className={`flex w-full items-center justify-start gap-2 p-2 text-lg transition-all duration-200`}
+                    className={`flex items-center justify-start text-lg p-1 transition-all duration-200`}
                   >
-                    <ArrowRightOnRectangleIcon className="h-6 w-6" /> Sign Out
+                    <ArrowRightOnRectangleIcon className="h-6 w-6" />
+                    Sign Out
                   </div>
-                </SignOutButton>
+                </SignOutButton> */}
               </div>
+
+              <button onClick={reload} className="p-2">
+                <ArrowPathIcon className="h-6 w-6" />
+              </button>
             </div>
 
-            <div className="flex h-full w-full flex-col justify-between p-2">
-              <div className="flex w-full flex-col">
-                {/* <Dialog.DialogClose asChild>
-                                <button
-                                    onClick={() => {
-                                        void router.push("/dashboard/glance");
-                                    }}
-                                    className={`w-full p-2 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Home"
-                                        ? "rounded bg-amber-800 hover:bg-red-700"
-                                        : "border-b border-zinc-600 hover:bg-zinc-600"
-                                        }`}
-                                >
-                                    Glance
-                                </button>
-                            </Dialog.DialogClose> */}
-
+            <div className="flex h-full w-full flex-col justify-between ">
+              <div className="border-t border-zinc-700">
                 <Dialog.DialogClose asChild>
                   <button
                     onClick={() => {
@@ -703,7 +703,8 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                     <TruckIcon className="h-6 w-6 " /> Equipment
                   </button>
                 </Dialog.DialogClose>
-                <div className="py-4" />
+              </div>
+              <div className="border-t border-zinc-700">
                 <Dialog.DialogClose asChild>
                   <button
                     onClick={() => {
@@ -715,7 +716,8 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                         : "border-b border-zinc-600 hover:bg-zinc-600 "
                     }`}
                   >
-                    <QuestionMarkCircleIcon className="h-6 w-6 " /> Helpful Tips
+                    <QuestionMarkCircleIcon className="h-6 w-6 " /> Tips and
+                    Troubleshoot
                   </button>
                 </Dialog.DialogClose>
                 <Dialog.DialogClose asChild>
@@ -728,19 +730,6 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                     <Cog8ToothIcon className="h-6 w-6 " /> Settings
                   </button>
                 </Dialog.DialogClose>
-                {/* <Dialog.DialogClose asChild>
-                                    <button
-                                        onClick={() => {
-                                            void router.push("/dashboard/reporting")
-                                        }}
-                                        className={`w-full p-3 text-lg font-bold transition-all duration-200 flex items-center justify-start gap-2 ${context === "Reporting"
-                                            ? "bg-amber-800 hover:bg-red-700"
-                                            : "border-b border-zinc-600 hover:bg-zinc-600 "
-                                            }`}
-                                    >
-                                        <DocumentTextIcon className="h-6 w-6 " /> Reporting
-                                    </button>
-                                </Dialog.DialogClose> */}
               </div>
             </div>
           </Dialog.Content>
