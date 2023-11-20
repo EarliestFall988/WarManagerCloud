@@ -23,6 +23,7 @@ import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useRouter } from "next/router";
 import { BlueprintListItem } from "~/components/dashboardCards";
+import { CouldNotLoadMessageComponent } from "~/components/couldNotLoadMessageComponent";
 
 dayjs.extend(relativeTime);
 
@@ -119,15 +120,7 @@ const BlueprintsListPage: NextPage = () => {
                 </p>
               </div>
             ) : loadingBlueprintsError || !data ? (
-              <div className="flex h-[30vh] bg-zinc-800 border-zinc-600 border-y flex-col w-full items-center justify-center">
-                 <div className="text-lg flex items-center justify-center gap-2">
-                  <SignalSlashIcon className="h-8 w-8 translate-y-1 text-red-500 animate-pulse" />
-                  <p className="text-3xl font-semibold text-red-500">
-                    Could not load blueprints
-                  </p>
-                </div>
-                <p>Check your internet connection.</p>
-              </div>
+              <CouldNotLoadMessageComponent pluralName="blueprints" />
             ) : (
               data.length > 0 && (
                 <>

@@ -25,6 +25,7 @@ import { LoadingPage2, LoadingSpinner } from "~/components/loading";
 import { api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+dayjs.extend(relativeTime);
 import TooltipComponent from "~/components/Tooltip";
 import { DashboardMenu } from "~/components/dashboardMenu";
 import SignInModal from "~/components/signInPage";
@@ -32,7 +33,7 @@ import { useUser } from "@clerk/nextjs";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { DialogComponent } from "~/components/dialog";
-dayjs.extend(relativeTime);
+import { CouldNotLoadMessageComponent } from "~/components/couldNotLoadMessageComponent";
 
 const CrewMembersPage: NextPage = () => {
   const { isSignedIn, isLoaded } = useUser();
@@ -149,9 +150,7 @@ const CrewMembersPage: NextPage = () => {
                 </p>
               </div>
             ) : loadingCrewError || !crewData ? (
-              <div className="flex w-full flex-col items-center justify-center gap-2 rounded p-2">
-                <p className="italic text-red-500">could not load data</p>
-              </div>
+              <CouldNotLoadMessageComponent pluralName="crew members" />
             ) : (
               <>
                 {crewData.length > 0 &&
@@ -173,7 +172,7 @@ const CrewMembersPage: NextPage = () => {
                       No Crew Members matching your search
                     </p>
                     <Link
-                      href="/newCrewMember"
+                      href="/crewmember/new"
                       className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
                     >
                       Create one now.

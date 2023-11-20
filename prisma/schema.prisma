@@ -193,7 +193,8 @@ model Equipment {
   type        String  @db.VarChar(255)
   equipmentId String? @db.VarChar(255)
   description String? @db.VarChar(255)
-  gpsLink     String? @db.VarChar(255)
+  gpsURL      String? @db.VarChar(255)
+  costPerHour Float  @default(0)
 
   condition String @db.VarChar(255)
 
@@ -201,10 +202,13 @@ model Equipment {
   authorId        String
   scheduleHistory ScheduleHistoryItem[]
   blueprints      Blueprint[]
-  sectors         Sector[]
   tags            Tag[]
 
+  sectorId String?
+  sector   Sector? @relation(fields: [sectorId], references: [id])
+
   @@index([authorId])
+  @@index([sectorId])
 }
 
 model Sector {

@@ -9,9 +9,16 @@ import {
 } from "~/components/input";
 import { LoadingSpinner } from "~/components/loading";
 import SignInModal from "~/components/signInPage";
+import { TagsMultiselectDropdown } from "~/components/TagDropdown";
+import type { Sector, Tag } from "@prisma/client";
+import { api } from "~/utils/api";
+import toast from "react-hot-toast";
+import { useRouter } from "next/router";
 
 const NewEquipmentPage: NextPage = () => {
   const { isSignedIn, isLoaded } = useUser();
+
+  const router = useRouter();
 
   const [name, setName] = useState("");
   const [identification, setIdentification] = useState("");
@@ -19,6 +26,9 @@ const NewEquipmentPage: NextPage = () => {
   const [type, setType] = useState("");
   const [notes, setNotes] = useState("");
   const [condition, setCondition] = useState("");
+  const [costPerHour, setCostPerHour] = useState("");
+  const [tags, setTags] = useState([] as Tag[]);
+  const [sectors, setSectors] = useState([] as Sector[]);
 
   const [nameError, setNameError] = useState<string>("");
   const [identificationError, setIdentificationError] = useState<string>("");
@@ -26,12 +36,131 @@ const NewEquipmentPage: NextPage = () => {
   const [typeError, setTypeError] = useState<string>("");
   const [notesError, setNotesError] = useState<string>("");
   const [conditionError, setConditionError] = useState<string>("");
+  const [costPerHourError, setCostPerHourError] = useState<string>("");
+  const [sectorError, setSectorError] = useState<string>("");
 
-  const isCreating = false;
+  const ctx = api.useContext().equipment;
+
+  const back = () => {
+    if (window.history.length > 0) {
+      return router.back();
+    } else {
+      return router.push("/dashboard/equipment");
+    }
+  };
+
+  const { mutate, isLoading: isCreating } = api.equipment.createEquipment.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.name} (${data.type}) added successfully!`);
+      void ctx.invalidate();
+      void back();
+    },
+    onError(e) {
+      const errorMessage = e.shape?.data?.zodError?.fieldErrors;
+
+      if (!errorMessage) {
+        console.error(e.message);
+        toast.error(e.message);
+        return;
+      } else {
+        toast.error(
+          "There were a few errors, please check the form and try again."
+        );
+      }
+
+      for (const key in errorMessage) {
+        // toast.error(errorMessage?[key][0] || "there was an api error");
+        const keyMessage = errorMessage[key];
+
+        if (keyMessage) {
+          const message = keyMessage[0] || "";
+
+          switch (key) {
+            case "name":
+              setNameError(message);
+              break;
+            case "identification":
+              setIdentificationError(message);
+              break;
+            case "sectors":
+              setSectorError(message);
+              break;
+            case "condition":
+              setConditionError(message);
+              break;
+            case "type":
+              setTypeError(message);
+              break;
+            case "gpsURL":
+              setGpsError(message);
+              break;
+            case "costPerHour":
+              setCostPerHourError(message);
+              break;
+            case "notes":
+              setNotesError(message);
+              break;
+            default:
+              break;
+          }
+        } else {
+          toast.error("Something went wrong! Please try again later");
+        }
+      }
+    },
+  });
 
   const save = useCallback(() => {
-    console.log("save");
-  }, []);
+    setNameError("");
+    setIdentificationError("");
+    setSectorError("");
+    setConditionError("");
+    setTypeError("");
+    setGpsError("");
+    setCostPerHourError("");
+    setNotesError("");
+
+    const getTagsStringArray = () => {
+      const tagsStringArray = [] as string[];
+      tags.forEach((tag) => {
+        tagsStringArray.push(tag.id);
+      });
+      return tagsStringArray;
+    };
+
+    const getSectorsStringArray = () => {
+      const sectorsStringArray = [] as string[];
+      sectors.forEach((sector) => {
+        sectorsStringArray.push(sector.id);
+      });
+      return sectorsStringArray;
+    };
+
+    toast.loading("Saving", { duration: 1000 });
+
+    mutate({
+      name,
+      identification,
+      gpsURL: gps,
+      type,
+      notes,
+      condition,
+      costPerHour: parseFloat(costPerHour),
+      tags: getTagsStringArray(),
+      sectors: getSectorsStringArray(),
+    });
+  }, [
+    name,
+    identification,
+    gps,
+    type,
+    notes,
+    condition,
+    costPerHour,
+    tags,
+    sectors,
+    mutate,
+  ]);
 
   if (!isSignedIn && isLoaded) {
     return <SignInModal redirectUrl="/dashboard/reporting" />;
@@ -70,8 +199,23 @@ const NewEquipmentPage: NextPage = () => {
             }}
             placeholder="12345"
             disabled={isCreating}
-            autoFocus
           />
+        </div>
+        <div className="w-full p-2">
+          <p className="py-1 text-lg font-semibold">Tags</p>
+          <TagsMultiselectDropdown
+            type={"crews and sectors"}
+            savedTags={tags}
+            onSetTags={setTags}
+            savedSectors={sectors}
+            onSetSectors={setSectors}
+          />
+          {sectorError && (
+            <>
+              <div className="h-[3px] translate-y-1 rounded bg-red-500"></div>
+              <p className="p-1 tracking-tight text-red-500">{sectorError}</p>
+            </>
+          )}
         </div>
         <div className="w-full p-2">
           <p className="py-1 text-lg">Condition</p>
@@ -131,7 +275,19 @@ const NewEquipmentPage: NextPage = () => {
             }}
             placeholder="https://www.google.com/maps/..."
             disabled={isCreating}
-            autoFocus
+          />
+        </div>
+        <div className="w-full p-2">
+          <p className="select-none py-1 text-lg">$$ Per Hour</p>
+          <InputComponent
+            error={costPerHourError}
+            value={costPerHour}
+            onChange={(e) => {
+              setCostPerHour(e.currentTarget.value);
+            }}
+            placeholder="35.43"
+            disabled={isCreating}
+            type="number"
           />
         </div>
         <div className="w-full p-2">
@@ -156,6 +312,7 @@ const NewEquipmentPage: NextPage = () => {
             {isCreating ? <LoadingSpinner /> : <p>Create New Equipment Item</p>}
           </ButtonCallToActionComponent>
         </div>
+        <div className="pt-20" />
       </div>
     </main>
   );
