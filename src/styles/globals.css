@@ -34,10 +34,12 @@ body {
     transform: translateY(0);
   }
 }
-@keyframes settingsMenuFade {
+
+
+@keyframes mobileMenuFade {
   from {
     opacity: 0;
-    transform: translateY(-10%);
+    transform: translateY(80%);
   }
 
   to {
@@ -161,7 +163,7 @@ a {
   animation-duration: 300ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
-  animation-name: settingsMenuFade;
+  animation-name: mobileMenuFade;
 }
 
 

@@ -598,8 +598,8 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
           </Dialog.Trigger>
           <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur-lg" />
 
-          <Dialog.Content className="menu-mobile-appear TooltipContent fixed inset-0 bottom-10 m-auto flex h-[70vh] w-[70vw] flex-col items-start justify-start rounded-2xl border border-zinc-800 bg-zinc-900">
-            <div className="flex w-full items-center justify-between">
+          <Dialog.Content className="menu-mobile-appear  TooltipContent fixed bottom-0 left-0 flex h-[70vh] w-[100vw] flex-col items-start justify-start rounded-lg bg-black">
+            <div className="flex w-full  items-center justify-between">
               <div className="flex w-3/4 items-center justify-start gap-2 py-2">
                 <div className="pl-1" />
                 <Image
@@ -627,97 +627,60 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
               </button>
             </div>
 
-            <div className="flex h-full w-full flex-col justify-between ">
-              <div className="border-t border-zinc-700">
-                <Dialog.DialogClose asChild>
-                  <button
-                    onClick={() => {
-                      void router.push("/dashboard/activity");
-                    }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
-                      context === "Activity"
-                        ? "bg-amber-800 hover:bg-red-700"
-                        : "border-b border-zinc-600 hover:bg-zinc-600"
-                    }`}
-                  >
-                    <NewspaperIcon className="h-6 w-6" />
-                    Hub
-                  </button>
-                </Dialog.DialogClose>
-
-                <Dialog.DialogClose asChild>
-                  <button
-                    onClick={() => {
-                      void router.push("/dashboard/blueprints");
-                    }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
-                      context === "Blueprints"
-                        ? "bg-amber-800 hover:bg-red-700"
-                        : "border-b border-zinc-600 hover:bg-zinc-600"
-                    }`}
-                  >
-                    <DocumentIcon className="h-6 w-6" />
-                    Blueprints
-                  </button>
-                </Dialog.DialogClose>
-                <Dialog.DialogClose asChild>
-                  <button
-                    onClick={() => {
-                      void router.push("/dashboard/crew");
-                    }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
-                      context === "CrewMembers"
-                        ? "bg-amber-800 hover:bg-red-700"
-                        : "border-b border-zinc-600 hover:bg-zinc-600"
-                    }`}
-                  >
-                    <UsersIcon className="h-6 w-6" />
-                    Crew
-                  </button>
-                </Dialog.DialogClose>
-                <Dialog.DialogClose asChild>
-                  <button
-                    onClick={() => {
-                      void router.push("/dashboard/projects");
-                    }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
-                      context === "Projects"
-                        ? "bg-amber-800 hover:bg-red-700"
-                        : "border-b border-zinc-600 hover:bg-zinc-600 "
-                    }`}
-                  >
-                    <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
-                  </button>
-                </Dialog.DialogClose>
-                <Dialog.DialogClose asChild>
-                  <button
-                    onClick={() => {
-                      void router.push("/dashboard/equipment");
-                    }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
-                      context === "Equipment"
-                        ? "bg-amber-800 hover:bg-red-700"
-                        : "border-b border-zinc-600 hover:bg-zinc-600 "
-                    }`}
-                  >
-                    <TruckIcon className="h-6 w-6 " /> Equipment
-                  </button>
-                </Dialog.DialogClose>
+            <div className="flex h-full w-full flex-col justify-between">
+              <div className="border-t border-zinc-900 flex flex-col gap-1">
+                <MobileItemButton
+                  link="/dashboard/activity"
+                  contextName="Activity"
+                  currentContext={context}
+                >
+                  <NewspaperIcon className="h-6 w-6" />
+                  Hub
+                </MobileItemButton>
+                <MobileItemButton
+                  link="/dashboard/blueprints"
+                  contextName="Blueprints"
+                  currentContext={context}
+                >
+                  <DocumentIcon className="h-6 w-6" />
+                  Blueprints
+                </MobileItemButton>
+                <MobileItemButton
+                  link="/dashboard/crew"
+                  contextName="CrewMembers"
+                  currentContext={context}
+                >
+                  <UsersIcon className="h-6 w-6" />
+                  Crew
+                </MobileItemButton>
+                <MobileItemButton
+                  link="/dashboard/projects"
+                  contextName="Projects"
+                  currentContext={context}
+                >
+                  <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
+                </MobileItemButton>
+                <MobileItemButton
+                  link="/dashboard/equipment"
+                  contextName="Equipment"
+                  currentContext={context}
+                >
+                  <TruckIcon className="h-6 w-6 " /> Equipment
+                </MobileItemButton>
               </div>
-              <div className="border-t border-zinc-700">
+              <div className="flex items-center justify-between px-5">
                 <Dialog.DialogClose asChild>
                   <button
                     onClick={() => {
                       void router.push("/dashboard/help");
                     }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
+                    className={`flex items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200 ${
                       context === "Help"
                         ? "bg-amber-800 hover:bg-red-700"
-                        : "border-b border-zinc-600 hover:bg-zinc-600 "
+                        : "hover:bg-zinc-600 "
                     }`}
                   >
-                    <QuestionMarkCircleIcon className="h-6 w-6 " /> Tips and
-                    Troubleshoot
+                    <QuestionMarkCircleIcon className="h-6 w-6 " />
                   </button>
                 </Dialog.DialogClose>
                 <Dialog.DialogClose asChild>
@@ -725,9 +688,9 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
                     onClick={() => {
                       void router.push("/settings/sectors");
                     }}
-                    className={`flex w-full items-center justify-start gap-2 p-3 text-lg font-bold transition-all duration-200`}
+                    className={`flex items-center  justify-start gap-2 p-3 text-lg font-bold transition-all duration-200`}
                   >
-                    <Cog8ToothIcon className="h-6 w-6 " /> Settings
+                    <Cog8ToothIcon className="h-6 w-6 " />
                   </button>
                 </Dialog.DialogClose>
               </div>
@@ -738,3 +701,110 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
     </div>
   );
 };
+
+const MobileItemButton: React.FC<{
+  currentContext: string;
+  contextName: string;
+  children: React.ReactNode;
+  link: string;
+}> = ({ currentContext, link, contextName, children }) => {
+  const router = useRouter();
+
+  return (
+    <Dialog.DialogClose asChild>
+      <div
+        className={`flex w-full items-center justify-start text-lg px-4 font-bold transition-all duration-200 ${
+          currentContext === contextName
+            ? "bg-amber-800 hover:bg-red-700"
+            : "hover:bg-zinc-600"
+        }`}
+      >
+        <button
+          onClick={() => {
+            void router.push(link);
+          }}
+
+          className="flex w-full items-center justify-start gap-2 py-3"
+        >
+          {children}
+        </button>
+      </div>
+    </Dialog.DialogClose>
+  );
+};
+
+/* <Dialog.DialogClose asChild>
+                  <button
+                    onClick={() => {
+                      void router.push("/dashboard/activity");
+                    }}
+                    className={`flex w-full items-center justify-start gap-2 p-4 text-lg font-bold transition-all duration-200 ${
+                      context === "Activity"
+                        ? "bg-amber-800 hover:bg-red-700"
+                        : "border-b border-zinc-600 hover:bg-zinc-600"
+                    }`}
+                  >
+                    <NewspaperIcon className="h-6 w-6" />
+                    Hub
+                  </button>
+                </Dialog.DialogClose> */
+
+/* <Dialog.DialogClose asChild>
+                  <button
+                    onClick={() => {
+                      void router.push("/dashboard/blueprints");
+                    }}
+                    className={`flex w-full items-center justify-start gap-2 p-4 text-lg font-bold transition-all duration-200 ${
+                      context === "Blueprints"
+                        ? "bg-amber-800 hover:bg-red-700"
+                        : "border-b border-zinc-600 hover:bg-zinc-600"
+                    }`}
+                  >
+                    <DocumentIcon className="h-6 w-6" />
+                    Blueprints
+                  </button>
+                </Dialog.DialogClose> 
+
+              <Dialog.DialogClose asChild>
+                  <button
+                    onClick={() => {
+                      void router.push("/dashboard/crew");
+                    }}
+                    className={`flex w-full items-center justify-start gap-2 p-4 text-lg font-bold transition-all duration-200 ${
+                      context === "CrewMembers"
+                        ? "bg-amber-800 hover:bg-red-700"
+                        : "border-b border-zinc-600 hover:bg-zinc-600"
+                    }`}
+                  >
+                    <UsersIcon className="h-6 w-6" />
+                    Crew
+                  </button>
+                </Dialog.DialogClose> 
+                <Dialog.DialogClose asChild>
+                  <button
+                    onClick={() => {
+                      void router.push("/dashboard/projects");
+                    }}
+                    className={`flex w-full items-center justify-start gap-2 p-4 text-lg font-bold transition-all duration-200 ${
+                      context === "Projects"
+                        ? "bg-amber-800 hover:bg-red-700"
+                        : "border-b border-zinc-600 hover:bg-zinc-600 "
+                    }`}
+                  >
+                    <WrenchScrewdriverIcon className="h-6 w-6 " /> Projects
+                  </button>
+                </Dialog.DialogClose> 
+               <Dialog.DialogClose asChild>
+                  <button
+                    onClick={() => {
+                      void router.push("/dashboard/equipment");
+                    }}
+                    className={`flex w-full items-center justify-start gap-2 p-4 text-lg font-bold transition-all duration-200 ${
+                      context === "Equipment"
+                        ? "bg-amber-800 hover:bg-red-700"
+                        : "border-b border-zinc-600 hover:bg-zinc-600 "
+                    }`}
+                  >
+                    <TruckIcon className="h-6 w-6 " /> Equipment
+                  </button>
+                </Dialog.DialogClose> */
