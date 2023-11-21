@@ -576,9 +576,11 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
   context,
   router,
 }) => {
+  const [open, setOpen] = useState(false);
+
   const swipeHandlers = useSwipe({
     onSwipedDown: () => {
-      void router.push("/dashboard/help");
+      setOpen(false);
     },
   });
 
@@ -586,7 +588,7 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
 
   const reload = () => {
     if (navigator.vibrate) {
-      navigator.vibrate(100);
+      navigator.vibrate(200);
     }
 
     router.reload();
@@ -601,23 +603,26 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
         >
           <ArrowLeftIcon className="h-6 w-6 text-zinc-300" />
         </button>
-        <Dialog.Root>
-          <Dialog.Trigger asChild>
-            <button
-              onClick={() => {
-                if (navigator.vibrate) {
-                  navigator.vibrate(100);
-                }
-              }}
-              className="TooltipContent flex w-full gap-3 rounded-md bg-amber-700 p-3 outline-none drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800"
-            >
-              <Bars3Icon className="h-6 w-6 text-zinc-300" />
-            </button>
-          </Dialog.Trigger>
-          <Dialog.Overlay className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur-lg" />
 
-          <Dialog.Content {...swipeHandlers} className="menu-mobile-appear TooltipContent fixed bottom-0 left-0 flex h-[70vh] w-[100vw] flex-col items-start justify-start rounded-lg bg-black">
-            <div className="w-full h-[62vh]">
+        <button
+          onClick={() => {
+            if (navigator.vibrate) {
+              navigator.vibrate(200);
+            }
+            setOpen(!open);
+          }}
+          className="TooltipContent flex w-full gap-3 rounded-md bg-amber-700 p-3 outline-none drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-800"
+        >
+          <Bars3Icon className="h-6 w-6 text-zinc-300" />
+        </button>
+        <Dialog.Root open={open}>
+          <Dialog.Overlay onClick={() => {setOpen(false)}} className="TooltipContent fixed inset-0 bg-black/50 backdrop-blur-lg" />
+
+          <Dialog.Content
+            {...swipeHandlers}
+            className="menu-mobile-appear TooltipContent fixed bottom-0 left-0 flex h-[70vh] w-[100vw] flex-col items-start justify-start rounded-lg bg-black"
+          >
+            <div className="h-[62vh] w-full">
               <div className="flex w-full  items-center justify-between">
                 <div className="flex w-3/4 items-center justify-start gap-2 py-2">
                   <div className="pl-1" />
