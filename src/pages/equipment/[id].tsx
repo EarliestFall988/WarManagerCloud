@@ -72,7 +72,7 @@ const EquipmentItem: NextPage = () => {
 
   const { mutate, isLoading: isSaving } = api.equipment.update.useMutation({
     onSuccess: (data) => {
-      toast.success(`${data.name} (${data.type}) added successfully!`);
+      toast.success(`${data.name} (${data.type}) updated successfully!`);
       void ctx.invalidate();
       void back();
     },
@@ -225,6 +225,8 @@ const EquipmentItem: NextPage = () => {
           save();
         }}
         saving={isSaving}
+        deleting={isDeleting}
+        context="equipment"
       />
       <div className="m-auto flex flex-col md:w-1/2">
         <div className="w-full p-2">

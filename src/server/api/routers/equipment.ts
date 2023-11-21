@@ -181,6 +181,20 @@ export const EquipmentRouter = createTRPCRouter({
 
       return equipment;
     }),
+  getAll: privateProcedure.query(async ({ ctx }) => {
+    const equipment = await ctx.prisma.equipment.findMany({
+      include: {
+        tags: true,
+        sector: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return equipment;
+  }),
+
   update: privateProcedure
     .input(
       z.object({
