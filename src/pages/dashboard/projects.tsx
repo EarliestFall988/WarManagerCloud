@@ -23,6 +23,7 @@ import SignInModal from "~/components/signInPage";
 import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { ProjectCard } from "~/components/dashboardCards";
+import { CouldNotLoadMessageComponent } from "~/components/couldNotLoadMessageComponent";
 
 const ProjectMenu = () => (
   <>
@@ -164,11 +165,7 @@ const ProjectsPage: NextPage = () => {
               </div>
             )) ||
               (isError && (
-                <div className="flex flex-col items-center justify-center gap-2">
-                  <p className="text-xl font-bold text-zinc-300">
-                    Error Loading Projects
-                  </p>
-                </div>
+                <CouldNotLoadMessageComponent pluralName="projects" />
               )) ||
               (data && data?.length > 0 && (
                 <>

@@ -7,7 +7,7 @@ import { TRPCError } from "@trpc/server";
 
 import isMobilePhone from "validator/lib/isMobilePhone";
 import { clerkClient } from "@clerk/nextjs";
-import { Tag, type Prisma } from "@prisma/client";
+import { type Tag, type Prisma } from "@prisma/client";
 
 const redis = new Redis({
   url: "https://us1-merry-snake-32728.upstash.io",

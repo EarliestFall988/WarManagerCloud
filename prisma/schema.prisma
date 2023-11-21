@@ -185,19 +185,30 @@ model ScheduleHistoryItem {
 }
 
 model Equipment {
-  id              String                @id @default(cuid())
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  name            String                @db.VarChar(255)
-  type            String                @db.VarChar(255)
-  EquipmentId     String                @db.VarChar(255)
-  description     String?               @db.VarChar(255)
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String  @db.VarChar(255)
+  type        String  @db.VarChar(255)
+  equipmentId String? @db.VarChar(255)
+  description String? @db.VarChar(255)
+  gpsURL      String? @db.VarChar(255)
+  costPerHour Float  @default(0)
+
+  condition String @db.VarChar(255)
+
   data            Json?
   authorId        String
   scheduleHistory ScheduleHistoryItem[]
   blueprints      Blueprint[]
+  tags            Tag[]
+
+  sectorId String?
+  sector   Sector? @relation(fields: [sectorId], references: [id])
 
   @@index([authorId])
+  @@index([sectorId])
 }
 
 model Sector {
@@ -211,6 +222,7 @@ model Sector {
   CrewMembers    CrewMember[]
   Blueprints     Blueprint[]
   Projects       Project[]
+  Equipment      Equipment[]
 
   @@index([authorId])
 }
@@ -369,6 +381,7 @@ model Tag {
   CrewMembers     CrewMember[]
   projects        Project[]
   blueprints      Blueprint[]
+  equipment       Equipment[]
 
   @@index([authorId])
 }
