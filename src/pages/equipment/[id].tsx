@@ -1,9 +1,10 @@
 import type { NextPage } from "next";
 import { NewItemPageHeader } from "~/components/NewItemPageHeader";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   ButtonCallToActionComponent,
+  ButtonDeleteAction,
   InputComponent,
   TextareaComponent,
 } from "~/components/input";
@@ -14,6 +15,7 @@ import type { Sector, Tag } from "@prisma/client";
 import { api } from "~/utils/api";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
+import { CloudArrowUpIcon } from "@heroicons/react/24/solid";
 
 const EquipmentItem: NextPage = () => {
   const { isSignedIn, isLoaded } = useUser();
@@ -49,6 +51,23 @@ const EquipmentItem: NextPage = () => {
     } else {
       return router.push("/dashboard/equipment");
     }
+  };
+
+  const { mutate: apiDelete, isLoading: isDeleting } =
+    api.equipment.deleteEquipment.useMutation({
+      onSuccess: () => {
+        toast.success("Equipment Item deleted successfully!");
+        void ctx.invalidate();
+        void back();
+      },
+    });
+
+  const deleteEquipment = () => {
+    if (id == null || !id || id === "") return;
+
+    apiDelete({
+      id: id as string,
+    });
   };
 
   const { mutate, isLoading: isSaving } = api.equipment.update.useMutation({
@@ -115,6 +134,22 @@ const EquipmentItem: NextPage = () => {
   const { data, isLoading } = api.equipment.getById.useQuery({
     id: id as string,
   });
+
+  useMemo(() => {
+    if (data) {
+      const sector = data.sector;
+
+      setName(data.name);
+      setIdentification(data.equipmentId ?? "");
+      setGPS(data.gpsURL ?? "");
+      setType(data.type);
+      setNotes(data.description ?? "");
+      setCondition(data.condition);
+      setCostPerHour(data.costPerHour.toString());
+      setTags(data.tags);
+      setSectors(sector ? [sector] : []);
+    }
+  }, [data]);
 
   const save = useCallback(() => {
     setNameError("");
@@ -320,14 +355,28 @@ const EquipmentItem: NextPage = () => {
           />
         </div>
         <div className="w-full p-2" />
-        <div className="w-full p-2">
+        <div className="w-full p-2 pb-5 font-semibold">
           <ButtonCallToActionComponent
-            disabled={isSaving}
-            onClick={() => save()}
+            onClick={save}
+            disabled={isLoading || isDeleting}
           >
-            {isSaving ? <LoadingSpinner /> : <p>Create New Equipment Item</p>}
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <>
+                <p>Save</p> <CloudArrowUpIcon className="ml-2 h-5 w-5" />{" "}
+              </>
+            )}
           </ButtonCallToActionComponent>
         </div>
+
+        <ButtonDeleteAction
+          title={"Are you sure you want to delete this equipment item?"}
+          description="The equipment item will not be recoverable after you delete it."
+          loading={isDeleting}
+          yes={deleteEquipment}
+          disabled={isLoading || isDeleting}
+        />
         <div className="pt-20" />
       </div>
     </main>

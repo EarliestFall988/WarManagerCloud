@@ -40,7 +40,7 @@ export const EquipmentRouter = createTRPCRouter({
         type: z.string().min(3).max(255),
         gpsURL: z.string().optional(),
         costPerHour: z.number().min(0),
-        notes: z.string().min(3).max(255),
+        notes: z.string().min(0).max(255),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -205,7 +205,7 @@ export const EquipmentRouter = createTRPCRouter({
         type: z.string().min(3).max(255),
         gpsURL: z.string().optional(),
         costPerHour: z.number().min(0),
-        notes: z.string().min(3).max(255),
+        notes: z.string().min(0).max(255),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -259,6 +259,44 @@ export const EquipmentRouter = createTRPCRouter({
               id: tag,
             })),
           },
+        },
+      });
+
+      return equipment;
+    }),
+
+  deleteEquipment: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.currentUser;
+
+      const { success } = await rateLimit.limit(authorId);
+
+      if (!success) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the rate limit, try again in a minute",
+        });
+      }
+
+      const user = await clerkClient.users.getUser(authorId);
+
+      const email = user?.emailAddresses[0]?.emailAddress;
+
+      if (!user || !email || user.banned) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
+      const equipment = await ctx.prisma.equipment.delete({
+        where: {
+          id: input.id,
         },
       });
 
