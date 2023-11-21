@@ -228,12 +228,12 @@ const NewEquipmentPage: NextPage = () => {
             disabled={isCreating}
             onChange={(e) => setCondition(e.target.value)}
           >
-            <option value="">Please Select</option>
-            <option value="unknown">Unknown</option>
-            <option value="bad">Bad</option>
-            <option value="poor">Poor</option>
-            <option value="poor">Like New</option>
-            <option value="poor">New</option>
+           <option value="">Please Select</option>
+            <option value="Unknown">Unknown</option>
+            <option value="Bad">Bad</option>
+            <option value="Poor">Poor</option>
+            <option value="Like New">Like New</option>
+            <option value="New">New</option>
           </select>
           <p className="py-2 text-red-500">{conditionError}</p>
         </div>

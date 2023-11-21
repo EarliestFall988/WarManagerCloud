@@ -114,6 +114,16 @@ export const EquipmentRouter = createTRPCRouter({
         };
       }
 
+      if (input.filter.length > 0) {
+        filters.tags = {
+          some: {
+            id: {
+              in: input.filter,
+            },
+          },
+        };
+      }
+
       if (input.search.length > 0) {
         filters.OR = [
           {

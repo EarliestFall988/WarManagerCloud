@@ -484,7 +484,7 @@ export const CrewList = (props: { blueprintId: string }) => {
               href="/crewmember/new"
               className="rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
             >
-              <TooltipComponent content="Add Crew Member" side={"top"}>
+              <TooltipComponent content="Create New Crew Member" side={"top"}>
                 <PlusIcon className="h-5 w-5" />
               </TooltipComponent>
             </Link>
@@ -688,7 +688,7 @@ export const EquipmentList = (props: { blueprintId: string }) => {
               href="/equipment/new"
               className="rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
             >
-              <TooltipComponent content="Add Crew Member" side={"top"}>
+              <TooltipComponent content="Create New Equipment Item" side={"top"}>
                 <PlusIcon className="h-5 w-5" />
               </TooltipComponent>
             </Link>

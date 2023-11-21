@@ -13,6 +13,9 @@ import {
   ArrowLongUpIcon,
   LinkIcon,
   TrashIcon,
+  ArrowLeftIcon,
+  ArrowRightCircleIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/solid";
 import { useState, useCallback } from "react";
 import { TagsPopover } from "~/components/TagDropdown";
@@ -84,7 +87,7 @@ const EquipmentPage: NextPage = () => {
                 type="search"
                 value={equipmentSearchTerm}
                 onChange={(e) => setEquipmentSearchTerm(e.target.value)}
-                placeholder="search crew members by name, or position"
+                placeholder="Search Equipment by Name, Type, or ID"
                 className="w-full rounded bg-zinc-800 p-2 outline-none ring-1 ring-inset ring-zinc-700 placeholder:italic placeholder:text-zinc-400 hover:bg-zinc-700 focus:ring-amber-700 md:w-3/5"
               />
               <TagsPopover
@@ -136,16 +139,19 @@ const EquipmentPage: NextPage = () => {
                     />
                   ))}
                 {equipment.length === 0 && (
-                  <div className="flex w-full flex-col items-center justify-center gap-2">
-                    <p className="text-xl font-bold text-zinc-300">
-                      No Equipment items matching your search
-                    </p>
-                    <Link
-                      href="/equipment/new"
-                      className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
-                    >
-                      Create one now.
-                    </Link>
+                  <div className="flex h-[33vh] w-full flex-col items-center justify-center gap-2">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <p className="text-xl font-bold text-zinc-300">
+                        No Equipment items matching your search
+                      </p>
+                      <Link
+                        href="/equipment/new"
+                        className="m-auto flex w-64 items-center justify-center gap-2 rounded bg-amber-800 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-amber-700"
+                      >
+                        <p>Create one now</p>
+                        <ArrowRightIcon className="h-6 w-6" />
+                      </Link>
+                    </div>
                   </div>
                 )}
 
