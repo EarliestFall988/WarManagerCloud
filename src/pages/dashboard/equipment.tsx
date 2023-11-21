@@ -184,7 +184,7 @@ const EquipmentItem: React.FC<{
       key={equipment.id}
     >
       <Link
-        href={`/crewmember/${equipment.id}`}
+        href={`/equipment/${equipment.id}`}
         passHref
         className="flex flex-grow items-center gap-1 overflow-x-clip rounded-sm p-1 sm:justify-between"
       >

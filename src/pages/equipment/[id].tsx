@@ -20,6 +20,8 @@ const EquipmentItem: NextPage = () => {
 
   const router = useRouter();
 
+  const { id } = router.query;
+
   const [name, setName] = useState("");
   const [identification, setIdentification] = useState("");
   const [gps, setGPS] = useState("");
@@ -49,67 +51,70 @@ const EquipmentItem: NextPage = () => {
     }
   };
 
-  const { mutate, isLoading: isCreating } =
-    api.equipment.createEquipment.useMutation({
-      onSuccess: (data) => {
-        toast.success(`${data.name} (${data.type}) added successfully!`);
-        void ctx.invalidate();
-        void back();
-      },
-      onError(e) {
-        const errorMessage = e.shape?.data?.zodError?.fieldErrors;
+  const { mutate, isLoading: isSaving } = api.equipment.update.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.name} (${data.type}) added successfully!`);
+      void ctx.invalidate();
+      void back();
+    },
+    onError(e) {
+      const errorMessage = e.shape?.data?.zodError?.fieldErrors;
 
-        if (!errorMessage) {
-          console.error(e.message);
-          toast.error(e.message);
-          return;
-        } else {
-          toast.error(
-            "There were a few errors, please check the form and try again."
-          );
-        }
+      if (!errorMessage) {
+        console.error(e.message);
+        toast.error(e.message);
+        return;
+      } else {
+        toast.error(
+          "There were a few errors, please check the form and try again."
+        );
+      }
 
-        for (const key in errorMessage) {
-          // toast.error(errorMessage?[key][0] || "there was an api error");
-          const keyMessage = errorMessage[key];
+      for (const key in errorMessage) {
+        // toast.error(errorMessage?[key][0] || "there was an api error");
+        const keyMessage = errorMessage[key];
 
-          if (keyMessage) {
-            const message = keyMessage[0] || "";
+        if (keyMessage) {
+          const message = keyMessage[0] || "";
 
-            switch (key) {
-              case "name":
-                setNameError(message);
-                break;
-              case "identification":
-                setIdentificationError(message);
-                break;
-              case "sectors":
-                setSectorError(message);
-                break;
-              case "condition":
-                setConditionError(message);
-                break;
-              case "type":
-                setTypeError(message);
-                break;
-              case "gpsURL":
-                setGpsError(message);
-                break;
-              case "costPerHour":
-                setCostPerHourError(message);
-                break;
-              case "notes":
-                setNotesError(message);
-                break;
-              default:
-                break;
-            }
-          } else {
-            toast.error("Something went wrong! Please try again later");
+          switch (key) {
+            case "name":
+              setNameError(message);
+              break;
+            case "identification":
+              setIdentificationError(message);
+              break;
+            case "sectors":
+              setSectorError(message);
+              break;
+            case "condition":
+              setConditionError(message);
+              break;
+            case "type":
+              setTypeError(message);
+              break;
+            case "gpsURL":
+              setGpsError(message);
+              break;
+            case "costPerHour":
+              setCostPerHourError(message);
+              break;
+            case "notes":
+              setNotesError(message);
+              break;
+            default:
+              break;
           }
+        } else {
+          toast.error("Something went wrong! Please try again later");
         }
-      },
-    });
+      }
+    },
+  });
+
+  const { data, isLoading } = api.equipment.getById.useQuery({
+    id: id as string,
+  });
 
   const save = useCallback(() => {
     setNameError("");
@@ -140,6 +145,7 @@ const EquipmentItem: NextPage = () => {
     toast.loading("Saving", { duration: 1000 });
 
     mutate({
+      id: id as string,
       name,
       identification,
       gpsURL: gps,
@@ -151,6 +157,7 @@ const EquipmentItem: NextPage = () => {
       sectors: getSectorsStringArray(),
     });
   }, [
+    id,
     name,
     identification,
     gps,
@@ -167,6 +174,14 @@ const EquipmentItem: NextPage = () => {
     return <SignInModal redirectUrl="/dashboard/reporting" />;
   }
 
+  if (isLoading) {
+    return (
+      <main className="flex min-h-[100vh] items-center justify-center bg-zinc-900">
+        <LoadingSpinner />
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-[100vh] bg-zinc-900">
       <NewItemPageHeader
@@ -174,7 +189,7 @@ const EquipmentItem: NextPage = () => {
         save={() => {
           save();
         }}
-        saving={isCreating}
+        saving={isSaving}
       />
       <div className="m-auto flex flex-col md:w-1/2">
         <div className="w-full p-2">
@@ -186,7 +201,7 @@ const EquipmentItem: NextPage = () => {
               setName(e.currentTarget.value);
             }}
             placeholder="Name"
-            disabled={isCreating}
+            disabled={isSaving}
             autoFocus
           />
         </div>
@@ -199,7 +214,7 @@ const EquipmentItem: NextPage = () => {
               setIdentification(e.currentTarget.value);
             }}
             placeholder="12345"
-            disabled={isCreating}
+            disabled={isSaving}
           />
         </div>
         <div className="w-full p-2">
@@ -226,7 +241,7 @@ const EquipmentItem: NextPage = () => {
             } rounded bg-zinc-800 p-2 text-zinc-200 outline-none ring-2 ring-zinc-700 transition-all duration-100 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 focus:ring-2 focus:ring-amber-700`}
             placeholder="Name"
             value={condition}
-            disabled={isCreating}
+            disabled={isSaving}
             onChange={(e) => setCondition(e.target.value)}
           >
             <option value="">Please Select</option>
@@ -246,7 +261,7 @@ const EquipmentItem: NextPage = () => {
             } rounded bg-zinc-800 p-2 text-zinc-200 outline-none ring-2 ring-zinc-700 transition-all duration-100 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-1 hover:ring-offset-zinc-600 focus:ring-2 focus:ring-amber-700`}
             placeholder="Name"
             value={type}
-            disabled={isCreating}
+            disabled={isSaving}
             onChange={(e) => setType(e.target.value)}
           >
             <option value="">Please Select</option>
@@ -275,7 +290,7 @@ const EquipmentItem: NextPage = () => {
               setGPS(e.currentTarget.value);
             }}
             placeholder="https://www.google.com/maps/..."
-            disabled={isCreating}
+            disabled={isSaving}
           />
         </div>
         <div className="w-full p-2">
@@ -287,7 +302,7 @@ const EquipmentItem: NextPage = () => {
               setCostPerHour(e.currentTarget.value);
             }}
             placeholder="35.43"
-            disabled={isCreating}
+            disabled={isSaving}
             type="number"
           />
         </div>
@@ -301,16 +316,16 @@ const EquipmentItem: NextPage = () => {
               setNotes(e.currentTarget.value);
             }}
             placeholder="Talk about anything you want here."
-            disabled={isCreating}
+            disabled={isSaving}
           />
         </div>
         <div className="w-full p-2" />
         <div className="w-full p-2">
           <ButtonCallToActionComponent
-            disabled={isCreating}
+            disabled={isSaving}
             onClick={() => save()}
           >
-            {isCreating ? <LoadingSpinner /> : <p>Create New Equipment Item</p>}
+            {isSaving ? <LoadingSpinner /> : <p>Create New Equipment Item</p>}
           </ButtonCallToActionComponent>
         </div>
         <div className="pt-20" />

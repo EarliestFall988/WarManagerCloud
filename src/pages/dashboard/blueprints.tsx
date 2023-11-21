@@ -2,7 +2,6 @@ import {
   ArrowLongUpIcon,
   CalendarDaysIcon,
   PlusIcon,
-  SignalSlashIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import type { NextPage } from "next";
