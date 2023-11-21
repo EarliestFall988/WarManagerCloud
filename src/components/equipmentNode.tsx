@@ -1,8 +1,4 @@
-import {
-  SignalSlashIcon,
-  TruckIcon,
-  UserCircleIcon,
-} from "@heroicons/react/24/solid";
+import { SignalSlashIcon, TruckIcon } from "@heroicons/react/24/solid";
 import { memo } from "react";
 import { NodeResizer } from "reactflow";
 
@@ -36,8 +32,8 @@ const EquipmentNode = ({ data, selected }: crewNodeInput) => {
 
   const theme = `${
     selected
-      ? "bg-green-800 rounded-sm ring-0"
-      : "ring-zinc-700 hover:ring rounded-lg hover:ring-zinc-600 bg-green-900"
+      ? "bg-gray-700  ring-0"
+      : "ring-gray-700 hover:ring hover:ring-gray-600 bg-gray-800"
   }`;
 
   const created = new Date(info?.createdAt || 0);
@@ -46,14 +42,14 @@ const EquipmentNode = ({ data, selected }: crewNodeInput) => {
     <>
       <div className="h-full w-full">
         <div
-          className={`flex h-full w-full cursor-move rounded-lg px-1 text-zinc-100 ${
+          className={`flex h-full w-full cursor-move rounded-sm px-1 text-zinc-100 ${
             info ? "ring-2" : ""
           } transition duration-200 ${theme} `}
         >
           <div ref={animationParent1} className="cursor h-24 w-72">
             {isLoading || !equipmentData || !data || !info || error ? (
               <div className="flex h-full w-full items-center justify-center gap-2">
-                <UserCircleIcon className="fixed bottom-0 right-0 h-5 w-5" />
+                <TruckIcon className="fixed bottom-0 right-0 h-5 w-5" />
                 {error && (
                   <TooltipComponent
                     content="Error loading crew data"
