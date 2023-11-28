@@ -3,6 +3,7 @@ import useNodesStateSynced from "./useNodesStateSynced";
 import { useCallback } from "react";
 import {
   FireIcon,
+  TruckIcon,
   UserCircleIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
@@ -27,6 +28,18 @@ const Costing: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
 
     nodes.forEach((node) => {
       if (node.type === "projectNode") {
+        count++;
+      }
+    });
+
+    return count;
+  }, [nodes]);
+
+  const getEquipmentCount = useCallback(() => {
+    let count = 0;
+
+    nodes.forEach((node) => {
+      if (node.type === "equipmentNode") {
         count++;
       }
     });
@@ -70,6 +83,19 @@ const Costing: React.FC<{ blueprintId: string }> = ({ blueprintId }) => {
           <TooltipComponent content="Project count" side="top">
             <div className="flex items-center rounded-2xl transition duration-200 hover:scale-110 hover:bg-amber-800 md:px-2">
               <p>{getProjectCount()}</p>
+            </div>
+          </TooltipComponent>
+        </div>
+      </div>
+      <div className="flex items-center rounded-2xl border border-zinc-600 bg-zinc-700 px-1 md:-translate-y-4 md:gap-2 md:px-2">
+        <div className="flex items-center justify-center md:gap-2">
+          <TruckIcon className="inline-block h-5 w-5" />
+          <div className="h-5 border-l border-zinc-600" />
+        </div>
+        <div className="flex gap-2 ">
+          <TooltipComponent content="Equipment count" side="top">
+            <div className="flex items-center rounded-2xl transition duration-200 hover:scale-110 hover:bg-amber-800 md:px-2">
+              <p>{getEquipmentCount()}</p>
             </div>
           </TooltipComponent>
         </div>

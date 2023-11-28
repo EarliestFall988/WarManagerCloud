@@ -1,4 +1,4 @@
-import type { CrewMember, Project, Tag } from "@prisma/client";
+import type { CrewMember, Equipment, Project, Tag } from "@prisma/client";
 import TooltipComponent from "./Tooltip";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -14,7 +14,8 @@ export const TagBubblesHandler: React.FC<{
   style?: string;
   crew?: CrewMember;
   project?: Project;
-  mode: "crew" | "project";
+  equipment?: Equipment;
+  mode: "crew" | "project" | "equipment";
 }> = ({ tags, style, crew, mode }) => {
   if (tags.length === 0) return <div></div>;
 

@@ -39,7 +39,6 @@ export const GetNodes = (id: string) => {
 };
 
 export const DeleteNode = (id: string, nodeId: string) => {
-
   const deletedNode = nodesMap(id).get(nodeId);
   nodesMap(id).delete(nodeId);
 
@@ -59,7 +58,16 @@ export const DeleteNode = (id: string, nodeId: string) => {
   });
 
   return GetNodes(id);
-}
+};
+
+// add a node to the nodesMap
+export const AddNodes = (id: string, nodes: Node[]) => {
+  nodes.forEach((node) => {
+    nodesMap(id).set(node.id, node);
+  });
+
+  return GetNodes(id);
+};
 
 function useNodesStateSynced(id: string): [Node[], OnNodesChange] {
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -82,7 +90,6 @@ function useNodesStateSynced(id: string): [Node[], OnNodesChange] {
           if (node && change.type !== "remove") {
             nodesMap(id).set(change.id, node);
           } else if (change.type === "remove") {
-
             DeleteNode(id, change.id);
 
             // const deletedNode = nodesMap(id).get(change.id);

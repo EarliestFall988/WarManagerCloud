@@ -19,6 +19,7 @@ import { logMessageReplies } from "./routers/logMessageReplies";
 import { timeSchedulingRouter } from "./routers/timeScheduling";
 import { messagesRouter } from "./routers/messages";
 import attachedFilesRouter from "./routers/attachedFiles";
+import { EquipmentRouter as equipmentRouter } from "./routers/equipment";
 
 /**
  * This is the primary router for your server.
@@ -46,6 +47,7 @@ export const appRouter = createTRPCRouter({
   timeScheduling: timeSchedulingRouter,
   messageHandling: messagesRouter,
   attachedFiles: attachedFilesRouter,
+  equipment: equipmentRouter,
 });
 
 // export type definition of API

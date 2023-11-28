@@ -4,6 +4,7 @@ import { LoadingSpinner } from "./loading";
 import type {
   Blueprint,
   CrewMember,
+  Equipment,
   Project,
   Sector,
   Tag,
@@ -483,7 +484,7 @@ export const CrewList = (props: { blueprintId: string }) => {
               href="/crewmember/new"
               className="rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
             >
-              <TooltipComponent content="Add Crew Member" side={"top"}>
+              <TooltipComponent content="Create New Crew Member" side={"top"}>
                 <PlusIcon className="h-5 w-5" />
               </TooltipComponent>
             </Link>
@@ -586,6 +587,208 @@ export const CrewList = (props: { blueprintId: string }) => {
                       tags={crew.tags}
                       mode="crew"
                       crew={crew}
+                      style="bg-zinc-800/50"
+                    />
+                  </div>
+                </div>
+              </Link>
+            ))}
+            {dataToUse?.length === 0 &&
+              searchTerm.length == 0 &&
+              nodeMode === "notOnBlueprint" && (
+                <AllOnBlueprintNotice context="crew members" />
+              )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const filterEquipment = (props: {
+  nodes: Node[];
+  data: (Equipment & { tags: Tag[] })[] | undefined;
+}) => {
+  const { data } = props;
+
+  const currentNodes = props.nodes;
+
+  const nodesNotInUse = data?.filter((eq) => {
+    if (
+      currentNodes.find((node) => {
+        if (node.type === "equipmentNode") {
+          const nodeData = node.data as { id: string };
+          if (nodeData.id === eq.id) {
+            return true;
+          }
+        }
+        return false;
+      })
+    )
+      return false;
+    return true;
+  });
+
+  return nodesNotInUse;
+};
+
+export const EquipmentList = (props: { blueprintId: string }) => {
+  useScript(
+    "https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"
+  );
+
+  const [nodeMode, setNodeMode] = React.useState<
+    "all" | "notOnBlueprint" | "onlyOnBlueprint"
+  >("notOnBlueprint");
+
+  const [searchTerm, setSearchTerm] = React.useState<string>("");
+
+  const {
+    data: searchResult,
+    isLoading,
+    isError,
+  } = api.equipment.search.useQuery({
+    search: searchTerm,
+    filter: [],
+    sectors: [],
+  });
+
+  let dataToUse = searchResult as (Equipment & { tags: Tag[] })[] | undefined;
+
+  const currentNodes = GetNodes(props.blueprintId);
+
+  if (nodeMode === "notOnBlueprint") {
+    dataToUse = filterEquipment({ nodes: currentNodes, data: dataToUse });
+  } else if (nodeMode === "onlyOnBlueprint") {
+    dataToUse = dataToUse?.filter((crew) => {
+      if (
+        currentNodes.find((node) => {
+          if (node.type === "equipmentNode") {
+            const nodeData = node.data as { id: string };
+            if (nodeData.id === crew.id) {
+              return true;
+            }
+          }
+          return false;
+        })
+      )
+        return true;
+      return false;
+    });
+  }
+
+  const draggable = !isError && !isLoading && searchResult !== undefined;
+
+  return (
+    <div className="mr-1 flex h-[60vh] w-full flex-col gap-3 border-r border-zinc-600 sm:m-0 lg:h-[90vh] ">
+      <div className="h-[10vh] w-full">
+        <div className="flex items-center justify-between border-b border-zinc-600 p-1 ">
+          <div className="flex gap-1">
+            <Link
+              href="/equipment/new"
+              className="rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500"
+            >
+              <TooltipComponent content="Create New Equipment Item" side={"top"}>
+                <PlusIcon className="h-5 w-5" />
+              </TooltipComponent>
+            </Link>
+          </div>
+          <div className="flex w-full items-center justify-center gap-1 px-2 text-center text-xs font-bold sm:text-lg">
+            <p>
+              {nodeMode === "all" && <span>All</span>}
+              {"Equipment"}
+              {nodeMode === "notOnBlueprint" && (
+                <>
+                  {" "}
+                  <span className="text-orange-500"> Not</span> on Blueprint
+                </>
+              )}
+              {nodeMode === "onlyOnBlueprint" && (
+                <>
+                  <span className="text-blue-500"> Only</span> on Blueprint
+                </>
+              )}
+            </p>
+          </div>
+          <div className="flex gap-1">
+            <TooltipComponent content="View All Equipment" side={"top"}>
+              <button
+                onClick={() => setNodeMode("all")}
+                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-zinc-500 ${
+                  nodeMode === "all" ? "bg-zinc-600" : ""
+                }`}
+              >
+                <MagnifyingGlassIcon className="h-5 w-5" />
+              </button>
+            </TooltipComponent>
+            <TooltipComponent
+              content="View Equipment NOT on the blueprints"
+              side={"top"}
+            >
+              <button
+                onClick={() => setNodeMode("notOnBlueprint")}
+                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-orange-500 ${
+                  nodeMode === "notOnBlueprint" ? "bg-orange-600" : ""
+                }`}
+              >
+                <QueueListIcon className="h-5 w-5" />
+              </button>
+            </TooltipComponent>
+            <TooltipComponent
+              content="View Equipment ONLY on the blueprint"
+              side={"top"}
+            >
+              <button
+                onClick={() => setNodeMode("onlyOnBlueprint")}
+                className={`rounded p-1 transition-all duration-100 hover:scale-105 hover:bg-blue-500 ${
+                  nodeMode === "onlyOnBlueprint" ? "bg-blue-600" : ""
+                }`}
+              >
+                <ListBulletIcon className="h-5 w-5" />
+              </button>
+            </TooltipComponent>
+          </div>
+        </div>
+        <div className="flex flex-col items-end border-b border-zinc-600 p-1 py-2">
+          <input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            type="search"
+            className="w-full rounded bg-zinc-100 p-1 text-zinc-600 placeholder:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 active:outline-none"
+            placeholder="Search..."
+          />
+        </div>
+      </div>
+      <div className="h-[50vh] overflow-y-auto overflow-x-hidden lg:h-[80vh]">
+        {isLoading && (
+          <div className="flex items-center justify-center  py-5">
+            <LoadingSpinner />
+          </div>
+        )}
+        {isError && <div>Something went wrong</div>}
+        {!isLoading && (
+          <>
+            {dataToUse?.length === 0 && (
+              <NothingToDisplayNotice context="equipment" />
+            )}
+            {dataToUse?.map((equ) => (
+              <Link key={equ.id} href={`/equipment/${equ.id}`}>
+                <div
+                  className="flex items-center justify-start gap-1 border-b border-zinc-600 p-1 px-2 text-left transition-all duration-200 hover:-translate-y-1 hover:rounded hover:bg-zinc-600 hover:shadow-lg"
+                  draggable={draggable}
+                  onDragStart={(event) => onDragStart(event, "e-" + equ.id)}
+                >
+                  <div className="max-w-[50%] truncate  ">
+                    <p className="text-md truncate font-semibold">{equ.name}</p>
+                    <p className="h-5 truncate text-xs font-normal text-zinc-300">
+                      {equ.type}
+                    </p>
+                  </div>
+                  <div className="flex h-10 w-1/2 flex-wrap items-start justify-start gap-1 overflow-clip text-xs">
+                    <TagBubblesHandler
+                      tags={equ.tags}
+                      mode="crew"
+                      equipment={equ}
                       style="bg-zinc-800/50"
                     />
                   </div>

@@ -12,18 +12,20 @@ import {
   InformationCircleIcon,
   PresentationChartBarIcon,
   TrashIcon,
+  TruckIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
 
 import { LoadingPage, LoadingPage2 } from "~/components/loading";
 import {
   CrewList,
+  EquipmentList,
   ExportBlueprint,
   More,
   ProjectsList,
   Stats,
 } from "~/components/auxilaryBlueprintEditingComponents";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { api } from "~/utils/api";
 
 import type { Blueprint } from "@prisma/client";
@@ -32,7 +34,7 @@ ArrowUturnLeftIcon;
 import dynamic from "next/dynamic";
 import { Redo, Undo } from "~/flow/ydoc";
 import { type Node } from "reactflow";
-import { DeleteNode, nodesMap } from "~/flow/useNodesStateSynced";
+import { AddNodes, DeleteNode, nodesMap } from "~/flow/useNodesStateSynced";
 // import useNodesStateSynced, {
 //   DeleteNode,
 //   GetNodes,
@@ -48,6 +50,20 @@ const BlueprintGUI = () => {
   const { data: blueprint } = api.blueprints.getOneById.useQuery({
     blueprintId: blueprintId || "",
   });
+
+  useEffect(() => {
+    const blueprintData = blueprint?.data || "";
+
+    if (blueprintData === "") return;
+    if (!blueprintId || blueprintId === undefined || blueprintId === null)
+      return;
+
+    const data = JSON.parse(blueprintData) as { nodes: Node[] };
+
+    if (!data.nodes) return;
+
+    AddNodes(blueprintId, data.nodes);
+  }, [blueprint?.data, blueprintId]);
 
   if (!isLoaded) {
     return <LoadingPage2 />;
@@ -106,7 +122,10 @@ const BlueprintGUI = () => {
           {blueprint ? (
             <>
               {/* <FlowWithProvider blueprintId={blueprintId} /> */}
-              <BlueprintFlowProvider blueprintId={blueprintId} />
+              <BlueprintFlowProvider
+                blueprintId={blueprintId}
+                blueprintData={blueprint.data}
+              />
               <Panels blueprint={blueprint} />
               <CostingComponent blueprintId={blueprint.id} />
             </>
@@ -180,6 +199,7 @@ const Panels: React.FC<{
           />
         )}
         {toggle === "Employee" && <CrewList blueprintId={blueprint.id} />}
+        {toggle === "Equipment" && <EquipmentList blueprintId={blueprint.id} />}
         {toggle === "Stats" && <Stats blueprint={blueprint} />}
         {toggle == "More" && <More blueprint={blueprint} />}
       </div>
@@ -206,6 +226,18 @@ const Panels: React.FC<{
             }  p-2 py-4 hover:scale-105  sm:py-2`}
           >
             <IdentificationIcon className="h-6 w-6" />
+          </button>
+        </TooltipComponent>
+        <TooltipComponent content="Equipment" side="left">
+          <button
+            onClick={() => ToggleMenu("Equipment")}
+            className={`btn-add  z-20 rounded ${
+              toggle == "Equipment"
+                ? "bg-amber-800 hover:bg-amber-700"
+                : "bg-zinc-600 hover:bg-zinc-500"
+            }  p-2 py-4 hover:scale-105  sm:py-2`}
+          >
+            <TruckIcon className="h-6 w-6" />
           </button>
         </TooltipComponent>
         <div className="w-full border-b border-zinc-600" />

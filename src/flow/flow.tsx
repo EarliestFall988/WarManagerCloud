@@ -1,9 +1,10 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
   MiniMap,
+  type ReactFlowInstance,
   ReactFlowProvider,
   // applyNodeChanges,
   useReactFlow,
@@ -21,6 +22,7 @@ import "reactflow/dist/style.css";
 import crewNode from "~/components/crewNode";
 import projectNode from "~/components/projectNode";
 import noteNode from "~/components/noteNode";
+import equipmentNode from "~/components/equipmentNode";
 import { api } from "~/utils/api";
 import useEdgesStateSynced from "~/flow/useEdgesStateSynced";
 import useNodesStateSynced, { nodesMap } from "~/flow/useNodesStateSynced";
@@ -50,6 +52,7 @@ const nodeTypes = {
   crewNode,
   projectNode,
   noteNode,
+  equipmentNode,
 };
 
 // type yjsWsProviderProps = {
@@ -61,13 +64,12 @@ const proOptions = {
   hideAttribution: true,
 };
 
-
-
 // const liveWebRTCConnection = "wss://definitive-obese-condor.gigalixirapp.com/";
 
 const Flow: React.FC<{
   blueprintId: string;
-}> = ({ blueprintId }) => {
+  blueprintData: string;
+}> = ({ blueprintId, blueprintData }) => {
   // const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore(
   //   selector,
   //   shallow
@@ -82,7 +84,7 @@ const Flow: React.FC<{
   // const { data: crewData } = api.crewMembers.getAll.useQuery(); //could be inefficient to fetch all crew members and projects for every blueprint - TODO fix
   // const { data: projectData } = api.projects.getAll.useQuery();
   const { data: noteData } = api.notes.getAll.useQuery({});
-  const { crewData, projectData } = useLiveData();
+  const { crewData, projectData, equipmentData } = useLiveData();
 
   const reactFlowWrapper: React.LegacyRef<HTMLDivElement> = useRef(null);
   const reactFlowInstance = useReactFlow();
@@ -96,6 +98,14 @@ const Flow: React.FC<{
   //   FlowChange(GetNodes(blueprintId));
   // }, [blueprintId, FlowChange]);
 
+  useMemo(() => {
+    if (blueprintData == null) return;
+
+    const data = JSON.parse(blueprintData) as ReactFlowInstance;
+
+    console.log("data", data);
+  }, [blueprintData]);
+
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -106,13 +116,20 @@ const Flow: React.FC<{
       if (data == null) return;
       if (projectData == null) return;
       if (crewData == null) return;
+      if (equipmentData == null) return;
 
       const type = data.split("-")[0];
       const dataId = data.split("-")[1];
 
       const blockResult = {
         type:
-          type == "p" ? "projectNode" : type == "c" ? "crewNode" : "noteNode",
+          type == "p"
+            ? "projectNode"
+            : type == "c"
+            ? "crewNode"
+            : type == "e"
+            ? "equipmentNode"
+            : "noteNode",
         data: {},
       };
 
@@ -151,6 +168,16 @@ const Flow: React.FC<{
         // console.log(blockResult);
       }
 
+      if (type === "e") {
+        console.log("equipment", dataId);
+        const equipment = equipmentData?.find(
+          (equipment) => equipment.id == dataId
+        );
+
+        if (!equipment) return;
+        blockResult.data = { ...equipment, blueprintId };
+      }
+
       const position = reactFlowInstance.project({
         x: event.clientX - (bounds?.left ?? 0),
         y: event.clientY - (bounds?.top ?? 0),
@@ -179,7 +206,14 @@ const Flow: React.FC<{
 
       nodesMap(blueprintId).set(id, newNode);
     },
-    [crewData, projectData, reactFlowInstance, noteData, blueprintId]
+    [
+      crewData,
+      projectData,
+      reactFlowInstance,
+      noteData,
+      equipmentData,
+      blueprintId,
+    ]
   );
 
   return (
@@ -233,10 +267,11 @@ const Flow: React.FC<{
 
 export const FlowWithProvider: React.FC<{
   blueprintId: string;
-}> = ({ blueprintId }) => {
+  blueprintData: string;
+}> = ({ blueprintId, blueprintData }) => {
   return (
     <ReactFlowProvider>
-      <Flow blueprintId={blueprintId} />
+      <Flow blueprintId={blueprintId} blueprintData={blueprintData} />
     </ReactFlowProvider>
   );
 };

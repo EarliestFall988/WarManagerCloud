@@ -16,7 +16,6 @@ import WhatsNew from "~/components/whatsnew";
 const MyApp: AppType = ({ Component, pageProps }) => {
   const [previousNetworkStatus, setPreviousNetworkStatus] = useState("online"); // ["online", "offline"
 
-  
   const [networkStatus, setNetworkStatus] = useState("online");
   const [showDev, setShowDev] = useState(true);
 
@@ -25,6 +24,8 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   const { data } = api.versioning.getVersionType.useQuery();
 
   const [versionType, setVersionType] = useState("PROD");
+
+  const [showNewFeatures] = useState(false);
 
   const [seenNewFeatures, setSeenNewFeatures] = useState(false);
 
@@ -176,8 +177,8 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       >
         <Toaster position="bottom-center" />
         {versionType == "DEV" && showDev && (
-          <div className="fixed bottom-0 z-40 flex w-full items-center justify-around font-semibold text-red-500/80">
-            <div className="flex gap-2 rounded border-2 border-black bg-white/90 px-2">
+          <div className="fixed bottom-0 z-40 flex w-full items-center justify-around font-mono font-semibold text-red-700">
+            <div className="flex gap-2 rounded border-2 border-black bg-white/70 px-2">
               <p>Developer version - anything is subject to change.</p>
               <button
                 onClick={() => {
@@ -190,7 +191,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             <div></div>
           </div>
         )}
-        {!seenNewFeatures && path !== "/" && <WhatsNew setSeenFeatures={setSeenFeatures} />}
+        {!seenNewFeatures && showNewFeatures && path !== "/" && (
+          <WhatsNew setSeenFeatures={setSeenFeatures} />
+        )}
         <Component {...pageProps} />
       </ClerkProvider>
     </>
