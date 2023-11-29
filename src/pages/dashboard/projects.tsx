@@ -5,11 +5,12 @@ import {
   FunnelIcon,
   PlusIcon,
   TagIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { type Sector, type Tag } from "@prisma/client";
 import { type NextPage } from "next";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "react-hot-toast";
 import { TagsPopover } from "~/components/TagDropdown";
 import TooltipComponent from "~/components/Tooltip";
@@ -24,6 +25,7 @@ import Head from "next/head";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { ProjectCard } from "~/components/dashboardCards";
 import { CouldNotLoadMessageComponent } from "~/components/couldNotLoadMessageComponent";
+import { set } from "zod";
 
 const ProjectMenu = () => (
   <>
@@ -60,6 +62,19 @@ const ProjectMenu = () => (
 const ProjectsPage: NextPage = () => {
   const [animateParent] = useAutoAnimate();
 
+  const [useAutoFilters, setUseAutoFilters] = useState<
+    "soon" | "progress" | "support" | ""
+  >("");
+
+  const setAutoFilter = useCallback(
+    (e: string) => {
+      if (useAutoFilters === e) return setUseAutoFilters("");
+
+      setUseAutoFilters(e as "soon" | "progress" | "support" | "");
+    },
+    [useAutoFilters]
+  );
+
   const [projectSearchTerm, setProjectsSearchTerm] = useState("");
 
   const [filter, setFilter] = useState<Tag[]>([]);
@@ -76,6 +91,22 @@ const ProjectsPage: NextPage = () => {
 
   const { data, isLoading, isError } = api.projects.search.useQuery({
     search: projectSearchTerm,
+    tagsFilter: filterToStringArray,
+    sectorsFilter: filterSectorsToStringArray,
+    autoFilter: useAutoFilters,
+  });
+
+  const { data: comingUpCount } = api.projects.getComingUpCount.useQuery({
+    tagsFilter: filterToStringArray,
+    sectorsFilter: filterSectorsToStringArray,
+  });
+
+  const { data: supportCount } = api.projects.getSupportCount.useQuery({
+    tagsFilter: filterToStringArray,
+    sectorsFilter: filterSectorsToStringArray,
+  });
+
+  const { data: inProgressCount } = api.projects.getProjectsInProgressCount.useQuery({
     tagsFilter: filterToStringArray,
     sectorsFilter: filterSectorsToStringArray,
   });
@@ -152,10 +183,36 @@ const ProjectsPage: NextPage = () => {
             </SimpleDropDown>
           </div>
         </div>
-        <div className="w-full overflow-y-auto overflow-x-hidden ">
+        <div className="w-full overflow-y-auto overflow-x-hidden">
+          <div className="flex items-center gap-2 overflow-x-auto border-t border-zinc-700 p-2 sm:justify-start md:text-lg">
+            <SelectionTagsWithChips
+              setKeyword={setAutoFilter}
+              description="Projects that have not started yet, but might be starting soon."
+              keyword="soon"
+              selectedWord={useAutoFilters}
+              name={"Coming Up"}
+              amt={comingUpCount || 0}
+            />
+            <SelectionTagsWithChips
+              setKeyword={setAutoFilter}
+              description="Projects that have teams actively working on them."
+              keyword="progress"
+              selectedWord={useAutoFilters}
+              name={"In Progress"}
+              amt={inProgressCount || 0}
+            />
+            <SelectionTagsWithChips
+              setKeyword={setAutoFilter}
+              description="Projects that are struggling and might need your help."
+              keyword="support"
+              selectedWord={useAutoFilters}
+              name={"Need Support"}
+              amt={supportCount || 0}
+            />
+          </div>
           <div
             ref={animateParent}
-            className="flex w-full flex-col gap-1 border-t border-zinc-700 p-2 text-gray-100 "
+            className="flex h-[87vh] w-full flex-col gap-1 overflow-y-auto overflow-x-hidden p-1 text-gray-100"
           >
             {(isLoading && (
               // <LoadingHeader loading={isLoading} title={"Loading Projects"} />
@@ -181,15 +238,15 @@ const ProjectsPage: NextPage = () => {
                       }}
                     />
                   ))}
-                  <div className="h-20"></div>
-                  <button
-                    onClick={scrollToTop}
-                    className="flex w-full items-center justify-center gap-2"
-                  >
-                    <p>Back To Top</p>
-                    <ArrowLongUpIcon className="h-5 w-5 text-zinc-400 hover:text-zinc-200" />
-                  </button>
-                  <div className="h-20" />
+                  <div className="h-20 p-32">
+                    <button
+                      onClick={scrollToTop}
+                      className="flex w-full items-center justify-center gap-2"
+                    >
+                      <p>Back To Top</p>
+                      <ArrowLongUpIcon className="h-5 w-5 text-zinc-400 hover:text-zinc-200" />
+                    </button>
+                  </div>
                 </>
               ))}
             {data?.length === 0 && (
@@ -210,6 +267,45 @@ const ProjectsPage: NextPage = () => {
       </div>
       <div className="h-44" />
     </main>
+  );
+};
+
+const SelectionTagsWithChips: React.FC<{
+  name: string;
+  keyword: string;
+  selectedWord: string;
+  amt: number;
+  description: string;
+  setKeyword: (e: string) => void;
+}> = ({ name, amt, selectedWord, keyword, setKeyword, description }) => {
+  const selected = selectedWord === keyword;
+
+  return (
+    <TooltipComponent
+      content={
+        selected ? description + " (click to remove filter)" : description
+      }
+      side="bottom"
+    >
+      <button
+        onClick={() => {
+          setKeyword(keyword);
+        }}
+        className={`relative flex items-center gap-1 rounded  ${
+          selected
+            ? "border-2 border-amber-600 hover:bg-red-800"
+            : "border-2 border-transparent hover:bg-zinc-600 focus:bg-zinc-600"
+        } bg-zinc-700 p-2 px-3 font-semibold outline-none transition duration-200 `}
+      >
+        {amt > 0 && (
+          <div className="absolute right-0 top-0 flex h-5 w-5 -translate-y-1 translate-x-1 items-center justify-center rounded-full bg-amber-700">
+            <p className="text-center text-sm">{amt}</p>
+          </div>
+        )}
+        {selected && <XMarkIcon className="h-5 w-5" />}
+        <p className="whitespace-nowrap">{name}</p>
+      </button>
+    </TooltipComponent>
   );
 };
 

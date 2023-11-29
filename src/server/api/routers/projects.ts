@@ -46,12 +46,189 @@ export const projectsRouter = createTRPCRouter({
     return projects;
   }),
 
+  getComingUpCount: privateProcedure
+    .input(
+      z.object({
+        tagsFilter: z.array(z.string()),
+        sectorsFilter: z.array(z.string()).optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const filters: Prisma.ProjectWhereInput = {};
+
+      filters.OR = [
+        {
+          startDate: {
+            lte: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+          },
+          status: {
+            contains: "Start",
+          },
+        },
+      ];
+
+      if (input.tagsFilter.length > 0) {
+        filters.tags = {
+          some: {
+            id: {
+              in: input.tagsFilter,
+            },
+          },
+        };
+      }
+
+      if (input.sectorsFilter && input.sectorsFilter.length > 0) {
+        filters.sectors = {
+          some: {
+            id: {
+              in: input.sectorsFilter,
+            },
+          },
+        };
+      }
+
+      const projects = await ctx.prisma.project.findMany({
+        where: filters,
+        select: {
+          id: true,
+        },
+      });
+      return projects.length;
+    }),
+
+  getSupportCount: privateProcedure
+    .input(
+      z.object({
+        tagsFilter: z.array(z.string()),
+        sectorsFilter: z.array(z.string()).optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const filters: Prisma.ProjectWhereInput = {};
+
+      filters.OR = [
+        {
+          status: {
+            contains: "In Progress: Bad",
+          },
+        },
+        {
+          status: {
+            contains: "Legal",
+          },
+        },
+      ];
+
+      if (input.tagsFilter.length > 0) {
+        filters.tags = {
+          some: {
+            id: {
+              in: input.tagsFilter,
+            },
+          },
+        };
+      }
+
+      if (input.sectorsFilter && input.sectorsFilter.length > 0) {
+        filters.sectors = {
+          some: {
+            id: {
+              in: input.sectorsFilter,
+            },
+          },
+        };
+      }
+      const projects = await ctx.prisma.project.findMany({
+        where: filters,
+        select: {
+          id: true,
+        },
+      });
+      return projects.length;
+    }),
+  getProjectsInProgressCount: privateProcedure
+    .input(
+      z.object({
+        tagsFilter: z.array(z.string()),
+        sectorsFilter: z.array(z.string()).optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const filters: Prisma.ProjectWhereInput = {};
+
+      filters.AND = [
+        {
+          status: {
+            not: {
+              contains: "Inactive",
+            },
+          },
+        },
+        {
+          status: {
+            not: {
+              contains: "Closed",
+            },
+          },
+        },
+        {
+          status: {
+            not: {
+              contains: "Legal",
+            },
+          },
+        },
+        {
+          status: {
+            not: {
+              contains: "Start",
+            },
+          },
+        },
+        {
+          status: {
+            not: {
+              contains: "100% Complete",
+            },
+          },
+        },
+      ];
+
+      if (input.tagsFilter.length > 0) {
+        filters.tags = {
+          some: {
+            id: {
+              in: input.tagsFilter,
+            },
+          },
+        };
+      }
+
+      if (input.sectorsFilter && input.sectorsFilter.length > 0) {
+        filters.sectors = {
+          some: {
+            id: {
+              in: input.sectorsFilter,
+            },
+          },
+        };
+      }
+      const projects = await ctx.prisma.project.findMany({
+        where: filters,
+        select: {
+          id: true,
+        },
+      });
+      return projects.length;
+    }),
+
   search: privateProcedure
     .input(
       z.object({
         search: z.string().min(0).max(255),
         tagsFilter: z.array(z.string()),
         sectorsFilter: z.array(z.string()).optional(),
+        autoFilter: z.string().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -65,6 +242,73 @@ export const projectsRouter = createTRPCRouter({
             },
           },
         };
+      }
+
+      if (input.autoFilter === "soon") {
+        filters.OR = [
+          {
+            startDate: {
+              lte: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+            },
+            status: {
+              contains: "Start",
+            },
+          },
+        ];
+      }
+
+      if (input.autoFilter === "support") {
+        filters.OR = [
+          {
+            status: {
+              contains: "In Progress: Bad",
+            },
+          },
+          {
+            status: {
+              contains: "Legal",
+            },
+          },
+        ];
+      }
+      if (input.autoFilter === "progress") {
+        filters.AND = [
+          {
+            status: {
+              not: {
+                contains: "Inactive",
+              },
+            },
+          },
+          {
+            status: {
+              not: {
+                contains: "Closed",
+              },
+            },
+          },
+          {
+            status: {
+              not: {
+                contains: "Legal",
+              },
+            },
+          },
+          {
+            status: {
+              not: {
+                contains: "Start",
+              },
+            },
+          },
+          {
+            status: {
+              not: {
+                contains: "100% Complete",
+              },
+            },
+          },
+        ];
       }
 
       if (input.sectorsFilter && input.sectorsFilter.length > 0) {
@@ -119,21 +363,6 @@ export const projectsRouter = createTRPCRouter({
           {
             updatedAt: "desc",
           },
-          // {
-          //   _relevance: {
-          //     fields: [
-          //       "name",
-          //       "description",
-          //       "notes",
-          //       "address",
-          //       "city",
-          //       "state",
-          //       "zip",
-          //     ],
-          //     search: input.search,
-          //     sort: "desc",
-          //   },
-          // },
           {
             name: "asc",
           },

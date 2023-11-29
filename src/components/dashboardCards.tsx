@@ -59,15 +59,15 @@ export const ProjectCard: React.FC<{
           className="flex w-full cursor-pointer items-center gap-1 overflow-hidden rounded-sm p-1 shadow-sm transition-all duration-100 sm:justify-between"
         >
           <div className="lg:w-1/2">
-            <div className="flex items-center justify-start gap-2 text-center font-thin">
-              <p className="whitespace-nowrap text-xs font-normal text-zinc-300">
-                {project.jobNumber}
-              </p>
+            <div className="flex items-center gap-2 justify-start text-center font-thin">
               {sectors.map((sector) => (
-                <p className="rounded-full px-2 text-xs" key={sector.id}>
+                <p className="rounded-full tracking-tight px-1 bg-zinc-600 text-xs" key={sector.id}>
                   {sector.name}
                 </p>
               ))}
+              <p className="whitespace-nowrap text-xs font-normal text-zinc-300">
+                {project.jobNumber}
+              </p>
             </div>
             <div className="flex w-full items-center justify-start gap-1 overflow-clip">
               <p className="truncate text-ellipsis font-semibold ">
@@ -82,15 +82,15 @@ export const ProjectCard: React.FC<{
               )}
             </div>
             <div className="flex w-full items-center justify-start gap-1 overflow-clip text-zinc-300">
+             {project.status.trim().toLowerCase() !== "legal" && !project.status.toLowerCase().includes("bad") ? project.status.toLowerCase().trim() === "100% complete" ? <p className="text-sm text-green-400">{project.status}</p> : <p className="text-sm">{project.status}</p> : <div className="text-sm bg-red-700 font-medium px-1 rounded-full">{project.status}</div>}
+              {project.city && project.state && project.status && <p>·</p>}
               <div className="flex items-center justify-start gap-1 overflow-clip text-xs">
                 {/* <MapPinIcon className="h-4 w-4" /> */}
-                <p className="block max-w-[10rem] truncate text-left text-sm font-normal italic tracking-tight">
+                <p className="block max-w-[10rem] lg:max-w-[20rem] truncate text-left text-sm font-normal tracking-tight">
                   {project.city.trim()}
                   {project.state.trim() && `, ${project.state}`}
                 </p>
               </div>
-              {project.city && project.state && project.status && <p>·</p>}
-              <p className="text-sm">{project.status}</p>
             </div>
           </div>
           <div className="hidden max-w-[30%] flex-shrink overflow-clip text-center  font-thin lg:flex">
@@ -168,15 +168,8 @@ const ProjectProgress: React.FC<{ project: Project; index: number }> = ({
   }, [project.percentComplete]);
 
   return (
-    <TooltipComponent
-      content={`${project.name} is ${progress}% Complete`}
-      side="bottom"
-    >
-      {/* {progress === 0 && <div className="relative overflow-hidden rounded-b-sm bg-zinc-700 w-full h-[4px]">
-        </div>
-        } */}
       <Progress.Root
-        className="relative h-[4px] w-full overflow-hidden rounded-b-sm bg-zinc-700"
+        className="relative h-[2px] w-full overflow-hidden rounded-b-sm"
         style={{
           // Fix overflow clipping in Safari
           // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
@@ -189,7 +182,6 @@ const ProjectProgress: React.FC<{ project: Project; index: number }> = ({
           className="ease-[cubic-bezier(0.65, 0, 0.35,  1)]  h-full w-full rounded-md bg-gradient-to-r from-orange-600 to-amber-700 transition-transform duration-[660ms]"
         />
       </Progress.Root>
-    </TooltipComponent>
   );
 };
 
