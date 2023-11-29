@@ -1416,7 +1416,7 @@ const ActivityListItem: React.FC<activityListItemType> = ({
   );
 };
 
-const MessageComponent: React.FC<{ data: string }> = ({ data }) => {
+export const MessageComponent: React.FC<{ data: string }> = ({ data }) => {
   return (
     <Linkify
       options={{
