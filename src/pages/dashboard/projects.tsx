@@ -215,7 +215,7 @@ const ProjectsPage: NextPage = () => {
           </div>
           <div
             ref={animateParent}
-            className="flex h-[80] lg:h-[85vh] w-full flex-col gap-1 overflow-y-auto overflow-x-hidden p-1 text-gray-100"
+            className="flex h-[80] w-full flex-col gap-1 overflow-y-auto overflow-x-hidden p-1 text-gray-100 lg:h-[85vh]"
           >
             {(isLoading && (
               // <LoadingHeader loading={isLoading} title={"Loading Projects"} />
@@ -241,7 +241,7 @@ const ProjectsPage: NextPage = () => {
                       }}
                     />
                   ))}
-                  <div className="h-20 pb-32 pt-16 flex items-center justify-center">
+                  <div className="flex h-20 items-center justify-center pb-32 pt-16">
                     <button
                       onClick={scrollToTop}
                       className="flex items-center justify-center gap-2"
@@ -253,16 +253,31 @@ const ProjectsPage: NextPage = () => {
                 </>
               ))}
             {data?.length === 0 && (
-              <div className="flex flex-col items-center justify-center gap-4">
-                <p className="text-center text-2xl font-bold text-zinc-300">
-                  {`You don't have any projects with the name '${projectSearchTerm}' yet. `}
-                </p>
-                <Link
-                  href="/newproject"
-                  className="m-auto w-64 rounded bg-zinc-700 p-2 text-center font-bold text-zinc-300 transition-all duration-100 hover:scale-105 hover:cursor-pointer hover:bg-zinc-600"
-                >
-                  Create one now.
-                </Link>
+              <div className="flex h-[30vh] items-center justify-center">
+                <div className="flex flex-col items-center justify-center gap-7">
+                  {projectSearchTerm.length > 0 && (
+                    <p className="text-center text-2xl font-semibold text-zinc-300">
+                      {`You don't have any projects with the name '${projectSearchTerm}' yet`}
+                    </p>
+                  )}
+                  {projectSearchTerm.length <= 0 && (
+                    <div className="flex items-center justify-center gap-2">
+                      <p className="text-center text-2xl font-semibold text-zinc-300">
+                        {`No Project Found`}
+                      </p>
+                    </div>
+                  )}
+                  <Link
+                    href="/projects/new"
+                    className="flex w-64 items-center justify-center gap-2 rounded bg-amber-800 p-2 text-center font-semibold text-zinc-300 transition duration-200 hover:scale-105 hover:cursor-pointer hover:bg-amber-700"
+                  >
+                    <PlusIcon className="h-6 w-6 text-zinc-100" />
+                    {projectSearchTerm.length > 0 && <p>Create it now</p>}
+                    {projectSearchTerm.length <= 0 && (
+                      <p>Create A New Project</p>
+                    )}
+                  </Link>
+                </div>
               </div>
             )}
           </div>
@@ -294,7 +309,7 @@ const SelectionTagsWithChips: React.FC<{
         onClick={() => {
           setKeyword(keyword);
         }}
-        className={`relative flex items-center gap-2 rounded  ${
+        className={`relative flex select-none items-center gap-2 rounded  ${
           selected
             ? "border-2 border-amber-600 hover:bg-red-800"
             : "border-2 border-transparent hover:bg-zinc-600 focus:bg-zinc-600"
