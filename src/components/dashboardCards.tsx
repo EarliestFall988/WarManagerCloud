@@ -3,7 +3,7 @@ import Link from "next/link";
 import { TagBubble } from "./TagComponent";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { toast } from "react-hot-toast";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, type ReactNode } from "react";
 import {
   ArrowPathIcon,
   ChatBubbleBottomCenterIcon,
@@ -12,6 +12,7 @@ import {
   EllipsisVerticalIcon,
   FlagIcon,
   PaintBrushIcon,
+  PaperAirplaneIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
 import { DialogComponent } from "./dialog";
@@ -21,7 +22,6 @@ import * as Progress from "@radix-ui/react-progress";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { api } from "~/utils/api";
-import { MessageComponent, ReplyComponent } from "~/pages/dashboard/activity";
 dayjs.extend(relativeTime);
 
 export const ProjectCard: React.FC<{
@@ -31,6 +31,8 @@ export const ProjectCard: React.FC<{
   index: number;
   deleteProject?: (id: string) => void;
 }> = ({ project, tags, sectors, index, deleteProject }) => {
+  const [projectHistoryOpen, setProjectHistory] = useState(false);
+
   const copyAddress = useCallback((address: string) => {
     void window.navigator.clipboard.writeText(address);
     toast.success("Address Copied to Clipboard");
@@ -128,7 +130,7 @@ export const ProjectCard: React.FC<{
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                console.log("clicked");
+                setProjectHistory(!projectHistoryOpen);
               }}
               className="flex items-center justify-center gap-2 rounded-lg p-3 py-4 text-zinc-200 hover:text-amber-600"
             >
@@ -182,7 +184,53 @@ export const ProjectCard: React.FC<{
         </div>
         <ProjectProgress project={project} index={index} />
       </div>
+      {projectHistoryOpen && (
+        <div className="-my-1 flex flex-col items-center justify-center pb-5 lg:items-start lg:pl-4">
+          <div className="w-11/12 border-l border-neutral-700 p-2 lg:w-2/3">
+            <TimelineContainer>
+              <textarea
+                placeholder="Update others on project progress... "
+                className="w-full rounded border border-zinc-700 bg-zinc-800 p-2 text-zinc-300 transition-all duration-100 hover:border-zinc-500 focus:border-zinc-500 focus:outline-none"
+              />
+              {/* <button className="flex gap-2 rounded bg-amber-700 p-2">
+              <p>Send</p>
+              <PaperAirplaneIcon className="h-5 w-5 text-zinc-200" />
+            </button> */}
+            </TimelineContainer>
+            <TimelineContainer>
+              <textarea
+                placeholder="Update others on project progress... "
+                className="w-full rounded border border-zinc-700 bg-zinc-800 p-2 text-zinc-300 transition-all duration-100 hover:border-zinc-500 focus:border-zinc-500 focus:outline-none"
+              />
+              <button className="flex gap-2 rounded bg-amber-700 p-2">
+                <p>Send</p>
+                <PaperAirplaneIcon className="h-5 w-5 text-zinc-200" />
+              </button>
+            </TimelineContainer>
+          </div>
+        </div>
+      )}
     </>
+  );
+};
+
+const TimelineContainer: React.FC<{
+  children: ReactNode;
+  lastUpdateTime?: Date;
+}> = ({ children, lastUpdateTime }) => {
+  return (
+    <div className="flex w-full items-start pb-5">
+      <div className="h-2 w-2 -translate-x-3 translate-y-2 rounded-full bg-zinc-500" />
+      <div className="w-full">
+        <div className="flex gap-1 text-zinc-500">
+          <p>You</p>
+          <p>|</p>
+          {lastUpdateTime && <p>{dayjs(lastUpdateTime).fromNow()}</p>}
+          {!lastUpdateTime && <p>Right Now</p>}
+        </div>
+        <div className="flex flex-col items-end gap-2">{children}</div>
+      </div>
+    </div>
   );
 };
 
