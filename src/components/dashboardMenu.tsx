@@ -588,7 +588,7 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
 
   const reload = () => {
     if (navigator.vibrate) {
-      navigator.vibrate(50);
+      navigator.vibrate(10);
     }
 
     router.reload();
@@ -607,7 +607,7 @@ const MobileMenu: React.FC<{ context: string; router: NextRouter }> = ({
         <button
           onClick={() => {
             if (navigator.vibrate) {
-              navigator.vibrate(200);
+              navigator.vibrate(10);
             }
             setOpen(!open);
           }}
