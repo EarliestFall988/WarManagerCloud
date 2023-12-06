@@ -4,6 +4,7 @@ import {
   BuildingOffice2Icon,
   ChevronLeftIcon,
   DocumentIcon,
+  KeyIcon,
   NewspaperIcon,
   ShieldCheckIcon,
   UserCircleIcon,
@@ -231,6 +232,9 @@ const SettingsMenu: React.FC<{ showMenu: boolean }> = ({ showMenu }) => {
                 </MenuLink>
                 <MenuLink name="Users" link="/settings/users">
                   <UserGroupIcon className="h-5 w-5" />
+                </MenuLink>
+                <MenuLink name="API Keys" link="/settings/apikeys">
+                  <KeyIcon className="h-5 w-5" />
                 </MenuLink>
               </div>
             </div>

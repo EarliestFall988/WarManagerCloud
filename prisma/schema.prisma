@@ -194,7 +194,7 @@ model Equipment {
   equipmentId String? @db.VarChar(255)
   description String? @db.VarChar(255)
   gpsURL      String? @db.VarChar(255)
-  costPerHour Float  @default(0)
+  costPerHour Float   @default(0)
 
   condition String @db.VarChar(255)
 
@@ -383,6 +383,21 @@ model Tag {
   blueprints      Blueprint[]
   equipment       Equipment[]
 
+  @@index([authorId])
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  name        String   @db.VarChar(255)
+  description String   @db.VarChar(255)
+  key         String   @db.VarChar(255)
+  permissions String   @db.VarChar(255)
+  setActive   Boolean  @default(true)
+
+  authorId    String
   @@index([authorId])
 }
 
