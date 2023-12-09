@@ -11,9 +11,9 @@ import { prisma } from "~/server/db";
 const restAPIKey = env.TEST_REST_API_KEY;
 
 type getProjectsReqBodyType = {
-  api_key?: string,
-  start_date?: string,
-  end_date?: string,
+  api_key?: string;
+  start_date?: string;
+  end_date?: string;
 };
 
 const GetProjectsRESTAPI: NextApiHandler = async (
@@ -30,17 +30,15 @@ const GetProjectsRESTAPI: NextApiHandler = async (
     return;
   }
 
-
-
   const bdy = req.body as string;
 
   const reqBody = JSON.parse(bdy) as getProjectsReqBodyType;
 
-  const  api_key  = reqBody.api_key ?? "";
+  const api_key = reqBody.api_key ?? "";
   const { start_date } = reqBody as { start_date?: string };
   const { end_date } = reqBody as { end_date?: string };
 
-//   console.log(start_date, start.toDateString());
+  //   console.log(start_date, start.toDateString());
 
   console.log(api_key);
 
@@ -76,7 +74,16 @@ const GetProjectsRESTAPI: NextApiHandler = async (
     select: {
       id: true,
       name: true,
+      TotalManHours: true,
+      jobNumber: true,
+      materialCost: true,
+      equipmentCost: true,
+      subContractorCost: true,
+      laborCost: true,
+      otherCost: true,
       startDate: true,
+      state: true,
+      status: true,
       endDate: true,
     },
   });
