@@ -1153,7 +1153,6 @@ export const projectsRouter = createTRPCRouter({
       }
 
       const i = startDate;
-
       while (i <= endDate) {
         // console.log(i);
 
