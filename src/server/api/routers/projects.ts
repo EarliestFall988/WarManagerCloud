@@ -1316,6 +1316,21 @@ export const projectsRouter = createTRPCRouter({
 
     return result;
   }),
+
+  getBurnRate: privateProcedure.query(async ({ ctx }) => {
+    const result = await fetch(
+      "https://valkyrie-server-solitary-sun-1989.fly.dev/api/v1/instruction/clq0exhkz000059xwukxig1wz",
+      {
+        method: "POST",
+        headers: {
+          apikey: "some api key",
+        },
+      }
+    ).then((res) => res.text());
+
+
+    return Number.parseFloat(result);
+  }),
 });
 
 export type ManHourResult = {
