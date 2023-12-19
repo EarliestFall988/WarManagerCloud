@@ -116,14 +116,17 @@ const UsersSettingsPage: NextPage = () => {
             </div>
           </div>
         ))}
-        <div>
-          <button
-            onClick={testSession}
-            className="w-1/3 rounded border border-amber-700 p-1 text-center"
-          >
-            Check last logged in
-          </button>
-        </div>
+        {user.emailAddresses[0].emailAddress ===
+          "taylor.howell@jrcousa.com" && ( //used to manually trigger session cron job
+          <div>
+            <button
+              onClick={testSession}
+              className="w-1/3 rounded border border-amber-700 p-1 text-center"
+            >
+              Check last logged in
+            </button>
+          </div>
+        )}
       </div>
     </SettingsLayout>
   );
