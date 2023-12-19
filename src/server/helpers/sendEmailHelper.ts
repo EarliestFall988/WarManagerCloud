@@ -65,7 +65,8 @@ export const SendCTAEmail = async (
 
 export const SendMessageToDeveloper = async (
   title: string,
-  message: string
+  message: string,
+  helpPage?: boolean
 ) => {
   console.log("sending message to developer");
 
@@ -75,10 +76,16 @@ export const SendMessageToDeveloper = async (
     throw new Error("API Key is undefined");
   }
 
+  let subject = `Someone sent you a message from the \'send a quick message\' in the help page: ${title}`;
+
+  if (!helpPage) {
+    subject = title;
+  }
+
   const content = [
     {
       to: "taylor.howell@jrcousa.com",
-      subject: `Someone sent you a message from the \'send a quick message\' in the help page: ${title}`,
+      subject: subject,
       content: message,
       cta: "View Activity",
       link: `https://cloud.warmanager.net/dashboard/activity`,

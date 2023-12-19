@@ -8,11 +8,19 @@ import SignInModal from "~/components/signInPage";
 import { api } from "~/utils/api";
 
 const UsersSettingsPage: NextPage = () => {
-    const { user, isSignedIn, isLoaded } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
 
   const { data, isError, isLoading } = api.users.getAllUsers.useQuery();
 
   const [animationParent] = useAutoAnimate();
+
+  const testSession = () => {
+    console.log("test session");
+
+    void fetch("/api/cron-jobs/usage")
+      .then((res) => res.text())
+      .then((data) => console.log(data));
+  };
 
   if (isError) {
     return (
@@ -108,6 +116,17 @@ const UsersSettingsPage: NextPage = () => {
             </div>
           </div>
         ))}
+        {user.emailAddresses[0].emailAddress ===
+          "taylor.howell@jrcousa.com" && ( //used to manually trigger session cron job
+          <div>
+            <button
+              onClick={testSession}
+              className="w-1/3 rounded border border-amber-700 p-1 text-center"
+            >
+              Check last logged in
+            </button>
+          </div>
+        )}
       </div>
     </SettingsLayout>
   );
