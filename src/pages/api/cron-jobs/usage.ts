@@ -49,6 +49,12 @@ const handler = async (req: NextRequest, res: NextResponse) => {
   });
 
   if (newerThan14Days) {
+    await SendMessageToDeveloper(
+      "War Manager Service is still being used",
+      "The War Manager Cloud Service is still being used.",
+      false
+    );
+
     res.ok;
 
     return;
